@@ -18,4 +18,4 @@ num_thai
 opencc
 audonnx
 flask
-python-ffmpeg
+av
