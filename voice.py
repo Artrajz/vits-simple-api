@@ -7,8 +7,6 @@ import sys
 import re
 from torch import no_grad, LongTensor
 import uuid
-import subprocess
-import ffmpeg
 from io import BytesIO
 
 
@@ -66,11 +64,6 @@ class Voice:
                         write(f, self.hps_ms.data.sampling_rate, audio)
                         return BytesIO(f.getvalue()), "audio/wav", file_name + ".wav"
 
-    def run_script(self, file_path):
-        out_path = file_path.split('.')[0] + ".ogg"
-        ffmpeg.input(file_path).output(out_path).run()
-        subprocess.run(["rm " + file_path], shell=True, timeout=5)
-        return out_path
 
     def get_text(self, text, hps, cleaned=False):
         if cleaned:
