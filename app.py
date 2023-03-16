@@ -3,6 +3,7 @@ import os
 import logging
 from flask import Flask, request, send_file
 
+from voice import merge_model
 from voice import Voice
 
 app = Flask(__name__)
@@ -25,7 +26,6 @@ voice = Voice(model, config)
 # print("os.path.realpath(sys.argv[0])",os.path.realpath(sys.argv[0]))
 # print("os.path.dirname(os.path.realpath(sys.argv[0]))",os.path.dirname(__file__))
 
-
 # out_path = os.path.dirname(__file__) + "/output/"
 
 model_zh = os.path.dirname(__file__) + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth"
@@ -36,21 +36,27 @@ model_ja = os.path.dirname(__file__) + "/Model/Zero_no_tsukaima/1158_epochs.pth"
 config_ja = os.path.dirname(__file__) + "/Model/Zero_no_tsukaima/config.json"
 voice_ja = Voice(model_ja, config_ja)
 
+merging_list = [
+    [model_zh, config_zh],
+    [model_ja, config_ja]
+]
+voice_obj, voice_speakers = merge_model(merging_list)
 
-@app.route('/api/')
+
+@app.route('/voice/')
 def index():
     return "usage:https://github.com/pang-juzhong/MoeGoe-Simple-API#readme"
 
 
-@app.route('/api/ja/speakers')
-def voice_speakers_ja():
+@app.route('/voice/ja/speakers')
+def voice_ja_speakers_api():
     escape = False
     speakers_list = voice_ja.return_speakers(escape)
     return speakers_list
 
 
-@app.route('/api/ja', methods=["GET"])
-def api_voice_ja():
+@app.route('/voice/ja', methods=["GET"])
+def voice_ja_api():
     text = "[JA]" + request.args.get("text") + "[JA]"
     speaker_id = int(request.args.get("id", 0))
     format = request.args.get("format", "wav")
@@ -59,22 +65,41 @@ def api_voice_ja():
     return send_file(output)
 
 
-@app.route('/api/zh/speakers')
-def voice_speakers_zh():
+@app.route('/voice/zh/speakers')
+def voice_zh_speakers_api():
     escape = False
     speakers_list = voice_zh.return_speakers(escape)
     return speakers_list
 
 
-@app.route('/api/zh', methods=["GET"])
-def api_voice_zh():
+@app.route('/voice/zh', methods=["GET"])
+def voice_zh_api():
     text = "[ZH]" + request.args.get("text") + "[ZH]"
     speaker_id = int(request.args.get("id", 3))
     format = request.args.get("format", "wav")
 
-    output, type, file_name = voice_zh.generate(text, speaker_id, format)
+    output, file_type, file_name = voice_zh.generate(text, speaker_id, format)
 
-    return send_file(path_or_file=output, mimetype=type, download_name=file_name)
+    return send_file(path_or_file=output, mimetype=file_type, download_name=file_name)
+
+
+@app.route('/voice/speakers')
+def voice_speakers_api():
+    speakers_list = voice_speakers
+    return speakers_list
+
+
+@app.route('/voice', methods=["GET"])
+def voice_api():
+    text = request.args.get("text")
+    speaker_id = int(request.args.get("id", 0))
+    format = request.args.get("format", "wav")
+    real_id = voice_obj[speaker_id][0]
+    real_obj = voice_obj[speaker_id][1]
+
+    output, file_type, file_name = real_obj.generate(text, real_id, format)
+
+    return send_file(path_or_file=output, mimetype=file_type, download_name=file_name)
 
 
 if __name__ == '__main__':

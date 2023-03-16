@@ -64,7 +64,6 @@ class Voice:
                         write(f, self.hps_ms.data.sampling_rate, audio)
                         return BytesIO(f.getvalue()), "audio/wav", file_name + ".wav"
 
-
     def get_text(self, text, hps, cleaned=False):
         if cleaned:
             text_norm = text_to_sequence(text, hps.symbols, [])
@@ -108,3 +107,21 @@ class Voice:
             return True, text.replace(f'[{label}]', '')
         else:
             return False, text
+
+
+def merge_model(merging_model):
+    voice_obj = []
+    voice_speakers = []
+    new_id = 0
+    for i in merging_model:
+        obj = Voice(i[0], i[1])
+        list = obj.return_speakers()
+        for j in list:
+            id, speakers = j.split('\t')
+
+            voice_obj.append([int(id), obj])
+            voice_speakers.append(str(new_id) + '\t' + str(speakers))
+
+            new_id += 1
+
+    return voice_obj, voice_speakers
