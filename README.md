@@ -16,7 +16,7 @@ Based on [MoeGoe](https://github.com/CjangCjengh/MoeGoe)
 | text         | text      | true    |         |           |
 | speaker id   | id        | false   | 0       |           |
 | audio format | format    | false   | wav     | wav,ogg   |
-| language     | lang      | flase   | mix     | zh,ja,mix |
+| language     | lang      | false   | mix     | zh,ja,mix |
 
 ## merging
 
