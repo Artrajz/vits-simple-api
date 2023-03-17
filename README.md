@@ -9,6 +9,15 @@ Based on [MoeGoe](https://github.com/CjangCjengh/MoeGoe)
 3. Install requirements `pip install -r requirements.txt`
 4. start！`python app.py`
 
+## parameter
+
+| Name         | Parameter | Is must | Default | Value     |
+| ------------ | --------- | ------- | ------- | --------- |
+| text         | text      | true    |         |           |
+| speaker id   | id        | false   | 0       |           |
+| audio format | format    | false   | wav     | wav,ogg   |
+| language     | lang      | flase   | mix     | zh,ja,mix |
+
 ## merging
 
 - GET http://127.0.0.1:23456/voice/speakers
@@ -50,13 +59,15 @@ Based on [MoeGoe](https://github.com/CjangCjengh/MoeGoe)
 ]
 ```
 
-- GET http://127.0.0.1/voice?text=[JA]text[JA][ZH]text[ZH]&id=0&format=wav
+- GET http://127.0.0.1/voice?text=[JA]text[JA][ZH]text[ZH]&id=0&format=wav&lang=mix
 
 return wav audio file
 
-- GET http://127.0.0.1/voice?text=[JA]text[JA][ZH]text[ZH]&id=0&format=ogg
+- GET http://127.0.0.1/voice?text=[JA]text[JA][ZH]text[ZH]&id=0&format=ogg&lang=mix
 
 return ogg audio file
+
+
 
 ## Single language/model
 
