@@ -36,9 +36,13 @@ model_ja = os.path.dirname(__file__) + "/Model/Zero_no_tsukaima/1158_epochs.pth"
 config_ja = os.path.dirname(__file__) + "/Model/Zero_no_tsukaima/config.json"
 voice_ja = Voice(model_ja, config_ja)
 
+model_g = os.path.dirname(__file__) + "/Model/g/G_953000.pth"
+config_g = os.path.dirname(__file__) + "/Model/g/config.json"
+
 merging_list = [
     [model_zh, config_zh],
-    [model_ja, config_ja]
+    [model_ja, config_ja],
+    [model_g, config_g],
 ]
 voice_obj, voice_speakers = merge_model(merging_list)
 
@@ -57,9 +61,15 @@ def voice_ja_speakers_api():
 
 @app.route('/voice/ja', methods=["GET"])
 def voice_ja_api():
-    text = "[JA]" + request.args.get("text") + "[JA]"
-    speaker_id = int(request.args.get("id", 0))
+    text = request.args.get("text")
+    speaker_id = int(request.args.get("id", 2))
     format = request.args.get("format", "wav")
+    lang = request.args.get("lang", "ja")
+
+    if lang.upper() == "ZH":
+        text = f"[ZH]{text}[ZH]"
+    elif lang.upper() == "JA":
+        text = f"[JA]{text}[JA]"
 
     output = voice_ja.generate(text, speaker_id, format)
     return send_file(output)
@@ -74,9 +84,15 @@ def voice_zh_speakers_api():
 
 @app.route('/voice/zh', methods=["GET"])
 def voice_zh_api():
-    text = "[ZH]" + request.args.get("text") + "[ZH]"
+    text = request.args.get("text")
     speaker_id = int(request.args.get("id", 3))
     format = request.args.get("format", "wav")
+    lang = request.args.get("lang", "zh")
+
+    if lang.upper() == "ZH":
+        text = f"[ZH]{text}[ZH]"
+    elif lang.upper() == "JA":
+        text = f"[JA]{text}[JA]"
 
     output, file_type, file_name = voice_zh.generate(text, speaker_id, format)
 
@@ -94,6 +110,13 @@ def voice_api():
     text = request.args.get("text")
     speaker_id = int(request.args.get("id", 0))
     format = request.args.get("format", "wav")
+    lang = request.args.get("lang", "mix")
+
+    if lang.upper() == "ZH":
+        text = f"[ZH]{text}[ZH]"
+    elif lang.upper() == "JA":
+        text = f"[JA]{text}[JA]"
+
     real_id = voice_obj[speaker_id][0]
     real_obj = voice_obj[speaker_id][1]
 

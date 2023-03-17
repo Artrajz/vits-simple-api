@@ -32,12 +32,9 @@ class Voice:
 
     def generate(self, text, speaker_id, format):
         if not self.emotion_embedding:
-            length_scale, text = self.get_label_value(
-                text, 'LENGTH', 1, 'length scale')
-            noise_scale, text = self.get_label_value(
-                text, 'NOISE', 0.667, 'noise scale')
-            noise_scale_w, text = self.get_label_value(
-                text, 'NOISEW', 0.8, 'deviation of noise')
+            length_scale, text = self.get_label_value(text, 'LENGTH', 1, 'length scale')
+            noise_scale, text = self.get_label_value(text, 'NOISE', 0.667, 'noise scale')
+            noise_scale_w, text = self.get_label_value(text, 'NOISEW', 0.8, 'deviation of noise')
             cleaned, text = self.get_label(text, 'CLEANED')
 
             stn_tst = self.get_text(text, self.hps_ms, cleaned=cleaned)
@@ -45,10 +42,10 @@ class Voice:
                 x_tst = stn_tst.unsqueeze(0)
                 x_tst_lengths = LongTensor([stn_tst.size(0)])
                 sid = LongTensor([speaker_id])
-                audio = \
-                    self.net_g_ms.infer(x_tst, x_tst_lengths, sid=sid, noise_scale=noise_scale,
-                                        noise_scale_w=noise_scale_w,
-                                        length_scale=length_scale)[0][0, 0].data.cpu().float().numpy()
+                audio = self.net_g_ms.infer(x_tst, x_tst_lengths, sid=sid,
+                                            noise_scale=noise_scale,
+                                            noise_scale_w=noise_scale_w,
+                                            length_scale=length_scale)[0][0, 0].data.cpu().float().numpy()
 
                 file_name = str(uuid.uuid1())
 
@@ -94,9 +91,6 @@ class Voice:
             return text
 
     def return_speakers(self, escape=False):
-        if len(self.speakers) > 100:
-            return
-        # print('ID\tSpeaker')
         speakers_list = []
         for id, name in enumerate(self.speakers):
             speakers_list.append(self.ex_return(str(id) + '\t' + name, escape))
@@ -116,6 +110,7 @@ def merge_model(merging_model):
     for i in merging_model:
         obj = Voice(i[0], i[1])
         list = obj.return_speakers()
+        # print(list,i[0], i[1])
         for j in list:
             id, speakers = j.split('\t')
 
