@@ -49,7 +49,7 @@ voice_obj, voice_speakers = merge_model(merging_list)
 
 @app.route('/voice/')
 def index():
-    return "usage:https://github.com/pang-juzhong/MoeGoe-Simple-API#readme"
+    return "usage:https://github.com/Artrajz/MoeGoe-Simple-API#readme"
 
 
 @app.route('/voice/ja/speakers')
