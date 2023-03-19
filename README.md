@@ -21,7 +21,6 @@ MoeGoe-Simple-API 是一个易部署的api，可以将多个模型合并为一�
 	{
 		"...": "..."
 	},
-    
 	{
 		"196": "ルイズ"
 	},
@@ -32,16 +31,6 @@ MoeGoe-Simple-API 是一个易部署的api，可以将多个模型合并为一�
 ```
 
 # 如何使用
-
-1. Download VITS model and put it in folder *Model.*
-
-2. Edit the model path in app.py.
-
-3. Install requirements `pip install -r requirements.txt`
-
-4. start！`python app.py`
-
-   
 
 1. 下载VITS模型并放入*Model*文件夹中
 2. 在app.py中修改模型路径
