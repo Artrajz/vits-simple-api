@@ -30,14 +30,15 @@ voice = Voice(model, config)
 
 model_zh = os.path.dirname(__file__) + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth"
 config_zh = os.path.dirname(__file__) + "/Model/Nene_Nanami_Rong_Tang/config.json"
-voice_zh = Voice(model_zh, config_zh)
+#voice_zh = Voice(model_zh, config_zh)
 
 model_ja = os.path.dirname(__file__) + "/Model/Zero_no_tsukaima/1158_epochs.pth"
 config_ja = os.path.dirname(__file__) + "/Model/Zero_no_tsukaima/config.json"
-voice_ja = Voice(model_ja, config_ja)
+#voice_ja = Voice(model_ja, config_ja)
 
 model_g = os.path.dirname(__file__) + "/Model/g/G_953000.pth"
 config_g = os.path.dirname(__file__) + "/Model/g/config.json"
+
 
 merging_list = [
     [model_zh, config_zh],
@@ -45,6 +46,9 @@ merging_list = [
     [model_g, config_g],
 ]
 voice_obj, voice_speakers = merge_model(merging_list)
+
+voice_zh = merging_list[0][0]
+voice_ja = merging_list[1][0]
 
 
 @app.route('/voice/')

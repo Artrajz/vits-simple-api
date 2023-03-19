@@ -11,12 +11,12 @@ Based on [MoeGoe](https://github.com/CjangCjengh/MoeGoe)
 
 ## parameter
 
-| Name         | Parameter | Is must | Default | Value     | Instruction                                           |
-| ------------ | --------- | ------- | ------- | --------- | ----------------------------------------------------- |
-| text         | text      | true    |         | text      |                                                       |
-| speaker id   | id        | false   | 0       | (number)  |                                                       |
-| audio format | format    | false   | wav     | wav,ogg   |                                                       |
-| language     | lang      | false   | mix     | zh,ja,mix | texts should be wrapped by [ZH] or [JA] when lang=mix |
+| Name         | Parameter | Is must | Default | Value        | Instruction                                           |
+| ------------ | --------- | ------- | ------- | ------------ | ----------------------------------------------------- |
+| text         | text      | true    |         | text         |                                                       |
+| speaker id   | id        | false   | 0       | (number)     |                                                       |
+| audio format | format    | false   | wav     | wav,ogg,silk |                                                       |
+| language     | lang      | false   | mix     | zh,ja,mix    | texts should be wrapped by [ZH] or [JA] when lang=mix |
 
 ## merging
 
