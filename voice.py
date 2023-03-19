@@ -1,3 +1,5 @@
+import os
+
 from scipy.io.wavfile import write
 from text import text_to_sequence, _clean_text
 from models import SynthesizerTrn
@@ -13,6 +15,11 @@ from io import BytesIO
 class Voice:
     def __init__(self, model, config, out_path=None):
         self.out_path = out_path
+        try:
+            os.mkdir(self.out_path)
+        except:
+            pass
+
         self.hps_ms = utils.get_hparams_from_file(config)
         n_speakers = self.hps_ms.data.n_speakers if 'n_speakers' in self.hps_ms.data.keys() else 0
         n_symbols = len(self.hps_ms.symbols) if 'symbols' in self.hps_ms.keys() else 0
@@ -50,13 +57,19 @@ class Voice:
                 file_name = str(uuid.uuid1())
 
                 with BytesIO() as f:
+                    file_path = self.out_path + "/" + file_name + ".wav"
+                    # out_path = self.out_path + "/" + file_name + ".ogg"
+
                     if format == 'ogg':
-                        # file_path = self.out_path + "/" + file_name + ".wav"
-                        # out_path = self.out_path + "/" + file_name + ".ogg"
                         write(f, self.hps_ms.data.sampling_rate, audio)
                         with BytesIO() as o:
                             utils.wav2ogg(f, o)
                             return BytesIO(o.getvalue()), "audio/ogg", file_name + ".ogg"
+                    elif format == 'silk':
+                        write(file_path, 24000, audio)
+                        silk_path = utils.convert_to_silk(file_path)
+                        os.remove(file_path)
+                        return silk_path, "audio/silk", file_name + ".silk"
                     else:
                         write(f, self.hps_ms.data.sampling_rate, audio)
                         return BytesIO(f.getvalue()), "audio/wav", file_name + ".wav"
@@ -107,8 +120,9 @@ def merge_model(merging_model):
     voice_obj = []
     voice_speakers = []
     new_id = 0
+    out_path = os.path.dirname(os.path.realpath(sys.argv[0]))+"/out_slik"
     for i in merging_model:
-        obj = Voice(i[0], i[1])
+        obj = Voice(i[0], i[1], out_path)
         list = obj.return_speakers()
         # print(list,i[0], i[1])
         for j in list:
