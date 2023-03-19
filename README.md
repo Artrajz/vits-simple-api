@@ -11,12 +11,12 @@ Based on [MoeGoe](https://github.com/CjangCjengh/MoeGoe)
 
 ## parameter
 
-| Name         | Parameter | Is must | Default | Value     |
-| ------------ | --------- | ------- | ------- | --------- |
-| text         | text      | true    |         |           |
-| speaker id   | id        | false   | 0       |           |
-| audio format | format    | false   | wav     | wav,ogg   |
-| language     | lang      | false   | mix     | zh,ja,mix |
+| Name         | Parameter | Is must | Default | Value     | Instruction                                           |
+| ------------ | --------- | ------- | ------- | --------- | ----------------------------------------------------- |
+| text         | text      | true    |         | text      |                                                       |
+| speaker id   | id        | false   | 0       | (number)  |                                                       |
+| audio format | format    | false   | wav     | wav,ogg   |                                                       |
+| language     | lang      | false   | mix     | zh,ja,mix | texts should be wrapped by [ZH] or [JA] when lang=mix |
 
 ## merging
 
@@ -66,6 +66,10 @@ return wav audio file
 - GET http://127.0.0.1/voice?text=[JA]text[JA][ZH]text[ZH]&id=0&format=ogg&lang=mix
 
 return ogg audio file
+
+- GET http://127.0.0.1/voice?text=[ZH]text&id=0&format=wav&lang=zh
+
+send chinese and return  wav audio file
 
 
 
