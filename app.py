@@ -1,10 +1,9 @@
 import os
 
 import logging
-from flask import Flask, request, send_file
+from flask import Flask, request, send_file, jsonify
 
 from voice import merge_model
-from voice import Voice
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
@@ -30,15 +29,12 @@ voice = Voice(model, config)
 
 model_zh = os.path.dirname(__file__) + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth"
 config_zh = os.path.dirname(__file__) + "/Model/Nene_Nanami_Rong_Tang/config.json"
-#voice_zh = Voice(model_zh, config_zh)
 
 model_ja = os.path.dirname(__file__) + "/Model/Zero_no_tsukaima/1158_epochs.pth"
 config_ja = os.path.dirname(__file__) + "/Model/Zero_no_tsukaima/config.json"
-#voice_ja = Voice(model_ja, config_ja)
 
 model_g = os.path.dirname(__file__) + "/Model/g/G_953000.pth"
 config_g = os.path.dirname(__file__) + "/Model/g/config.json"
-
 
 merging_list = [
     [model_zh, config_zh],
@@ -47,74 +43,31 @@ merging_list = [
 ]
 voice_obj, voice_speakers = merge_model(merging_list)
 
-voice_zh = merging_list[0][0]
-voice_ja = merging_list[1][0]
-
 
 @app.route('/voice/')
 def index():
     return "usage:https://github.com/Artrajz/MoeGoe-Simple-API#readme"
 
 
-@app.route('/voice/ja/speakers')
-def voice_ja_speakers_api():
-    escape = False
-    speakers_list = voice_ja.return_speakers(escape)
-    return speakers_list
-
-
-@app.route('/voice/ja', methods=["GET"])
-def voice_ja_api():
-    text = request.args.get("text")
-    speaker_id = int(request.args.get("id", 2))
-    format = request.args.get("format", "wav")
-    lang = request.args.get("lang", "ja")
-
-    if lang.upper() == "ZH":
-        text = f"[ZH]{text}[ZH]"
-    elif lang.upper() == "JA":
-        text = f"[JA]{text}[JA]"
-
-    output = voice_ja.generate(text, speaker_id, format)
-    return send_file(output)
-
-
-@app.route('/voice/zh/speakers')
-def voice_zh_speakers_api():
-    escape = False
-    speakers_list = voice_zh.return_speakers(escape)
-    return speakers_list
-
-
-@app.route('/voice/zh', methods=["GET"])
-def voice_zh_api():
-    text = request.args.get("text")
-    speaker_id = int(request.args.get("id", 3))
-    format = request.args.get("format", "wav")
-    lang = request.args.get("lang", "zh")
-
-    if lang.upper() == "ZH":
-        text = f"[ZH]{text}[ZH]"
-    elif lang.upper() == "JA":
-        text = f"[JA]{text}[JA]"
-
-    output, file_type, file_name = voice_zh.generate(text, speaker_id, format)
-
-    return send_file(path_or_file=output, mimetype=file_type, download_name=file_name)
-
-
-@app.route('/voice/speakers')
+@app.route('/voice/speakers', methods=["GET", "POST"])
 def voice_speakers_api():
     speakers_list = voice_speakers
-    return speakers_list
+    return jsonify(speakers_list)
 
 
-@app.route('/voice', methods=["GET"])
+@app.route('/voice', methods=["GET", "POST"])
 def voice_api():
-    text = request.args.get("text")
-    speaker_id = int(request.args.get("id", 0))
-    format = request.args.get("format", "wav")
-    lang = request.args.get("lang", "mix")
+    if request.method == "GET":
+        text = request.args.get("text")
+        speaker_id = int(request.args.get("id", 0))
+        format = request.args.get("format", "wav")
+        lang = request.args.get("lang", "mix")
+    elif request.method == "POST":
+        json_data = request.json
+        text = json_data["text"]
+        speaker_id = int(json_data["id"])
+        format = json_data["format"]
+        lang = json_data["lang"]
 
     if lang.upper() == "ZH":
         text = f"[ZH]{text}[ZH]"

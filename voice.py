@@ -104,10 +104,7 @@ class Voice:
             return text
 
     def return_speakers(self, escape=False):
-        speakers_list = []
-        for id, name in enumerate(self.speakers):
-            speakers_list.append(self.ex_return(str(id) + '\t' + name, escape))
-        return speakers_list
+        return self.speakers
 
     def get_label(self, text, label):
         if f'[{label}]' in text:
@@ -123,13 +120,10 @@ def merge_model(merging_model):
     out_path = os.path.dirname(os.path.realpath(sys.argv[0]))+"/out_slik"
     for i in merging_model:
         obj = Voice(i[0], i[1], out_path)
-        list = obj.return_speakers()
-        # print(list,i[0], i[1])
-        for j in list:
-            id, speakers = j.split('\t')
+        for id, name in enumerate(obj.return_speakers()):
 
             voice_obj.append([int(id), obj])
-            voice_speakers.append(str(new_id) + '\t' + str(speakers))
+            voice_speakers.append({new_id: name})
 
             new_id += 1
 
