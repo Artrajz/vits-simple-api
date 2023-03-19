@@ -19,3 +19,4 @@ opencc
 audonnx
 flask
 av
+silk
