@@ -11,22 +11,7 @@ app.config["port"] = 23456
 
 logging.getLogger('numba').setLevel(logging.WARNING)
 
-"""
-VITS Model example
-
-model_zh = "model_path"
-config_zh = "config.json_path"
-voice = Voice(model, config)
-"""
-
-# 可能遇到获取不到绝对路径的情况，取消以下注释使用可以取到绝对路径的方法替换下面的路径即可
-# print("os.path.dirname(__file__)",os.path.dirname(__file__))
-# print("os.path.dirname(sys.argv[0])",os.path.dirname(sys.argv[0]))
-# print("os.path.realpath(sys.argv[0])",os.path.realpath(sys.argv[0]))
-# print("os.path.dirname(os.path.realpath(sys.argv[0]))",os.path.dirname(__file__))
-
-# out_path = os.path.dirname(__file__) + "/output/"
-
+'''vits models path'''
 model_zh = os.path.dirname(__file__) + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth"
 config_zh = os.path.dirname(__file__) + "/Model/Nene_Nanami_Rong_Tang/config.json"
 
@@ -36,6 +21,7 @@ config_ja = os.path.dirname(__file__) + "/Model/Zero_no_tsukaima/config.json"
 model_g = os.path.dirname(__file__) + "/Model/g/G_953000.pth"
 config_g = os.path.dirname(__file__) + "/Model/g/config.json"
 
+'''add models here'''
 merging_list = [
     [model_zh, config_zh],
     [model_ja, config_ja],
@@ -43,7 +29,7 @@ merging_list = [
 ]
 voice_obj, voice_speakers = merge_model(merging_list)
 
-
+@app.route('/')
 @app.route('/voice/')
 def index():
     return "usage:https://github.com/Artrajz/MoeGoe-Simple-API#readme"

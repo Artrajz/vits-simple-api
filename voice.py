@@ -7,6 +7,8 @@ import utils
 import commons
 import sys
 import re
+# import torch
+# torch.set_num_threads(1) #设置torch线程为1，防止多任务推理时服务崩溃，但flask仍然会使用多线程
 from torch import no_grad, LongTensor
 import uuid
 from io import BytesIO
@@ -15,10 +17,11 @@ from io import BytesIO
 class Voice:
     def __init__(self, model, config, out_path=None):
         self.out_path = out_path
-        try:
-            os.mkdir(self.out_path)
-        except:
-            pass
+        if not os.path.exists(self.out_path):
+            try:
+                os.mkdir(self.out_path)
+            except:
+                pass
 
         self.hps_ms = utils.get_hparams_from_file(config)
         n_speakers = self.hps_ms.data.n_speakers if 'n_speakers' in self.hps_ms.data.keys() else 0
@@ -117,11 +120,10 @@ def merge_model(merging_model):
     voice_obj = []
     voice_speakers = []
     new_id = 0
-    out_path = os.path.dirname(os.path.realpath(sys.argv[0]))+"/out_slik"
+    out_path = os.path.dirname(os.path.realpath(sys.argv[0])) + "/out_slik"
     for i in merging_model:
         obj = Voice(i[0], i[1], out_path)
         for id, name in enumerate(obj.return_speakers()):
-
             voice_obj.append([int(id), obj])
             voice_speakers.append({new_id: name})
 

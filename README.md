@@ -2,7 +2,10 @@
 
 
 
-MoeGoe-Simple-API 是一个易部署的api，可以将多个模型合并为一个新的id对应角色模型的映射表。
+MoeGoe-Simple-API 是一个易部署的api，
+
+- 可导入模型
+- 支持多模型，可以将多个模型合并为一个新的id对应角色模型的映射表
 
 ```json
 [
@@ -39,12 +42,12 @@ MoeGoe-Simple-API 是一个易部署的api，可以将多个模型合并为一�
 
 ## 参数
 
-| Name         | Parameter | Is must | Default | Value        | Instruction                               |
-| ------------ | --------- | ------- | ------- | ------------ | ----------------------------------------- |
-| text         | text      | true    |         | text         |                                           |
-| speaker id   | id        | false   | 0       | (number)     |                                           |
-| audio format | format    | false   | wav     | wav,ogg,silk |                                           |
-| language     | lang      | false   | mix     | zh,ja,mix    | 当lang=mix是，文本应该用[ZH] 或 [JA] 包裹 |
+| Name         | Parameter | Is must | Default | Value        | Instruction                    |
+| ------------ | --------- | ------- | ------- | ------------ |--------------------------------|
+| text         | text      | true    |         | text         |                                |
+| speaker id   | id        | false   | 0       | (number)     |                                |
+| audio format | format    | false   | wav     | wav,ogg,silk |                                |
+| language     | lang      | false   | mix     | zh,ja,mix    | 当lang=mix时，文本应该用[ZH] 或 [JA] 包裹 |
 
 ## GET
 
