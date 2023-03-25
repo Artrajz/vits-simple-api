@@ -1,13 +1,18 @@
 import os
 
 import logging
+import uuid
+
 from flask import Flask, request, send_file, jsonify
+from werkzeug.utils import secure_filename
 
 from voice import merge_model
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 app.config["port"] = 23456
+app.config['UPLOAD_FOLDER'] = os.path.dirname(__file__) + "/upload"
+app.config['MAX_CONTENT_LENGTH'] = 5242880
 
 logging.getLogger('numba').setLevel(logging.WARNING)
 
@@ -28,6 +33,13 @@ merging_list = [
     [model_g, config_g],
 ]
 voice_obj, voice_speakers = merge_model(merging_list)
+
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    try:
+        os.mkdir(app.config['UPLOAD_FOLDER'])
+    except:
+        pass
+
 
 @app.route('/')
 @app.route('/voice/')
@@ -63,9 +75,44 @@ def voice_api():
     real_id = voice_obj[speaker_id][0]
     real_obj = voice_obj[speaker_id][1]
 
-    output, file_type, file_name = real_obj.generate(text, real_id, format)
+    output, file_type, fname = real_obj.generate(text, real_id, format)
 
-    return send_file(path_or_file=output, mimetype=file_type, download_name=file_name)
+    return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
+
+
+@app.route('/voice/conversion', methods=["GET", "POST"])
+def voice_conversion_api():
+    if request.method == "GET":
+        return jsonify("method should be POST")
+    if request.method == "POST":
+        # json_data = request.json
+        voice = request.files['upload']
+        original_id = int(request.form["original_id"])
+        target_id = int(request.form["target_id"])
+
+        form = {}
+
+        format = voice.filename.split(".")[1]
+
+        fname = secure_filename(str(uuid.uuid1()) + "." + voice.filename.split(".")[1])
+        voice.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
+
+        real_original_id = int(voice_obj[original_id][0])
+        real_target_id = int(voice_obj[target_id][0])
+        real_obj = voice_obj[original_id][1]
+        real_target_obj = voice_obj[target_id][1]
+
+        if voice_obj[original_id][2] != voice_obj[target_id][2]:
+            form["status"] = "error"
+            form["message"] = "speaker IDs are in diffrent model!"
+            return form
+
+        output = real_obj.voice_conversion(os.path.join(app.config['UPLOAD_FOLDER'], fname),
+                                           real_original_id, real_target_id, format)
+        file_type = f"audio/{format}"
+
+        return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
+        # return output
 
 
 if __name__ == '__main__':

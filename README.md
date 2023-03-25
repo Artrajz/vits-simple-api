@@ -76,22 +76,53 @@ MoeGoe-Simple-API 是一个易部署的api，
 - python
 
 ```python
+import re
 import requests
 import json
+import os
+import random
+import string
+from requests_toolbelt.multipart.encoder import MultipartEncoder
 
-post_json = json.dumps({
-    "text":"text here",
-    "id":1,
-    "format":"wav",
-    "lang":"zh"
-    })
-headers={'content-type':'application/json'}
-url = "http://127.0.0.1:23456/voice"
+abs_path = os.path.dirname(__file__)
 
-res = requests.post(url=url,data=post_json,headers=headers)
+def voice():
+    post_json = json.dumps({
+        "text":"需要合成的文字",
+        "id":172,
+        "format":"ogg",
+        "lang":"zh"
+        })
+    headers={'content-type':'application/json'}
+    url = "http://127.0.0.1:23456/voice"
 
-with open("audio.wav", "wb") as f:
-    f.write(res.content)
+    res = requests.post(url=url,data=post_json,headers=headers)
+    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
+    path = f"{abs_path}/{fname}"
+    with open(path, "wb") as f:
+        f.write(res.content)
+
+def voice_conversion(upload_name):
+    upload_path = f'{abs_path}/{upload_name}'
+    upload_type = f'audio/{upload_name.split(".")[1]}' #wav,ogg
+    
+    fields = {
+        "upload": (upload_name, open(upload_path,'rb'),upload_type),
+        "original_id": "172",
+        "target_id": "122",
+    }
+    boundary = '----VoiceConversionFormBoundary' \
+               + ''.join(random.sample(string.ascii_letters + string.digits, 16))
+    m = MultipartEncoder(fields=fields, boundary=boundary)
+    
+    headers = {"Content-Type": m.content_type}
+    url = "http://127.0.0.1:23456/voice/conversion"
+
+    res = requests.post(url=url,data=m,headers=headers)
+    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
+    path = f"{abs_path}/{fname}"
+    with open(path, "wb") as f:
+        f.write(res.content)
 ```
 
 # 可能遇到的问题

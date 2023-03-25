@@ -1,6 +1,8 @@
 import os
 
 from scipy.io.wavfile import write
+
+from mel_processing import spectrogram_torch
 from text import text_to_sequence, _clean_text
 from models import SynthesizerTrn
 import utils
@@ -57,25 +59,25 @@ class Voice:
                                             noise_scale_w=noise_scale_w,
                                             length_scale=length_scale)[0][0, 0].data.cpu().float().numpy()
 
-                file_name = str(uuid.uuid1())
+                fname = str(uuid.uuid1())
 
                 with BytesIO() as f:
-                    file_path = self.out_path + "/" + file_name + ".wav"
-                    # out_path = self.out_path + "/" + file_name + ".ogg"
+                    file_path = self.out_path + "/" + fname + ".wav"
+                    # out_path = self.out_path + "/" + fname + ".ogg"
 
                     if format == 'ogg':
                         write(f, self.hps_ms.data.sampling_rate, audio)
                         with BytesIO() as o:
                             utils.wav2ogg(f, o)
-                            return BytesIO(o.getvalue()), "audio/ogg", file_name + ".ogg"
+                            return BytesIO(o.getvalue()), "audio/ogg", fname + ".ogg"
                     elif format == 'silk':
                         write(file_path, 24000, audio)
                         silk_path = utils.convert_to_silk(file_path)
                         os.remove(file_path)
-                        return silk_path, "audio/silk", file_name + ".silk"
+                        return silk_path, "audio/silk", fname + ".silk"
                     else:
                         write(f, self.hps_ms.data.sampling_rate, audio)
-                        return BytesIO(f.getvalue()), "audio/wav", file_name + ".wav"
+                        return BytesIO(f.getvalue()), "audio/wav", fname + ".wav"
 
     def get_text(self, text, hps, cleaned=False):
         if cleaned:
@@ -115,16 +117,38 @@ class Voice:
         else:
             return False, text
 
+    def voice_conversion(self, audio_path,original_id, target_id,format):
+        audio = utils.load_audio_to_torch(
+            audio_path, self.hps_ms.data.sampling_rate)
+
+
+        y = audio.unsqueeze(0)
+
+        spec = spectrogram_torch(y, self.hps_ms.data.filter_length,
+                                 self.hps_ms.data.sampling_rate, self.hps_ms.data.hop_length, self.hps_ms.data.win_length,
+                                 center=False)
+        spec_lengths = LongTensor([spec.size(-1)])
+        sid_src = LongTensor([original_id])
+
+        with no_grad():
+            sid_tgt = LongTensor([target_id])
+            audio = self.net_g_ms.voice_conversion(spec, spec_lengths, sid_src=sid_src, sid_tgt=sid_tgt)[
+                0][0, 0].data.cpu().float().numpy()
+        with BytesIO() as f:
+            write(f, self.hps_ms.data.sampling_rate, audio)
+            return BytesIO(f.getvalue())
+
 
 def merge_model(merging_model):
     voice_obj = []
     voice_speakers = []
     new_id = 0
     out_path = os.path.dirname(os.path.realpath(sys.argv[0])) + "/out_slik"
-    for i in merging_model:
+    for obj_id,i in enumerate(merging_model):
         obj = Voice(i[0], i[1], out_path)
+
         for id, name in enumerate(obj.return_speakers()):
-            voice_obj.append([int(id), obj])
+            voice_obj.append([int(id), obj, obj_id])
             voice_speakers.append({new_id: name})
 
             new_id += 1
