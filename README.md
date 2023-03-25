@@ -42,11 +42,11 @@ MoeGoe-Simple-API 是一个易部署的api，
 
 ## 参数
 
-| Name         | Parameter | Is must | Default | Value        | Instruction                    |
-| ------------ | --------- | ------- | ------- | ------------ |--------------------------------|
-| text         | text      | true    |         | text         |                                |
-| speaker id   | id        | false   | 0       | (number)     |                                |
-| audio format | format    | false   | wav     | wav,ogg,silk |                                |
+| Name         | Parameter | Is must | Default | Value        | Instruction                               |
+| ------------ | --------- | ------- | ------- | ------------ | ----------------------------------------- |
+| text         | text      | true    |         | text         |                                           |
+| speaker id   | id        | false   | 0       | (number)     |                                           |
+| audio format | format    | false   | wav     | wav,ogg,silk | silk支持tx系语音                          |
 | language     | lang      | false   | mix     | zh,ja,mix    | 当lang=mix时，文本应该用[ZH] 或 [JA] 包裹 |
 
 ## GET
@@ -92,6 +92,23 @@ res = requests.post(url=url,data=post_json,headers=headers)
 
 with open("audio.wav", "wb") as f:
     f.write(res.content)
+```
+
+# 可能遇到的问题
+
+~~本人遇到过的问题~~
+
+### 运行后服务器无响应
+
+可能是内存不足，可以尝试减少模型加载数量。
+
+### 模型推理时服务器无响应
+
+可能是同时处理多个推理任务导致CPU堵塞，可以尝试在*voice.py*中取消以下**两行**代码的注释，意思是让pytorch只使用1个物理CPU核心，防止一个任务抢占过多CPU资源。
+
+```python
+import torch
+torch.set_num_threads(1)
 ```
 
 # 鸣谢
