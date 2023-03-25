@@ -2,12 +2,11 @@
 
 
 
-MoeGoe-Simple-API 是一个易部署的api，
+MoeGoe-Simple-API 是一个易部署的api，方便通过api的方式调用语音合成，可用于聊天机器人等，目前支持的功能有语音合成和语音转换。
 
 - 可导入模型
-- 支持多模型，可以将多个模型合并为一个新的id对应角色模型的映射表
-
-```json
+- 支持加载多模型，可以将多个模型合并为一个新的id对应角色模型的映射表
+<details><summary>点击预览返回的映射表</summary><pre><code>
 [
 	{
 		"0": "綾地寧々"
@@ -31,7 +30,7 @@ MoeGoe-Simple-API 是一个易部署的api，
 		"197": "ティファニア"
 	}
 ]
-```
+</code></pre></details>
 
 # 如何使用
 
@@ -42,12 +41,22 @@ MoeGoe-Simple-API 是一个易部署的api，
 
 ## 参数
 
-| Name         | Parameter | Is must | Default | Value        | Instruction                               |
-| ------------ | --------- | ------- | ------- | ------------ | ----------------------------------------- |
-| text         | text      | true    |         | text         |                                           |
-| speaker id   | id        | false   | 0       | (number)     |                                           |
-| audio format | format    | false   | wav     | wav,ogg,silk | silk支持tx系语音                          |
-| language     | lang      | false   | mix     | zh,ja,mix    | 当lang=mix时，文本应该用[ZH] 或 [JA] 包裹 |
+### 语音合成voice
+
+| Name     | Parameter | Is must | Default | Value        | Instruction                               |
+| -------- | --------- | ------- | ------- | ------------ | ----------------------------------------- |
+| 合成文本 | text      | true    |         | text         |                                           |
+| 角色id   | id        | false   | 0       | (number)     |                                           |
+| 音频格式 | format    | false   | wav     | wav,ogg,silk | silk支持tx系语音                          |
+| 文本语言 | lang      | false   | mix     | zh,ja,mix    | 当lang=mix时，文本应该用[ZH] 或 [JA] 包裹 |
+
+### 语音转换voice conversion
+
+| Name       | Parameter   | Is must | Default | Value      | Instruction            |
+| ---------- | ----------- | ------- | ------- | ---------- | ---------------------- |
+| 上传音频   | upload      | true    |         | audio file | 只支持wav和ogg         |
+| 源角色id   | original_id | true    |         | (number)   | 上传文件所使用的角色id |
+| 目标角色id | target_id   | true    |         | (number)   | 要转换的目标角色id     |
 
 ## GET
 
@@ -86,11 +95,19 @@ from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 abs_path = os.path.dirname(__file__)
 
+def voice_speakers():
+    url = "http://127.0.0.1:23456/voice/speakers"
+
+    res = requests.post(url=url)
+    json = res.json()
+    for i in json:
+        print(i)
+    
 def voice():
     post_json = json.dumps({
         "text":"需要合成的文字",
         "id":172,
-        "format":"ogg",
+        "format":"wav",
         "lang":"zh"
         })
     headers={'content-type':'application/json'}
