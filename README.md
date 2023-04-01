@@ -35,7 +35,7 @@ MoeGoe-Simple-API 是一个易部署的api，方便通过api的方式调用语�
 # 如何使用
 
 1. 下载VITS模型并放入*Model*文件夹中
-2. 在app.py中修改模型路径
+2. 在 config.json 中修改模型路径
 3. 安装python依赖（建议用conda虚拟环境） `pip install -r requirements.txt`
 4. 开始使用！`python app.py`
 
