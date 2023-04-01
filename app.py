@@ -8,6 +8,8 @@ from werkzeug.utils import secure_filename
 
 from voice import merge_model
 
+import json
+
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 app.config["port"] = 23456
@@ -16,22 +18,9 @@ app.config['MAX_CONTENT_LENGTH'] = 5242880
 
 logging.getLogger('numba').setLevel(logging.WARNING)
 
-'''vits models path'''
-model_zh = os.path.dirname(__file__) + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth"
-config_zh = os.path.dirname(__file__) + "/Model/Nene_Nanami_Rong_Tang/config.json"
+with open('./config.json', 'r') as fp:
+    merging_list = json.load(fp)
 
-model_ja = os.path.dirname(__file__) + "/Model/Zero_no_tsukaima/1158_epochs.pth"
-config_ja = os.path.dirname(__file__) + "/Model/Zero_no_tsukaima/config.json"
-
-model_g = os.path.dirname(__file__) + "/Model/g/G_953000.pth"
-config_g = os.path.dirname(__file__) + "/Model/g/config.json"
-
-'''add models here'''
-merging_list = [
-    [model_zh, config_zh],
-    [model_ja, config_ja],
-    [model_g, config_g],
-]
 voice_obj, voice_speakers = merge_model(merging_list)
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
