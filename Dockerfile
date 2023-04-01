@@ -12,5 +12,5 @@ COPY . /app
 
 EXPOSE 23456
 
-CMD ["/bin/bash", "python3". "/app/app.py"]
+CMD ["python", "/app/app.py"]
 
