@@ -4,7 +4,13 @@ RUN mkdir -p /app
 WORKDIR /app
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt update && apt install -yq build-essential
+
+RUN apt-get update && \
+    apt install build-essential -yq && \
+    apt-get clean && \
+    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
+    rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt /app
 RUN pip install -r requirements.txt
 
