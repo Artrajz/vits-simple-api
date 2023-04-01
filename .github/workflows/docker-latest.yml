@@ -31,6 +31,6 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ vars.RUNNER }}:latest
+          tags: ${{ vars.DOCKER_REPO_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
