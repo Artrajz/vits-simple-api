@@ -1,0 +1,12 @@
+version: '3.4'
+services:
+  moegoe:
+    image: artrajz/moegoe-simple-api:latest
+    restart: always
+    ports:
+      - 23456:23456
+    environment:
+      LANG: 'C.UTF-8'
+    volumes:
+      - ./Model:/app/Model # 挂载模型文件夹
+      - ./config.json:/app/config.json # 挂载配置文件
