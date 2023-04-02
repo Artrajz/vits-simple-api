@@ -69,13 +69,13 @@ VITS模型放入`/usr/local/moegoe-simple-api/Model`文件夹中，模型文件�
 
 <details><summary>点击查看config.py模型路径填写示例</summary><pre><code>
 vits模型路径填写方法，MODEL_LIST中的每一行是
-[abs_path+"/Model/{模型文件夹}/{.pth模型}", abs_path+"/Model/{模型文件夹}/config.json"],
+[ABS_PATH+"/Model/{模型文件夹}/{.pth模型}", ABS_PATH+"/Model/{模型文件夹}/config.json"],
 也可以写相对路径或绝对路径，由于windows和linux路径写法不同，用上面的写法或绝对路径最稳妥
 示例：
 MODEL_LIST = [
-    [abs_path+"/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", abs_path+"/Model/Nene_Nanami_Rong_Tang/config.json"],
-    [abs_path+"/Model/Zero_no_tsukaima/1158_epochs.pth", abs_path+"/Model/Zero_no_tsukaima/config.json"],
-    [abs_path+"/Model/g/G_953000.pth", abs_path+"/Model/g/config.json"],
+    [ABS_PATH+"/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH+"/Model/Nene_Nanami_Rong_Tang/config.json"],
+    [ABS_PATH+"/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH+"/Model/Zero_no_tsukaima/config.json"],
+    [ABS_PATH+"/Model/g/G_953000.pth", ABS_PATH+"/Model/g/config.json"],
 ]
 </code></pre></details>
 
@@ -107,6 +107,7 @@ MODEL_LIST = [
 | 角色id   | id        | false   | 0       | (number)     |                                           |
 | 音频格式 | format    | false   | wav     | wav,ogg,silk | silk支持tx系语音                          |
 | 文本语言 | lang      | false   | mix     | zh,ja,mix    | 当lang=mix时，文本应该用[ZH] 或 [JA] 包裹 |
+| 语速     | speed     | false   | 1       | (number)     | 语速调节                                  |
 
 ### 语音转换voice conversion
 
