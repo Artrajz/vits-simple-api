@@ -2,7 +2,7 @@
 
 
 
-MoeGoe-Simple-API 是一个易部署的api，方便通过api的方式调用语音合成，可用于聊天机器人等，目前支持的功能有语音合成和语音转换。
+MoeGoe-Simple-API 是一个易部署的api，可以通过api的方式调用语音合成，可用于聊天机器人等，目前支持的功能有语音合成和语音转换。
 
 - 可导入模型
 - 支持加载多模型，可以将多个模型合并为一个新的id对应角色模型的映射表
@@ -35,31 +35,63 @@ MoeGoe-Simple-API 是一个易部署的api，方便通过api的方式调用语�
 
 ## Docker部署
 
-docker镜像拉取脚本
+### docker镜像拉取脚本
 
 ```
 bash -c "$(wget -O- https://gist.githubusercontent.com/Artrajz/b2c02499f91c3a51b8b48f1a3c9a7ead/raw/e3033f1b222868b4b0f1b522e52e18217460ff91/moegoe-simple-api-installer-latest.sh)"
 ```
 
-镜像大小为8g，所以拉取会比较慢，拉取成功后由于没有导入vits模型所以无法使用，需要按以下步骤导入模型
+镜像大小为5g，所以拉取会比较慢，拉取成功后由于没有导入vits模型所以无法使用，需要按以下步骤导入模型
 
-1. 下载VITS模型并放入`/usr/local/moegoe-simple-api/Model`文件夹中
-2. 在 `/usr/local/moegoe-simple-api/config.json` 中修改模型路径
-3. 开始使用！`docker compose up -d`或再次执行拉取脚本
+### 下载VITS模型
 
-镜像更新方法：重新执行docker镜像拉取脚本即可
+VITS模型放入`/usr/local/moegoe-simple-api/Model`文件夹中，模型文件夹中要有.pth和config.json文件
 
-<details><summary>点击查看config.json模型路径</summary><pre><code>
-[
-    [".pth的路径", "config.json的路径"],
-    ["./Model/Zero_no_tsukaima/1158_epochs.pth", "./Model/Zero_no_tsukaima/config.json"],
+<details><summary>点击查看模型目录结构</summary><pre><code>
+├─Model
+│  ├─g
+│  │      config.json
+│  │      G_953000.pth
+│  │
+│  ├─Nene_Nanami_Rong_Tang
+│  │      1374_epochs.pth
+│  │      config.json
+│  │
+│  └─Zero_no_tsukaima
+│          1158_epochs.pth
+│          config.json
+</code></pre></details>
+### 修改模型路径
+
+在 `/usr/local/moegoe-simple-api/config.py` 中修改模型路径
+
+<details><summary>点击查看config.py模型路径填写示例</summary><pre><code>
+vits模型路径填写方法，MODEL_LIST中的每一行是
+[abs_path+"/Model/{模型文件夹}/{.pth模型}", abs_path+"/Model/{模型文件夹}/config.json"],
+也可以写相对路径或绝对路径，由于windows和linux路径写法不同，用上面的写法或绝对路径最稳妥
+示例：
+MODEL_LIST = [
+    [abs_path+"/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", abs_path+"/Model/Nene_Nanami_Rong_Tang/config.json"],
+    [abs_path+"/Model/Zero_no_tsukaima/1158_epochs.pth", abs_path+"/Model/Zero_no_tsukaima/config.json"],
+    [abs_path+"/Model/g/G_953000.pth", abs_path+"/Model/g/config.json"],
 ]
 </code></pre></details>
+
+### 开始使用！
+
+终端输入`docker compose up -d`
+
+或再次执行拉取脚本
+
+### 镜像更新方法
+
+重新执行docker镜像拉取脚本即可
+
 
 ## 直接部署
 
 1. 下载VITS模型并放入`Model`文件夹中
-2. 在 `config.json` 中修改模型路径
+2. 在 `config.py` 中修改模型路径
 3. 安装python依赖（建议用conda虚拟环境） `pip install -r requirements.txt`
 4. 开始使用！`python app.py`
 

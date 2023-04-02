@@ -8,20 +8,14 @@ from werkzeug.utils import secure_filename
 
 from voice import merge_model
 
-import json
 
 app = Flask(__name__)
-app.config['JSON_AS_ASCII'] = False
-app.config["port"] = 23456
-app.config['UPLOAD_FOLDER'] = os.path.dirname(__file__) + "/upload"
-app.config['MAX_CONTENT_LENGTH'] = 5242880
+app.config.from_pyfile("config.py")
+
 
 logging.getLogger('numba').setLevel(logging.WARNING)
 
-with open('./config.json', 'r') as fp:
-    merging_list = json.load(fp)
-
-voice_obj, voice_speakers = merge_model(merging_list)
+voice_obj, voice_speakers = merge_model(app.config["MODEL_LIST"])
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     try:
@@ -93,7 +87,7 @@ def voice_conversion_api():
 
         if voice_obj[original_id][2] != voice_obj[target_id][2]:
             form["status"] = "error"
-            form["message"] = "speaker IDs are in diffrent model!"
+            form["message"] = "speaker IDs are in diffrent Model!"
             return form
 
         output = real_obj.voice_conversion(os.path.join(app.config['UPLOAD_FOLDER'], fname),
@@ -105,5 +99,5 @@ def voice_conversion_api():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=app.config["port"])  # 如果对外开放用这个
-    # app.run(host='127.0.0.1', port=app.config["port"], debug=True)  # 本地运行
+    # app.run(host='0.0.0.0', port=app.config["PORT"])  # 如果对外开放用这个
+    app.run(host='127.0.0.1', port=app.config["PORT"], debug=True)  # 本地运行

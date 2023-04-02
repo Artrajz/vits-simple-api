@@ -1,5 +1,0 @@
-[
-    ["./Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", "./Model/Nene_Nanami_Rong_Tang/config.json"],
-    ["./Model/Zero_no_tsukaima/1158_epochs.pth", "./Model/Zero_no_tsukaima/config.json"],
-    ["./Model/g/G_953000.pth", "./Model/g/config.json"]
-]
