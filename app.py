@@ -5,13 +5,16 @@ import uuid
 
 from flask import Flask, request, send_file, jsonify
 from werkzeug.utils import secure_filename
+from flask_apscheduler import APScheduler
 
-from voice import merge_model
-
+from utils import clean_folder, merge_model
 
 app = Flask(__name__)
 app.config.from_pyfile("config.py")
 
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
 
 logging.getLogger('numba').setLevel(logging.WARNING)
 
@@ -98,6 +101,13 @@ def voice_conversion_api():
         # return output
 
 
+# 定时清理临时文件，每小时清一次
+@scheduler.task('interval', id='随便写', seconds=3600, misfire_grace_time=900)
+def clean_task():
+    clean_folder(app.config["UPLOAD_FOLDER"])
+    clean_folder(app.config["SILK_OUT_PATH"])
+
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=app.config["PORT"])  # 如果对外开放用这个
-    # app.run(host='127.0.0.1', port=app.config["PORT"], debug=True)  # 本地运行
+    app.run(host='0.0.0.0', port=app.config["PORT"])  # 如果对外开放用这个,docker部署也用这个
+    # app.run(host='127.0.0.1', port=app.config["PORT"], debug=True)  # 本地运行、调试

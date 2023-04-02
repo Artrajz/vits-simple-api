@@ -1,12 +1,19 @@
 import logging
 import os
+import sys
 from io import BytesIO
 from json import loads
 import av
 import pilk
+from flask import Flask
 from torch import load, FloatTensor
 from numpy import float32
 import librosa
+
+from voice import Voice
+
+app = Flask(__name__)
+app.config.from_pyfile("config.py")
 
 
 class HParams():
@@ -122,12 +129,12 @@ def to_pcm(in_path: str) -> tuple[str, int]:
                 layout='mono'
             )
             try:
-               for frame in in_container.decode(in_stream):
-                  frame.pts = None
-                  for packet in out_stream.encode(frame):
-                     out_container.mux(packet)
+                for frame in in_container.decode(in_stream):
+                    frame.pts = None
+                    for packet in out_stream.encode(frame):
+                        out_container.mux(packet)
             except:
-               pass
+                pass
     return out_path, sample_rate
 
 
@@ -137,3 +144,28 @@ def convert_to_silk(media_path: str) -> str:
     pilk.encode(pcm_path, silk_path, pcm_rate=sample_rate, tencent=True)
     os.remove(pcm_path)
     return silk_path
+
+
+def clean_folder(folder_path):
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+        # 如果是文件，则删除文件
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+
+
+def merge_model(merging_model):
+    voice_obj = []
+    voice_speakers = []
+    new_id = 0
+    out_path = os.path.dirname(os.path.realpath(sys.argv[0])) + "/out_silk"
+    for obj_id, i in enumerate(merging_model):
+        obj = Voice(i[0], i[1], out_path)
+
+        for id, name in enumerate(obj.return_speakers()):
+            voice_obj.append([int(id), obj, obj_id])
+            voice_speakers.append({new_id: name})
+
+            new_id += 1
+
+    return voice_obj, voice_speakers
