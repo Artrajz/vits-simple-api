@@ -31,6 +31,7 @@ MoeGoe-Simple-API 是一个易部署的api，可以通过api的方式调用语�
 	}
 ]
 </code></pre></details>
+
 # 如何使用
 
 ## Docker部署
@@ -61,6 +62,7 @@ VITS模型放入`/usr/local/moegoe-simple-api/Model`文件夹中，模型文件�
 │          1158_epochs.pth
 │          config.json
 </code></pre></details>
+
 ### 修改模型路径
 
 在 `/usr/local/moegoe-simple-api/config.py` 中修改模型路径
