@@ -9,4 +9,4 @@ services:
       LANG: 'C.UTF-8'
     volumes:
       - ./Model:/app/Model # 挂载模型文件夹
-      - ./config.json:/app/config.json # 挂载配置文件
+      - ./config.py:/app/config.py # 挂载配置文件
