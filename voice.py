@@ -1,7 +1,7 @@
 import os
 
+import librosa
 from scipy.io.wavfile import write
-
 from mel_processing import spectrogram_torch
 from text import text_to_sequence, _clean_text
 from models import SynthesizerTrn
@@ -9,9 +9,11 @@ import utils
 import commons
 import sys
 import re
+import numpy as np
 # import torch
 # torch.set_num_threads(1) #设置torch线程为1，防止多任务推理时服务崩溃，但flask仍然会使用多线程
-from torch import no_grad, LongTensor
+from torch import no_grad, LongTensor, inference_mode, FloatTensor
+import audonnx
 import uuid
 from io import BytesIO
 
@@ -26,58 +28,21 @@ class Voice:
                 pass
 
         self.hps_ms = utils.get_hparams_from_file(config)
-        n_speakers = self.hps_ms.data.n_speakers if 'n_speakers' in self.hps_ms.data.keys() else 0
-        n_symbols = len(self.hps_ms.symbols) if 'symbols' in self.hps_ms.keys() else 0
+        self.n_speakers = self.hps_ms.data.n_speakers if 'n_speakers' in self.hps_ms.data.keys() else 0
+        self.n_symbols = len(self.hps_ms.symbols) if 'symbols' in self.hps_ms.keys() else 0
         self.speakers = self.hps_ms.speakers if 'speakers' in self.hps_ms.keys() else ['0']
-        use_f0 = self.hps_ms.data.use_f0 if 'use_f0' in self.hps_ms.data.keys() else False
+        self.use_f0 = self.hps_ms.data.use_f0 if 'use_f0' in self.hps_ms.data.keys() else False
         self.emotion_embedding = self.hps_ms.data.emotion_embedding if 'emotion_embedding' in self.hps_ms.data.keys() else False
 
         self.net_g_ms = SynthesizerTrn(
-            n_symbols,
+            self.n_symbols,
             self.hps_ms.data.filter_length // 2 + 1,
             self.hps_ms.train.segment_size // self.hps_ms.data.hop_length,
-            n_speakers=n_speakers,
+            n_speakers=self.n_speakers,
             emotion_embedding=self.emotion_embedding,
             **self.hps_ms.model)
         _ = self.net_g_ms.eval()
         utils.load_checkpoint(model, self.net_g_ms)
-
-    def generate(self, text, speaker_id, format):
-        if not self.emotion_embedding:
-            length_scale, text = self.get_label_value(text, 'LENGTH', 1, 'length scale')
-            noise_scale, text = self.get_label_value(text, 'NOISE', 0.667, 'noise scale')
-            noise_scale_w, text = self.get_label_value(text, 'NOISEW', 0.8, 'deviation of noise')
-            cleaned, text = self.get_label(text, 'CLEANED')
-
-            stn_tst = self.get_text(text, self.hps_ms, cleaned=cleaned)
-            with no_grad():
-                x_tst = stn_tst.unsqueeze(0)
-                x_tst_lengths = LongTensor([stn_tst.size(0)])
-                sid = LongTensor([speaker_id])
-                audio = self.net_g_ms.infer(x_tst, x_tst_lengths, sid=sid,
-                                            noise_scale=noise_scale,
-                                            noise_scale_w=noise_scale_w,
-                                            length_scale=length_scale)[0][0, 0].data.cpu().float().numpy()
-
-                fname = str(uuid.uuid1())
-
-                with BytesIO() as f:
-                    file_path = self.out_path + "/" + fname + ".wav"
-                    # out_path = self.out_path + "/" + fname + ".ogg"
-
-                    if format == 'ogg':
-                        write(f, self.hps_ms.data.sampling_rate, audio)
-                        with BytesIO() as o:
-                            utils.wav2ogg(f, o)
-                            return BytesIO(o.getvalue()), "audio/ogg", fname + ".ogg"
-                    elif format == 'silk':
-                        write(file_path, 24000, audio)
-                        silk_path = utils.convert_to_silk(file_path)
-                        os.remove(file_path)
-                        return silk_path, "audio/silk", fname + ".silk"
-                    else:
-                        write(f, self.hps_ms.data.sampling_rate, audio)
-                        return BytesIO(f.getvalue()), "audio/wav", fname + ".wav"
 
     def get_text(self, text, hps, cleaned=False):
         if cleaned:
@@ -117,15 +82,141 @@ class Voice:
         else:
             return False, text
 
-    def voice_conversion(self, audio_path,original_id, target_id,format):
+    def generate(self, text=None, speaker_id=None, format=None, speed=1, audio_path=None, target_id=None, escape=False,
+                 option=None, w2v2_folder=None):
+        if self.n_symbols != 0:
+            if not self.emotion_embedding:
+                length_scale, text = self.get_label_value(text, 'LENGTH', speed, 'length scale')
+                noise_scale, text = self.get_label_value(text, 'NOISE', 0.667, 'noise scale')
+                noise_scale_w, text = self.get_label_value(text, 'NOISEW', 0.8, 'deviation of noise')
+                cleaned, text = self.get_label(text, 'CLEANED')
+
+                stn_tst = self.get_text(text, self.hps_ms, cleaned=cleaned)
+                with no_grad():
+                    x_tst = stn_tst.unsqueeze(0)
+                    x_tst_lengths = LongTensor([stn_tst.size(0)])
+                    sid = LongTensor([speaker_id])
+                    audio = self.net_g_ms.infer(x_tst, x_tst_lengths, sid=sid,
+                                                noise_scale=noise_scale,
+                                                noise_scale_w=noise_scale_w,
+                                                length_scale=length_scale)[0][0, 0].data.cpu().float().numpy()
+
+            # else:
+            #     w2v2_model = audonnx.load(os.path.dirname(w2v2_folder))
+            #
+            #     if option == 'clean':
+            #         self.ex_print(_clean_text(
+            #             text, self.hps_ms.data.text_cleaners), escape)
+            #
+            #     length_scale, text = self.get_label_value(
+            #         text, 'LENGTH', 1, 'length scale')
+            #     noise_scale, text = self.get_label_value(
+            #         text, 'NOISE', 0.667, 'noise scale')
+            #     noise_scale_w, text = self.get_label_value(
+            #         text, 'NOISEW', 0.8, 'deviation of noise')
+            #     cleaned, text = self.get_label(text, 'CLEANED')
+            #
+            #     stn_tst = self.get_text(text, self.hps_ms, cleaned=cleaned)
+            #
+            #     emotion_reference = input('Path of an emotion reference: ')
+            #     if emotion_reference.endswith('.npy'):
+            #         emotion = np.load(emotion_reference)
+            #         emotion = FloatTensor(emotion).unsqueeze(0)
+            #     else:
+            #         audio16000, sampling_rate = librosa.load(
+            #             emotion_reference, sr=16000, mono=True)
+            #         emotion = w2v2_model(audio16000, sampling_rate)[
+            #             'hidden_states']
+            #         emotion_reference = re.sub(
+            #             r'\..*$', '', emotion_reference)
+            #         np.save(emotion_reference, emotion.squeeze(0))
+            #         emotion = FloatTensor(emotion)
+            #
+            #
+            #     with no_grad():
+            #         x_tst = stn_tst.unsqueeze(0)
+            #         x_tst_lengths = LongTensor([stn_tst.size(0)])
+            #         sid = LongTensor([speaker_id])
+            #         audio = self.net_g_ms.infer(x_tst, x_tst_lengths, sid=sid, noise_scale=noise_scale,
+            #                                     noise_scale_w=noise_scale_w,
+            #                                     length_scale=length_scale, emotion_embedding=emotion)[0][
+            #             0, 0].data.cpu().float().numpy()
+
+        # else:
+        # model = input('Path of a hubert-soft Model: ')
+        # from hubert_model import hubert_soft
+        # hubert = hubert_soft(model)
+
+        # if audio_path != '[VC]':
+        #     if self.use_f0:
+        #         audio, sampling_rate = librosa.load(
+        #             audio_path, sr=self.hps_ms.data.sampling_rate, mono=True)
+        #         audio16000 = librosa.resample(
+        #             audio, orig_sr=sampling_rate, target_sr=16000)
+        #     else:
+        #         audio16000, sampling_rate = librosa.load(
+        #             audio_path, sr=16000, mono=True)
+        #
+        #     out_path = "H:/git/MoeGoe-Simple-API/upload/hubert.wav"
+        #     length_scale, out_path = self.get_label_value(
+        #         out_path, 'LENGTH', 1, 'length scale')
+        #     noise_scale, out_path = self.get_label_value(
+        #         out_path, 'NOISE', 0.1, 'noise scale')
+        #     noise_scale_w, out_path = self.get_label_value(
+        #         out_path, 'NOISEW', 0.1, 'deviation of noise')
+        #
+        #     with inference_mode():
+        #         units = hubert.units(FloatTensor(audio16000).unsqueeze(
+        #             0).unsqueeze(0)).squeeze(0).numpy()
+        #         if self.use_f0:
+        #             f0_scale, out_path = self.get_label_value(
+        #                 out_path, 'F0', 1, 'f0 scale')
+        #             f0 = librosa.pyin(audio, sr=sampling_rate,
+        #                               fmin=librosa.note_to_hz('C0'),
+        #                               fmax=librosa.note_to_hz('C7'),
+        #                               frame_length=1780)[0]
+        #             target_length = len(units[:, 0])
+        #             f0 = np.nan_to_num(np.interp(np.arange(0, len(f0) * target_length, len(f0)) / target_length,
+        #                                          np.arange(0, len(f0)), f0)) * f0_scale
+        #             units[:, 0] = f0 / 10
+        #
+        #     stn_tst = FloatTensor(units)
+        #     with no_grad():
+        #         x_tst = stn_tst.unsqueeze(0)
+        #         x_tst_lengths = LongTensor([stn_tst.size(0)])
+        #         sid = LongTensor([target_id])
+        #         audio = self.net_g_ms.infer(x_tst, x_tst_lengths, sid=sid, noise_scale=noise_scale,
+        #                                     noise_scale_w=noise_scale_w, length_scale=length_scale)[0][
+        #             0, 0].data.float().numpy()
+
+        with BytesIO() as f:
+            fname = str(uuid.uuid1())
+
+            if format == 'ogg':
+                write(f, self.hps_ms.data.sampling_rate, audio)
+                with BytesIO() as o:
+                    utils.wav2ogg(f, o)
+                    return BytesIO(o.getvalue()), "audio/ogg", fname + ".ogg"
+            elif format == 'silk':
+                file_path = self.out_path + "/" + fname + ".wav"
+                write(file_path, 24000, audio)
+                silk_path = utils.convert_to_silk(file_path)
+                os.remove(file_path)
+                return silk_path, "audio/silk", fname + ".silk"
+            else:
+                write(f, self.hps_ms.data.sampling_rate, audio)
+                return BytesIO(f.getvalue()), "audio/wav", fname + ".wav"
+
+    def voice_conversion(self, audio_path, original_id, target_id):
+
         audio = utils.load_audio_to_torch(
             audio_path, self.hps_ms.data.sampling_rate)
-
 
         y = audio.unsqueeze(0)
 
         spec = spectrogram_torch(y, self.hps_ms.data.filter_length,
-                                 self.hps_ms.data.sampling_rate, self.hps_ms.data.hop_length, self.hps_ms.data.win_length,
+                                 self.hps_ms.data.sampling_rate, self.hps_ms.data.hop_length,
+                                 self.hps_ms.data.win_length,
                                  center=False)
         spec_lengths = LongTensor([spec.size(-1)])
         sid_src = LongTensor([original_id])
@@ -134,23 +225,7 @@ class Voice:
             sid_tgt = LongTensor([target_id])
             audio = self.net_g_ms.voice_conversion(spec, spec_lengths, sid_src=sid_src, sid_tgt=sid_tgt)[
                 0][0, 0].data.cpu().float().numpy()
+
         with BytesIO() as f:
             write(f, self.hps_ms.data.sampling_rate, audio)
             return BytesIO(f.getvalue())
-
-
-def merge_model(merging_model):
-    voice_obj = []
-    voice_speakers = []
-    new_id = 0
-    out_path = os.path.dirname(os.path.realpath(sys.argv[0])) + "/out_slik"
-    for obj_id,i in enumerate(merging_model):
-        obj = Voice(i[0], i[1], out_path)
-
-        for id, name in enumerate(obj.return_speakers()):
-            voice_obj.append([int(id), obj, obj_id])
-            voice_speakers.append({new_id: name})
-
-            new_id += 1
-
-    return voice_obj, voice_speakers

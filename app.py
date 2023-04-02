@@ -46,12 +46,14 @@ def voice_api():
         speaker_id = int(request.args.get("id", 0))
         format = request.args.get("format", "wav")
         lang = request.args.get("lang", "mix")
+        speed = float(request.args.get("speed", 1.0))
     elif request.method == "POST":
         json_data = request.json
         text = json_data["text"]
         speaker_id = int(json_data["id"])
         format = json_data["format"]
         lang = json_data["lang"]
+        speed = float(json_data["speed"])
 
     if lang.upper() == "ZH":
         text = f"[ZH]{text}[ZH]"
@@ -61,7 +63,7 @@ def voice_api():
     real_id = voice_obj[speaker_id][0]
     real_obj = voice_obj[speaker_id][1]
 
-    output, file_type, fname = real_obj.generate(text, real_id, format)
+    output, file_type, fname = real_obj.generate(text, real_id, format, speed)
 
     return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
 

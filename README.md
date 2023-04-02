@@ -32,7 +32,7 @@ MoeGoe-Simple-API 是一个易部署的api，可以通过api的方式调用语�
 ]
 </code></pre></details>
 
-# 如何使用
+# 如何部署
 
 ## Docker部署
 
@@ -79,6 +79,7 @@ MODEL_LIST = [
 ]
 </code></pre></details>
 
+
 ### 开始使用！
 
 终端输入`docker compose up -d`
@@ -97,25 +98,27 @@ MODEL_LIST = [
 3. 安装python依赖（建议用conda虚拟环境） `pip install -r requirements.txt`
 4. 开始使用！`python app.py`
 
-## 参数
+# 参数
 
-### 语音合成voice
+## 语音合成voice
 
-| Name     | Parameter | Is must | Default | Value        | Instruction                               |
-| -------- | --------- | ------- | ------- | ------------ | ----------------------------------------- |
-| 合成文本 | text      | true    |         | text         |                                           |
-| 角色id   | id        | false   | 0       | (number)     |                                           |
-| 音频格式 | format    | false   | wav     | wav,ogg,silk | silk支持tx系语音                          |
-| 文本语言 | lang      | false   | mix     | zh,ja,mix    | 当lang=mix时，文本应该用[ZH] 或 [JA] 包裹 |
-| 语速     | speed     | false   | 1       | (number)     | 语速调节                                  |
+| Name          | Parameter | Is must | Default | Value        | Instruction                                      |
+| ------------- | --------- | ------- | ------- | ------------ | ------------------------------------------------ |
+| 合成文本      | text      | true    |         | text         |                                                  |
+| 角色id        | id        | false   | 0       | (number)     |                                                  |
+| 音频格式      | format    | false   | wav     | wav,ogg,silk | silk支持tx系语音                                 |
+| 文本语言      | lang      | false   | mix     | zh,ja,mix    | 当lang=mix时，文本应该用[ZH] 或 [JA] 包裹        |
+| 语音长度/语速 | speed     | false   | 1.0     | (number)     | 调节语音长度，相当于调节语速，该数值越大语速越慢 |
 
-### 语音转换voice conversion
+## 语音转换voice conversion
 
 | Name       | Parameter   | Is must | Default | Value      | Instruction            |
 | ---------- | ----------- | ------- | ------- | ---------- | ---------------------- |
 | 上传音频   | upload      | true    |         | audio file | 只支持wav和ogg         |
 | 源角色id   | original_id | true    |         | (number)   | 上传文件所使用的角色id |
 | 目标角色id | target_id   | true    |         | (number)   | 要转换的目标角色id     |
+
+# 调用方法
 
 ## GET
 
@@ -125,7 +128,7 @@ MODEL_LIST = [
 
 - GET http://127.0.0.1/voice?text=[JA]text[JA][ZH]text[ZH]&id=0&format=wav&lang=mix
 
-  返回wav音频文件 
+  返回wav音频文件
 
 - GET http://127.0.0.1/voice?text=[JA]text[JA][ZH]text[ZH]&id=0&format=ogg&lang=mix
 
@@ -138,6 +141,10 @@ MODEL_LIST = [
 - GET http://127.0.0.1/voice?text=text&lang=ja
 
   设定语言为ja，则文本无需[JA]包裹
+  
+- GET http://127.0.0.1/voice?text=text&id=142&format=wav&lang=zh&speed=1.4
+
+  文本为text，角色id为142，音频格式为wav，文本语言为zh，语速为1.4
 
 ## POST
 
@@ -164,10 +171,11 @@ def voice_speakers():
     
 def voice():
     post_json = json.dumps({
-        "text":"需要合成的文字",
-        "id":172,
+        "text":"需要合成的文本",
+        "id":142,
         "format":"wav",
-        "lang":"zh"
+        "lang":"zh",
+        "speed":1.4,
         })
     headers={'content-type':'application/json'}
     url = "http://127.0.0.1:23456/voice"
@@ -184,8 +192,8 @@ def voice_conversion(upload_name):
     
     fields = {
         "upload": (upload_name, open(upload_path,'rb'),upload_type),
-        "original_id": "172",
-        "target_id": "122",
+        "original_id": "142",
+        "target_id": "92",
     }
     boundary = '----VoiceConversionFormBoundary' \
                + ''.join(random.sample(string.ascii_letters + string.digits, 16))
