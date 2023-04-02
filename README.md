@@ -31,11 +31,35 @@ MoeGoe-Simple-API 是一个易部署的api，方便通过api的方式调用语�
 	}
 ]
 </code></pre></details>
-
 # 如何使用
 
-1. 下载VITS模型并放入*Model*文件夹中
-2. 在 config.json 中修改模型路径
+## Docker部署
+
+docker镜像拉取脚本
+
+```
+bash -c "$(wget -O- https://gist.githubusercontent.com/Artrajz/b2c02499f91c3a51b8b48f1a3c9a7ead/raw/e3033f1b222868b4b0f1b522e52e18217460ff91/moegoe-simple-api-installer-latest.sh)"
+```
+
+镜像大小为8g，所以拉取会比较慢，拉取成功后由于没有导入vits模型所以无法使用，需要按以下步骤导入模型
+
+1. 下载VITS模型并放入`/usr/local/moegoe-simple-api/Model`文件夹中
+2. 在 `/usr/local/moegoe-simple-api/config.json` 中修改模型路径
+3. 开始使用！`docker compose up -d`或再次执行拉取脚本
+
+镜像更新方法：重新执行docker镜像拉取脚本即可
+
+<details><summary>点击查看config.json模型路径</summary><pre><code>
+[
+    [".pth的路径", "config.json的路径"],
+    ["./Model/Zero_no_tsukaima/1158_epochs.pth", "./Model/Zero_no_tsukaima/config.json"],
+]
+</code></pre></details>
+
+## 直接部署
+
+1. 下载VITS模型并放入`Model`文件夹中
+2. 在 `config.json` 中修改模型路径
 3. 安装python依赖（建议用conda虚拟环境） `pip install -r requirements.txt`
 4. 开始使用！`python app.py`
 
