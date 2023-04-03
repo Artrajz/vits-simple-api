@@ -26,5 +26,5 @@ MODEL_LIST = [
 '''
 # 模型加载列表
 MODEL_LIST = [
-
+[ABS_PATH+"/Model/g/G_953000.pth", ABS_PATH+"/Model/g/config.json"],
 ]
