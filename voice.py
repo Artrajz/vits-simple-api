@@ -82,13 +82,14 @@ class Voice:
         else:
             return False, text
 
-    def generate(self, text=None, speaker_id=None, format=None, speed=1, audio_path=None, target_id=None, escape=False,
+    def generate(self, text=None, speaker_id=None, format=None, length=1, noise=0.667, noisew=0.8, audio_path=None,
+                 target_id=None, escape=False,
                  option=None, w2v2_folder=None):
         if self.n_symbols != 0:
             if not self.emotion_embedding:
-                length_scale, text = self.get_label_value(text, 'LENGTH', speed, 'length scale')
-                noise_scale, text = self.get_label_value(text, 'NOISE', 0.667, 'noise scale')
-                noise_scale_w, text = self.get_label_value(text, 'NOISEW', 0.8, 'deviation of noise')
+                length_scale, text = self.get_label_value(text, 'LENGTH', length, 'length scale')
+                noise_scale, text = self.get_label_value(text, 'NOISE', noise, 'noise scale')
+                noise_scale_w, text = self.get_label_value(text, 'NOISEW', noisew, 'deviation of noise')
                 cleaned, text = self.get_label(text, 'CLEANED')
 
                 stn_tst = self.get_text(text, self.hps_ms, cleaned=cleaned)
@@ -101,93 +102,92 @@ class Voice:
                                                 noise_scale_w=noise_scale_w,
                                                 length_scale=length_scale)[0][0, 0].data.cpu().float().numpy()
 
-            # else:
-            #     w2v2_model = audonnx.load(os.path.dirname(w2v2_folder))
-            #
-            #     if option == 'clean':
-            #         self.ex_print(_clean_text(
-            #             text, self.hps_ms.data.text_cleaners), escape)
-            #
-            #     length_scale, text = self.get_label_value(
-            #         text, 'LENGTH', 1, 'length scale')
-            #     noise_scale, text = self.get_label_value(
-            #         text, 'NOISE', 0.667, 'noise scale')
-            #     noise_scale_w, text = self.get_label_value(
-            #         text, 'NOISEW', 0.8, 'deviation of noise')
-            #     cleaned, text = self.get_label(text, 'CLEANED')
-            #
-            #     stn_tst = self.get_text(text, self.hps_ms, cleaned=cleaned)
-            #
-            #     emotion_reference = input('Path of an emotion reference: ')
-            #     if emotion_reference.endswith('.npy'):
-            #         emotion = np.load(emotion_reference)
-            #         emotion = FloatTensor(emotion).unsqueeze(0)
-            #     else:
-            #         audio16000, sampling_rate = librosa.load(
-            #             emotion_reference, sr=16000, mono=True)
-            #         emotion = w2v2_model(audio16000, sampling_rate)[
-            #             'hidden_states']
-            #         emotion_reference = re.sub(
-            #             r'\..*$', '', emotion_reference)
-            #         np.save(emotion_reference, emotion.squeeze(0))
-            #         emotion = FloatTensor(emotion)
-            #
-            #
-            #     with no_grad():
-            #         x_tst = stn_tst.unsqueeze(0)
-            #         x_tst_lengths = LongTensor([stn_tst.size(0)])
-            #         sid = LongTensor([speaker_id])
-            #         audio = self.net_g_ms.infer(x_tst, x_tst_lengths, sid=sid, noise_scale=noise_scale,
-            #                                     noise_scale_w=noise_scale_w,
-            #                                     length_scale=length_scale, emotion_embedding=emotion)[0][
-            #             0, 0].data.cpu().float().numpy()
-
-        # else:
-        # model = input('Path of a hubert-soft Model: ')
-        # from hubert_model import hubert_soft
-        # hubert = hubert_soft(model)
-
-        # if audio_path != '[VC]':
-        #     if self.use_f0:
-        #         audio, sampling_rate = librosa.load(
-        #             audio_path, sr=self.hps_ms.data.sampling_rate, mono=True)
-        #         audio16000 = librosa.resample(
-        #             audio, orig_sr=sampling_rate, target_sr=16000)
         #     else:
-        #         audio16000, sampling_rate = librosa.load(
-        #             audio_path, sr=16000, mono=True)
+        #         w2v2_model = audonnx.load(os.path.dirname(w2v2_folder))
         #
-        #     out_path = "H:/git/MoeGoe-Simple-API/upload/hubert.wav"
-        #     length_scale, out_path = self.get_label_value(
-        #         out_path, 'LENGTH', 1, 'length scale')
-        #     noise_scale, out_path = self.get_label_value(
-        #         out_path, 'NOISE', 0.1, 'noise scale')
-        #     noise_scale_w, out_path = self.get_label_value(
-        #         out_path, 'NOISEW', 0.1, 'deviation of noise')
+        #         if option == 'clean':
+        #             self.ex_print(_clean_text(
+        #                 text, self.hps_ms.data.text_cleaners), escape)
         #
-        #     with inference_mode():
-        #         units = hubert.units(FloatTensor(audio16000).unsqueeze(
-        #             0).unsqueeze(0)).squeeze(0).numpy()
+        #         length_scale, text = self.get_label_value(
+        #             text, 'LENGTH', length, 'length scale')
+        #         noise_scale, text = self.get_label_value(
+        #             text, 'NOISE', noise, 'noise scale')
+        #         noise_scale_w, text = self.get_label_value(
+        #             text, 'NOISEW', noisew, 'deviation of noise')
+        #         cleaned, text = self.get_label(text, 'CLEANED')
+        #
+        #         stn_tst = self.get_text(text, self.hps_ms, cleaned=cleaned)
+        #
+        #         emotion_reference = input('Path of an emotion reference: ')
+        #         if emotion_reference.endswith('.npy'):
+        #             emotion = np.load(emotion_reference)
+        #             emotion = FloatTensor(emotion).unsqueeze(0)
+        #         else:
+        #             audio16000, sampling_rate = librosa.load(
+        #                 emotion_reference, sr=16000, mono=True)
+        #             emotion = w2v2_model(audio16000, sampling_rate)[
+        #                 'hidden_states']
+        #             emotion_reference = re.sub(
+        #                 r'\..*$', '', emotion_reference)
+        #             np.save(emotion_reference, emotion.squeeze(0))
+        #             emotion = FloatTensor(emotion)
+        #
+        #         with no_grad():
+        #             x_tst = stn_tst.unsqueeze(0)
+        #             x_tst_lengths = LongTensor([stn_tst.size(0)])
+        #             sid = LongTensor([speaker_id])
+        #             audio = self.net_g_ms.infer(x_tst, x_tst_lengths, sid=sid, noise_scale=noise_scale,
+        #                                         noise_scale_w=noise_scale_w,
+        #                                         length_scale=length_scale, emotion_embedding=emotion)[0][
+        #                 0, 0].data.cpu().float().numpy()
+        #
+        # else:
+        #     model = input('Path of a hubert-soft Model: ')
+        #     from hubert_model import hubert_soft
+        #     hubert = hubert_soft(model)
+        #
+        #     if audio_path != '[VC]':
         #         if self.use_f0:
-        #             f0_scale, out_path = self.get_label_value(
-        #                 out_path, 'F0', 1, 'f0 scale')
-        #             f0 = librosa.pyin(audio, sr=sampling_rate,
-        #                               fmin=librosa.note_to_hz('C0'),
-        #                               fmax=librosa.note_to_hz('C7'),
-        #                               frame_length=1780)[0]
-        #             target_length = len(units[:, 0])
-        #             f0 = np.nan_to_num(np.interp(np.arange(0, len(f0) * target_length, len(f0)) / target_length,
-        #                                          np.arange(0, len(f0)), f0)) * f0_scale
-        #             units[:, 0] = f0 / 10
+        #             audio, sampling_rate = librosa.load(
+        #                 audio_path, sr=self.hps_ms.data.sampling_rate, mono=True)
+        #             audio16000 = librosa.resample(
+        #                 audio, orig_sr=sampling_rate, target_sr=16000)
+        #         else:
+        #             audio16000, sampling_rate = librosa.load(
+        #                 audio_path, sr=16000, mono=True)
         #
-        #     stn_tst = FloatTensor(units)
-        #     with no_grad():
-        #         x_tst = stn_tst.unsqueeze(0)
-        #         x_tst_lengths = LongTensor([stn_tst.size(0)])
-        #         sid = LongTensor([target_id])
-        #         audio = self.net_g_ms.infer(x_tst, x_tst_lengths, sid=sid, noise_scale=noise_scale,
-        #                                     noise_scale_w=noise_scale_w, length_scale=length_scale)[0][
-        #             0, 0].data.float().numpy()
+        #         out_path = "H:/git/MoeGoe-Simple-API/upload/hubert.wav"
+        #         length_scale, out_path = self.get_label_value(
+        #             out_path, 'LENGTH', length, 'length scale')
+        #         noise_scale, out_path = self.get_label_value(
+        #             out_path, 'NOISE', noise, 'noise scale')
+        #         noise_scale_w, out_path = self.get_label_value(
+        #             out_path, 'NOISEW', noisew, 'deviation of noise')
+        #
+        #         with inference_mode():
+        #             units = hubert.units(FloatTensor(audio16000).unsqueeze(
+        #                 0).unsqueeze(0)).squeeze(0).numpy()
+        #             if self.use_f0:
+        #                 f0_scale, out_path = self.get_label_value(
+        #                     out_path, 'F0', 1, 'f0 scale')
+        #                 f0 = librosa.pyin(audio, sr=sampling_rate,
+        #                                   fmin=librosa.note_to_hz('C0'),
+        #                                   fmax=librosa.note_to_hz('C7'),
+        #                                   frame_length=1780)[0]
+        #                 target_length = len(units[:, 0])
+        #                 f0 = np.nan_to_num(np.interp(np.arange(0, len(f0) * target_length, len(f0)) / target_length,
+        #                                              np.arange(0, len(f0)), f0)) * f0_scale
+        #                 units[:, 0] = f0 / 10
+        #
+        #         stn_tst = FloatTensor(units)
+        #         with no_grad():
+        #             x_tst = stn_tst.unsqueeze(0)
+        #             x_tst_lengths = LongTensor([stn_tst.size(0)])
+        #             sid = LongTensor([target_id])
+        #             audio = self.net_g_ms.infer(x_tst, x_tst_lengths, sid=sid, noise_scale=noise_scale,
+        #                                         noise_scale_w=noise_scale_w, length_scale=length_scale)[0][
+        #                 0, 0].data.float().numpy()
 
         with BytesIO() as f:
             fname = str(uuid.uuid1())

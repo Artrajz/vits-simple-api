@@ -105,10 +105,12 @@ MODEL_LIST = [
 | Name          | Parameter | Is must | Default | Value        | Instruction                                      |
 | ------------- | --------- | ------- | ------- | ------------ | ------------------------------------------------ |
 | 合成文本      | text      | true    |         | text         |                                                  |
-| 角色id        | id        | false   | 0       | (number)     |                                                  |
+| 角色id        | id        | false   | 0       | (int)        |                                                  |
 | 音频格式      | format    | false   | wav     | wav,ogg,silk | silk支持tx系语音                                 |
 | 文本语言      | lang      | false   | mix     | zh,ja,mix    | 当lang=mix时，文本应该用[ZH] 或 [JA] 包裹        |
-| 语音长度/语速 | speed     | false   | 1.0     | (number)     | 调节语音长度，相当于调节语速，该数值越大语速越慢 |
+| 语音长度/语速 | length    | false   | 1.0     | (float)      | 调节语音长度，相当于调节语速，该数值越大语速越慢 |
+| 噪声          | noise     | false   | 0.667   | (float)      | 语音微调，一般用默认值即可                       |
+| 噪声偏差      | noisew    | false   | 0.8     | (float)      | 语音微调，一般用默认值即可                       |
 
 ## 语音转换voice conversion
 
@@ -160,9 +162,10 @@ import string
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 abs_path = os.path.dirname(__file__)
+addr = "http://127.0.0.1:23456"
 
 def voice_speakers():
-    url = "http://127.0.0.1:23456/voice/speakers"
+    url = f"{addr}/voice/speakers"
 
     res = requests.post(url=url)
     json = res.json()
@@ -171,42 +174,48 @@ def voice_speakers():
     
 def voice():
     post_json = json.dumps({
-        "text":"需要合成的文本",
+        "text":"你好，我是艾草",
         "id":142,
         "format":"wav",
         "lang":"zh",
-        "speed":1.4,
+        "length":1,
+        "noise":0.667,
+        "noisew":0.8,
         })
     headers={'content-type':'application/json'}
-    url = "http://127.0.0.1:23456/voice"
+    url = f"{addr}/voice"
 
     res = requests.post(url=url,data=post_json,headers=headers)
     fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
     path = f"{abs_path}/{fname}"
     with open(path, "wb") as f:
         f.write(res.content)
+    print(path)
 
-def voice_conversion(upload_name):
-    upload_path = f'{abs_path}/{upload_name}'
+def voice_conversion(upload_path):
+    upload_name = os.path.basename(upload_path)
     upload_type = f'audio/{upload_name.split(".")[1]}' #wav,ogg
-    
-    fields = {
-        "upload": (upload_name, open(upload_path,'rb'),upload_type),
-        "original_id": "142",
-        "target_id": "92",
-    }
-    boundary = '----VoiceConversionFormBoundary' \
-               + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-    m = MultipartEncoder(fields=fields, boundary=boundary)
-    
-    headers = {"Content-Type": m.content_type}
-    url = "http://127.0.0.1:23456/voice/conversion"
 
-    res = requests.post(url=url,data=m,headers=headers)
+    with open(upload_path,'rb') as upload_file:
+        fields = {
+            "upload": (upload_name, upload_file,upload_type),
+            "original_id": "142",
+            "target_id": "92",
+        }
+        boundary = '----VoiceConversionFormBoundary' \
+                   + ''.join(random.sample(string.ascii_letters + string.digits, 16))
+        m = MultipartEncoder(fields=fields, boundary=boundary)
+        
+        headers = {"Content-Type": m.content_type}
+        url = f"{addr}/voice/conversion"
+
+        res = requests.post(url=url,data=m,headers=headers)
+        
     fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
     path = f"{abs_path}/{fname}"
     with open(path, "wb") as f:
         f.write(res.content)
+    print(path)
 ```
 
 # 可能遇到的问题

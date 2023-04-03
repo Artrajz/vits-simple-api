@@ -46,14 +46,18 @@ def voice_api():
         speaker_id = int(request.args.get("id", 0))
         format = request.args.get("format", "wav")
         lang = request.args.get("lang", "mix")
-        speed = float(request.args.get("speed", 1.0))
+        length = float(request.args.get("length", 1.0))
+        noise = float(request.args.get("noise", 0.667))
+        noisew = float(request.args.get("noisew", 0.8))
     elif request.method == "POST":
         json_data = request.json
         text = json_data["text"]
         speaker_id = int(json_data["id"])
         format = json_data["format"]
         lang = json_data["lang"]
-        speed = float(json_data["speed"])
+        length = float(json_data["length"])
+        noise = float(json_data["noise"])
+        noisew = float(json_data["noisew"])
 
     if lang.upper() == "ZH":
         text = f"[ZH]{text}[ZH]"
@@ -63,7 +67,12 @@ def voice_api():
     real_id = voice_obj[speaker_id][0]
     real_obj = voice_obj[speaker_id][1]
 
-    output, file_type, fname = real_obj.generate(text, real_id, format, speed)
+    output, file_type, fname = real_obj.generate(text=text,
+                                                 speaker_id=real_id,
+                                                 format=format,
+                                                 length=length,
+                                                 noise=noise,
+                                                 noisew=noisew)
 
     return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
 
@@ -96,7 +105,7 @@ def voice_conversion_api():
             return form
 
         output = real_obj.voice_conversion(os.path.join(app.config['UPLOAD_FOLDER'], fname),
-                                           real_original_id, real_target_id, format)
+                                           real_original_id, real_target_id)
         file_type = f"audio/{format}"
 
         return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
