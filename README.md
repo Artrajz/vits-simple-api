@@ -144,9 +144,9 @@ MODEL_LIST = [
 
   设定语言为ja，则文本无需[JA]包裹
   
-- GET http://127.0.0.1/voice?text=text&id=142&format=wav&lang=zh&speed=1.4
+- GET http://127.0.0.1/voice?text=text&id=142&format=wav&lang=zh&length=1.4
 
-  文本为text，角色id为142，音频格式为wav，文本语言为zh，语速为1.4
+  文本为text，角色id为142，音频格式为wav，文本语言为zh，语音长度为1.4
 
 ## POST
 
