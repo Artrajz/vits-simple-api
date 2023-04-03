@@ -13,7 +13,11 @@ RUN apt-get update && \
 
 RUN pip install numpy==1.23.3 scipy flask flask_apscheduler pilk
 
-RUN pip install numba librosa torch av
+RUN pip install numba av
+
+RUN pip install librosa
+
+RUN pip install torch
 
 RUN pip install unidecode jamo pypinyin jieba protobuf cn2an inflect eng_to_ipa ko_pron indic_transliteration num_thai opencc
 
