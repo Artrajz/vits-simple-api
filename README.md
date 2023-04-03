@@ -39,10 +39,11 @@ MoeGoe-Simple-API 是一个易部署的api，可以通过api的方式调用语�
 ### docker镜像拉取脚本
 
 ```
-bash -c "$(wget -O- https://gist.githubusercontent.com/Artrajz/b2c02499f91c3a51b8b48f1a3c9a7ead/raw/e3033f1b222868b4b0f1b522e52e18217460ff91/moegoe-simple-api-installer-latest.sh)"
+bash -c "$(wget -O- https://gist.githubusercontent.com/Artrajz/b2c02499f91c3a51b8b48f1a3c9a7ead/raw/10bb44004f155e015df211bb2dac85f6c4f79178/moegoe-simple-api-installer-latest.sh)"
 ```
 
-镜像大小为5g，所以拉取会比较慢，拉取成功后由于没有导入vits模型所以无法使用，需要按以下步骤导入模型
+- 镜像大小为5g，所以拉取会比较慢，解压后为8g，请准备足够的磁盘空间
+- 拉取成功后由于没有导入vits模型所以无法使用，需要按以下步骤导入模型
 
 ### 下载VITS模型
 
