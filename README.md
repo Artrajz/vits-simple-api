@@ -33,19 +33,23 @@ bash -c "$(wget -O- https://raw.githubusercontent.com/Artrajz/MoeGoe-Simple-API/
 
 VITS模型放入`/usr/local/moegoe-simple-api/Model`文件夹中，模型文件夹中要有.pth和config.json文件
 
-<details><summary>点击查看模型目录结构</summary><pre><code>
-├─Model
-│  ├─g
-│  │      config.json
-│  │      G_953000.pth
-│  │
-│  ├─Nene_Nanami_Rong_Tang
-│  │      1374_epochs.pth
-│  │      config.json
-│  │
-│  └─Zero_no_tsukaima
-│          1158_epochs.pth
-│          config.json
+<details><summary>点击查看Model文件夹结构</summary><pre><code>
+├─g
+│      config.json
+│      G_953000.pth
+│
+├─louise
+│      360_epochs.pth
+│      config.json
+│      hubert-soft-0d54a1f4.pt
+│
+├─Nene_Nanami_Rong_Tang
+│      1374_epochs.pth
+│      config.json
+│
+└─Zero_no_tsukaima
+        1158_epochs.pth
+        config.json
 </code></pre></details>
 
 ### 修改模型路径
@@ -58,9 +62,12 @@ vits模型路径填写方法，MODEL_LIST中的每一行是
 也可以写相对路径或绝对路径，由于windows和linux路径写法不同，用上面的写法或绝对路径最稳妥
 示例：
 MODEL_LIST = [
+    #VITS
     [ABS_PATH+"/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH+"/Model/Nene_Nanami_Rong_Tang/config.json"],
     [ABS_PATH+"/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH+"/Model/Zero_no_tsukaima/config.json"],
     [ABS_PATH+"/Model/g/G_953000.pth", ABS_PATH+"/Model/g/config.json"],
+    #HuBert-VITS
+    [ABS_PATH+"/Model/louise/360_epochs.pth", ABS_PATH+"/Model/louise/config.json", ABS_PATH+"/Model/louise/hubert-soft-0d54a1f4.pt"],
 ]
 </code></pre></details>
 
