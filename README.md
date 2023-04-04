@@ -16,6 +16,12 @@ MoeGoe-Simple-API 是一个易部署的api，可以通过api的方式调用语�
 </code></pre></details>
 
 
+#### 测试API
+
+`https://api.artrajz.cn/py/voice?text=喂？听得到吗&id=142&lang=zh`
+
+不保证服务器稳定性，请勿滥用
+
 # 如何部署
 
 ## Docker部署
@@ -51,6 +57,7 @@ VITS模型放入`/usr/local/moegoe-simple-api/Model`文件夹中，模型文件�
         1158_epochs.pth
         config.json
 </code></pre></details>
+
 
 ### 修改模型路径
 
