@@ -168,7 +168,7 @@ def merge_model(merging_model):
     hubert_vits_list = []
     w2v2_vits_list = []
 
-    out_path = os.path.dirname(os.path.realpath(sys.argv[0])) + "/cahce"
+    out_path = os.path.dirname(os.path.realpath(sys.argv[0])) + "/cache"
 
     # classify
     for l in merging_model:
