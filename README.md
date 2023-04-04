@@ -2,10 +2,15 @@
 
 
 
-MoeGoe-Simple-API 是一个易部署的api，可以通过api的方式调用语音合成，可用于聊天机器人等，目前支持的功能有语音合成和语音转换。
+MoeGoe-Simple-API 是一个易部署的api，可以通过api的方式调用语音合成，可用于聊天机器人等。
 
-- 可导入模型
-- 支持加载多模型，可以将多个模型合并为一个新的id对应角色模型的映射表
+#### 目前支持的功能
+
+- vits语音合成
+- hubert-vits语音转换
+- 同vits模型内的语音转换
+- 加载多模型，将多个模型合并为一个新的id对应角色模型的映射表（不同类别的模型是分开的列表）
+
 <details><summary>点击预览返回的映射表</summary><pre><code>
 [
 	{
@@ -101,7 +106,7 @@ MODEL_LIST = [
 
 # 参数
 
-## 语音合成voice
+## 语音合成voice vits
 
 | Name          | Parameter | Is must | Default | Value        | Instruction                                      |
 | ------------- | --------- | ------- | ------- | ------------ | ------------------------------------------------ |
@@ -110,8 +115,8 @@ MODEL_LIST = [
 | 音频格式      | format    | false   | wav     | wav,ogg,silk | silk支持tx系语音                                 |
 | 文本语言      | lang      | false   | mix     | zh,ja,mix    | 当lang=mix时，文本应该用[ZH] 或 [JA] 包裹        |
 | 语音长度/语速 | length    | false   | 1.0     | (float)      | 调节语音长度，相当于调节语速，该数值越大语速越慢 |
-| 噪声          | noise     | false   | 0.667   | (float)      | 语音微调，一般用默认值即可                       |
-| 噪声偏差      | noisew    | false   | 0.8     | (float)      | 语音微调，一般用默认值即可                       |
+| 噪声          | noise     | false   | 0.667   | (float)      | 噪声微调，一般用默认值即可                       |
+| 噪声偏差      | noisew    | false   | 0.8     | (float)      | 噪声偏差微调，一般用默认值即可                   |
 
 ## 语音转换voice conversion
 
@@ -121,13 +126,29 @@ MODEL_LIST = [
 | 源角色id   | original_id | true    |         | (number)   | 上传文件所使用的角色id |
 | 目标角色id | target_id   | true    |         | (number)   | 要转换的目标角色id     |
 
+## 语音转换 HuBert-VITS
+
+| Name          | Parameter | Is must | Default | Value        | Instruction                                      |
+| ------------- | --------- | ------- | ------- | ------------ | ------------------------------------------------ |
+| 上传音频      | upload    | true    |         | audio file   | 只支持wav和ogg                                   |
+| 目标角色id    | id        | true    |         | (int)        |                                                  |
+| 音频格式      | format    | true    |         | wav,ogg,silk | silk支持tx系语音                                 |
+| 文本语言      | lang      | true    |         | zh,ja,mix    | 当lang=mix时，文本应该用[ZH] 或 [JA] 包裹        |
+| 语音长度/语速 | length    | true    |         | (float)      | 调节语音长度，相当于调节语速，该数值越大语速越慢 |
+| 噪声          | noise     | true    |         | (float)      | 噪声微调                                         |
+| 噪声偏差      | noisew    | true    |         | (float)      | 噪声偏差微调                                     |
+
 # 调用方法
 
 ## GET
 
+#### 映射表
+
 - GET/POST http://127.0.0.1:23456/voice/speakers
 
   返回id对应角色的映射表（json格式）
+
+#### 语音合成voice vits
 
 - GET http://127.0.0.1/voice?text=[JA]text[JA][ZH]text[ZH]&id=0&format=wav&lang=mix
 
@@ -144,10 +165,10 @@ MODEL_LIST = [
 - GET http://127.0.0.1/voice?text=text&lang=ja
 
   设定语言为ja，则文本无需[JA]包裹
-  
+
 - GET http://127.0.0.1/voice?text=text&id=142&format=wav&lang=zh&length=1.4
 
-  文本为text，角色id为142，音频格式为wav，文本语言为zh，语音长度为1.4
+  文本为text，角色id为142，音频格式为wav，文本语言为zh，语音长度为1.4，其余参数默认
 
 ## POST
 
@@ -165,6 +186,7 @@ from requests_toolbelt.multipart.encoder import MultipartEncoder
 abs_path = os.path.dirname(__file__)
 addr = "http://127.0.0.1:23456"
 
+#映射表
 def voice_speakers():
     url = f"{addr}/voice/speakers"
 
@@ -172,16 +194,19 @@ def voice_speakers():
     json = res.json()
     for i in json:
         print(i)
-    
-def voice():
+        for j in json[i]:
+            print(j)
+
+#语音合成 voice vits
+def voice_vits():
     post_json = json.dumps({
         "text":"你好，我是艾草",
-        "id":142,
+        "id":"3",
         "format":"wav",
         "lang":"zh",
-        "length":1,
-        "noise":0.667,
-        "noisew":0.8,
+        "length":"1",
+        "noise":"0.667",
+        "noisew":"0.8",
         })
     headers={'content-type':'application/json'}
     url = f"{addr}/voice"
@@ -189,10 +214,41 @@ def voice():
     res = requests.post(url=url,data=post_json,headers=headers)
     fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
     path = f"{abs_path}/{fname}"
+    
     with open(path, "wb") as f:
         f.write(res.content)
     print(path)
 
+#语音转换 hubert-vits
+def voice_hubert_vits(upload_path):
+    upload_name = os.path.basename(upload_path)
+    upload_type = f'audio/{upload_name.split(".")[1]}' #wav,ogg
+    
+    with open(upload_path,'rb') as upload_file:
+        fields = {
+            "upload": (upload_name, upload_file,upload_type),
+            "target_id":"0",
+            "format":"wav",
+            "length":"1",
+            "noise":"0.1",
+            "noisew":"0.1",
+        }
+        boundary = '----VoiceConversionFormBoundary' \
+                   + ''.join(random.sample(string.ascii_letters + string.digits, 16))
+        
+        m = MultipartEncoder(fields=fields, boundary=boundary)
+        headers = {"Content-Type": m.content_type}
+        url = f"{addr}/voice/hubert-vits"
+
+        res = requests.post(url=url,data=m,headers=headers)
+    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
+    path = f"{abs_path}/{fname}"
+    
+    with open(path, "wb") as f:
+        f.write(res.content)
+    print(path)
+
+#语音转换 同VITS模型内角色之间的音色转换
 def voice_conversion(upload_path):
     upload_name = os.path.basename(upload_path)
     upload_type = f'audio/{upload_name.split(".")[1]}' #wav,ogg
@@ -200,8 +256,8 @@ def voice_conversion(upload_path):
     with open(upload_path,'rb') as upload_file:
         fields = {
             "upload": (upload_name, upload_file,upload_type),
-            "original_id": "142",
-            "target_id": "92",
+            "original_id": "3",
+            "target_id": "0",
         }
         boundary = '----VoiceConversionFormBoundary' \
                    + ''.join(random.sample(string.ascii_letters + string.digits, 16))
@@ -214,6 +270,7 @@ def voice_conversion(upload_path):
         
     fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
     path = f"{abs_path}/{fname}"
+    
     with open(path, "wb") as f:
         f.write(res.content)
     print(path)

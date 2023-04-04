@@ -36,10 +36,17 @@ def index():
 @app.route('/voice/speakers', methods=["GET", "POST"])
 def voice_speakers_api():
     speakers_list = voice_speakers
-    return jsonify(speakers_list)
+    json = {
+        "VITS":speakers_list[0],
+        "HuBert-VITS":speakers_list[1],
+        "W2V2-VITS":speakers_list[2]
+    }
+
+    return jsonify(json)
 
 
 @app.route('/voice', methods=["GET", "POST"])
+@app.route('/voice/vits', methods=["GET", "POST"])
 def voice_api():
     if request.method == "GET":
         text = request.args.get("text")
@@ -64,8 +71,8 @@ def voice_api():
     elif lang.upper() == "JA":
         text = f"[JA]{text}[JA]"
 
-    real_id = voice_obj[speaker_id][0]
-    real_obj = voice_obj[speaker_id][1]
+    real_id = voice_obj[0][speaker_id][0]
+    real_obj = voice_obj[0][speaker_id][1]
 
     output, file_type, fname = real_obj.generate(text=text,
                                                  speaker_id=real_id,
@@ -73,6 +80,32 @@ def voice_api():
                                                  length=length,
                                                  noise=noise,
                                                  noisew=noisew)
+
+    return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
+
+
+@app.route('/voice/hubert-vits', methods=["GET", "POST"])
+def voice_hubert_api():
+    if request.method == "POST":
+        voice = request.files['upload']
+        target_id = int(request.form["target_id"])
+        format = request.form["format"]
+        length = float(request.form["length"])
+        noise = float(request.form["noise"])
+        noisew = float(request.form["noisew"])
+
+    fname = secure_filename(str(uuid.uuid1()) + "." + voice.filename.split(".")[1])
+    voice.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
+
+    real_id = voice_obj[1][target_id][0]
+    real_obj = voice_obj[1][target_id][1]
+
+    output, file_type, fname = real_obj.generate(target_id=real_id,
+                                                 format=format,
+                                                 length=length,
+                                                 noise=noise,
+                                                 noisew=noisew,
+                                                 audio_path=os.path.join(app.config['UPLOAD_FOLDER'], fname))
 
     return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
 
@@ -87,19 +120,20 @@ def voice_conversion_api():
         original_id = int(request.form["original_id"])
         target_id = int(request.form["target_id"])
 
-        form = {}
+
 
         format = voice.filename.split(".")[1]
 
         fname = secure_filename(str(uuid.uuid1()) + "." + voice.filename.split(".")[1])
         voice.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
 
-        real_original_id = int(voice_obj[original_id][0])
-        real_target_id = int(voice_obj[target_id][0])
-        real_obj = voice_obj[original_id][1]
-        real_target_obj = voice_obj[target_id][1]
+        real_original_id = int(voice_obj[0][original_id][0])
+        real_target_id = int(voice_obj[0][target_id][0])
+        real_obj = voice_obj[0][original_id][1]
+        real_target_obj = voice_obj[0][target_id][1]
 
-        if voice_obj[original_id][2] != voice_obj[target_id][2]:
+        form = {}
+        if voice_obj[0][original_id][2] != voice_obj[0][target_id][2]:
             form["status"] = "error"
             form["message"] = "speaker IDs are in diffrent Model!"
             return form
@@ -116,7 +150,7 @@ def voice_conversion_api():
 @scheduler.task('interval', id='随便写', seconds=3600, misfire_grace_time=900)
 def clean_task():
     clean_folder(app.config["UPLOAD_FOLDER"])
-    clean_folder(app.config["SILK_OUT_PATH"])
+    clean_folder(app.config["CACHE_PATH"])
 
 
 if __name__ == '__main__':
