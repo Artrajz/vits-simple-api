@@ -7,8 +7,8 @@
         <img src="https://img.shields.io/github/license/Artrajz/MoeGoe-Simple-API">
    		<img src="https://img.shields.io/badge/python-3.9%7C3.10-green">
     </p>
+    <br/>
 </div>
-<hr style="height:1px;border:none;border-top:1px solid var(--color-border-muted)" />
 
 
 
