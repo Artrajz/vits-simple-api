@@ -154,7 +154,6 @@ def clean_folder(folder_path):
             os.remove(file_path)
 
 
-
 def merge_model(merging_model):
     vits_obj = []
     vits_speakers = []
@@ -203,3 +202,11 @@ def merge_model(merging_model):
     voice_speakers = [vits_speakers, hubert_vits_speakers, w2v2_vits_speakers]
 
     return voice_obj, voice_speakers
+
+
+# is none -> True,is not none -> False
+def check_is_none(s: str) -> bool:
+    s = str(s)
+    if s == None or s == "" or s.isspace():
+        return True
+    return False

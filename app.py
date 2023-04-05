@@ -1,13 +1,10 @@
 import os
-
 import logging
 import uuid
-
-from flask import Flask, request, send_file, jsonify
+from flask import Flask, request, send_file, jsonify, make_response
 from werkzeug.utils import secure_filename
 from flask_apscheduler import APScheduler
-
-from utils import clean_folder, merge_model
+from utils import clean_folder, merge_model, check_is_none
 
 app = Flask(__name__)
 app.config.from_pyfile("config.py")
@@ -16,7 +13,8 @@ scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()
 
-logging.getLogger('numba').setLevel(logging.WARNING)
+logger = logging.getLogger('moegoe-simple-api')
+logger.setLevel(logging.INFO)
 
 voice_obj, voice_speakers = merge_model(app.config["MODEL_LIST"])
 
@@ -37,9 +35,9 @@ def index():
 def voice_speakers_api():
     speakers_list = voice_speakers
     json = {
-        "VITS":speakers_list[0],
-        "HuBert-VITS":speakers_list[1],
-        "W2V2-VITS":speakers_list[2]
+        "VITS": speakers_list[0],
+        "HuBert-VITS": speakers_list[1],
+        "W2V2-VITS": speakers_list[2]
     }
 
     return jsonify(json)
@@ -66,13 +64,18 @@ def voice_api():
         noise = float(json_data["noise"])
         noisew = float(json_data["noisew"])
 
-    if lang.upper() == "ZH":
+    if lang.upper() == "MIX":
+        pass
+    elif lang.upper() == "ZH":
         text = f"[ZH]{text}[ZH]"
     elif lang.upper() == "JA":
         text = f"[JA]{text}[JA]"
 
+
     real_id = voice_obj[0][speaker_id][0]
     real_obj = voice_obj[0][speaker_id][1]
+    logger.info(msg=f"角色id：{speaker_id}")
+    logger.info(msg=f"合成文本：{text}")
 
     output, file_type, fname = real_obj.generate(text=text,
                                                  speaker_id=real_id,
@@ -120,8 +123,6 @@ def voice_conversion_api():
         original_id = int(request.form["original_id"])
         target_id = int(request.form["target_id"])
 
-
-
         format = voice.filename.split(".")[1]
 
         fname = secure_filename(str(uuid.uuid1()) + "." + voice.filename.split(".")[1])
@@ -134,9 +135,10 @@ def voice_conversion_api():
 
         form = {}
         if voice_obj[0][original_id][2] != voice_obj[0][target_id][2]:
-            form["status"] = "error"
-            form["message"] = "speaker IDs are in diffrent Model!"
-            return form
+            res = make_response("speaker IDs are in diffrent Model!")
+            res.status = 600
+            res.headers["msg"] = "speaker IDs are in diffrent Model!"
+            return res
 
         output = real_obj.voice_conversion(os.path.join(app.config['UPLOAD_FOLDER'], fname),
                                            real_original_id, real_target_id)
@@ -146,8 +148,52 @@ def voice_conversion_api():
         # return output
 
 
+@app.route('/voice/check', methods=["GET", "POST"])
+def check_id():
+    if request.method == "GET":
+        model = request.args.get("model").upper()
+        speaker_id = int(request.args.get("id"))
+    elif request.method == "POST":
+        model = request.form["model"].upper()
+        speaker_id = int(request.form["id"])
+
+    if check_is_none(model):
+        res = make_response("model is empty")
+        res.status = 600
+        res.headers["msg"] = "model is empty"
+        return res
+
+    if model not in ("VITS","HUBERT","W2V2"):
+        res = make_response("model is not exist")
+        res.status = 600
+        res.headers["msg"] = "model is not exist"
+        return res
+
+    if check_is_none(speaker_id):
+        res = make_response("id is not exist")
+        res.status = 600
+        res.headers["msg"] = "id is not exist"
+        return res
+
+    if model.upper() == "VITS":
+        speaker_list = voice_speakers[0]
+    elif model.upper() == "HUBERT-VITS":
+        speaker_list = voice_speakers[1]
+    elif model.upper() == "W2V2-VITS":
+        speaker_list = voice_speakers[2]
+    if speaker_id < 0 or speaker_id >= len(speaker_list):
+        res = make_response("speaker id error")
+        res.status = 600
+        res.headers["msg"] = "speaker id error"
+        return res
+    name = str(speaker_list[speaker_id][speaker_id])
+    res = make_response(f"success check id:{speaker_id} name:{name}")
+    res.status = 200
+    res.headers["msg"] = "success"
+    return res
+
 # 定时清理临时文件，每小时清一次
-@scheduler.task('interval', id='随便写', seconds=3600, misfire_grace_time=900)
+@scheduler.task('interval', id='clean_task', seconds=3600, misfire_grace_time=900)
 def clean_task():
     clean_folder(app.config["UPLOAD_FOLDER"])
     clean_folder(app.config["CACHE_PATH"])

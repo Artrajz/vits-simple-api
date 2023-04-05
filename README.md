@@ -17,18 +17,14 @@
 - vits语音合成
 - hubert-vits语音转换
 - 同vits模型内的语音转换
-- 加载多模型，将多个模型合并为一个新的id对应角色模型的映射表（不同类别的模型是分开的列表）
+- 加载多模型，将多个模型合并为一个新的id对应角色模型的映射表（不同类别的模型是分开的映射表）
 
 <details><summary>点击预览返回的映射表</summary><pre><code>
 {"HuBert-VITS":[{"0":"ルイズ"}],"VITS":[{"0":"綾地寧々"},{"1":"在原七海"},{"2":"小茸"},{"3":"唐乐吟"}],"W2V2-VITS":[]}
 </code></pre></details>
 
 
-#### 测试API
-
-`https://api.artrajz.cn/py/voice?text=喂？听得到吗&id=142&lang=zh`
-
-不保证服务器稳定性，请勿滥用
+demo：`https://api.artrajz.cn/py/voice?text=喂？听得到吗&id=142&lang=zh`~~不保证该API的稳定性~~
 
 # 如何部署
 
@@ -171,6 +167,12 @@ python3.9以上版本
 - GET http://127.0.0.1/voice?text=text&id=142&format=wav&lang=zh&length=1.4
 
   文本为text，角色id为142，音频格式为wav，文本语言为zh，语音长度为1.4，其余参数默认
+
+#### id校验
+
+- GET http://127.0.0.1:23456/voice/check?id=0&model=vits
+
+  success:status=200,msg="success" 
 
 ## POST
 
