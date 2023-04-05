@@ -1,8 +1,16 @@
-# MoeGoe-Simple-API
+<div class="title" align=center>
+    <h1>MoeGoe-Simple-API</h1>
+	<div>MoeGoe-Simple-API 是一个易部署的api，可以通过api的方式调用语音合成，可用于聊天机器人等。</div>
+    <br/>
+    <br/>
+    <p>
+        <img src="https://img.shields.io/github/license/Artrajz/MoeGoe-Simple-API">
+   		<img src="https://img.shields.io/badge/python-3.9%7C3.10-green">
+    </p>
+</div>
+<hr style="height:1px;border:none;border-top:1px solid var(--color-border-muted)" />
 
 
-
-MoeGoe-Simple-API 是一个易部署的api，可以通过api的方式调用语音合成，可用于聊天机器人等。
 
 #### 目前支持的功能
 
@@ -89,8 +97,9 @@ MODEL_LIST = [
 
 重新执行docker镜像拉取脚本即可
 
-
 ## 直接部署
+
+python3.9以上版本
 
 1. 下载VITS模型并放入`Model`文件夹中
 2. 在 `config.py` 中修改模型路径
