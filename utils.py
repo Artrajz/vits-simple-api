@@ -213,15 +213,18 @@ def clasify_lang(text: str) -> str:
     words = re.split(pattern, text)
 
     pre = ""
+    p = 0
     for word in words:
         if check_is_none(word): continue
-
         lang = fastlid(word)[0]
         if pre == "":
-            text = text.replace(word, f'[{lang.upper()}]' + word)
+            text = text[:p]+text[p:].replace(word, f'[{lang.upper()}]' + word, 1)
+            p += len(f'[{lang.upper()}]')
         elif pre != lang:
-            text = text.replace(word, f'[{pre.upper()}][{lang.upper()}]' + word)
+            text = text[:p]+text[p:].replace(word, f'[{pre.upper()}][{lang.upper()}]' + word, 1)
+            p += len(f'[{pre.upper()}][{lang.upper()}]')
         pre = lang
+        p += text[p:].index(word) + len(word)
     text += f"[{pre.upper()}]"
 
     return text
