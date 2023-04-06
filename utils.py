@@ -204,6 +204,7 @@ def merge_model(merging_model):
 
     return voice_obj, voice_speakers
 
+fastlid.set_languages = ["zh","ja"]
 
 def clasify_lang(text: str) -> str:
     pattern = r'[\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\>\=\?\@\[\]\{\}\\\\\^\_\`' \
