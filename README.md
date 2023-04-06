@@ -175,15 +175,15 @@ pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2
 
 ## 语音合成voice vits
 
-| Name          | Parameter | Is must | Default | Value        | Instruction                                      |
-| ------------- | --------- | ------- | ------- | ------------ | ------------------------------------------------ |
-| 合成文本      | text      | true    |         | text         |                                                  |
-| 角色id        | id        | false   | 0       | (int)        |                                                  |
-| 音频格式      | format    | false   | wav     | wav,ogg,silk | silk支持tx系语音                                 |
-| 文本语言      | lang      | false   | mix     | zh,ja,mix    | 当lang=mix时，文本应该用[ZH] 或 [JA] 包裹        |
-| 语音长度/语速 | length    | false   | 1.0     | (float)      | 调节语音长度，相当于调节语速，该数值越大语速越慢 |
-| 噪声          | noise     | false   | 0.667   | (float)      | 噪声微调，一般用默认值即可                       |
-| 噪声偏差      | noisew    | false   | 0.8     | (float)      | 噪声偏差微调，一般用默认值即可                   |
+| Name          | Parameter | Is must | Default | Value          | Instruction                                                  |
+| ------------- | --------- | ------- | ------- | -------------- | ------------------------------------------------------------ |
+| 合成文本      | text      | true    |         | text           |                                                              |
+| 角色id        | id        | false   | 0       | (int)          |                                                              |
+| 音频格式      | format    | false   | wav     | wav,ogg,silk   | silk支持tx系语音                                             |
+| 文本语言      | lang      | false   | auto    | auto,zh,ja,mix | auto为自动识别语言模式（仅中日文），也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹, |
+| 语音长度/语速 | length    | false   | 1.0     | (float)        | 调节语音长度，相当于调节语速，该数值越大语速越慢             |
+| 噪声          | noise     | false   | 0.667   | (float)        | 噪声微调，一般用默认值即可                                   |
+| 噪声偏差      | noisew    | false   | 0.8     | (float)        | 噪声偏差微调，一般用默认值即可                               |
 
 ## 语音转换voice conversion
 
@@ -216,6 +216,10 @@ pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2
   返回id对应角色的映射表（json格式）
 
 #### 语音合成voice vits
+
+- GET http://127.0.0.1/voice?text=text
+
+  最基础的访问方法,其他参数不指定时均为默认值，但text是**必须**的
 
 - GET http://127.0.0.1/voice?text=[JA]text[JA][ZH]text[ZH]&id=0&format=wav&lang=mix
 
