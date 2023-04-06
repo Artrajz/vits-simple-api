@@ -22,9 +22,14 @@
 <details><summary>点击预览返回的映射表</summary><pre><code>
 {"HuBert-VITS":[{"0":"ルイズ"}],"VITS":[{"0":"綾地寧々"},{"1":"在原七海"},{"2":"小茸"},{"3":"唐乐吟"}],"W2V2-VITS":[]}
 </code></pre></details>
+<details><summary>点击查看更新日志</summary><pre><code>
+<h2>2023.4.6</h2>
+<span>加入自动识别语种选项auto，lang参数默认修改为auto，自动识别仍有一定缺陷，请自行选择</span>
+<span>统一POST请求类型为multipart/form-data</span>
+</code></pre></details>
 
 
-demo：`https://api.artrajz.cn/py/voice?text=喂？听得到吗&id=142&lang=zh`~~不保证该API的稳定性~~
+demo：`https://api.artrajz.cn/py/voice?text=喂？听得到吗&id=142`~~不保证该API的稳定性~~
 
 # 如何部署
 
@@ -95,12 +100,76 @@ MODEL_LIST = [
 
 ## 直接部署
 
-python3.9以上版本
+### 下载项目
 
-1. 下载VITS模型并放入`Model`文件夹中
-2. 在 `config.py` 中修改模型路径
-3. 安装python依赖（建议用conda虚拟环境） `pip install -r requirements.txt`
-4. 开始使用！`python app.py`
+下载https://github.com/Artrajz/MoeGoe-Simple-API/archive/refs/heads/main.zip
+
+或clone项目`git clone https://github.com/Artrajz/MoeGoe-Simple-API.git`
+
+### 下载VITS模型
+
+VITS模型放入`/path/to/moegoe-simple-api/Model`文件夹中，模型文件夹中要有.pth和config.json文件
+
+<details><summary>点击查看Model文件夹结构</summary><pre><code>
+├─g
+│      config.json
+│      G_953000.pth
+│
+├─louise
+│      360_epochs.pth
+│      config.json
+│      hubert-soft-0d54a1f4.pt
+│
+├─Nene_Nanami_Rong_Tang
+│      1374_epochs.pth
+│      config.json
+│
+└─Zero_no_tsukaima
+        1158_epochs.pth
+        config.json
+</code></pre></details>
+
+
+
+### 修改模型路径
+
+在 `/path/to/moegoe-simple-api/config.py` 中修改模型路径
+
+<details><summary>点击查看config.py模型路径填写示例</summary><pre><code>
+vits模型路径填写方法，MODEL_LIST中的每一行是
+[ABS_PATH+"/Model/{模型文件夹}/{.pth模型}", ABS_PATH+"/Model/{模型文件夹}/config.json"],
+也可以写相对路径或绝对路径，由于windows和linux路径写法不同，用上面的写法或绝对路径最稳妥
+示例：
+MODEL_LIST = [
+    #VITS
+    [ABS_PATH+"/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH+"/Model/Nene_Nanami_Rong_Tang/config.json"],
+    [ABS_PATH+"/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH+"/Model/Zero_no_tsukaima/config.json"],
+    [ABS_PATH+"/Model/g/G_953000.pth", ABS_PATH+"/Model/g/config.json"],
+    #HuBert-VITS
+    [ABS_PATH+"/Model/louise/360_epochs.pth", ABS_PATH+"/Model/louise/config.json", ABS_PATH+"/Model/louise/hubert-soft-0d54a1f4.pt"],
+]
+</code></pre></details>
+
+
+
+###  下载python依赖
+
+建议创建python虚拟环境，virtualenv或conda，并使用**python3.9**以上版本
+
+`pip install -r requirements.txt`
+
+windows下可能安装不了fasttext,可以用以下命令安装，附[wheels下载地址](https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext)
+
+```
+#python3.10 win_amd64
+pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp310-cp310-win_amd64.whl
+#python3.9 win_amd64
+pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp39-cp39-win_amd64.whl
+```
+
+### 开始使用
+
+`python app.py`
 
 # 参数
 
@@ -202,20 +271,24 @@ def voice_speakers():
             print(j)
 
 #语音合成 voice vits
-def voice_vits():
-    post_json = json.dumps({
-        "text":"你好，我是艾草",
-        "id":"3",
+def voice_vits(text):
+    fields = {
+        "text":text,
+        "id":"0",
         "format":"wav",
-        "lang":"zh",
+        "lang":"auto",
         "length":"1",
         "noise":"0.667",
         "noisew":"0.8",
-        })
-    headers={'content-type':'application/json'}
+    }
+    boundary = '----VoiceConversionFormBoundary' \
+               + ''.join(random.sample(string.ascii_letters + string.digits, 16))
+    
+    m = MultipartEncoder(fields=fields, boundary=boundary)
+    headers = {"Content-Type": m.content_type}
     url = f"{addr}/voice"
 
-    res = requests.post(url=url,data=post_json,headers=headers)
+    res = requests.post(url=url,data=m,headers=headers)
     fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
     path = f"{abs_path}/{fname}"
     

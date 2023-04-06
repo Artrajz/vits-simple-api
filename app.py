@@ -4,7 +4,7 @@ import uuid
 from flask import Flask, request, send_file, jsonify, make_response
 from werkzeug.utils import secure_filename
 from flask_apscheduler import APScheduler
-from utils import clean_folder, merge_model, check_is_none
+from utils import clean_folder, merge_model, check_is_none, clasify_lang
 
 app = Flask(__name__)
 app.config.from_pyfile("config.py")
@@ -50,19 +50,18 @@ def voice_api():
         text = request.args.get("text")
         speaker_id = int(request.args.get("id", 0))
         format = request.args.get("format", "wav")
-        lang = request.args.get("lang", "mix")
+        lang = request.args.get("lang", "auto")
         length = float(request.args.get("length", 1.0))
         noise = float(request.args.get("noise", 0.667))
         noisew = float(request.args.get("noisew", 0.8))
     elif request.method == "POST":
-        json_data = request.json
-        text = json_data["text"]
-        speaker_id = int(json_data["id"])
-        format = json_data["format"]
-        lang = json_data["lang"]
-        length = float(json_data["length"])
-        noise = float(json_data["noise"])
-        noisew = float(json_data["noisew"])
+        text = request.form["text"]
+        speaker_id = int(request.form["id"])
+        format = request.form["format"]
+        lang = request.form["lang"]
+        length = float(request.form["length"])
+        noise = float(request.form["noise"])
+        noisew = float(request.form["noisew"])
 
     if lang.upper() == "MIX":
         pass
@@ -70,7 +69,8 @@ def voice_api():
         text = f"[ZH]{text}[ZH]"
     elif lang.upper() == "JA":
         text = f"[JA]{text}[JA]"
-
+    elif lang.upper() == "AUTO":
+        text = clasify_lang(text)
 
     real_id = voice_obj[0][speaker_id][0]
     real_obj = voice_obj[0][speaker_id][1]
@@ -118,7 +118,6 @@ def voice_conversion_api():
     if request.method == "GET":
         return jsonify("method should be POST")
     if request.method == "POST":
-        # json_data = request.json
         voice = request.files['upload']
         original_id = int(request.form["original_id"])
         target_id = int(request.form["target_id"])
@@ -133,7 +132,6 @@ def voice_conversion_api():
         real_obj = voice_obj[0][original_id][1]
         real_target_obj = voice_obj[0][target_id][1]
 
-        form = {}
         if voice_obj[0][original_id][2] != voice_obj[0][target_id][2]:
             res = make_response("speaker IDs are in diffrent Model!")
             res.status = 600
@@ -151,10 +149,10 @@ def voice_conversion_api():
 @app.route('/voice/check', methods=["GET", "POST"])
 def check_id():
     if request.method == "GET":
-        model = request.args.get("model").upper()
+        model = request.args.get("model")
         speaker_id = int(request.args.get("id"))
     elif request.method == "POST":
-        model = request.form["model"].upper()
+        model = request.form["model"]
         speaker_id = int(request.form["id"])
 
     if check_is_none(model):
@@ -163,7 +161,7 @@ def check_id():
         res.headers["msg"] = "model is empty"
         return res
 
-    if model not in ("VITS","HUBERT","W2V2"):
+    if model.upper() not in ("VITS", "HUBERT", "W2V2"):
         res = make_response("model is not exist")
         res.status = 600
         res.headers["msg"] = "model is not exist"
@@ -191,6 +189,7 @@ def check_id():
     res.status = 200
     res.headers["msg"] = "success"
     return res
+
 
 # 定时清理临时文件，每小时清一次
 @scheduler.task('interval', id='clean_task', seconds=3600, misfire_grace_time=900)

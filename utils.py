@@ -9,7 +9,8 @@ from flask import Flask
 from torch import load, FloatTensor
 from numpy import float32
 import librosa
-
+import regex as re
+from fastlid import fastlid
 from voice import Voice
 
 app = Flask(__name__)
@@ -202,6 +203,27 @@ def merge_model(merging_model):
     voice_speakers = [vits_speakers, hubert_vits_speakers, w2v2_vits_speakers]
 
     return voice_obj, voice_speakers
+
+
+def clasify_lang(text: str) -> str:
+    pattern = r'[\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\>\=\?\@\[\]\{\}\\\\\^\_\`' \
+              r'\！？｡＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」' \
+              r'『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘\'\‛\“\”\„\‟…‧﹏.]+'
+    words = re.split(pattern, text)
+
+    pre = ""
+    for word in words:
+        if check_is_none(word): continue
+
+        lang = fastlid(word)[0]
+        if pre == "":
+            text = text.replace(word, f'[{lang.upper()}]' + word)
+        elif pre != lang:
+            text = text.replace(word, f'[{pre.upper()}][{lang.upper()}]' + word)
+        pre = lang
+    text += f"[{pre.upper()}]"
+
+    return text
 
 
 # is none -> True,is not none -> False
