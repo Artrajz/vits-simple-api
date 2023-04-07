@@ -48,12 +48,19 @@ def voice_speakers_api():
 def voice_api():
     if request.method == "GET":
         text = request.args.get("text")
-        speaker_id = int(request.args.get("id", 0))
-        format = request.args.get("format", "wav")
-        lang = request.args.get("lang", "auto")
-        length = float(request.args.get("length", 1.0))
-        noise = float(request.args.get("noise", 0.667))
-        noisew = float(request.args.get("noisew", 0.8))
+        speaker_id = int(request.args.get("id", app.config["ID"]))
+        if app.config["DEFAULT_MODE"] == 0:
+            format = request.args.get("format", app.config["FORMAT"])
+            lang = request.args.get("lang", app.config["LANG"])
+            length = float(request.args.get("length", app.config["LENGTH"]))
+            noise = float(request.args.get("noise", app.config["NOISE"]))
+            noisew = float(request.args.get("noisew", app.config["NOISEW"]))
+        elif app.config["DEFAULT_MODE"] == 1:
+            format = request.args.get("format", app.config["FORMAT"][speaker_id])
+            lang = request.args.get("lang", app.config["LANG"][speaker_id])
+            length = float(request.args.get("length", app.config["LENGTH"][speaker_id]))
+            noise = float(request.args.get("noise", app.config["NOISE"][speaker_id]))
+            noisew = float(request.args.get("noisew", app.config["NOISEW"][speaker_id]))
     elif request.method == "POST":
         text = request.form["text"]
         speaker_id = int(request.form["id"])
@@ -74,7 +81,7 @@ def voice_api():
 
     real_id = voice_obj[0][speaker_id][0]
     real_obj = voice_obj[0][speaker_id][1]
-    logger.info(msg=f"角色id：{speaker_id}")
+    logger.info(msg=f"id:{speaker_id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew}")
     logger.info(msg=f"合成文本：{text}")
 
     output, file_type, fname = real_obj.generate(text=text,

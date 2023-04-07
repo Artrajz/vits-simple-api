@@ -22,6 +22,7 @@ docker compose up -d
 
 echo -e "\n已成功升级/安装MoeGoe-simple-api"
 echo -e "配置文件目录为 $(realpath $INSTALL_DIR)"
+echo -e "${RED}2023.4.7更新-需要更新config.py，否则会报错${PLAIN}"
 echo -e "${YELLOW}如未导入vits模型则无法使用，请在配置文件目录中导入模型${PLAIN}"
 echo -e "修改配置文件后后需重新启动docker容器才能生效"
 echo -e "${YELLOW}如有疑问可以在issues中提出${PLAIN}"

@@ -18,11 +18,14 @@
 - hubert-vits语音转换
 - 同vits模型内的语音转换
 - 加载多模型，将多个模型合并为一个新的id对应角色模型的映射表（不同类别的模型是分开的映射表）
+- 自定义默认参数
 
 <details><summary>点击预览返回的映射表</summary><pre><code>
 {"HuBert-VITS":[{"0":"ルイズ"}],"VITS":[{"0":"綾地寧々"},{"1":"在原七海"},{"2":"小茸"},{"3":"唐乐吟"}],"W2V2-VITS":[]}
 </code></pre></details>
 <details><summary>点击查看更新日志</summary><pre><code>
+<h2>2023.4.7</h2>
+<span>增加配置文件可自定义默认参数，本次更新需要手动更新config.py，具体使用方法见config.py</span>
 <h2>2023.4.6</h2>
 <span>加入自动识别语种选项auto，lang参数默认修改为auto，自动识别仍有一定缺陷，请自行选择</span>
 <span>统一POST请求类型为multipart/form-data</span>

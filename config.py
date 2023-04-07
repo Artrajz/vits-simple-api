@@ -31,3 +31,42 @@ MODEL_LIST = [
 MODEL_LIST = [
 
 ]
+
+"""以下选项是修改VITS GET方法 [不指定参数]时的默认值 非必要不要动"""
+# 默认模式选项
+DEFAULT_MODE = 0
+
+if DEFAULT_MODE == 0:
+    """默认选项 自定义默认参数"""
+    # GET 默认音色id
+    ID = 0
+    # GET 默认音频格式 可选wav,ogg,silk
+    FORMAT = "wav"
+    # GET 默认语言
+    LANG = "AUTO"
+    # GET 默认语音长度，相当于调节语速，该数值越大语速越慢
+    LENGTH = 1
+    # GET 默认噪声
+    NOISE = 0.667
+    # GET 默认噪声偏差
+    NOISEW = 0.8
+elif DEFAULT_MODE == 1:
+    """进阶选项 为每个音色自定义一套默认参数 有一定编程基础再用"""
+    # vits有多少个音色
+    nums_id = 4
+    # GET 默认音色id
+    ID = 0
+    # GET 默认音频格式 可选wav,ogg,silk
+    FORMAT = ["wav" for i in range(nums_id)]
+    # GET 默认语言
+    LANG = ["AUTO" for i in range(nums_id)]
+    # GET 默认语音长度，相当于调节语速，该数值越大语速越慢
+    LENGTH = [1 for i in range(nums_id)]
+    # GET 默认噪声
+    NOISE = [0.667 for i in range(nums_id)]
+    # GET 默认噪声偏差
+    NOISEW = [0.8 for i in range(nums_id)]
+    """然后单独修改某个id的参数 自由发挥你的编程技术"""
+    LANG[1] = "zh"
+    NOISE[0], NOISE[1], NOISE[2] = 0.4, 0.4, 0.4
+    NOISEW[0], NOISEW[1], NOISEW[2] = 0.4, 0.4, 0.4
