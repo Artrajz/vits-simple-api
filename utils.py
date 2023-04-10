@@ -118,7 +118,7 @@ def wav2ogg(input, output):
 #             pilk.encode(out_pcm, output, pcm_rate=sample_rate, tencent=True)
 
 
-def to_pcm(in_path: str) -> tuple[str, int]:
+def to_pcm(in_path):
     out_path = os.path.splitext(in_path)[0] + '.pcm'
     with av.open(in_path) as in_container:
         in_stream = in_container.streams.audio[0]
@@ -139,7 +139,7 @@ def to_pcm(in_path: str) -> tuple[str, int]:
     return out_path, sample_rate
 
 
-def convert_to_silk(media_path: str) -> str:
+def convert_to_silk(media_path):
     pcm_path, sample_rate = to_pcm(media_path)
     silk_path = os.path.splitext(pcm_path)[0] + '.silk'
     pilk.encode(pcm_path, silk_path, pcm_rate=sample_rate, tencent=True)
@@ -206,7 +206,7 @@ def merge_model(merging_model):
 
 fastlid.set_languages = ["zh","ja"]
 
-def clasify_lang(text: str) -> str:
+def clasify_lang(text):
     pattern = r'[\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\>\=\?\@\[\]\{\}\\\\\^\_\`' \
               r'\！？｡＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」' \
               r'『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘\'\‛\“\”\„\‟…‧﹏.]+'

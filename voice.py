@@ -16,6 +16,7 @@ from torch import no_grad, LongTensor, inference_mode, FloatTensor
 import audonnx
 import uuid
 from io import BytesIO
+from graiax import silkcoder
 
 
 class Voice:
@@ -44,7 +45,7 @@ class Voice:
         _ = self.net_g_ms.eval()
         utils.load_checkpoint(model, self.net_g_ms)
 
-        #load hubert-soft model
+        # load hubert-soft model
         if hubert_soft_model != None and self.n_symbols == 0:
             from hubert_model import hubert_soft
             self.hubert = hubert_soft(hubert_soft_model)
@@ -72,11 +73,11 @@ class Voice:
             value = default
         return value, text
 
-    def ex_return(self, text, escape=False):
-        if escape:
-            return text.encode('unicode_escape').decode()
-        else:
-            return text
+    # def ex_return(self, text, escape=False):
+    #     if escape:
+    #         return text.encode('unicode_escape').decode()
+    #     else:
+    #         return text
 
     def return_speakers(self, escape=False):
         return self.speakers
@@ -87,9 +88,9 @@ class Voice:
         else:
             return False, text
 
-    def generate(self, text=None, speaker_id=None, format=None, length=1, noise=0.667, noisew=0.8, audio_path=None,
-                 target_id=None, escape=False,
-                 option=None, w2v2_folder=None):
+    def infer(self, text=None, speaker_id=None, length=1, noise=0.667, noisew=0.8, audio_path=None,
+              target_id=None, escape=False,
+              option=None, w2v2_folder=None):
         if self.n_symbols != 0:
             if not self.emotion_embedding:
                 length_scale, text = self.get_label_value(text, 'LENGTH', length, 'length scale')
@@ -192,23 +193,28 @@ class Voice:
                                                 noise_scale_w=noise_scale_w, length_scale=length_scale)[0][
                         0, 0].data.float().numpy()
 
-        with BytesIO() as f:
-            fname = str(uuid.uuid1())
+        return audio
 
+    def encode(self, sampling_rate, audio, format):
+        with BytesIO() as f:
+            write(f, sampling_rate, audio)
             if format == 'ogg':
-                write(f, self.hps_ms.data.sampling_rate, audio)
                 with BytesIO() as o:
                     utils.wav2ogg(f, o)
-                    return BytesIO(o.getvalue()), "audio/ogg", fname + ".ogg"
+                    return BytesIO(o.getvalue())
             elif format == 'silk':
-                file_path = self.out_path + "/" + fname + ".wav"
-                write(file_path, 24000, audio)
-                silk_path = utils.convert_to_silk(file_path)
-                os.remove(file_path)
-                return silk_path, "audio/silk", fname + ".silk"
-            else:
-                write(f, self.hps_ms.data.sampling_rate, audio)
-                return BytesIO(f.getvalue()), "audio/wav", fname + ".wav"
+                return BytesIO(silkcoder.encode(f))
+            elif format == 'wav':
+                return BytesIO(f.getvalue())
+
+    def generate(self, text=None, speaker_id=None, format=None, length=1, noise=0.667, noisew=0.8, audio_path=None,
+                 target_id=None, escape=False,
+                 option=None, w2v2_folder=None):
+        audio = self.infer(text, speaker_id, length, noise, noisew, audio_path,
+                           target_id, escape,
+                           option, w2v2_folder)
+
+        return self.encode(self.hps_ms.data.sampling_rate, audio, format)
 
     def voice_conversion(self, audio_path, original_id, target_id):
 

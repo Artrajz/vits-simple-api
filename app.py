@@ -84,12 +84,15 @@ def voice_api():
     logger.info(msg=f"id:{speaker_id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew}")
     logger.info(msg=f"合成文本：{text}")
 
-    output, file_type, fname = real_obj.generate(text=text,
-                                                 speaker_id=real_id,
-                                                 format=format,
-                                                 length=length,
-                                                 noise=noise,
-                                                 noisew=noisew)
+    fname = str(uuid.uuid1())
+    file_type = f"audio/{format}"
+
+    output = real_obj.generate(text=text,
+                               speaker_id=real_id,
+                               format=format,
+                               length=length,
+                               noise=noise,
+                               noisew=noisew)
 
     return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
 

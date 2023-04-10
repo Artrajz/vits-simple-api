@@ -19,7 +19,7 @@ opencc
 audonnx
 flask
 av
-pilk
+graiax-silkcoder[libsndfile]
 flask_apscheduler
 fasttext
 fastlid

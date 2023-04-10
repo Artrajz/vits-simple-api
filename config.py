@@ -37,7 +37,7 @@ MODEL_LIST = [
 DEFAULT_MODE = 0
 
 if DEFAULT_MODE == 0:
-    """默认选项 自定义默认参数"""
+    """默认选项0 自定义默认参数"""
     # GET 默认音色id
     ID = 0
     # GET 默认音频格式 可选wav,ogg,silk
@@ -51,7 +51,7 @@ if DEFAULT_MODE == 0:
     # GET 默认噪声偏差
     NOISEW = 0.8
 elif DEFAULT_MODE == 1:
-    """进阶选项 为每个音色自定义一套默认参数 有一定编程基础再用"""
+    """进阶选项0 为每个音色自定义一套默认参数 有一定编程基础再用"""
     # vits有多少个音色
     nums_id = 4
     # GET 默认音色id

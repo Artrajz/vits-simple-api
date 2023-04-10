@@ -5,10 +5,14 @@
     <br/>
     <p>
         <img src="https://img.shields.io/github/license/Artrajz/MoeGoe-Simple-API">
-   		<img src="https://img.shields.io/badge/python-3.9%7C3.10-green">
+    	<img src="https://img.shields.io/badge/python-3.9%7C3.10-green">
+        <a href="https://hub.docker.com/r/artrajz/moegoe-simple-api">
+            <img src="https://img.shields.io/docker/pulls/artrajz/moegoe-simple-api"></a>
     </p>
     <br/>
 </div>
+
+
 
 
 
