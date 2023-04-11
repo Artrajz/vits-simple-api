@@ -10,3 +10,5 @@ services:
     volumes:
       - ./Model:/app/Model # 挂载模型文件夹
       - ./config.py:/app/config.py # 挂载配置文件
+      - /etc/timezone:/etc/timezone #时间同步
+      - /etc/localtime:/etc/localtime
