@@ -4,7 +4,9 @@ import uuid
 from flask import Flask, request, send_file, jsonify, make_response
 from werkzeug.utils import secure_filename
 from flask_apscheduler import APScheduler
-from utils import clean_folder, merge_model, check_is_none, clasify_lang
+from utils.utils import clean_folder, check_is_none
+from utils.npl import clasify_lang
+from utils.merge import merge_model
 
 app = Flask(__name__)
 app.config.from_pyfile("config.py")
@@ -33,11 +35,10 @@ def index():
 
 @app.route('/voice/speakers', methods=["GET", "POST"])
 def voice_speakers_api():
-    speakers_list = voice_speakers
     json = {
-        "VITS": speakers_list[0],
-        "HuBert-VITS": speakers_list[1],
-        "W2V2-VITS": speakers_list[2]
+        "VITS": voice_speakers[0],
+        "HuBert-VITS": voice_speakers[1],
+        "W2V2-VITS": voice_speakers[2]
     }
 
     return jsonify(json)
@@ -77,22 +78,22 @@ def voice_api():
     elif lang.upper() == "JA":
         text = f"[JA]{text}[JA]"
     elif lang.upper() == "AUTO":
-        text = clasify_lang(text)
+        pass
 
     real_id = voice_obj[0][speaker_id][0]
     real_obj = voice_obj[0][speaker_id][1]
     logger.info(msg=f"id:{speaker_id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew}")
     logger.info(msg=f"合成文本：{text}")
 
-    fname = str(uuid.uuid1())
+    fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
 
-    output = real_obj.generate(text=text,
-                               speaker_id=real_id,
-                               format=format,
-                               length=length,
-                               noise=noise,
-                               noisew=noisew)
+    output = real_obj.create_infer_task(text=text,
+                                        speaker_id=real_id,
+                                        format=format,
+                                        length=length,
+                                        noise=noise,
+                                        noisew=noisew)
 
     return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
 
@@ -151,9 +152,7 @@ def voice_conversion_api():
         output = real_obj.voice_conversion(os.path.join(app.config['UPLOAD_FOLDER'], fname),
                                            real_original_id, real_target_id)
         file_type = f"audio/{format}"
-
         return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
-        # return output
 
 
 @app.route('/voice/check', methods=["GET", "POST"])
@@ -209,5 +208,5 @@ def clean_task():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=app.config["PORT"])  # 如果对外开放用这个,docker部署也用这个
-    # app.run(host='127.0.0.1', port=app.config["PORT"], debug=True)  # 本地运行、调试
+    # app.run(host='0.0.0.0', port=app.config["PORT"])  # 如果对外开放用这个,docker部署也用这个
+    app.run(host='127.0.0.1', port=app.config["PORT"], debug=True)  # 本地运行、调试
