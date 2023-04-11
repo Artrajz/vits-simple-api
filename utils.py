@@ -1,20 +1,14 @@
 import logging
 import os
 import sys
-from io import BytesIO
 from json import loads
 import av
-import pilk
-from flask import Flask
 from torch import load, FloatTensor
 from numpy import float32
 import librosa
 import regex as re
 from fastlid import fastlid
 from voice import Voice
-
-app = Flask(__name__)
-app.config.from_pyfile("config.py")
 
 
 class HParams():
@@ -99,54 +93,6 @@ def wav2ogg(input, output):
                 o.mux(p)
 
 
-# def wav2silk(input, output):
-#     with av.open(input) as in_wav:
-#         in_stream = in_wav.streams.audio[0]
-#         sample_rate = in_stream.codec_context.sample_rate
-#         with BytesIO() as pcm:
-#             with av.open(pcm, 'w', 's16le') as out_pcm:
-#                 out_stream = out_pcm.add_stream(
-#                     'pcm_s16le',
-#                     rate=sample_rate,
-#                     layout='mono'
-#                 )
-#                 for frame in in_wav.decode(in_stream):
-#                     frame.pts = None
-#                     for packet in out_stream.encode(frame):
-#                         out_pcm.mux(packet)
-#
-#             pilk.encode(out_pcm, output, pcm_rate=sample_rate, tencent=True)
-
-
-def to_pcm(in_path):
-    out_path = os.path.splitext(in_path)[0] + '.pcm'
-    with av.open(in_path) as in_container:
-        in_stream = in_container.streams.audio[0]
-        sample_rate = in_stream.codec_context.sample_rate
-        with av.open(out_path, 'w', 's16le') as out_container:
-            out_stream = out_container.add_stream(
-                'pcm_s16le',
-                rate=sample_rate,
-                layout='mono'
-            )
-            try:
-                for frame in in_container.decode(in_stream):
-                    frame.pts = None
-                    for packet in out_stream.encode(frame):
-                        out_container.mux(packet)
-            except:
-                pass
-    return out_path, sample_rate
-
-
-def convert_to_silk(media_path):
-    pcm_path, sample_rate = to_pcm(media_path)
-    silk_path = os.path.splitext(pcm_path)[0] + '.silk'
-    pilk.encode(pcm_path, silk_path, pcm_rate=sample_rate, tencent=True)
-    os.remove(pcm_path)
-    return silk_path
-
-
 def clean_folder(folder_path):
     for filename in os.listdir(folder_path):
         file_path = os.path.join(folder_path, filename)
@@ -204,7 +150,9 @@ def merge_model(merging_model):
 
     return voice_obj, voice_speakers
 
-fastlid.set_languages = ["zh","ja"]
+
+fastlid.set_languages = ["zh", "ja"]
+
 
 def clasify_lang(text):
     pattern = r'[\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\>\=\?\@\[\]\{\}\\\\\^\_\`' \
@@ -218,10 +166,10 @@ def clasify_lang(text):
         if check_is_none(word): continue
         lang = fastlid(word)[0]
         if pre == "":
-            text = text[:p]+text[p:].replace(word, f'[{lang.upper()}]' + word, 1)
+            text = text[:p] + text[p:].replace(word, f'[{lang.upper()}]' + word, 1)
             p += len(f'[{lang.upper()}]')
         elif pre != lang:
-            text = text[:p]+text[p:].replace(word, f'[{pre.upper()}][{lang.upper()}]' + word, 1)
+            text = text[:p] + text[p:].replace(word, f'[{pre.upper()}][{lang.upper()}]' + word, 1)
             p += len(f'[{pre.upper()}][{lang.upper()}]')
         pre = lang
         p += text[p:].index(word) + len(word)
@@ -231,7 +179,7 @@ def clasify_lang(text):
 
 
 # is none -> True,is not none -> False
-def check_is_none(s: str) -> bool:
+def check_is_none(s):
     s = str(s)
     if s == None or s == "" or s.isspace():
         return True
