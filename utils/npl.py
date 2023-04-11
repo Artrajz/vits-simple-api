@@ -47,9 +47,8 @@ def cut(text):
 
 
 def sentence_split(text):
-    list = cut(text)
     sentence_list = []
-    for i in list:
+    for i in cut(text):
         if check_is_none(i): continue
         sentence_list.append(clasify_lang(i))
     return sentence_list
