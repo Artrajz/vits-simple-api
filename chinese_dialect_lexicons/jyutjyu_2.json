@@ -1,0 +1,19 @@
+{
+  "name": "Cantonese to IPA",
+  "segmentation": {
+    "type": "mmseg",
+    "dict": {
+      "type": "ocd2",
+      "file": "jyutjyu_2.ocd2"
+    }
+  },
+  "conversion_chain": [{
+    "dict": {
+      "type": "group",
+      "dicts": [{
+        "type": "ocd2",
+        "file": "jyutjyu_2.ocd2"
+      }] 
+    }
+  }]
+}
