@@ -1,5 +1,6 @@
 import os
 import logging
+import logzero
 import uuid
 from flask import Flask, request, send_file, jsonify, make_response
 from werkzeug.utils import secure_filename
@@ -17,6 +18,7 @@ scheduler.start()
 
 logger = logging.getLogger('moegoe-simple-api')
 logger.setLevel(logging.INFO)
+logzero.loglevel(logging.WARNING)
 
 voice_obj, voice_speakers = merge_model(app.config["MODEL_LIST"])
 
