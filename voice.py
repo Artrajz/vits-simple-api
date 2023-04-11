@@ -20,7 +20,7 @@ from graiax import silkcoder
 
 
 class Voice:
-    def __init__(self, model, config, hubert_soft_model=None, out_path=None):
+    def __init__(self, model, config, hubert_soft_model=None, w2v2_model=None, out_path=None):
         self.out_path = out_path
         if not os.path.exists(self.out_path):
             try:
@@ -49,6 +49,8 @@ class Voice:
         if hubert_soft_model != None and self.n_symbols == 0:
             from hubert_model import hubert_soft
             self.hubert = hubert_soft(hubert_soft_model)
+        if w2v2_model != None and self.emotion_embedding:
+            self.w2v2 = audonnx.load(w2v2_model)
 
     def get_text(self, text, hps, cleaned=False):
         if cleaned:
@@ -72,12 +74,6 @@ class Voice:
         else:
             value = default
         return value, text
-
-    # def ex_return(self, text, escape=False):
-    #     if escape:
-    #         return text.encode('unicode_escape').decode()
-    #     else:
-    #         return text
 
     def return_speakers(self, escape=False):
         return self.speakers
@@ -108,45 +104,40 @@ class Voice:
                                                 noise_scale_w=noise_scale_w,
                                                 length_scale=length_scale)[0][0, 0].data.cpu().float().numpy()
 
-            # else:
-            #     w2v2_model = audonnx.load(os.path.dirname(w2v2_folder))
-            #
-            #     if option == 'clean':
-            #         self.ex_print(_clean_text(
-            #             text, self.hps_ms.data.text_cleaners), escape)
-            #
-            #     length_scale, text = self.get_label_value(
-            #         text, 'LENGTH', length, 'length scale')
-            #     noise_scale, text = self.get_label_value(
-            #         text, 'NOISE', noise, 'noise scale')
-            #     noise_scale_w, text = self.get_label_value(
-            #         text, 'NOISEW', noisew, 'deviation of noise')
-            #     cleaned, text = self.get_label(text, 'CLEANED')
-            #
-            #     stn_tst = self.get_text(text, self.hps_ms, cleaned=cleaned)
-            #
-            #     emotion_reference = input('Path of an emotion reference: ')
-            #     if emotion_reference.endswith('.npy'):
-            #         emotion = np.load(emotion_reference)
-            #         emotion = FloatTensor(emotion).unsqueeze(0)
-            #     else:
-            #         audio16000, sampling_rate = librosa.load(
-            #             emotion_reference, sr=16000, mono=True)
-            #         emotion = w2v2_model(audio16000, sampling_rate)[
-            #             'hidden_states']
-            #         emotion_reference = re.sub(
-            #             r'\..*$', '', emotion_reference)
-            #         np.save(emotion_reference, emotion.squeeze(0))
-            #         emotion = FloatTensor(emotion)
-            #
-            #     with no_grad():
-            #         x_tst = stn_tst.unsqueeze(0)
-            #         x_tst_lengths = LongTensor([stn_tst.size(0)])
-            #         sid = LongTensor([speaker_id])
-            #         audio = self.net_g_ms.infer(x_tst, x_tst_lengths, sid=sid, noise_scale=noise_scale,
-            #                                     noise_scale_w=noise_scale_w,
-            #                                     length_scale=length_scale, emotion_embedding=emotion)[0][
-            #             0, 0].data.cpu().float().numpy()
+            else:
+
+                length_scale, text = self.get_label_value(
+                    text, 'LENGTH', length, 'length scale')
+                noise_scale, text = self.get_label_value(
+                    text, 'NOISE', noise, 'noise scale')
+                noise_scale_w, text = self.get_label_value(
+                    text, 'NOISEW', noisew, 'deviation of noise')
+                cleaned, text = self.get_label(text, 'CLEANED')
+
+                stn_tst = self.get_text(text, self.hps_ms, cleaned=cleaned)
+
+                emotion_reference = input('Path of an emotion reference: ')
+                if emotion_reference.endswith('.npy'):
+                    emotion = np.load(emotion_reference)
+                    emotion = FloatTensor(emotion).unsqueeze(0)
+                else:
+                    audio16000, sampling_rate = librosa.load(
+                        emotion_reference, sr=16000, mono=True)
+                    emotion = self.w2v2(audio16000, sampling_rate)[
+                        'hidden_states']
+                    emotion_reference = re.sub(
+                        r'\..*$', '', emotion_reference)
+                    np.save(emotion_reference, emotion.squeeze(0))
+                    emotion = FloatTensor(emotion)
+
+                with no_grad():
+                    x_tst = stn_tst.unsqueeze(0)
+                    x_tst_lengths = LongTensor([stn_tst.size(0)])
+                    sid = LongTensor([speaker_id])
+                    audio = self.net_g_ms.infer(x_tst, x_tst_lengths, sid=sid, noise_scale=noise_scale,
+                                                noise_scale_w=noise_scale_w,
+                                                length_scale=length_scale, emotion_embedding=emotion)[0][
+                        0, 0].data.cpu().float().numpy()
 
         else:
             if audio_path != '[VC]':
