@@ -17,7 +17,7 @@ def clasify_lang(text):
         if check_is_none(word): continue
         lang = fastlid(word)[0]
         if pre == "":
-            text = text[:p] + text[p:].replace(word, f'[{lang.upper()}]' + word + ",", 1)
+            text = text[:p] + text[p:].replace(word, f'[{lang.upper()}]' + word, 1)
             p += len(f'[{lang.upper()}]')
         elif pre != lang:
             text = text[:p] + text[p:].replace(word, f'[{pre.upper()}][{lang.upper()}]' + word, 1)
@@ -32,18 +32,17 @@ def clasify_lang(text):
 def cut(text):
     pattern = r'[\!\(\)\,\-\.\/\:\;\?\？\。\，\、\；\：]+'
     sentences = re.split(pattern, text)
-
     sentence_list = []
     count = 0
     p = 0
     for sentence in sentences:
         count += len(sentence) + 1
         if count >= 50:
-            print(111, text[p:p + count])
+            sentence_list.append(text[p:p + count])
             p += count
             count = 0
-            sentence_list.append(text[count:])
-
+    if p < len(sentence):
+        sentence_list.append(text[p:])
     return sentence_list
 
 

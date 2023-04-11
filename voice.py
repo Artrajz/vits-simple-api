@@ -202,7 +202,6 @@ class vits:
         tasks = []
         sentence_list = sentence_split(text)
         for sentence in sentence_list:
-            print(333,sentence)
             tasks.append(
                 self.get_infer_param(text=sentence, speaker_id=speaker_id, length=length, noise=noise, noisew=noisew,
                                      target_id=target_id))
