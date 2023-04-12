@@ -25,7 +25,7 @@
 - Long text batch processing 长文本批处理
 
 <details><summary>Update Logs</summary><pre><code>
-<h2>2023.4.8</h2>
+<h2>2023.4.12</h2>
 <span>项目由MoeGoe-Simple-API更名为vits-simple-api，支持长文本批处理，增加长文本分段阈值max</span>
 <h2>2023.4.7</h2>
 <span>增加配置文件可自定义默认参数，本次更新需要手动更新config.py，具体使用方法见config.py</span>
