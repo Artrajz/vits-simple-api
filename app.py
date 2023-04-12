@@ -54,18 +54,12 @@ def voice_api():
         if request.method == "GET":
             text = request.args.get("text")
             speaker_id = int(request.args.get("id", app.config["ID"]))
-            if app.config["DEFAULT_MODE"] == 0:
-                format = request.args.get("format", app.config["FORMAT"])
-                lang = request.args.get("lang", app.config["LANG"])
-                length = float(request.args.get("length", app.config["LENGTH"]))
-                noise = float(request.args.get("noise", app.config["NOISE"]))
-                noisew = float(request.args.get("noisew", app.config["NOISEW"]))
-            elif app.config["DEFAULT_MODE"] == 1:
-                format = request.args.get("format", app.config["FORMAT"][speaker_id])
-                lang = request.args.get("lang", app.config["LANG"][speaker_id])
-                length = float(request.args.get("length", app.config["LENGTH"][speaker_id]))
-                noise = float(request.args.get("noise", app.config["NOISE"][speaker_id]))
-                noisew = float(request.args.get("noisew", app.config["NOISEW"][speaker_id]))
+            format = request.args.get("format", app.config["FORMAT"])
+            lang = request.args.get("lang", app.config["LANG"])
+            length = float(request.args.get("length", app.config["LENGTH"]))
+            noise = float(request.args.get("noise", app.config["NOISE"]))
+            noisew = float(request.args.get("noisew", app.config["NOISEW"]))
+            max = int(request.form["max"], app.config["MAX"])
         elif request.method == "POST":
             text = request.form["text"]
             speaker_id = int(request.form["id"])
@@ -74,6 +68,7 @@ def voice_api():
             length = float(request.form["length"])
             noise = float(request.form["noise"])
             noisew = float(request.form["noisew"])
+            max = int(request.form["max"])
     except Exception:
         res = make_response("param error")
         res.status = 400
@@ -102,7 +97,8 @@ def voice_api():
                                         format=format,
                                         length=length,
                                         noise=noise,
-                                        noisew=noisew)
+                                        noisew=noisew,
+                                        max=max)
     t2 = time.time()
     logger.info(msg=f"finish in {(t2 - t1):.2f}s")
 
@@ -182,8 +178,6 @@ def voice_conversion_api():
         #     res.headers["msg"] = "speaker IDs are in diffrent Model!"
         #     return res
 
-
-
         logger.info(msg=f"HuBert-soft orginal_id:{original_id} target_id:{target_id}")
         t1 = time.time()
         output = real_obj.voice_conversion(os.path.join(app.config['UPLOAD_FOLDER'], fname),
@@ -216,15 +210,15 @@ def check():
         return res
 
     if model.upper() not in ("VITS", "HUBERT", "W2V2"):
-        res = make_response("model is not exist")
+        res = make_response("model does not exist")
         res.status = 404
-        res.headers["msg"] = "model is not exist"
+        res.headers["msg"] = "model does not exist"
         return res
 
     if check_is_none(speaker_id):
-        res = make_response("id is not exist")
+        res = make_response("id is empty")
         res.status = 404
-        res.headers["msg"] = "id is not exist"
+        res.headers["msg"] = "id is empty"
         return res
 
     if model.upper() == "VITS":

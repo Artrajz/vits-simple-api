@@ -1,6 +1,6 @@
 <div class="title" align=center>
-    <h1>MoeGoe-Simple-API</h1>
-	<div>MoeGoe-Simple-API 是一个易部署的api，可以通过api的方式调用语音合成，可用于聊天机器人等。</div>
+    <h1>vits-simple-api</h1>
+	<div>Simply call the vits api</div>
     <br/>
     <br/>
     <p>
@@ -14,20 +14,19 @@
 
 
 
+# Feature
 
+- VITS text-to-speech 语音合成
+- HuBert-soft VITS 语音转换
+- VITS voice conversion 语音转换
+- Support for loading multiple models 加载多模型
+- Automatic language recognition and processing,support for user-defined language type range 自动识别语言并处理，支持自定义语言类型范围
+- Customize default parameters 自定义默认参数
+- Long text batch processing 长文本批处理
 
-#### 目前支持的功能
-
-- vits语音合成
-- hubert-vits语音转换
-- 同vits模型内的语音转换
-- 加载多模型，将多个模型合并为一个新的id对应角色模型的映射表（不同类别的模型是分开的映射表）
-- 自定义默认参数
-
-<details><summary>点击预览返回的映射表</summary><pre><code>
-{"HuBert-VITS":[{"0":"ルイズ"}],"VITS":[{"0":"綾地寧々"},{"1":"在原七海"},{"2":"小茸"},{"3":"唐乐吟"}],"W2V2-VITS":[]}
-</code></pre></details>
-<details><summary>点击查看更新日志</summary><pre><code>
+<details><summary>Update Logs</summary><pre><code>
+<h2>2023.4.8</h2>
+<span>重构，项目由MoeGoe-Simple-API更名为vits-simple-api，支持长文本批处理，增加长文本分段阈值max</span>
 <h2>2023.4.7</h2>
 <span>增加配置文件可自定义默认参数，本次更新需要手动更新config.py，具体使用方法见config.py</span>
 <h2>2023.4.6</h2>
@@ -36,26 +35,28 @@
 </code></pre></details>
 
 
-demo：`https://api.artrajz.cn/py/voice?text=喂？听得到吗&id=142`~~不保证该API的稳定性~~
 
-# 如何部署
 
-## Docker部署
+demo：`https://api.artrajz.cn/py/voice?text=你好,こんにちは&id=142`
 
-### docker镜像拉取脚本
+# Deploy
+
+## Docker
+
+### docker image pull script 镜像拉取脚本
 
 ```
 bash -c "$(wget -O- https://raw.githubusercontent.com/Artrajz/MoeGoe-Simple-API/main/moegoe-simple-api-installer-latest.sh)"
 ```
 
-- 镜像大小为5g，所以拉取会比较慢，解压后为8g，请准备足够的磁盘空间
-- 拉取成功后由于没有导入vits模型所以无法使用，需要按以下步骤导入模型
+- The image size is 5GB, and it will be 8GB after decompression. Please prepare enough disk space.
+- After a successful pull, the vits model needs to be imported before use. Please follow the steps below to import the model.
 
-### 下载VITS模型
+### Download  VITS model 下载VITS模型
 
-VITS模型放入`/usr/local/moegoe-simple-api/Model`文件夹中，模型文件夹中要有.pth和config.json文件
+Put the model into `/usr/local/moegoe-simple-api/Model`
 
-<details><summary>点击查看Model文件夹结构</summary><pre><code>
+<details><summary>Folder structure</summary><pre><code>
 ├─g
 │      config.json
 │      G_953000.pth
@@ -75,15 +76,14 @@ VITS模型放入`/usr/local/moegoe-simple-api/Model`文件夹中，模型文件�
 </code></pre></details>
 
 
-### 修改模型路径
 
-在 `/usr/local/moegoe-simple-api/config.py` 中修改模型路径
+### Modify model path 修改模型路径
 
-<details><summary>点击查看config.py模型路径填写示例</summary><pre><code>
-vits模型路径填写方法，MODEL_LIST中的每一行是
-[ABS_PATH+"/Model/{模型文件夹}/{.pth模型}", ABS_PATH+"/Model/{模型文件夹}/config.json"],
-也可以写相对路径或绝对路径，由于windows和linux路径写法不同，用上面的写法或绝对路径最稳妥
-示例：
+Modify in  `/usr/local/moegoe-simple-api/config.py` 
+
+<details><summary>config.py</summary><pre><code>
+For each model, the filling method is as follows 模型列表中每个模型的填写方法如下
+example 示例:
 MODEL_LIST = [
     #VITS
     [ABS_PATH+"/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH+"/Model/Nene_Nanami_Rong_Tang/config.json"],
@@ -93,6 +93,7 @@ MODEL_LIST = [
     [ABS_PATH+"/Model/louise/360_epochs.pth", ABS_PATH+"/Model/louise/config.json", ABS_PATH+"/Model/louise/hubert-soft-0d54a1f4.pt"],
 ]
 </code></pre></details>
+
 
 
 ### 开始使用！
@@ -101,23 +102,21 @@ MODEL_LIST = [
 
 或再次执行拉取脚本
 
-### 镜像更新方法
+### Image update 镜像更新方法
 
-重新执行docker镜像拉取脚本即可
+Run the docker image pull script again 重新执行docker镜像拉取脚本即可
 
-## 直接部署
+## Direct deployment
 
-### 下载项目
+### 克隆项目
 
-下载https://github.com/Artrajz/MoeGoe-Simple-API/archive/refs/heads/main.zip
+`git clone https://github.com/Artrajz/MoeGoe-Simple-API.git`
 
-或clone项目`git clone https://github.com/Artrajz/MoeGoe-Simple-API.git`
+### Download  VITS model 下载VITS模型
 
-### 下载VITS模型
+Put the model into `/usr/local/moegoe-simple-api/Model`
 
-VITS模型放入`/path/to/moegoe-simple-api/Model`文件夹中，模型文件夹中要有.pth和config.json文件
-
-<details><summary>点击查看Model文件夹结构</summary><pre><code>
+<details><summary>Folder structure</summary><pre><code>
 ├─g
 │      config.json
 │      G_953000.pth
@@ -138,15 +137,13 @@ VITS模型放入`/path/to/moegoe-simple-api/Model`文件夹中，模型文件夹
 
 
 
-### 修改模型路径
+### Modify model path 修改模型路径
 
-在 `/path/to/moegoe-simple-api/config.py` 中修改模型路径
+Modify in  `/usr/local/moegoe-simple-api/config.py` 
 
-<details><summary>点击查看config.py模型路径填写示例</summary><pre><code>
-vits模型路径填写方法，MODEL_LIST中的每一行是
-[ABS_PATH+"/Model/{模型文件夹}/{.pth模型}", ABS_PATH+"/Model/{模型文件夹}/config.json"],
-也可以写相对路径或绝对路径，由于windows和linux路径写法不同，用上面的写法或绝对路径最稳妥
-示例：
+<details><summary>config.py</summary><pre><code>
+For each model, the filling method is as follows 模型列表中每个模型的填写方法如下
+example 示例:
 MODEL_LIST = [
     #VITS
     [ABS_PATH+"/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH+"/Model/Nene_Nanami_Rong_Tang/config.json"],
@@ -159,11 +156,14 @@ MODEL_LIST = [
 
 
 
-###  下载python依赖
 
-建议创建python虚拟环境，virtualenv或conda，并使用**python3.9**以上版本
+###  Download python dependencies 下载python依赖
+
+A python virtual environment is recommended，use python >= 3.9
 
 `pip install -r requirements.txt`
+
+Fasttext may not be installed on windows, you can install it with the following command,or download wheels [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext)
 
 windows下可能安装不了fasttext,可以用以下命令安装，附[wheels下载地址](https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext)
 
@@ -174,85 +174,33 @@ pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2
 pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp39-cp39-win_amd64.whl
 ```
 
-### 开始使用
+### Startup 启动
 
 `python app.py`
 
-# 参数
-
-## 语音合成voice vits
-
-| Name          | Parameter | Is must | Default | Value          | Instruction                                                  |
-| ------------- | --------- | ------- | ------- | -------------- | ------------------------------------------------------------ |
-| 合成文本      | text      | true    |         | text           |                                                              |
-| 角色id        | id        | false   | 0       | (int)          |                                                              |
-| 音频格式      | format    | false   | wav     | wav,ogg,silk   | silk支持tx系语音                                             |
-| 文本语言      | lang      | false   | auto    | auto,zh,ja,mix | auto为自动识别语言模式（仅中日文），也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹, |
-| 语音长度/语速 | length    | false   | 1.0     | (float)        | 调节语音长度，相当于调节语速，该数值越大语速越慢             |
-| 噪声          | noise     | false   | 0.667   | (float)        | 噪声微调，一般用默认值即可                                   |
-| 噪声偏差      | noisew    | false   | 0.8     | (float)        | 噪声偏差微调，一般用默认值即可                               |
-
-## 语音转换voice conversion
-
-| Name       | Parameter   | Is must | Default | Value      | Instruction            |
-| ---------- | ----------- | ------- | ------- | ---------- | ---------------------- |
-| 上传音频   | upload      | true    |         | audio file | 只支持wav和ogg         |
-| 源角色id   | original_id | true    |         | (number)   | 上传文件所使用的角色id |
-| 目标角色id | target_id   | true    |         | (number)   | 要转换的目标角色id     |
-
-## 语音转换 HuBert-VITS
-
-| Name          | Parameter | Is must | Default | Value        | Instruction                                      |
-| ------------- | --------- | ------- | ------- | ------------ | ------------------------------------------------ |
-| 上传音频      | upload    | true    |         | audio file   | 只支持wav和ogg                                   |
-| 目标角色id    | id        | true    |         | (int)        |                                                  |
-| 音频格式      | format    | true    |         | wav,ogg,silk | silk支持tx系语音                                 |
-| 文本语言      | lang      | true    |         | zh,ja,mix    | 当lang=mix时，文本应该用[ZH] 或 [JA] 包裹        |
-| 语音长度/语速 | length    | true    |         | (float)      | 调节语音长度，相当于调节语速，该数值越大语速越慢 |
-| 噪声          | noise     | true    |         | (float)      | 噪声微调                                         |
-| 噪声偏差      | noisew    | true    |         | (float)      | 噪声偏差微调                                     |
-
-# 调用方法
+# API
 
 ## GET
 
-#### 映射表
+#### speakers list 
 
-- GET/POST http://127.0.0.1:23456/voice/speakers
+- GET http://127.0.0.1:23456/voice/speakers
 
-  返回id对应角色的映射表（json格式）
+  返回id对应角色的映射表
 
-#### 语音合成voice vits
+#### voice vits
 
 - GET http://127.0.0.1/voice?text=text
 
-  最基础的访问方法,其他参数不指定时均为默认值，但text是**必须**的
-
-- GET http://127.0.0.1/voice?text=[JA]text[JA][ZH]text[ZH]&id=0&format=wav&lang=mix
-
-  返回wav音频文件
-
-- GET http://127.0.0.1/voice?text=[JA]text[JA][ZH]text[ZH]&id=0&format=ogg&lang=mix
-
-  返回ogg音频文件
-
-- GET http://127.0.0.1/voice?text=text&lang=zh
-
-  设定语言为zh，则文本无需[ZH]包裹
-
-- GET http://127.0.0.1/voice?text=text&lang=ja
-
-  设定语言为ja，则文本无需[JA]包裹
+  其他参数不指定时均为默认值
 
 - GET http://127.0.0.1/voice?text=text&id=142&format=wav&lang=zh&length=1.4
 
   文本为text，角色id为142，音频格式为wav，文本语言为zh，语音长度为1.4，其余参数默认
 
-#### id校验
+#### check
 
 - GET http://127.0.0.1:23456/voice/check?id=0&model=vits
-
-  success:status=200,msg="success" 
 
 ## POST
 
@@ -364,23 +312,47 @@ def voice_conversion(upload_path):
     print(path)
 ```
 
-# 可能遇到的问题
+# Parameter
 
-~~本人遇到过的问题~~
+## voice vits 语音合成
 
-### 运行后服务器无响应
+| Name          | Parameter | Is must | Default | Type  | Instruction                                                  |
+| ------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
+| 合成文本      | text      | true    |         | str   |                                                              |
+| 角色id        | id        | false   | 0       | int   |                                                              |
+| 音频格式      | format    | false   | wav     | str   | wav,ogg,silk                                                 |
+| 文本语言      | lang      | false   | auto    | str   | auto,zh,ja,mix.auto为自动识别语言模式（仅中日文），也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹, |
+| 语音长度/语速 | length    | false   | 1.0     | float | 调节语音长度，相当于调节语速，该数值越大语速越慢             |
+| 噪声          | noise     | false   | 0.667   | float |                                                              |
+| 噪声偏差      | noisew    | false   | 0.8     | float |                                                              |
+| 分段阈值      | max       | false   | 50      | int   |                                                              |
 
-可能是内存不足，可以尝试减少模型加载数量。
+## voice conversion 语音转换
 
-### 模型推理时服务器无响应
+| Name       | Parameter   | Is must | Default | Type       | Instruction            |
+| ---------- | ----------- | ------- | ------- | ---------- | ---------------------- |
+| 上传音频   | upload      | true    |         | audio file | wav or ogg             |
+| 源角色id   | original_id | true    |         | int        | 上传文件所使用的角色id |
+| 目标角色id | target_id   | true    |         | int        | 要转换的目标角色id     |
 
-可能是同时处理多个推理任务导致CPU堵塞，可以尝试在*voice.py*中取消以下**两行**代码的注释，意思是让pytorch只使用1个物理CPU核心，防止一个任务抢占过多CPU资源。
+## HuBert-VITS 语音转换
 
-```python
-import torch
-torch.set_num_threads(1)
-```
+| Name          | Parameter | Is must | Default | Type       | Instruction                                      |
+| ------------- | --------- | ------- | ------- | ---------- | ------------------------------------------------ |
+| 上传音频      | upload    | true    |         | audio file |                                                  |
+| 目标角色id    | target_id | true    |         | int        |                                                  |
+| 音频格式      | format    | true    |         | str        | wav,ogg,silk                                     |
+| 语音长度/语速 | length    | true    |         | float      | 调节语音长度，相当于调节语速，该数值越大语速越慢 |
+| 噪声          | noise     | true    |         | float      |                                                  |
+| 噪声偏差      | noisew    | true    |         | float      |                                                  |
 
-# 鸣谢
+# communication
 
- 该项目基于[CjangCjengh](https://github.com/CjangCjengh)的[MoeGoe](https://github.com/CjangCjengh/MoeGoe)
+Learning and communication,now there is only Chinese [QQ group](https://qm.qq.com/cgi-bin/qm/qr?k=-1GknIe4uXrkmbDKBGKa1aAUteq40qs_&jump_from=webapi&authKey=x5YYt6Dggs1ZqWxvZqvj3fV8VUnxRyXm5S5Kzntc78+Nv3iXOIawplGip9LWuNR/)
+
+# Acknowledgements
+
+- vits:https://github.com/jaywalnut310/vits
+- MoeGoe:https://github.com/CjangCjengh/MoeGoe
+
+# 
