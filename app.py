@@ -58,7 +58,7 @@ def voice_api():
             length = float(request.args.get("length", app.config["LENGTH"]))
             noise = float(request.args.get("noise", app.config["NOISE"]))
             noisew = float(request.args.get("noisew", app.config["NOISEW"]))
-            max = int(request.args.get("noisew", app.config["MAX"]))
+            max = int(request.args.get("max", app.config["MAX"]))
         elif request.method == "POST":
             text = request.form["text"]
             speaker_id = int(request.form["id"])
