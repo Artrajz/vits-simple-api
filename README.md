@@ -46,7 +46,7 @@ demo：`https://api.artrajz.cn/py/voice?text=你好,こんにちは&id=142`
 ### docker image pull script 镜像拉取脚本
 
 ```
-bash -c "$(wget -O- https://raw.githubusercontent.com/Artrajz/MoeGoe-Simple-API/main/moegoe-simple-api-installer-latest.sh)"
+bash -c "$(wget -O- https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/vits-simple-api-installer-latest.sh)"
 ```
 
 - The image size is 5GB, and it will be 8GB after decompression. Please prepare enough disk space.
