@@ -4,7 +4,7 @@ numpy==1.23.3
 scipy
 torch
 unidecode
-openjtalk>=0.3.0.dev2
+openjtalk==0.3.0.dev2
 jamo
 pypinyin
 jieba
