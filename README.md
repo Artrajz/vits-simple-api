@@ -239,13 +239,14 @@ def voice_vits(text):
         "length":"1",
         "noise":"0.667",
         "noisew":"0.8",
+        "max": "50"
     }
     boundary = '----VoiceConversionFormBoundary' \
                + ''.join(random.sample(string.ascii_letters + string.digits, 16))
     
     m = MultipartEncoder(fields=fields, boundary=boundary)
     headers = {"Content-Type": m.content_type}
-    url = f"{addr}/voice"
+    url = f"{base}/voice"
 
     res = requests.post(url=url,data=m,headers=headers)
     fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
