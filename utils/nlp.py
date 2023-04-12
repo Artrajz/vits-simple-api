@@ -29,7 +29,7 @@ def clasify_lang(text):
     return text
 
 
-def cut(text,max=50):
+def cut(text, max):
     pattern = r'[\!\(\)\,\-\.\/\:\;\?\？\。\，\、\；\：]+'
     sentences = re.split(pattern, text)
     sentence_list = []
@@ -46,9 +46,9 @@ def cut(text,max=50):
     return sentence_list
 
 
-def sentence_split(text):
+def sentence_split(text, max=50):
     sentence_list = []
-    for i in cut(text):
+    for i in cut(text, max):
         if check_is_none(i): continue
         sentence_list.append(clasify_lang(i))
     return sentence_list

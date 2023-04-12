@@ -68,10 +68,11 @@ def voice_api():
             noise = float(request.form["noise"])
             noisew = float(request.form["noisew"])
             max = int(request.form["max"])
-    except Exception:
+    except Exception as e:
         res = make_response("param error")
         res.status = 400
         res.headers["msg"] = "param error"
+        logger.info(e)
         return res
 
     if lang.upper() == "ZH":
@@ -85,7 +86,7 @@ def voice_api():
     real_obj = voice_obj[0][speaker_id][1]
 
     logger.info(msg=f"VITS id:{speaker_id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew}")
-    logger.info(msg=f"合成文本：{text}")
+    logger.info(msg=f"text：{text}")
 
     fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
@@ -114,7 +115,7 @@ def voice_hubert_api():
             length = float(request.form["length"])
             noise = float(request.form["noise"])
             noisew = float(request.form["noisew"])
-        except Exception:
+        except Exception as e:
             res = make_response("param error")
             res.status = 400
             res.headers["msg"] = "param error"
@@ -154,10 +155,11 @@ def voice_conversion_api():
             voice = request.files['upload']
             original_id = int(request.form["original_id"])
             target_id = int(request.form["target_id"])
-        except:
+        except Exception as e:
             res = make_response("param error")
             res.status = 400
             res.headers["msg"] = "param error"
+            logger.info(e)
             return res
 
         format = voice.filename.split(".")[1]
@@ -196,10 +198,11 @@ def check():
         elif request.method == "POST":
             model = request.form["model"]
             speaker_id = int(request.form["id"])
-    except Exception:
+    except Exception as e:
         res = make_response("param error")
         res.status = 400
         res.headers["msg"] = "param error"
+        logger.info(e)
         return res
 
     if check_is_none(model):
