@@ -39,7 +39,7 @@ def merge_model(merging_model):
     # merging hubert-vits
     new_id = 0
     for obj_id, i in enumerate(hubert_vits_list):
-        obj = vits(model=i[0], config=i[1], hubert_soft_model=i[2])
+        obj = vits(model=i[0], config=i[1], model_=i[2])
 
         for id, name in enumerate(obj.return_speakers()):
             hubert_vits_obj.append([int(id), obj, obj_id])

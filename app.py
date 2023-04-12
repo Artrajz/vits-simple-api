@@ -116,12 +116,14 @@ def voice_hubert_api():
     real_id = voice_obj[1][target_id][0]
     real_obj = voice_obj[1][target_id][1]
 
-    output, file_type, fname = real_obj.generate(target_id=real_id,
-                                                 format=format,
-                                                 length=length,
-                                                 noise=noise,
-                                                 noisew=noisew,
-                                                 audio_path=os.path.join(app.config['UPLOAD_FOLDER'], fname))
+    file_type = f"audio/{format}"
+
+    output = real_obj.create_infer_task(target_id=real_id,
+                                        format=format,
+                                        length=length,
+                                        noise=noise,
+                                        noisew=noisew,
+                                        audio_path=os.path.join(app.config['UPLOAD_FOLDER'], fname))
 
     return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
 

@@ -129,16 +129,18 @@ class vits:
 
         return self.encode(self.hps_ms.data.sampling_rate, audio, format)
 
-    def get_infer_param(self, text, speaker_id, length, noise, noisew, target_id=None, audio_path=None):
-
-        length_scale, text = self.get_label_value(text, 'LENGTH', length, 'length scale')
-        noise_scale, text = self.get_label_value(text, 'NOISE', noise, 'noise scale')
-        noise_scale_w, text = self.get_label_value(text, 'NOISEW', noisew, 'deviation of noise')
-        cleaned, text = self.get_label(text, 'CLEANED')
-
-        stn_tst = self.get_cleaned_text(text, self.hps_ms, cleaned=cleaned)
-        sid = LongTensor([speaker_id])
+    def get_infer_param(self, length, noise, noisew, text=None, speaker_id=None, target_id=None, audio_path=None,
+                        emotion=None):
         emotion = None
+        if self.mode_type != "hubert-soft":
+            length_scale, text = self.get_label_value(text, 'LENGTH', length, 'length scale')
+            noise_scale, text = self.get_label_value(text, 'NOISE', noise, 'noise scale')
+            noise_scale_w, text = self.get_label_value(text, 'NOISEW', noisew, 'deviation of noise')
+            cleaned, text = self.get_label(text, 'CLEANED')
+
+            stn_tst = self.get_cleaned_text(text, self.hps_ms, cleaned=cleaned)
+            sid = LongTensor([speaker_id])
+
         if self.mode_type == "w2v2":
             emotion_reference = input('Path of an emotion reference: ')
             if emotion_reference.endswith('.npy'):
@@ -174,12 +176,11 @@ class vits:
                 tmp, 'NOISEW', noisew, 'deviation of noise')
 
             with inference_mode():
-                units = self.hubert.units(FloatTensor(audio16000).unsqueeze(
-                    0).unsqueeze(0)).squeeze(0).numpy()
+                units = self.hubert.units(FloatTensor(audio16000).unsqueeze(0).unsqueeze(0)).squeeze(0).numpy()
                 if self.use_f0:
-                    f0_scale, tmp = self.get_label_value(
-                        tmp, 'F0', 1, 'f0 scale')
-                    f0 = librosa.pyin(audio, sr=sampling_rate,
+                    f0_scale, tmp = self.get_label_value(tmp, 'F0', 1, 'f0 scale')
+                    f0 = librosa.pyin(audio,
+                                      sr=sampling_rate,
                                       fmin=librosa.note_to_hz('C0'),
                                       fmax=librosa.note_to_hz('C7'),
                                       frame_length=1780)[0]
@@ -196,20 +197,27 @@ class vits:
         return params
 
     def create_infer_task(self, text=None, speaker_id=None, format=None, length=1, noise=0.667, noisew=0.8,
-                          target_id=None):
+                          target_id=None, audio_path=None):
         # params = self.get_infer_param(text=text, speaker_id=speaker_id, length=length, noise=noise, noisew=noisew,
         #                               target_id=target_id)
         tasks = []
-        sentence_list = sentence_split(text)
-        for sentence in sentence_list:
-            tasks.append(
-                self.get_infer_param(text=sentence, speaker_id=speaker_id, length=length, noise=noise, noisew=noisew,
-                                     target_id=target_id))
-        audios = []
-        for task in tasks:
-            audios.append(self.infer(task))
+        if self.mode_type == "vits":
 
-        audio = np.concatenate(audios, axis=0)
+            sentence_list = sentence_split(text)
+            for sentence in sentence_list:
+                tasks.append(
+                    self.get_infer_param(text=sentence, speaker_id=speaker_id, length=length, noise=noise,
+                                         noisew=noisew,
+                                         target_id=target_id))
+            audios = []
+            for task in tasks:
+                audios.append(self.infer(task))
+
+            audio = np.concatenate(audios, axis=0)
+        elif self.mode_type == "hubert-soft":
+            params = self.get_infer_param(speaker_id=speaker_id, length=length, noise=noise, noisew=noisew,
+                                          target_id=target_id, audio_path=audio_path)
+            audio = self.infer(params)
 
         return self.encode(self.hps_ms.data.sampling_rate, audio, format)
 

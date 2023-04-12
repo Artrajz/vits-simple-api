@@ -29,7 +29,7 @@ MODEL_LIST = [
 '''
 # 模型加载列表
 MODEL_LIST = [
-[ABS_PATH+"/Model/g/G_953000.pth", ABS_PATH+"/Model/g/config.json"],
+[ABS_PATH+"/Model/louise/360_epochs.pth", ABS_PATH+"/Model/louise/config.json", ABS_PATH+"/Model/louise/hubert-soft-0d54a1f4.pt"],
 ]
 
 """以下选项是修改VITS GET方法 [不指定参数]时的默认值 非必要不要动"""
