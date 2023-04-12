@@ -1,7 +1,7 @@
 version: '3.4'
 services:
-  moegoe:
-    image: artrajz/moegoe-simple-api:latest
+  vits:
+    image: artrajz/vits-simple-api:latest
     restart: always
     ports:
       - 23456:23456
