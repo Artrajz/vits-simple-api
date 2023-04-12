@@ -96,7 +96,7 @@ MODEL_LIST = [
 
 
 
-### 开始使用！
+### Startup 启动
 
 终端输入`docker compose up -d`
 

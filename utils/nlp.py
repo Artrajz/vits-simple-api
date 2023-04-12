@@ -50,7 +50,7 @@ def sentence_split(text, max=50, lang="auto"):
     sentence_list = []
     for i in cut(text, max):
         if check_is_none(i): continue
-        sentence_list.append(clasify_lang(i) if lang=="auto" else i)
+        sentence_list.append(clasify_lang(i) if lang=="auto" else f"[{lang.upper()}]{i}[{lang.upper()}]")
 
     return sentence_list
 
