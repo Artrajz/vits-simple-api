@@ -75,18 +75,11 @@ def voice_api():
         logger.error(msg=f"{e} {e.args}")
         return res
 
-    if lang.upper() == "ZH":
-        text = f"[ZH]{text}[ZH]"
-    elif lang.upper() == "JA":
-        text = f"[JA]{text}[JA]"
-    elif lang.upper() == "MIX" or lang.upper() == "AUTO":
-        pass
-
     real_id = voice_obj[0][speaker_id][0]
     real_obj = voice_obj[0][speaker_id][1]
 
     logger.info(msg=f"VITS id:{speaker_id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew}")
-    logger.info(msg=f"text：{text}")
+    logger.info(msg=f"len:{len(text)} text：{text}")
 
     fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
