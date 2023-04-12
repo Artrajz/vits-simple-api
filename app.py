@@ -98,7 +98,8 @@ def voice_api():
                                         length=length,
                                         noise=noise,
                                         noisew=noisew,
-                                        max=max)
+                                        max=max,
+                                        lang=lang)
     t2 = time.time()
     logger.info(msg=f"finish in {(t2 - t1):.2f}s")
 

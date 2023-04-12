@@ -46,11 +46,12 @@ def cut(text, max):
     return sentence_list
 
 
-def sentence_split(text, max=50):
+def sentence_split(text, max=50, lang="auto"):
     sentence_list = []
     for i in cut(text, max):
         if check_is_none(i): continue
-        sentence_list.append(clasify_lang(i))
+        sentence_list.append(clasify_lang(i) if lang=="auto" else i)
+
     return sentence_list
 
 
