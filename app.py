@@ -58,7 +58,7 @@ def voice_api():
             length = float(request.args.get("length", app.config["LENGTH"]))
             noise = float(request.args.get("noise", app.config["NOISE"]))
             noisew = float(request.args.get("noisew", app.config["NOISEW"]))
-            max = int(request.form["max"], app.config["MAX"])
+            max = int(request.args.get("noisew", app.config["MAX"]))
         elif request.method == "POST":
             text = request.form["text"]
             speaker_id = int(request.form["id"])
@@ -72,7 +72,7 @@ def voice_api():
         res = make_response("param error")
         res.status = 400
         res.headers["msg"] = "param error"
-        logger.info(e)
+        logger.error(msg=f"{e} {e.args}")
         return res
 
     if lang.upper() == "ZH":
@@ -119,6 +119,7 @@ def voice_hubert_api():
             res = make_response("param error")
             res.status = 400
             res.headers["msg"] = "param error"
+            logger.error(msg=f"{e} {e.args}")
             return res
 
     fname = secure_filename(str(uuid.uuid1()) + "." + voice.filename.split(".")[1])
@@ -159,7 +160,7 @@ def voice_conversion_api():
             res = make_response("param error")
             res.status = 400
             res.headers["msg"] = "param error"
-            logger.info(e)
+            logger.error(msg=f"{e} {e.args}")
             return res
 
         format = voice.filename.split(".")[1]
@@ -202,7 +203,7 @@ def check():
         res = make_response("param error")
         res.status = 400
         res.headers["msg"] = "param error"
-        logger.info(e)
+        logger.error(msg=f"{e} {e.args}")
         return res
 
     if check_is_none(model):
@@ -233,6 +234,7 @@ def check():
         res = make_response("speaker id error")
         res.status = 400
         res.headers["msg"] = "speaker id error"
+        logger.error(msg=f"speaker id {speaker_id} error")
         return res
     name = str(speaker_list[speaker_id][speaker_id])
     logger.info(msg=f"check id:{speaker_id} name:{name} successful")
