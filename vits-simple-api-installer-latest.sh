@@ -14,16 +14,15 @@ fi
 
 wget -O $INSTALL_DIR/docker-compose.yaml https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/docker-compose.yaml
 
-echo -e "${YELLOW}即将开始拉取镜像${PLAIN}"
-echo -e "${YELLOW}镜像大小为5GB，拉取会比较慢\n${PLAIN}"
+echo -e "${YELLOW}The image is about to be pulled${PLAIN}"
+echo -e "${YELLOW}If the image size is 5GB, it takes a long time to pull the image\n${PLAIN}"
 
 docker compose pull
 docker compose up -d
 
-echo -e "\n已成功升级/安装vits-simple-api"
-echo -e "配置文件目录为 $(realpath $INSTALL_DIR)"
-echo -e "${RED}2023.4.12更新-需要更新config.py，否则会报错${PLAIN}"
-echo -e "${YELLOW}如未导入vits模型则无法使用，请在配置文件目录中导入模型${PLAIN}"
-echo -e "修改配置文件后后需重新启动docker容器才能生效"
-echo -e "${YELLOW}如有疑问可以在issues中提出${PLAIN}"
-echo -e "https://github.com/Artrajz/MoeGoe-Simple-API"
+echo -e "\nThe upgrade or installation has been completed."
+echo -e "The configuration file directory is $(realpath $INSTALL_DIR)"
+echo -e "${YELLOW}If the vits model is not imported, it cannot be used. Import the model in the configuration file directory.${PLAIN}"
+echo -e "After modifying the configuration file, restart the docker container for the modification to take effect."
+echo -e "${YELLOW}If you have any questions, please put them in the issues.${PLAIN}"
+echo -e "https://github.com/Artrajz/vits-simple-api"
