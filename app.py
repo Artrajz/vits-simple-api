@@ -1,7 +1,6 @@
 import os
 import logging
 import time
-
 import logzero
 import uuid
 from flask import Flask, request, send_file, jsonify, make_response
@@ -249,5 +248,5 @@ def clean_task():
 
 
 if __name__ == '__main__':
-    # app.run(host='0.0.0.0', port=app.config["PORT"])  # 如果对外开放用这个,docker部署也用这个
-    app.run(host='127.0.0.1', port=app.config["PORT"], debug=True)  # 本地运行、调试
+    app.run(host='0.0.0.0', port=app.config["PORT"])  # 如果对外开放用这个,docker部署也用这个
+    # app.run(host='127.0.0.1', port=app.config["PORT"], debug=True)  # 本地运行、调试

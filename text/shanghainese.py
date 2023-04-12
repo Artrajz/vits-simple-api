@@ -3,7 +3,7 @@ import cn2an
 import opencc
 
 
-converter = opencc.OpenCC('zaonhe')
+converter = opencc.OpenCC('chinese_dialect_lexicons/zaonhe')
 
 # List of (Latin alphabet, ipa) pairs:
 _latin_to_ipa = [(re.compile('%s' % x[0]), x[1]) for x in [
