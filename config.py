@@ -4,20 +4,20 @@ import sys
 JSON_AS_ASCII = False
 MAX_CONTENT_LENGTH = 5242880
 
-# 端口
+# port
 PORT = 23456
-# 项目的绝对路径
+# absolute path
 ABS_PATH = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])))
-# 上传文件的临时路径，非必要不要动
+# upload path
 UPLOAD_FOLDER = ABS_PATH + "/upload"
-# 音频转换的临时缓存路径，非必要不要动
+# cahce path
 CACHE_PATH = ABS_PATH + "/cache"
+# zh ja ko en
+LANGUAGE_AUTOMATIC_DETECT = ["zh","ja"]
 
 '''
-vits模型路径填写方法，MODEL_LIST中的每一行是
-[ABS_PATH+"/Model/{模型文件夹}/{.pth模型}", ABS_PATH+"/Model/{模型文件夹}/config.json"],
-也可以写相对路径或绝对路径，由于windows和linux路径写法不同，用上面的写法或绝对路径最稳妥
-示例：
+For each model, the filling method is as follows|模型列表中每个模型的填写方法如下
+example|示例:
 MODEL_LIST = [
     #VITS
     [ABS_PATH+"/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH+"/Model/Nene_Nanami_Rong_Tang/config.json"],
@@ -27,12 +27,15 @@ MODEL_LIST = [
     [ABS_PATH+"/Model/louise/360_epochs.pth", ABS_PATH+"/Model/louise/config.json", ABS_PATH+"/Model/louise/hubert-soft-0d54a1f4.pt"],
 ]
 '''
-# 模型加载列表
+# load mutiple models
 MODEL_LIST = [
-[ABS_PATH+"/Model/louise/360_epochs.pth", ABS_PATH+"/Model/louise/config.json", ABS_PATH+"/Model/louise/hubert-soft-0d54a1f4.pt"],
+
 ]
 
-"""以下选项是修改VITS GET方法 [不指定参数]时的默认值 非必要不要动"""
+"""
+default params
+以下选项是修改VITS GET方法 [不指定参数]时的默认值
+"""
 # 默认模式选项
 DEFAULT_MODE = 0
 

@@ -1,12 +1,14 @@
 import os
 import logging
+import time
+
 import logzero
 import uuid
 from flask import Flask, request, send_file, jsonify, make_response
 from werkzeug.utils import secure_filename
 from flask_apscheduler import APScheduler
 from utils.utils import clean_folder, check_is_none
-from utils.npl import clasify_lang
+from utils.nlp import clasify_lang
 from utils.merge import merge_model
 
 app = Flask(__name__)
@@ -29,10 +31,9 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
         pass
 
 
-@app.route('/')
-@app.route('/voice/')
+@app.route('/', methods=["GET", "POST"])
 def index():
-    return "usage:https://github.com/Artrajz/MoeGoe-Simple-API#readme"
+    return ""
 
 
 @app.route('/voice/speakers', methods=["GET", "POST"])
@@ -49,53 +50,61 @@ def voice_speakers_api():
 @app.route('/voice', methods=["GET", "POST"])
 @app.route('/voice/vits', methods=["GET", "POST"])
 def voice_api():
-    if request.method == "GET":
-        text = request.args.get("text")
-        speaker_id = int(request.args.get("id", app.config["ID"]))
-        if app.config["DEFAULT_MODE"] == 0:
-            format = request.args.get("format", app.config["FORMAT"])
-            lang = request.args.get("lang", app.config["LANG"])
-            length = float(request.args.get("length", app.config["LENGTH"]))
-            noise = float(request.args.get("noise", app.config["NOISE"]))
-            noisew = float(request.args.get("noisew", app.config["NOISEW"]))
-        elif app.config["DEFAULT_MODE"] == 1:
-            format = request.args.get("format", app.config["FORMAT"][speaker_id])
-            lang = request.args.get("lang", app.config["LANG"][speaker_id])
-            length = float(request.args.get("length", app.config["LENGTH"][speaker_id]))
-            noise = float(request.args.get("noise", app.config["NOISE"][speaker_id]))
-            noisew = float(request.args.get("noisew", app.config["NOISEW"][speaker_id]))
-    elif request.method == "POST":
-        text = request.form["text"]
-        speaker_id = int(request.form["id"])
-        format = request.form["format"]
-        lang = request.form["lang"]
-        length = float(request.form["length"])
-        noise = float(request.form["noise"])
-        noisew = float(request.form["noisew"])
+    try:
+        if request.method == "GET":
+            text = request.args.get("text")
+            speaker_id = int(request.args.get("id", app.config["ID"]))
+            if app.config["DEFAULT_MODE"] == 0:
+                format = request.args.get("format", app.config["FORMAT"])
+                lang = request.args.get("lang", app.config["LANG"])
+                length = float(request.args.get("length", app.config["LENGTH"]))
+                noise = float(request.args.get("noise", app.config["NOISE"]))
+                noisew = float(request.args.get("noisew", app.config["NOISEW"]))
+            elif app.config["DEFAULT_MODE"] == 1:
+                format = request.args.get("format", app.config["FORMAT"][speaker_id])
+                lang = request.args.get("lang", app.config["LANG"][speaker_id])
+                length = float(request.args.get("length", app.config["LENGTH"][speaker_id]))
+                noise = float(request.args.get("noise", app.config["NOISE"][speaker_id]))
+                noisew = float(request.args.get("noisew", app.config["NOISEW"][speaker_id]))
+        elif request.method == "POST":
+            text = request.form["text"]
+            speaker_id = int(request.form["id"])
+            format = request.form["format"]
+            lang = request.form["lang"]
+            length = float(request.form["length"])
+            noise = float(request.form["noise"])
+            noisew = float(request.form["noisew"])
+    except Exception:
+        res = make_response("param error")
+        res.status = 400
+        res.headers["msg"] = "param error"
+        return res
 
-    if lang.upper() == "MIX":
-        pass
-    elif lang.upper() == "ZH":
+    if lang.upper() == "ZH":
         text = f"[ZH]{text}[ZH]"
     elif lang.upper() == "JA":
         text = f"[JA]{text}[JA]"
-    elif lang.upper() == "AUTO":
+    elif lang.upper() == "MIX" or lang.upper() == "AUTO":
         pass
 
     real_id = voice_obj[0][speaker_id][0]
     real_obj = voice_obj[0][speaker_id][1]
-    logger.info(msg=f"id:{speaker_id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew}")
+
+    logger.info(msg=f"VITS id:{speaker_id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew}")
     logger.info(msg=f"合成文本：{text}")
 
     fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
 
+    t1 = time.time()
     output = real_obj.create_infer_task(text=text,
                                         speaker_id=real_id,
                                         format=format,
                                         length=length,
                                         noise=noise,
                                         noisew=noisew)
+    t2 = time.time()
+    logger.info(msg=f"finish in {(t2 - t1):.2f}s")
 
     return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
 
@@ -103,86 +112,118 @@ def voice_api():
 @app.route('/voice/hubert-vits', methods=["GET", "POST"])
 def voice_hubert_api():
     if request.method == "POST":
-        voice = request.files['upload']
-        target_id = int(request.form["target_id"])
-        format = request.form["format"]
-        length = float(request.form["length"])
-        noise = float(request.form["noise"])
-        noisew = float(request.form["noisew"])
+        try:
+            voice = request.files['upload']
+            target_id = int(request.form["target_id"])
+            format = request.form["format"]
+            length = float(request.form["length"])
+            noise = float(request.form["noise"])
+            noisew = float(request.form["noisew"])
+        except Exception:
+            res = make_response("param error")
+            res.status = 400
+            res.headers["msg"] = "param error"
+            return res
 
     fname = secure_filename(str(uuid.uuid1()) + "." + voice.filename.split(".")[1])
     voice.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
 
-    real_id = voice_obj[1][target_id][0]
-    real_obj = voice_obj[1][target_id][1]
+    try:
+        real_id = voice_obj[1][target_id][0]
+        real_obj = voice_obj[1][target_id][1]
+    except Exception:
+        res = make_response("target id error")
+        res.status = 400
+        res.headers["msg"] = "target id error"
+        return res
 
     file_type = f"audio/{format}"
-
+    logger.info(msg=f"HuBert-soft id:{target_id} format:{format} length:{length} noise:{noise} noisew:{noisew}")
+    t1 = time.time()
     output = real_obj.create_infer_task(target_id=real_id,
                                         format=format,
                                         length=length,
                                         noise=noise,
                                         noisew=noisew,
                                         audio_path=os.path.join(app.config['UPLOAD_FOLDER'], fname))
+    t2 = time.time()
+    logger.info(msg=f"finish in {(t2 - t1):.2f}s")
 
     return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
 
 
 @app.route('/voice/conversion', methods=["GET", "POST"])
 def voice_conversion_api():
-    if request.method == "GET":
-        return jsonify("method should be POST")
     if request.method == "POST":
-        voice = request.files['upload']
-        original_id = int(request.form["original_id"])
-        target_id = int(request.form["target_id"])
+        try:
+            voice = request.files['upload']
+            original_id = int(request.form["original_id"])
+            target_id = int(request.form["target_id"])
+        except:
+            res = make_response("param error")
+            res.status = 400
+            res.headers["msg"] = "param error"
+            return res
 
         format = voice.filename.split(".")[1]
 
         fname = secure_filename(str(uuid.uuid1()) + "." + voice.filename.split(".")[1])
         voice.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
+        file_type = f"audio/{format}"
 
         real_original_id = int(voice_obj[0][original_id][0])
         real_target_id = int(voice_obj[0][target_id][0])
         real_obj = voice_obj[0][original_id][1]
         real_target_obj = voice_obj[0][target_id][1]
 
-        if voice_obj[0][original_id][2] != voice_obj[0][target_id][2]:
-            res = make_response("speaker IDs are in diffrent Model!")
-            res.status = 600
-            res.headers["msg"] = "speaker IDs are in diffrent Model!"
-            return res
+        # if voice_obj[0][original_id][2] != voice_obj[0][target_id][2]:
+        #     res = make_response("speaker IDs are in diffrent Model!")
+        #     res.status = 400
+        #     res.headers["msg"] = "speaker IDs are in diffrent Model!"
+        #     return res
 
+
+
+        logger.info(msg=f"HuBert-soft orginal_id:{original_id} target_id:{target_id}")
+        t1 = time.time()
         output = real_obj.voice_conversion(os.path.join(app.config['UPLOAD_FOLDER'], fname),
                                            real_original_id, real_target_id)
-        file_type = f"audio/{format}"
+        t2 = time.time()
+        logger.info(msg=f"finish in {(t2 - t1):.2f}s")
+
         return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
 
 
 @app.route('/voice/check', methods=["GET", "POST"])
-def check_id():
-    if request.method == "GET":
-        model = request.args.get("model")
-        speaker_id = int(request.args.get("id"))
-    elif request.method == "POST":
-        model = request.form["model"]
-        speaker_id = int(request.form["id"])
+def check():
+    try:
+        if request.method == "GET":
+            model = request.args.get("model")
+            speaker_id = int(request.args.get("id"))
+        elif request.method == "POST":
+            model = request.form["model"]
+            speaker_id = int(request.form["id"])
+    except Exception:
+        res = make_response("param error")
+        res.status = 400
+        res.headers["msg"] = "param error"
+        return res
 
     if check_is_none(model):
         res = make_response("model is empty")
-        res.status = 600
+        res.status = 404
         res.headers["msg"] = "model is empty"
         return res
 
     if model.upper() not in ("VITS", "HUBERT", "W2V2"):
         res = make_response("model is not exist")
-        res.status = 600
+        res.status = 404
         res.headers["msg"] = "model is not exist"
         return res
 
     if check_is_none(speaker_id):
         res = make_response("id is not exist")
-        res.status = 600
+        res.status = 404
         res.headers["msg"] = "id is not exist"
         return res
 
@@ -194,17 +235,19 @@ def check_id():
         speaker_list = voice_speakers[2]
     if speaker_id < 0 or speaker_id >= len(speaker_list):
         res = make_response("speaker id error")
-        res.status = 600
+        res.status = 400
         res.headers["msg"] = "speaker id error"
         return res
     name = str(speaker_list[speaker_id][speaker_id])
-    res = make_response(f"success check id:{speaker_id} name:{name}")
+    logger.info(msg=f"check id:{speaker_id} name:{name} successful")
+
+    res = make_response(f"successful check id:{speaker_id} name:{name}")
     res.status = 200
     res.headers["msg"] = "success"
     return res
 
 
-# 定时清理临时文件，每小时清一次
+# cleaner
 @scheduler.task('interval', id='clean_task', seconds=3600, misfire_grace_time=900)
 def clean_task():
     clean_folder(app.config["UPLOAD_FOLDER"])

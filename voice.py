@@ -16,7 +16,7 @@ from torch import no_grad, LongTensor, inference_mode, FloatTensor
 import uuid
 from io import BytesIO
 from graiax import silkcoder
-from utils.npl import cut, sentence_split
+from utils.nlp import cut, sentence_split
 
 
 # class infer_param:
@@ -72,7 +72,7 @@ class vits:
         text_norm = LongTensor(text_norm)
         return text_norm
 
-    def get_label_value(self, text, label, default, warning_name='value'):
+    def get_label_value(self, label, default, warning_name='value', text=""):
         value = re.search(rf'\[{label}=(.+?)\]', text)
         if value:
             try:
@@ -83,7 +83,10 @@ class vits:
                 sys.exit(1)
         else:
             value = default
-        return value, text
+        if text == "":
+            return value
+        else:
+            return value, text
 
     def get_label(self, text, label):
         if f'[{label}]' in text:
@@ -133,9 +136,9 @@ class vits:
                         emotion=None):
         emotion = None
         if self.mode_type != "hubert-soft":
-            length_scale, text = self.get_label_value(text, 'LENGTH', length, 'length scale')
-            noise_scale, text = self.get_label_value(text, 'NOISE', noise, 'noise scale')
-            noise_scale_w, text = self.get_label_value(text, 'NOISEW', noisew, 'deviation of noise')
+            length_scale, text = self.get_label_value('LENGTH', length, 'length scale', text)
+            noise_scale, text = self.get_label_value('NOISE', noise, 'noise scale', text)
+            noise_scale_w, text = self.get_label_value('NOISEW', noisew, 'deviation of noise', text)
             cleaned, text = self.get_label(text, 'CLEANED')
 
             stn_tst = self.get_cleaned_text(text, self.hps_ms, cleaned=cleaned)
@@ -166,19 +169,14 @@ class vits:
                 audio16000, sampling_rate = librosa.load(
                     audio_path, sr=16000, mono=True)
 
-            tmp = ""
-
-            length_scale, tmp_path = self.get_label_value(
-                tmp, 'LENGTH', length, 'length scale')
-            noise_scale, tmp_path = self.get_label_value(
-                tmp, 'NOISE', noise, 'noise scale')
-            noise_scale_w, tmp_path = self.get_label_value(
-                tmp, 'NOISEW', noisew, 'deviation of noise')
+            length_scale = self.get_label_value('LENGTH', length, 'length scale')
+            noise_scale = self.get_label_value('NOISE', noise, 'noise scale')
+            noise_scale_w = self.get_label_value('NOISEW', noisew, 'deviation of noise')
 
             with inference_mode():
                 units = self.hubert.units(FloatTensor(audio16000).unsqueeze(0).unsqueeze(0)).squeeze(0).numpy()
                 if self.use_f0:
-                    f0_scale, tmp = self.get_label_value(tmp, 'F0', 1, 'f0 scale')
+                    f0_scale = self.get_label_value('F0', 1, 'f0 scale')
                     f0 = librosa.pyin(audio,
                                       sr=sampling_rate,
                                       fmin=librosa.note_to_hz('C0'),

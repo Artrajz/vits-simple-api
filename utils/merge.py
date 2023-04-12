@@ -3,6 +3,7 @@ import sys
 
 from voice import vits
 
+
 def merge_model(merging_model):
     vits_obj = []
     vits_speakers = []
@@ -32,8 +33,7 @@ def merge_model(merging_model):
 
         for id, name in enumerate(obj.return_speakers()):
             vits_obj.append([int(id), obj, obj_id])
-            vits_speakers.append({new_id: name})
-
+            vits_speakers.append({"id": new_id, "name": name})
             new_id += 1
 
     # merging hubert-vits
@@ -43,7 +43,7 @@ def merge_model(merging_model):
 
         for id, name in enumerate(obj.return_speakers()):
             hubert_vits_obj.append([int(id), obj, obj_id])
-            hubert_vits_speakers.append({new_id: name})
+            hubert_vits_speakers.append({"id": new_id, "name": name})
 
             new_id += 1
 
