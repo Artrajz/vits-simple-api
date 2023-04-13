@@ -20,7 +20,7 @@
 - HuBert-soft VITS 语音转换
 - VITS voice conversion 语音转换
 - Support for loading multiple models 加载多模型
-- Automatic language recognition and processing,support for user-defined language type range 自动识别语言并处理，支持自定义语言类型范围
+- Automatic language recognition and processing,support for custom language type range 自动识别语言并处理，支持自定义语言类型范围
 - Customize default parameters 自定义默认参数
 - Long text batch processing 长文本批处理
 
@@ -37,13 +37,14 @@
 
 
 
+
 demo：`https://api.artrajz.cn/py/voice?text=你好,こんにちは&id=142`
 
 # Deploy
 
 ## Docker
 
-### docker image pull script 镜像拉取脚本
+### Docker image pull script 镜像拉取脚本
 
 ```
 bash -c "$(wget -O- https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/vits-simple-api-installer-latest.sh)"
@@ -96,25 +97,27 @@ MODEL_LIST = [
 
 
 
-### Startup 启动
+### Startup
 
-终端输入`docker compose up -d`
+`docker compose up -d`
 
-或再次执行拉取脚本
+Or execute the pull script again
 
-### Image update 镜像更新方法
+### Image update 
 
-Run the docker image pull script again 重新执行docker镜像拉取脚本即可
+Run the docker image pull script again 
 
-## Direct deployment
+重新执行docker镜像拉取脚本即可
 
-### 克隆项目
+## Virtual environment deployment
+
+### Clone
 
 `git clone https://github.com/Artrajz/MoeGoe-Simple-API.git`
 
 ### Download  VITS model 下载VITS模型
 
-Put the model into `/usr/local/moegoe-simple-api/Model`
+Put the model into `/path/to/moegoe-simple-api/Model`
 
 <details><summary>Folder structure</summary><pre><code>
 ├─g
@@ -139,7 +142,7 @@ Put the model into `/usr/local/moegoe-simple-api/Model`
 
 ### Modify model path 修改模型路径
 
-Modify in  `/usr/local/moegoe-simple-api/config.py` 
+Modify in  `/path/to/moegoe-simple-api/config.py` 
 
 <details><summary>config.py</summary><pre><code>
 For each model, the filling method is as follows 模型列表中每个模型的填写方法如下
@@ -155,9 +158,7 @@ MODEL_LIST = [
 </code></pre></details>
 
 
-
-
-###  Download python dependencies 下载python依赖
+###  Download python dependencies  下载python依赖
 
 A python virtual environment is recommended，use python >= 3.9
 
@@ -174,7 +175,7 @@ pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2
 pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp39-cp39-win_amd64.whl
 ```
 
-### Startup 启动
+### Startup
 
 `python app.py`
 
@@ -216,11 +217,11 @@ import string
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 abs_path = os.path.dirname(__file__)
-addr = "http://127.0.0.1:23456"
+base = "http://127.0.0.1:23456"
 
 #映射表
 def voice_speakers():
-    url = f"{addr}/voice/speakers"
+    url = f"{base}/voice/speakers"
 
     res = requests.post(url=url)
     json = res.json()
@@ -275,7 +276,7 @@ def voice_hubert_vits(upload_path):
         
         m = MultipartEncoder(fields=fields, boundary=boundary)
         headers = {"Content-Type": m.content_type}
-        url = f"{addr}/voice/hubert-vits"
+        url = f"{base}/voice/hubert-vits"
 
         res = requests.post(url=url,data=m,headers=headers)
     fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
@@ -301,7 +302,7 @@ def voice_conversion(upload_path):
         m = MultipartEncoder(fields=fields, boundary=boundary)
         
         headers = {"Content-Type": m.content_type}
-        url = f"{addr}/voice/conversion"
+        url = f"{base}/voice/conversion"
 
         res = requests.post(url=url,data=m,headers=headers)
         
@@ -347,7 +348,7 @@ def voice_conversion(upload_path):
 | 噪声          | noise     | true    |         | float      |                                                  |
 | 噪声偏差      | noisew    | true    |         | float      |                                                  |
 
-# communication
+# Communication
 
 Learning and communication,now there is only Chinese [QQ group](https://qm.qq.com/cgi-bin/qm/qr?k=-1GknIe4uXrkmbDKBGKa1aAUteq40qs_&jump_from=webapi&authKey=x5YYt6Dggs1ZqWxvZqvj3fV8VUnxRyXm5S5Kzntc78+Nv3iXOIawplGip9LWuNR/)
 
@@ -356,4 +357,3 @@ Learning and communication,now there is only Chinese [QQ group](https://qm.qq.co
 - vits:https://github.com/jaywalnut310/vits
 - MoeGoe:https://github.com/CjangCjengh/MoeGoe
 
-# 
