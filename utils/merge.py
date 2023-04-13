@@ -17,7 +17,13 @@ def merge_model(merging_model):
     hubert_vits_list = []
     w2v2_vits_list = []
 
-    out_path = os.path.dirname(os.path.realpath(sys.argv[0])) + "/cache"
+    cache_path = os.path.dirname(os.path.realpath(sys.argv[0])) + "/cache"
+
+    if not os.path.exists(cache_path):
+        try:
+            os.mkdir(cache_path)
+        except:
+            pass
 
     # classify
     for l in merging_model:
