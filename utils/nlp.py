@@ -41,7 +41,7 @@ def cut(text, max):
             sentence_list.append(text[p:p + count])
             p += count
             count = 0
-    if p < len(sentence):
+    if p < len(text):
         sentence_list.append(text[p:])
     return sentence_list
 
