@@ -55,7 +55,7 @@ bash -c "$(wget -O- https://raw.githubusercontent.com/Artrajz/vits-simple-api/ma
 
 ### Download  VITS model 下载VITS模型
 
-Put the model into `/usr/local/moegoe-simple-api/Model`
+Put the model into `/usr/local/vits-simple-api/Model`
 
 <details><summary>Folder structure</summary><pre><code>
 ├─g
@@ -80,7 +80,7 @@ Put the model into `/usr/local/moegoe-simple-api/Model`
 
 ### Modify model path 修改模型路径
 
-Modify in  `/usr/local/moegoe-simple-api/config.py` 
+Modify in  `/usr/local/vits-simple-api/config.py` 
 
 <details><summary>config.py</summary><pre><code>
 For each model, the filling method is as follows 模型列表中每个模型的填写方法如下
@@ -113,11 +113,11 @@ Run the docker image pull script again
 
 ### Clone
 
-`git clone https://github.com/Artrajz/MoeGoe-Simple-API.git`
+`git clone https://github.com/Artrajz/vits-simple-api.git`
 
 ### Download  VITS model 下载VITS模型
 
-Put the model into `/path/to/moegoe-simple-api/Model`
+Put the model into `/path/to/vits-simple-api/Model`
 
 <details><summary>Folder structure</summary><pre><code>
 ├─g
@@ -142,7 +142,7 @@ Put the model into `/path/to/moegoe-simple-api/Model`
 
 ### Modify model path 修改模型路径
 
-Modify in  `/path/to/moegoe-simple-api/config.py` 
+Modify in  `/path/to/vits-simple-api/config.py` 
 
 <details><summary>config.py</summary><pre><code>
 For each model, the filling method is as follows 模型列表中每个模型的填写方法如下
