@@ -115,6 +115,23 @@ Run the docker image pull script again
 
 `git clone https://github.com/Artrajz/vits-simple-api.git`
 
+###  Download python dependencies  下载python依赖
+
+A python virtual environment is recommended，use python >= 3.9
+
+`pip install -r requirements.txt`
+
+Fasttext may not be installed on windows, you can install it with the following command,or download wheels [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext)
+
+windows下可能安装不了fasttext,可以用以下命令安装，附[wheels下载地址](https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext)
+
+```
+#python3.10 win_amd64
+pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp310-cp310-win_amd64.whl
+#python3.9 win_amd64
+pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp39-cp39-win_amd64.whl
+```
+
 ### Download  VITS model 下载VITS模型
 
 Put the model into `/path/to/vits-simple-api/Model`
@@ -156,25 +173,6 @@ MODEL_LIST = [
     [ABS_PATH+"/Model/louise/360_epochs.pth", ABS_PATH+"/Model/louise/config.json", ABS_PATH+"/Model/louise/hubert-soft-0d54a1f4.pt"],
 ]
 </code></pre></details>
-
-
-###  Download python dependencies  下载python依赖
-
-A python virtual environment is recommended，use python >= 3.9
-
-`pip install -r requirements.txt`
-
-Fasttext may not be installed on windows, you can install it with the following command,or download wheels [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext)
-
-windows下可能安装不了fasttext,可以用以下命令安装，附[wheels下载地址](https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext)
-
-```
-#python3.10 win_amd64
-pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp310-cp310-win_amd64.whl
-#python3.9 win_amd64
-pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp39-cp39-win_amd64.whl
-```
-
 ### Startup
 
 `python app.py`
