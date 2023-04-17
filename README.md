@@ -193,6 +193,10 @@ MODEL_LIST = [
 
   其他参数不指定时均为默认值
 
+- GET http://127.0.0.1/voice?text=[ZH]text[ZH][JA]text[JA]&lang=mix
+
+  lang=mix时文本要标注
+
 - GET http://127.0.0.1/voice?text=text&id=142&format=wav&lang=zh&length=1.4
 
   文本为text，角色id为142，音频格式为wav，文本语言为zh，语音长度为1.4，其余参数默认
