@@ -19,7 +19,7 @@ from graiax import silkcoder
 from utils.nlp import cut, sentence_split
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"torch:{torch.__version__}", f"GPU:{torch.cuda.is_available()}")
+print(f"torch:{torch.__version__}", f"GPU_available:{torch.cuda.is_available()}")
 print(f'device:{device} device.type:{device.type}')
 
 
@@ -124,8 +124,7 @@ class vits:
                                         noise_scale=params.get("noise_scale"),
                                         noise_scale_w=params.get("noise_scale_w"),
                                         length_scale=params.get("length_scale"),
-                                        emotion_embedding=emotion)[0][
-                0, 0].data.float().cpu().numpy()
+                                        emotion_embedding=emotion)[0][0, 0].data.float().cpu().numpy()
 
         return audio
 

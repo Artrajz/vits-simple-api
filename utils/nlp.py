@@ -48,13 +48,19 @@ def cut(text, max):
 
 def sentence_split(text, max=50, lang="auto"):
     sentence_list = []
-    for i in cut(text, max):
-        if check_is_none(i): continue
-        if lang.upper() != "MIX":
-            sentence_list.append(clasify_lang(i)if lang.upper() == "AUTO" else f"[{lang.upper()}]{i}[{lang.upper()}]")
-        else:
-            sentence_list.append(i)
-
+    if max <= 0:
+        sentence_list.append(
+            clasify_lang(text) if lang.upper() == "AUTO" else f"[{lang.upper()}]{text}[{lang.upper()}]")
+    else:
+        for i in cut(text, max):
+            if check_is_none(i): continue
+            if lang.upper() != "MIX":
+                sentence_list.append(
+                    clasify_lang(i) if lang.upper() == "AUTO" else f"[{lang.upper()}]{i}[{lang.upper()}]")
+            else:
+                sentence_list.append(i)
+    for i in sentence_list:
+        print(i)
     return sentence_list
 
 

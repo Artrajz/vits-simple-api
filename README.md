@@ -344,7 +344,7 @@ def voice_conversion(upload_path):
 | Audio length           | length    | false   | 1.0     | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
 | Noise                  | noise     | false   | 0.667   | float |                                                              |
 | Noise Weight           | noisew    | false   | 0.8     | float |                                                              |
-| Segmentation threshold | max       | false   | 50      | int   |                                                              |
+| Segmentation threshold | max       | false   | 50      | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
 
 ## voice conversion
 
