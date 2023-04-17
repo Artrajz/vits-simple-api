@@ -9,32 +9,35 @@
         <a href="https://hub.docker.com/r/artrajz/vits-simple-api">
             <img src="https://img.shields.io/docker/pulls/artrajz/vits-simple-api"></a>
     </p>
+    <a href="https://github.com/Artrajz/vits-simple-api/blob/main/README.md">English</a>|<a href="https://github.com/Artrajz/vits-simple-api/blob/main/README_zh.md">中文文档</a>
     <br/>
 </div>
 
 
 
+
 # Feature
 
-- VITS text-to-speech 语音合成
-- HuBert-soft VITS 语音转换
-- VITS voice conversion 语音转换
-- Support for loading multiple models 加载多模型
-- Automatic language recognition and processing,support for custom language type range 自动识别语言并处理，支持自定义语言类型范围
-- Customize default parameters 自定义默认参数
-- Long text batch processing 长文本批处理
+- VITS text-to-speech
+- HuBert-soft VITS
+- VITS voice conversion
+- Support for loading multiple models
+- Automatic language recognition and processing,support for custom language type range
+- Customize default parameters
+- Long text batch processing
+- GPU accelerated inference
 
 <details><summary>Update Logs</summary><pre><code>
+<h2>2023.4.17</h2>
+<span>Added the feature that the cleaner for a single language needs to be annotated to clean, and added GPU acceleration for inference, but the GPU inference environment needs to be manually installed.</span>
 <h2>2023.4.12</h2>
-<span>项目由MoeGoe-Simple-API更名为vits-simple-api，支持长文本批处理，增加长文本分段阈值max</span>
+<span>Renamed the project from MoeGoe-Simple-API to vits-simple-api, added support for batch processing of long texts, and added a segment threshold "max" for long texts.</span>
 <h2>2023.4.7</h2>
-<span>增加配置文件可自定义默认参数，本次更新需要手动更新config.py，具体使用方法见config.py</span>
+<span>Added a configuration file to customize default parameters. This update requires manually updating config.py. See config.py for specific usage.</span>
 <h2>2023.4.6</h2>
-<span>加入自动识别语种选项auto，lang参数默认修改为auto，自动识别仍有一定缺陷，请自行选择</span>
-<span>统一POST请求类型为multipart/form-data</span>
+<span>Added the "auto" option for automatically recognizing the language of the text. Modified the default value of the "lang" parameter to "auto". Automatic recognition still has some defects, please choose manually.</span>
+<span>Unified the POST request type as multipart/form-data.</span>
 </code></pre></details>
-
-
 
 
 
@@ -44,7 +47,7 @@ demo：`https://api.artrajz.cn/py/voice?text=你好,こんにちは&id=142`
 
 ## Docker
 
-### Docker image pull script 镜像拉取脚本
+### Docker image pull script
 
 ```
 bash -c "$(wget -O- https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/vits-simple-api-installer-latest.sh)"
@@ -53,7 +56,7 @@ bash -c "$(wget -O- https://raw.githubusercontent.com/Artrajz/vits-simple-api/ma
 - The image size is 5GB, and it will be 8GB after decompression. Please prepare enough disk space.
 - After a successful pull, the vits model needs to be imported before use. Please follow the steps below to import the model.
 
-### Download  VITS model 下载VITS模型
+### Download  VITS model
 
 Put the model into `/usr/local/vits-simple-api/Model`
 
@@ -78,7 +81,7 @@ Put the model into `/usr/local/vits-simple-api/Model`
 
 
 
-### Modify model path 修改模型路径
+### Modify model path
 
 Modify in  `/usr/local/vits-simple-api/config.py` 
 
@@ -107,23 +110,19 @@ Or execute the pull script again
 
 Run the docker image pull script again 
 
-重新执行docker镜像拉取脚本即可
-
 ## Virtual environment deployment
 
 ### Clone
 
 `git clone https://github.com/Artrajz/vits-simple-api.git`
 
-###  Download python dependencies  下载python依赖
+###  Download python dependencies 
 
 A python virtual environment is recommended，use python >= 3.9
 
 `pip install -r requirements.txt`
 
 Fasttext may not be installed on windows, you can install it with the following command,or download wheels [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext)
-
-windows下可能安装不了fasttext,可以用以下命令安装，附[wheels下载地址](https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext)
 
 ```
 #python3.10 win_amd64
@@ -132,7 +131,7 @@ pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2
 pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp39-cp39-win_amd64.whl
 ```
 
-### Download  VITS model 下载VITS模型
+### Download  VITS model 
 
 Put the model into `/path/to/vits-simple-api/Model`
 
@@ -155,9 +154,7 @@ Put the model into `/path/to/vits-simple-api/Model`
         config.json
 </code></pre></details>
 
-
-
-### Modify model path 修改模型路径
+### Modify model path
 
 Modify in  `/path/to/vits-simple-api/config.py` 
 
@@ -173,9 +170,27 @@ MODEL_LIST = [
     [ABS_PATH+"/Model/louise/360_epochs.pth", ABS_PATH+"/Model/louise/config.json", ABS_PATH+"/Model/louise/hubert-soft-0d54a1f4.pt"],
 ]
 </code></pre></details>
+
 ### Startup
 
 `python app.py`
+
+# GPU accelerated
+
+## Windows
+### Install CUDA
+Check the highest version of CUDA supported by your graphics card:
+```
+nvidia-smi
+```
+Taking CUDA 11.7 as an example, download it from the official website: https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Windows&amp;target_arch=x86_64&amp;target_version=10&amp;target_type=exe_local
+### Install GPU version of PyTorch
+```
+pip3 install torch torchvision torchaudio --index-url ![img](file:///C:\Users\Administrator\AppData\Roaming\Tencent\QQTempSys\%W@GJ$ACOF(TYDYECOKVDYB.png)https://download.pytorch.org/whl/cu117
+```
+You can find the corresponding command for the version you need on the official website: https://pytorch.org/get-started/locally/
+## Linux
+The installation process is similar, but I don't have the environment to test it.
 
 # API
 
@@ -185,21 +200,21 @@ MODEL_LIST = [
 
 - GET http://127.0.0.1:23456/voice/speakers
 
-  返回id对应角色的映射表
+  Returns the mapping table of role IDs to speaker names.
 
 #### voice vits
 
 - GET http://127.0.0.1/voice?text=text
 
-  其他参数不指定时均为默认值
+  Default values are used when other parameters are not specified.
 
 - GET http://127.0.0.1/voice?text=[ZH]text[ZH][JA]text[JA]&lang=mix
 
-  lang=mix时文本要标注
+  When lang=mix, the text needs to be annotated.
 
 - GET http://127.0.0.1/voice?text=text&id=142&format=wav&lang=zh&length=1.4
 
-  文本为text，角色id为142，音频格式为wav，文本语言为zh，语音长度为1.4，其余参数默认
+   The text is "text", the role ID is 142, the audio format is wav, the text language is zh, the speech length is 1.4, and the other parameters are default.
 
 #### check
 
@@ -221,7 +236,7 @@ from requests_toolbelt.multipart.encoder import MultipartEncoder
 abs_path = os.path.dirname(__file__)
 base = "http://127.0.0.1:23456"
 
-#映射表
+#speakers
 def voice_speakers():
     url = f"{base}/voice/speakers"
 
@@ -232,7 +247,7 @@ def voice_speakers():
         for j in json[i]:
             print(j)
 
-#语音合成 voice vits
+#voice vits
 def voice_vits(text):
     fields = {
         "text":text,
@@ -259,7 +274,7 @@ def voice_vits(text):
         f.write(res.content)
     print(path)
 
-#语音转换 hubert-vits
+#hubert-vits
 def voice_hubert_vits(upload_path):
     upload_name = os.path.basename(upload_path)
     upload_type = f'audio/{upload_name.split(".")[1]}' #wav,ogg
@@ -288,7 +303,7 @@ def voice_hubert_vits(upload_path):
         f.write(res.content)
     print(path)
 
-#语音转换 同VITS模型内角色之间的音色转换
+#voice conversion in the same VITS model
 def voice_conversion(upload_path):
     upload_name = os.path.basename(upload_path)
     upload_type = f'audio/{upload_name.split(".")[1]}' #wav,ogg
@@ -318,37 +333,37 @@ def voice_conversion(upload_path):
 
 # Parameter
 
-## voice vits 语音合成
+## voice vits
 
-| Name          | Parameter | Is must | Default | Type  | Instruction                                                  |
-| ------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
-| 合成文本      | text      | true    |         | str   |                                                              |
-| 角色id        | id        | false   | 0       | int   |                                                              |
-| 音频格式      | format    | false   | wav     | str   | wav,ogg,silk                                                 |
-| 文本语言      | lang      | false   | auto    | str   | auto,zh,ja,mix.auto为自动识别语言模式（仅中日文），也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹, |
-| 语音长度/语速 | length    | false   | 1.0     | float | 调节语音长度，相当于调节语速，该数值越大语速越慢             |
-| 噪声          | noise     | false   | 0.667   | float |                                                              |
-| 噪声偏差      | noisew    | false   | 0.8     | float |                                                              |
-| 分段阈值      | max       | false   | 50      | int   |                                                              |
+| Name                   | Parameter | Is must | Default | Type  | Instruction                                                  |
+| ---------------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
+| Synthesized text       | text      | true    |         | str   |                                                              |
+| Role ID                | id        | false   | 0       | int   |                                                              |
+| Audio format           | format    | false   | wav     | str   | Support for wav,ogg,silk                                     |
+| Text language          | lang      | false   | auto    | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
+| Audio length           | length    | false   | 1.0     | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise                  | noise     | false   | 0.667   | float |                                                              |
+| Noise Weight           | noisew    | false   | 0.8     | float |                                                              |
+| Segmentation threshold | max       | false   | 50      | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
 
-## voice conversion 语音转换
+## voice conversion
 
-| Name       | Parameter   | Is must | Default | Type       | Instruction            |
-| ---------- | ----------- | ------- | ------- | ---------- | ---------------------- |
-| 上传音频   | upload      | true    |         | audio file | wav or ogg             |
-| 源角色id   | original_id | true    |         | int        | 上传文件所使用的角色id |
-| 目标角色id | target_id   | true    |         | int        | 要转换的目标角色id     |
+| Name           | Parameter   | Is must | Default | Type | Instruction                                               |
+| -------------- | ----------- | ------- | ------- | ---- | --------------------------------------------------------- |
+| Uploaded Audio | upload      | true    |         | file | The audio file to be uploaded. It should be in wav or ogg |
+| Source Role ID | original_id | true    |         | int  | The ID of the role used to upload the audio file.         |
+| Target Role ID | target_id   | true    |         | int  | The ID of the target role to convert the audio to.        |
 
-## HuBert-VITS 语音转换
+## HuBert-VITS
 
-| Name          | Parameter | Is must | Default | Type       | Instruction                                      |
-| ------------- | --------- | ------- | ------- | ---------- | ------------------------------------------------ |
-| 上传音频      | upload    | true    |         | audio file |                                                  |
-| 目标角色id    | target_id | true    |         | int        |                                                  |
-| 音频格式      | format    | true    |         | str        | wav,ogg,silk                                     |
-| 语音长度/语速 | length    | true    |         | float      | 调节语音长度，相当于调节语速，该数值越大语速越慢 |
-| 噪声          | noise     | true    |         | float      |                                                  |
-| 噪声偏差      | noisew    | true    |         | float      |                                                  |
+| Name           | Parameter | Is must | Default | Type  | Instruction                                                  |
+| -------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
+| Uploaded Audio | upload    | true    |         | file  | he audio file to be uploaded. It should be in wav or ogg format. |
+| Target Role ID | target_id | true    |         | int   |                                                              |
+| Audio format   | format    | true    |         | str   | wav,ogg,silk                                                 |
+| Audio length   | length    | true    |         | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise          | noise     | true    |         | float |                                                              |
+| Noise Weight   | noisew    | true    |         | float |                                                              |
 
 # Communication
 

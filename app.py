@@ -174,7 +174,7 @@ def voice_conversion_api():
         #     res.headers["msg"] = "speaker IDs are in diffrent Model!"
         #     return res
 
-        logger.info(msg=f"HuBert-soft orginal_id:{original_id} target_id:{target_id}")
+        logger.info(msg=f"voice_convetsion orginal_id:{original_id} target_id:{target_id}")
         t1 = time.time()
         output = real_obj.voice_conversion(os.path.join(app.config['UPLOAD_FOLDER'], fname),
                                            real_original_id, real_target_id)

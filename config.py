@@ -12,7 +12,7 @@ ABS_PATH = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])))
 UPLOAD_FOLDER = ABS_PATH + "/upload"
 # cahce path
 CACHE_PATH = ABS_PATH + "/cache"
-# zh ja ko en
+# zh ja ko en ...
 LANGUAGE_AUTOMATIC_DETECT = ["zh","ja"]
 
 '''
@@ -49,5 +49,5 @@ LENGTH = 1
 NOISE = 0.667
 # GET 默认噪声偏差
 NOISEW = 0.8
-#长文本分段阈值
+#长文本分段阈值，max<=0表示不分段,text will not be divided if max<=0
 MAX = 50
