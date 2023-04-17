@@ -17,7 +17,7 @@ RUN pip install numba av
 
 RUN pip install librosa
 
-RUN pip install torch==2.0.0+cu117 torchaudio==2.0.1+cu117 torchvision==0.15.1
+RUN pip install torch
 
 RUN pip install unidecode jamo pypinyin jieba protobuf cn2an inflect eng_to_ipa ko_pron indic_transliteration num_thai opencc
 

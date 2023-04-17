@@ -2,9 +2,7 @@ numba
 librosa
 numpy==1.23.3
 scipy
-torch==2.0.0+cu117
-torchaudio==2.0.1+cu117
-torchvision==0.15.1
+torch
 unidecode
 openjtalk==0.3.0.dev2
 jamo
