@@ -126,12 +126,8 @@ class vits:
                                         length_scale=params.get("length_scale"),
                                         emotion_embedding=emotion)[0][0, 0].data.float().cpu().numpy()
 
+        torch.cuda.empty_cache()
         return audio
-
-    def generate(self, params, format):
-        audio = self.infer(params)
-
-        return self.encode(self.hps_ms.data.sampling_rate, audio, format)
 
     def get_infer_param(self, length, noise, noisew, text=None, speaker_id=None, target_id=None, audio_path=None,
                         emotion=None):
@@ -216,7 +212,7 @@ class vits:
         elif self.mode_type == "hubert-soft":
             params = self.get_infer_param(speaker_id=speaker_id, length=length, noise=noise, noisew=noisew,
                                           target_id=target_id, audio_path=audio_path)
-            audio = self.infer(params).cpu()
+            audio = self.infer(params)
 
         return self.encode(self.hps_ms.data.sampling_rate, audio, format)
 
@@ -241,6 +237,7 @@ class vits:
                                                    sid_src=sid_src.to(device),
                                                    sid_tgt=sid_tgt.to(device))[0][0, 0].data.cpu().float().numpy()
 
+        torch.cuda.empty_cache()
         with BytesIO() as f:
             write(f, self.hps_ms.data.sampling_rate, audio)
             return BytesIO(f.getvalue())
