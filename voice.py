@@ -10,7 +10,7 @@ import commons
 import sys
 import re
 import numpy as np
-# import torch
+import torch
 # torch.set_num_threads(1) #设置torch线程为1，防止多任务推理时服务崩溃，但flask仍然会使用多线程
 from torch import no_grad, LongTensor, inference_mode, FloatTensor
 import uuid
@@ -18,9 +18,9 @@ from io import BytesIO
 from graiax import silkcoder
 from utils.nlp import cut, sentence_split
 
-
-# class infer_param:
-#     def __init__(self, vits,text):
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"torch:{torch.__version__}", f"GPU:{torch.cuda.is_available()}")
+print(f'device:{device} device.type:{device.type}')
 
 
 class vits:
@@ -55,6 +55,7 @@ class vits:
 
     def load_model(self, model, model_=None):
         utils.load_checkpoint(model, self.net_g_ms)
+        self.net_g_ms.to(device)
         if self.mode_type == "hubert-soft":
             from hubert_model import hubert_soft
             self.hubert = hubert_soft(model_)
@@ -119,11 +120,12 @@ class vits:
             x_tst = params.get("stn_tst").unsqueeze(0)
             x_tst_lengths = LongTensor([params.get("stn_tst").size(0)])
 
-            audio = \
-                self.net_g_ms.infer(x_tst, x_tst_lengths, sid=params.get("sid"), noise_scale=params.get("noise_scale"),
-                                    noise_scale_w=params.get("noise_scale_w"), length_scale=params.get("length_scale"),
-                                    emotion_embedding=emotion)[0][
-                    0, 0].data.float().numpy()
+            audio = self.net_g_ms.infer(x_tst.to(device), x_tst_lengths.to(device), sid=params.get("sid").to(device),
+                                        noise_scale=params.get("noise_scale"),
+                                        noise_scale_w=params.get("noise_scale_w"),
+                                        length_scale=params.get("length_scale"),
+                                        emotion_embedding=emotion)[0][
+                0, 0].data.float().cpu().numpy()
 
         return audio
 
@@ -195,13 +197,13 @@ class vits:
         return params
 
     def create_infer_task(self, text=None, speaker_id=None, format=None, length=1, noise=0.667, noisew=0.8,
-                          target_id=None, audio_path=None,max=50,lang="auto"):
+                          target_id=None, audio_path=None, max=50, lang="auto"):
         # params = self.get_infer_param(text=text, speaker_id=speaker_id, length=length, noise=noise, noisew=noisew,
         #                               target_id=target_id)
         tasks = []
         if self.mode_type == "vits":
 
-            sentence_list = sentence_split(text,max,lang)
+            sentence_list = sentence_split(text, max, lang)
             for sentence in sentence_list:
                 tasks.append(
                     self.get_infer_param(text=sentence, speaker_id=speaker_id, length=length, noise=noise,
@@ -215,7 +217,7 @@ class vits:
         elif self.mode_type == "hubert-soft":
             params = self.get_infer_param(speaker_id=speaker_id, length=length, noise=noise, noisew=noisew,
                                           target_id=target_id, audio_path=audio_path)
-            audio = self.infer(params)
+            audio = self.infer(params).cpu()
 
         return self.encode(self.hps_ms.data.sampling_rate, audio, format)
 
@@ -235,8 +237,10 @@ class vits:
 
         with no_grad():
             sid_tgt = LongTensor([target_id])
-            audio = self.net_g_ms.voice_conversion(spec, spec_lengths, sid_src=sid_src, sid_tgt=sid_tgt)[
-                0][0, 0].data.cpu().float().numpy()
+            audio = self.net_g_ms.voice_conversion(spec.to(device),
+                                                   spec_lengths.to(device),
+                                                   sid_src=sid_src.to(device),
+                                                   sid_tgt=sid_tgt.to(device))[0][0, 0].data.cpu().float().numpy()
 
         with BytesIO() as f:
             write(f, self.hps_ms.data.sampling_rate, audio)
