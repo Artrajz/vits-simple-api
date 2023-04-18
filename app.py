@@ -17,11 +17,13 @@ scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()
 
-logger = logging.getLogger('moegoe-simple-api')
+logger = logging.getLogger('vits-simple-api')
 logger.setLevel(logging.INFO)
 logzero.loglevel(logging.WARNING)
 
 voice_obj, voice_speakers = merge_model(app.config["MODEL_LIST"])
+
+print(f"loaded {sum([len(voice_speakers[i]) for i in range(len(voice_speakers))])} speakers")
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     try:
