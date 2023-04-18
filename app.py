@@ -77,6 +77,12 @@ def voice_api():
         logger.error(msg=f"{e} {e.args}")
         return res
 
+    if check_is_none(text):
+        res = make_response(jsonify({"status": "error", "msg": "text is empty"}))
+        res.status = 404
+        logger.info(msg=f"text is empty")
+        return res
+
     real_id = voice_obj[0][speaker_id][0]
     real_obj = voice_obj[0][speaker_id][1]
 
