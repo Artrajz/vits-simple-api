@@ -7,8 +7,6 @@ from numpy import float32
 import librosa
 
 
-
-
 class HParams():
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
@@ -99,10 +97,8 @@ def clean_folder(folder_path):
             os.remove(file_path)
 
 
-
 # is none -> True,is not none -> False
 def check_is_none(s):
-    s = str(s)
-    if s == None or s == "" or s.isspace():
+    if s is None or str(s) == "" or str(s).isspace():
         return True
     return False

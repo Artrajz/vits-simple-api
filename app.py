@@ -39,13 +39,13 @@ def index():
 
 @app.route('/voice/speakers', methods=["GET", "POST"])
 def voice_speakers_api():
-    json = {
+    models_json = {
         "VITS": voice_speakers[0],
         "HuBert-VITS": voice_speakers[1],
         "W2V2-VITS": voice_speakers[2]
     }
 
-    return jsonify(json)
+    return jsonify(models_json)
 
 
 @app.route('/voice', methods=["GET", "POST"])
@@ -196,52 +196,57 @@ def check():
             model = request.form["model"]
             speaker_id = int(request.form["id"])
     except Exception as e:
-        res = make_response("param error")
+        res = make_response(jsonify({"status": "error", "msg": "param error"}))
         res.status = 400
-        res.headers["msg"] = "param error"
-        logger.error(msg=f"{e} {e.args}")
+        logger.info(msg=f"{e}")
         return res
 
     if check_is_none(model):
-        res = make_response("model is empty")
+        res = make_response(jsonify({"status": "error", "msg": "model is empty"}))
         res.status = 404
-        res.headers["msg"] = "model is empty"
+        logger.info(msg=f"model is empty")
         return res
 
     if model.upper() not in ("VITS", "HUBERT", "W2V2"):
-        res = make_response("model does not exist")
+        res = make_response(jsonify({"status": "error", "msg": f"model {model} does not exist"}))
         res.status = 404
-        res.headers["msg"] = "model does not exist"
+        logger.info(msg=f"speaker id {speaker_id} error")
         return res
 
     if check_is_none(speaker_id):
-        res = make_response("id is empty")
+        res = make_response(jsonify({"status": "error", "msg": "id is empty"}))
         res.status = 404
-        res.headers["msg"] = "id is empty"
+        logger.info(msg=f"speaker id {speaker_id} error")
         return res
 
     if model.upper() == "VITS":
         speaker_list = voice_speakers[0]
-    elif model.upper() == "HUBERT-VITS":
+    elif model.upper() == "HUBERT":
         speaker_list = voice_speakers[1]
-    elif model.upper() == "W2V2-VITS":
+    elif model.upper() == "W2V2":
         speaker_list = voice_speakers[2]
+
+    if len(speaker_list) == 0:
+        res = make_response(jsonify({"status": "error", "msg": f"{model} not loaded"}))
+        res.status = 404
+        logger.info(msg=f"{model} not loaded")
+        return res
+
     if speaker_id < 0 or speaker_id >= len(speaker_list):
-        res = make_response("speaker id error")
-        res.status = 400
-        res.headers["msg"] = "speaker id error"
-        logger.error(msg=f"speaker id {speaker_id} error")
+        res = make_response(jsonify({"status": "error", "msg": f"id {speaker_id} does not exist"}))
+        res.status = 404
+        logger.info(msg=f"speaker id {speaker_id} does not exist")
+        logger.info(msg=f"speaker id {speaker_id} does not exist")
         return res
     name = str(speaker_list[speaker_id][speaker_id])
-    logger.info(msg=f"check id:{speaker_id} name:{name} successful")
+    logger.info(msg=f"check id:{speaker_id} name:{name}")
 
-    res = make_response(f"successful check id:{speaker_id} name:{name}")
+    res = make_response(jsonify({"status": "success", "id": speaker_id, "name": name}))
     res.status = 200
-    res.headers["msg"] = "success"
     return res
 
 
-# cleaner
+# regular cleaning
 @scheduler.task('interval', id='clean_task', seconds=3600, misfire_grace_time=900)
 def clean_task():
     clean_folder(app.config["UPLOAD_FOLDER"])

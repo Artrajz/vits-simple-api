@@ -66,7 +66,6 @@ def sentence_split(text, max=50, lang="auto"):
 
 # is none -> True,is not none -> False
 def check_is_none(s):
-    s = str(s)
-    if s == None or s == "" or s.isspace():
+    if s is None or str(s) == "" or str(s).isspace():
         return True
     return False
