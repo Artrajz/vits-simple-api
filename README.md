@@ -186,7 +186,7 @@ nvidia-smi
 Taking CUDA 11.7 as an example, download it from the official website: https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Windows&amp;target_arch=x86_64&amp;target_version=10&amp;target_type=exe_local
 ### Install GPU version of PyTorch
 ```
-pip3 install torch torchvision torchaudio --index-url ![img](file:///C:\Users\Administrator\AppData\Roaming\Tencent\QQTempSys\%W@GJ$ACOF(TYDYECOKVDYB.png)https://download.pytorch.org/whl/cu117
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu117
 ```
 You can find the corresponding command for the version you need on the official website: https://pytorch.org/get-started/locally/
 ## Linux
