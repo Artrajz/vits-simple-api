@@ -14,6 +14,10 @@ UPLOAD_FOLDER = ABS_PATH + "/upload"
 CACHE_PATH = ABS_PATH + "/cache"
 # zh ja ko en ...
 LANGUAGE_AUTOMATIC_DETECT = ["zh","ja"]
+#set to True to enable API Key authentication
+API_KEY_ENABLED = False
+# API_KEY is required for authentication
+API_KEY = "api-key"
 
 '''
 For each model, the filling method is as follows 模型列表中每个模型的填写方法如下

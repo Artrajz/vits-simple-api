@@ -28,16 +28,19 @@
 - GPU加速推理
 
 <details><summary>Update Logs</summary><pre><code>
+<h2>2023.4.23</h2>
+<p>增加api key鉴权，默认禁用，需要在config.py中启用</p>
 <h2>2023.4.17</h2>
-<span>修改单语言的cleaner需要标注才会clean，增加GPU加速推理，但需要手动安装gpu推理环境</span>
+<p>修改单语言的cleaner需要标注才会clean，增加GPU加速推理，但需要手动安装gpu推理环境</p>
 <h2>2023.4.12</h2>
-<span>项目由MoeGoe-Simple-API更名为vits-simple-api，支持长文本批处理，增加长文本分段阈值max</span>
+<p>项目由MoeGoe-Simple-API更名为vits-simple-api，支持长文本批处理，增加长文本分段阈值max</p>
 <h2>2023.4.7</h2>
-<span>增加配置文件可自定义默认参数，本次更新需要手动更新config.py，具体使用方法见config.py</span>
+<p>增加配置文件可自定义默认参数，本次更新需要手动更新config.py，具体使用方法见config.py</p>
 <h2>2023.4.6</h2>
-<span>加入自动识别语种选项auto，lang参数默认修改为auto，自动识别仍有一定缺陷，请自行选择</span>
-<span>统一POST请求类型为multipart/form-data</span>
+<p>加入自动识别语种选项auto，lang参数默认修改为auto，自动识别仍有一定缺陷，请自行选择</p>
+<p>统一POST请求类型为multipart/form-data</p>
 </code></pre></details>
+
 
 
 demo：`https://api.artrajz.cn/py/voice?text=你好,こんにちは&id=142`

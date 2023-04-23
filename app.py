@@ -6,6 +6,7 @@ import uuid
 from flask import Flask, request, send_file, jsonify, make_response
 from werkzeug.utils import secure_filename
 from flask_apscheduler import APScheduler
+from functools import wraps
 from utils.utils import clean_folder, check_is_none
 from utils.nlp import clasify_lang
 from utils.merge import merge_model
@@ -32,6 +33,24 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
         pass
 
 
+def require_api_key(func):
+    @wraps(func)
+    def check_api_key(*args, **kwargs):
+        if not app.config.get('API_KEY_ENABLED', False):
+            return func(*args, **kwargs)
+        else:
+            api_key = request.args.get('api_key') or request.headers.get('X-API-KEY')
+            if api_key and api_key == app.config['API_KEY']:
+                return func(*args, **kwargs)
+            else:
+                res = make_response(jsonify({"status": "error", "message": "Invalid API Key"}))
+                res.status = 401
+                res.headers["message"] = "Invalid API Key"
+                return res
+
+    return check_api_key
+
+
 @app.route('/', methods=["GET", "POST"])
 def index():
     return ""
@@ -50,17 +69,18 @@ def voice_speakers_api():
 
 @app.route('/voice', methods=["GET", "POST"])
 @app.route('/voice/vits', methods=["GET", "POST"])
+@require_api_key
 def voice_api():
     try:
         if request.method == "GET":
             text = request.args.get("text")
-            speaker_id = int(request.args.get("id", app.config["ID"]))
-            format = request.args.get("format", app.config["FORMAT"])
-            lang = request.args.get("lang", app.config["LANG"])
-            length = float(request.args.get("length", app.config["LENGTH"]))
-            noise = float(request.args.get("noise", app.config["NOISE"]))
-            noisew = float(request.args.get("noisew", app.config["NOISEW"]))
-            max = int(request.args.get("max", app.config["MAX"]))
+            speaker_id = int(request.args.get("id", app.config.get("ID", 0)))
+            format = request.args.get("format", app.config.get("FORMAT", "wav"))
+            lang = request.args.get("lang", app.config.get("LANG", "auto"))
+            length = float(request.args.get("length", app.config.get("LENGTH", 1)))
+            noise = float(request.args.get("noise", app.config.get("NOISE", 0.667)))
+            noisew = float(request.args.get("noisew", app.config.get("NOISEW", 0.8)))
+            max = int(request.args.get("max", app.config.get("MAX", 50)))
         elif request.method == "POST":
             text = request.form["text"]
             speaker_id = int(request.form["id"])
@@ -73,12 +93,12 @@ def voice_api():
     except Exception as e:
         res = make_response("param error")
         res.status = 400
-        res.headers["msg"] = "param error"
+        res.headers["message"] = "param error"
         logger.error(msg=f"{e} {e.args}")
         return res
 
     if check_is_none(text):
-        res = make_response(jsonify({"status": "error", "msg": "text is empty"}))
+        res = make_response(jsonify({"status": "error", "message": "text is empty"}))
         res.status = 404
         logger.info(msg=f"text is empty")
         return res
@@ -108,6 +128,7 @@ def voice_api():
 
 
 @app.route('/voice/hubert-vits', methods=["GET", "POST"])
+@require_api_key
 def voice_hubert_api():
     if request.method == "POST":
         try:
@@ -120,7 +141,7 @@ def voice_hubert_api():
         except Exception as e:
             res = make_response("param error")
             res.status = 400
-            res.headers["msg"] = "param error"
+            res.headers["message"] = "param error"
             logger.error(msg=f"{e} {e.args}")
             return res
 
@@ -133,7 +154,7 @@ def voice_hubert_api():
     except Exception:
         res = make_response("target id error")
         res.status = 400
-        res.headers["msg"] = "target id error"
+        res.headers["message"] = "target id error"
         return res
 
     file_type = f"audio/{format}"
@@ -152,6 +173,7 @@ def voice_hubert_api():
 
 
 @app.route('/voice/conversion', methods=["GET", "POST"])
+@require_api_key
 def voice_conversion_api():
     if request.method == "POST":
         try:
@@ -161,7 +183,7 @@ def voice_conversion_api():
         except Exception as e:
             res = make_response("param error")
             res.status = 400
-            res.headers["msg"] = "param error"
+            res.headers["message"] = "param error"
             logger.error(msg=f"{e} {e.args}")
             return res
 
@@ -179,7 +201,7 @@ def voice_conversion_api():
         # if voice_obj[0][original_id][2] != voice_obj[0][target_id][2]:
         #     res = make_response("speaker IDs are in diffrent Model!")
         #     res.status = 400
-        #     res.headers["msg"] = "speaker IDs are in diffrent Model!"
+        #     res.headers["message"] = "speaker IDs are in diffrent Model!"
         #     return res
 
         logger.info(msg=f"voice_convetsion orginal_id:{original_id} target_id:{target_id}")
@@ -202,25 +224,25 @@ def check():
             model = request.form["model"]
             speaker_id = int(request.form["id"])
     except Exception as e:
-        res = make_response(jsonify({"status": "error", "msg": "param error"}))
+        res = make_response(jsonify({"status": "error", "message": "param error"}))
         res.status = 400
         logger.info(msg=f"{e}")
         return res
 
     if check_is_none(model):
-        res = make_response(jsonify({"status": "error", "msg": "model is empty"}))
+        res = make_response(jsonify({"status": "error", "message": "model is empty"}))
         res.status = 404
         logger.info(msg=f"model is empty")
         return res
 
     if model.upper() not in ("VITS", "HUBERT", "W2V2"):
-        res = make_response(jsonify({"status": "error", "msg": f"model {model} does not exist"}))
+        res = make_response(jsonify({"status": "error", "message": f"model {model} does not exist"}))
         res.status = 404
         logger.info(msg=f"speaker id {speaker_id} error")
         return res
 
     if check_is_none(speaker_id):
-        res = make_response(jsonify({"status": "error", "msg": "id is empty"}))
+        res = make_response(jsonify({"status": "error", "message": "id is empty"}))
         res.status = 404
         logger.info(msg=f"speaker id {speaker_id} error")
         return res
@@ -233,13 +255,13 @@ def check():
         speaker_list = voice_speakers[2]
 
     if len(speaker_list) == 0:
-        res = make_response(jsonify({"status": "error", "msg": f"{model} not loaded"}))
+        res = make_response(jsonify({"status": "error", "message": f"{model} not loaded"}))
         res.status = 404
         logger.info(msg=f"{model} not loaded")
         return res
 
     if speaker_id < 0 or speaker_id >= len(speaker_list):
-        res = make_response(jsonify({"status": "error", "msg": f"id {speaker_id} does not exist"}))
+        res = make_response(jsonify({"status": "error", "message": f"id {speaker_id} does not exist"}))
         res.status = 404
         logger.info(msg=f"speaker id {speaker_id} does not exist")
         logger.info(msg=f"speaker id {speaker_id} does not exist")

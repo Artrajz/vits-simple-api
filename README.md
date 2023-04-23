@@ -28,16 +28,19 @@
 - GPU accelerated inference
 
 <details><summary>Update Logs</summary><pre><code>
+<h2>2023.4.23</h2>
+<p>Add API Key authentication, disabled by default, needs to be enabled in config.py.</p>
 <h2>2023.4.17</h2>
-<span>Added the feature that the cleaner for a single language needs to be annotated to clean, and added GPU acceleration for inference, but the GPU inference environment needs to be manually installed.</span>
+<p>Added the feature that the cleaner for a single language needs to be annotated to clean, and added GPU acceleration for inference, but the GPU inference environment needs to be manually installed.</p>
 <h2>2023.4.12</h2>
-<span>Renamed the project from MoeGoe-Simple-API to vits-simple-api, added support for batch processing of long texts, and added a segment threshold "max" for long texts.</span>
+<p>Renamed the project from MoeGoe-Simple-API to vits-simple-api, added support for batch processing of long texts, and added a segment threshold "max" for long texts.</p>
 <h2>2023.4.7</h2>
-<span>Added a configuration file to customize default parameters. This update requires manually updating config.py. See config.py for specific usage.</span>
+<p>Added a configuration file to customize default parameters. This update requires manually updating config.py. See config.py for specific usage.</p>
 <h2>2023.4.6</h2>
-<span>Added the "auto" option for automatically recognizing the language of the text. Modified the default value of the "lang" parameter to "auto". Automatic recognition still has some defects, please choose manually.</span>
-<span>Unified the POST request type as multipart/form-data.</span>
+<p>Added the "auto" option for automatically recognizing the language of the text. Modified the default value of the "lang" parameter to "auto". Automatic recognition still has some defects, please choose manually.</p>
+<p>Unified the POST request type as multipart/form-data.</p>
 </code></pre></details>
+
 
 
 
