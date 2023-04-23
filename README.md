@@ -186,12 +186,12 @@ Check the highest version of CUDA supported by your graphics card:
 ```
 nvidia-smi
 ```
-Taking CUDA 11.7 as an example, download it from the official website: https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Windows&amp;target_arch=x86_64&amp;target_version=10&amp;target_type=exe_local
+Taking CUDA 11.7 as an example, download it from the [official website](https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Windows&amp;target_arch=x86_64&amp;target_version=10&amp;target_type=exe_local)
 ### Install GPU version of PyTorch
 ```
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu117
 ```
-You can find the corresponding command for the version you need on the official website: https://pytorch.org/get-started/locally/
+You can find the corresponding command for the version you need on the [official website](https://pytorch.org/get-started/locally/)
 ## Linux
 The installation process is similar, but I don't have the environment to test it.
 
@@ -333,6 +333,11 @@ def voice_conversion(upload_path):
         f.write(res.content)
     print(path)
 ```
+
+## API KEY
+
+Set `API_KEY_ENABLED = True` in `config.py` to enable API key authentication. The API key is `API_KEY = "api-key"`.
+After enabling it, you need to add the `api_key` parameter in GET requests and add the `X-API-KEY` parameter in the header for POST requests.
 
 # Parameter
 

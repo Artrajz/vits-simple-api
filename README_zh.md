@@ -186,7 +186,7 @@ MODEL_LIST = [
 nvidia-smi
 ```
 
-以CUDA11.7为例，官网：https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local
+以CUDA11.7为例，[官网](https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Windows&target_arch=x86_64&target_version=10&target_type=exe_local)
 
 ### 安装GPU版pytorch
 
@@ -196,7 +196,7 @@ CUDA11.7对应的pytorch是用这个命令安装
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu117
 ```
 
-对应版本的命令可以在官网找到：https://pytorch.org/get-started/locally/
+对应版本的命令可以在[官网](https://pytorch.org/get-started/locally/)找到
 
 ## Linux
 
@@ -340,6 +340,12 @@ def voice_conversion(upload_path):
         f.write(res.content)
     print(path)
 ```
+
+## API KEY
+
+在config.py中设置`API_KEY_ENABLED = True`以启用，api key填写：`API_KEY = "api-key"`。
+
+启用后，GET请求中使用需要增加参数api_key，POST请求中使用需要在header中添加参数`X-API-KEY`。
 
 # Parameter
 
