@@ -1,7 +1,8 @@
 import regex as re
 from fastlid import fastlid
+import config
 
-fastlid.set_languages = ["zh", "ja"]
+fastlid.set_languages = config.LANGUAGE_AUTOMATIC_DETECT or ["zh", "ja"]
 
 
 def clasify_lang(text):
