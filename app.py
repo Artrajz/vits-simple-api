@@ -331,10 +331,11 @@ def check():
         logger.info(msg=f"speaker id {speaker_id} does not exist")
         logger.info(msg=f"speaker id {speaker_id} does not exist")
         return res
-    name = str(speaker_list[speaker_id][speaker_id])
-    logger.info(msg=f"check id:{speaker_id} name:{name}")
+    name = str(speaker_list[speaker_id]["name"])
+    lang = speaker_list[speaker_id]["lang"]
+    logger.info(msg=f"check id:{speaker_id} name:{name} lang:{lang}")
 
-    res = make_response(jsonify({"status": "success", "id": speaker_id, "name": name}))
+    res = make_response(jsonify({"status": "success", "id": speaker_id, "name": name, "lang": lang}))
     res.status = 200
     return res
 
