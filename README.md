@@ -19,8 +19,9 @@
 # Feature
 
 - VITS text-to-speech
-- HuBert-soft VITS
 - VITS voice conversion
+- HuBert-soft VITS
+- W2V2 VITS dimensional emotion model
 - Support for loading multiple models
 - Automatic language recognition and processing,support for custom language type range
 - Customize default parameters
@@ -28,6 +29,8 @@
 - GPU accelerated inference
 
 <details><summary>Update Logs</summary><pre><code>
+<h2>2023.5.2</h2>
+<p>Added support for the w2v2-vits model, updated the speakers mapping table, and added support for the languages corresponding to the model.</p>
 <h2>2023.4.23</h2>
 <p>Add API Key authentication, disabled by default, needs to be enabled in config.py.</p>
 <h2>2023.4.17</h2>
@@ -40,6 +43,7 @@
 <p>Added the "auto" option for automatically recognizing the language of the text. Modified the default value of the "lang" parameter to "auto". Automatic recognition still has some defects, please choose manually.</p>
 <p>Unified the POST request type as multipart/form-data.</p>
 </code></pre></details>
+
 
 
 
@@ -230,7 +234,6 @@ The installation process is similar, but I don't have the environment to test it
 ```python
 import re
 import requests
-import json
 import os
 import random
 import string
@@ -239,7 +242,8 @@ from requests_toolbelt.multipart.encoder import MultipartEncoder
 abs_path = os.path.dirname(__file__)
 base = "http://127.0.0.1:23456"
 
-#speakers
+
+# 映射表
 def voice_speakers():
     url = f"{base}/voice/speakers"
 
@@ -250,85 +254,113 @@ def voice_speakers():
         for j in json[i]:
             print(j)
 
-#voice vits
-def voice_vits(text):
+
+# 语音合成 voice vits
+def voice_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, max=50):
     fields = {
-        "text":text,
-        "id":"0",
-        "format":"wav",
-        "lang":"auto",
-        "length":"1",
-        "noise":"0.667",
-        "noisew":"0.8",
-        "max": "50"
+        "text": text,
+        "id": str(id),
+        "format": format,
+        "lang": lang,
+        "length": str(length),
+        "noise": str(noise),
+        "noisew": str(noisew),
+        "max": str(max)
     }
-    boundary = '----VoiceConversionFormBoundary' \
-               + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-    
+    boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
+
     m = MultipartEncoder(fields=fields, boundary=boundary)
     headers = {"Content-Type": m.content_type}
     url = f"{base}/voice"
 
-    res = requests.post(url=url,data=m,headers=headers)
+    res = requests.post(url=url, data=m, headers=headers)
     fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
     path = f"{abs_path}/{fname}"
-    
+
     with open(path, "wb") as f:
         f.write(res.content)
     print(path)
 
-#hubert-vits
-def voice_hubert_vits(upload_path):
+
+# 语音转换 hubert-vits
+def voice_hubert_vits(upload_path, target_id, format="wav", length=1, noise=0.667, noisew=0.8):
     upload_name = os.path.basename(upload_path)
-    upload_type = f'audio/{upload_name.split(".")[1]}' #wav,ogg
-    
-    with open(upload_path,'rb') as upload_file:
+    upload_type = f'audio/{upload_name.split(".")[1]}'  # wav,ogg
+
+    with open(upload_path, 'rb') as upload_file:
         fields = {
-            "upload": (upload_name, upload_file,upload_type),
-            "target_id":"0",
-            "format":"wav",
-            "length":"1",
-            "noise":"0.1",
-            "noisew":"0.1",
+            "upload": (upload_name, upload_file, upload_type),
+            "target_id": str(target_id),
+            "format": format,
+            "length": str(length),
+            "noise": str(noise),
+            "noisew": str(noisew),
         }
-        boundary = '----VoiceConversionFormBoundary' \
-                   + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-        
+        boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
+
         m = MultipartEncoder(fields=fields, boundary=boundary)
         headers = {"Content-Type": m.content_type}
         url = f"{base}/voice/hubert-vits"
 
-        res = requests.post(url=url,data=m,headers=headers)
+        res = requests.post(url=url, data=m, headers=headers)
     fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
     path = f"{abs_path}/{fname}"
-    
+
     with open(path, "wb") as f:
         f.write(res.content)
     print(path)
 
-#voice conversion in the same VITS model
-def voice_conversion(upload_path):
-    upload_name = os.path.basename(upload_path)
-    upload_type = f'audio/{upload_name.split(".")[1]}' #wav,ogg
 
-    with open(upload_path,'rb') as upload_file:
+# 维度情感模型 w2v2-vits
+def voice_w2v2_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, max=50, emotion=0):
+    fields = {
+        "text": text,
+        "id": str(id),
+        "format": format,
+        "lang": lang,
+        "length": str(length),
+        "noise": str(noise),
+        "noisew": str(noisew),
+        "max": str(max),
+        "emotion": str(emotion)
+    }
+    boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
+
+    m = MultipartEncoder(fields=fields, boundary=boundary)
+    headers = {"Content-Type": m.content_type}
+    url = f"{base}/voice/w2v2-vits"
+
+    res = requests.post(url=url, data=m, headers=headers)
+    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
+    path = f"{abs_path}/{fname}"
+
+    with open(path, "wb") as f:
+        f.write(res.content)
+    print(path)
+
+
+# 语音转换 同VITS模型内角色之间的音色转换
+def voice_conversion(upload_path, original_id, target_id):
+    upload_name = os.path.basename(upload_path)
+    upload_type = f'audio/{upload_name.split(".")[1]}'  # wav,ogg
+
+    with open(upload_path, 'rb') as upload_file:
         fields = {
-            "upload": (upload_name, upload_file,upload_type),
-            "original_id": "3",
-            "target_id": "0",
+            "upload": (upload_name, upload_file, upload_type),
+            "original_id": str(original_id),
+            "target_id": str(target_id),
         }
-        boundary = '----VoiceConversionFormBoundary' \
-                   + ''.join(random.sample(string.ascii_letters + string.digits, 16))
+        boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
         m = MultipartEncoder(fields=fields, boundary=boundary)
-        
+
         headers = {"Content-Type": m.content_type}
         url = f"{base}/voice/conversion"
 
-        res = requests.post(url=url,data=m,headers=headers)
-        
+        res = requests.post(url=url, data=m, headers=headers)
+
     fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
     path = f"{abs_path}/{fname}"
-    
+
     with open(path, "wb") as f:
         f.write(res.content)
     print(path)
@@ -341,7 +373,7 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 
 # Parameter
 
-## voice vits
+## VITS
 
 | Name                   | Parameter | Is must | Default | Type  | Instruction                                                  |
 | ---------------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
@@ -354,7 +386,7 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 | Noise Weight           | noisew    | false   | 0.8     | float |                                                              |
 | Segmentation threshold | max       | false   | 50      | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
 
-## voice conversion
+## VITS voice conversion
 
 | Name           | Parameter   | Is must | Default | Type | Instruction                                               |
 | -------------- | ----------- | ------- | ------- | ---- | --------------------------------------------------------- |
@@ -373,6 +405,20 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 | Noise          | noise     | true    |         | float |                                                              |
 | Noise Weight   | noisew    | true    |         | float |                                                              |
 
+## VITS
+
+| Name                   | Parameter | Is must | Default | Type  | Instruction                                                  |
+| ---------------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
+| Synthesized text       | text      | true    |         | str   |                                                              |
+| Role ID                | id        | false   | 0       | int   |                                                              |
+| Audio format           | format    | false   | wav     | str   | Support for wav,ogg,silk                                     |
+| Text language          | lang      | false   | auto    | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
+| Audio length           | length    | false   | 1.0     | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise                  | noise     | false   | 0.667   | float |                                                              |
+| Noise Weight           | noisew    | false   | 0.8     | float |                                                              |
+| Segmentation threshold | max       | false   | 50      | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
+| Dimensional emotion    | emotion   | false   | 0       | int   | The range depends on the emotion reference file in npy format, such as the  range of the [innnk](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)'s model all_emotions.npy, which is 0-5457. |
+
 # Communication
 
 Learning and communication,now there is only Chinese [QQ group](https://qm.qq.com/cgi-bin/qm/qr?k=-1GknIe4uXrkmbDKBGKa1aAUteq40qs_&jump_from=webapi&authKey=x5YYt6Dggs1ZqWxvZqvj3fV8VUnxRyXm5S5Kzntc78+Nv3iXOIawplGip9LWuNR/)
@@ -381,4 +427,5 @@ Learning and communication,now there is only Chinese [QQ group](https://qm.qq.co
 
 - vits:https://github.com/jaywalnut310/vits
 - MoeGoe:https://github.com/CjangCjengh/MoeGoe
+- emotional-vits:https://github.com/innnky/emotional-vits
 

@@ -18,9 +18,10 @@
 
 # Feature
 
-- 语音合成
-- 语音转换
-- 语音转换
+- VITS语音合成
+- VITS语音转换
+- HuBert-soft VITS模型
+- W2V2 VITS维度情感模型
 - 加载多模型
 - 自动识别语言并处理，支持自定义语言类型范围
 - 自定义默认参数
@@ -28,6 +29,8 @@
 - GPU加速推理
 
 <details><summary>Update Logs</summary><pre><code>
+<h2>2023.5.2</h2>
+<p>增加w2v2-vits模型支持，修改了speakers映射表并添加了对应模型支持的语言</p>
 <h2>2023.4.23</h2>
 <p>增加api key鉴权，默认禁用，需要在config.py中启用</p>
 <h2>2023.4.17</h2>
@@ -40,6 +43,7 @@
 <p>加入自动识别语种选项auto，lang参数默认修改为auto，自动识别仍有一定缺陷，请自行选择</p>
 <p>统一POST请求类型为multipart/form-data</p>
 </code></pre></details>
+
 
 
 
@@ -237,7 +241,6 @@ pip3 install torch torchvision torchaudio --index-url https://download.pytorch.o
 ```python
 import re
 import requests
-import json
 import os
 import random
 import string
@@ -246,7 +249,8 @@ from requests_toolbelt.multipart.encoder import MultipartEncoder
 abs_path = os.path.dirname(__file__)
 base = "http://127.0.0.1:23456"
 
-#映射表
+
+# 映射表
 def voice_speakers():
     url = f"{base}/voice/speakers"
 
@@ -257,85 +261,113 @@ def voice_speakers():
         for j in json[i]:
             print(j)
 
-#语音合成 voice vits
-def voice_vits(text):
+
+# 语音合成 voice vits
+def voice_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, max=50):
     fields = {
-        "text":text,
-        "id":"0",
-        "format":"wav",
-        "lang":"auto",
-        "length":"1",
-        "noise":"0.667",
-        "noisew":"0.8",
-        "max": "50"
+        "text": text,
+        "id": str(id),
+        "format": format,
+        "lang": lang,
+        "length": str(length),
+        "noise": str(noise),
+        "noisew": str(noisew),
+        "max": str(max)
     }
-    boundary = '----VoiceConversionFormBoundary' \
-               + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-    
+    boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
+
     m = MultipartEncoder(fields=fields, boundary=boundary)
     headers = {"Content-Type": m.content_type}
     url = f"{base}/voice"
 
-    res = requests.post(url=url,data=m,headers=headers)
+    res = requests.post(url=url, data=m, headers=headers)
     fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
     path = f"{abs_path}/{fname}"
-    
+
     with open(path, "wb") as f:
         f.write(res.content)
     print(path)
 
-#语音转换 hubert-vits
-def voice_hubert_vits(upload_path):
+
+# 语音转换 hubert-vits
+def voice_hubert_vits(upload_path, target_id, format="wav", length=1, noise=0.667, noisew=0.8):
     upload_name = os.path.basename(upload_path)
-    upload_type = f'audio/{upload_name.split(".")[1]}' #wav,ogg
-    
-    with open(upload_path,'rb') as upload_file:
+    upload_type = f'audio/{upload_name.split(".")[1]}'  # wav,ogg
+
+    with open(upload_path, 'rb') as upload_file:
         fields = {
-            "upload": (upload_name, upload_file,upload_type),
-            "target_id":"0",
-            "format":"wav",
-            "length":"1",
-            "noise":"0.1",
-            "noisew":"0.1",
+            "upload": (upload_name, upload_file, upload_type),
+            "target_id": str(target_id),
+            "format": format,
+            "length": str(length),
+            "noise": str(noise),
+            "noisew": str(noisew),
         }
-        boundary = '----VoiceConversionFormBoundary' \
-                   + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-        
+        boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
+
         m = MultipartEncoder(fields=fields, boundary=boundary)
         headers = {"Content-Type": m.content_type}
         url = f"{base}/voice/hubert-vits"
 
-        res = requests.post(url=url,data=m,headers=headers)
+        res = requests.post(url=url, data=m, headers=headers)
     fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
     path = f"{abs_path}/{fname}"
-    
+
     with open(path, "wb") as f:
         f.write(res.content)
     print(path)
 
-#语音转换 同VITS模型内角色之间的音色转换
-def voice_conversion(upload_path):
-    upload_name = os.path.basename(upload_path)
-    upload_type = f'audio/{upload_name.split(".")[1]}' #wav,ogg
 
-    with open(upload_path,'rb') as upload_file:
+# 维度情感模型 w2v2-vits
+def voice_w2v2_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, max=50, emotion=0):
+    fields = {
+        "text": text,
+        "id": str(id),
+        "format": format,
+        "lang": lang,
+        "length": str(length),
+        "noise": str(noise),
+        "noisew": str(noisew),
+        "max": str(max),
+        "emotion": str(emotion)
+    }
+    boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
+
+    m = MultipartEncoder(fields=fields, boundary=boundary)
+    headers = {"Content-Type": m.content_type}
+    url = f"{base}/voice/w2v2-vits"
+
+    res = requests.post(url=url, data=m, headers=headers)
+    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
+    path = f"{abs_path}/{fname}"
+
+    with open(path, "wb") as f:
+        f.write(res.content)
+    print(path)
+
+
+# 语音转换 同VITS模型内角色之间的音色转换
+def voice_conversion(upload_path, original_id, target_id):
+    upload_name = os.path.basename(upload_path)
+    upload_type = f'audio/{upload_name.split(".")[1]}'  # wav,ogg
+
+    with open(upload_path, 'rb') as upload_file:
         fields = {
-            "upload": (upload_name, upload_file,upload_type),
-            "original_id": "3",
-            "target_id": "0",
+            "upload": (upload_name, upload_file, upload_type),
+            "original_id": str(original_id),
+            "target_id": str(target_id),
         }
-        boundary = '----VoiceConversionFormBoundary' \
-                   + ''.join(random.sample(string.ascii_letters + string.digits, 16))
+        boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
         m = MultipartEncoder(fields=fields, boundary=boundary)
-        
+
         headers = {"Content-Type": m.content_type}
         url = f"{base}/voice/conversion"
 
-        res = requests.post(url=url,data=m,headers=headers)
-        
+        res = requests.post(url=url, data=m, headers=headers)
+
     fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
     path = f"{abs_path}/{fname}"
-    
+
     with open(path, "wb") as f:
         f.write(res.content)
     print(path)
@@ -349,7 +381,7 @@ def voice_conversion(upload_path):
 
 # Parameter
 
-## voice vits 语音合成
+## VITS语音合成
 
 | Name          | Parameter | Is must | Default | Type  | Instruction                                                  |
 | ------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
@@ -362,7 +394,7 @@ def voice_conversion(upload_path):
 | 噪声偏差      | noisew    | false   | 0.8     | float |                                                              |
 | 分段阈值      | max       | false   | 50      | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
 
-## voice conversion 语音转换
+## VITS 语音转换
 
 | Name       | Parameter   | Is must | Default | Type | Instruction            |
 | ---------- | ----------- | ------- | ------- | ---- | ---------------------- |
@@ -381,6 +413,20 @@ def voice_conversion(upload_path):
 | 噪声          | noise     | true    |         | float |                                                  |
 | 噪声偏差      | noisew    | true    |         | float |                                                  |
 
+## W2V2-VITS
+
+| Name          | Parameter | Is must | Default | Type  | Instruction                                                  |
+| ------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
+| 合成文本      | text      | true    |         | str   |                                                              |
+| 角色id        | id        | false   | 0       | int   |                                                              |
+| 音频格式      | format    | false   | wav     | str   | wav,ogg,silk                                                 |
+| 文本语言      | lang      | false   | auto    | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹, |
+| 语音长度/语速 | length    | false   | 1.0     | float | 调节语音长度，相当于调节语速，该数值越大语速越慢             |
+| 噪声          | noise     | false   | 0.667   | float |                                                              |
+| 噪声偏差      | noisew    | false   | 0.8     | float |                                                              |
+| 分段阈值      | max       | false   | 50      | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
+| 维度情感      | emotion   | false   | 0       | int   | 范围取决于npy情感参考文件，如[innnky](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)的all_emotions.npy模型范围是0-5457 |
+
 # 交流平台
 
 现在只有 [Q群](https://qm.qq.com/cgi-bin/qm/qr?k=-1GknIe4uXrkmbDKBGKa1aAUteq40qs_&jump_from=webapi&authKey=x5YYt6Dggs1ZqWxvZqvj3fV8VUnxRyXm5S5Kzntc78+Nv3iXOIawplGip9LWuNR/)
@@ -389,4 +435,5 @@ def voice_conversion(upload_path):
 
 - vits:https://github.com/jaywalnut310/vits
 - MoeGoe:https://github.com/CjangCjengh/MoeGoe
+- emotional-vits:https://github.com/innnky/emotional-vits
 

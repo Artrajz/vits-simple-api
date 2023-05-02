@@ -83,13 +83,13 @@ def voice_api():
             max = int(request.args.get("max", app.config.get("MAX", 50)))
         elif request.method == "POST":
             text = request.form["text"]
-            speaker_id = int(request.form["id"])
-            format = request.form["format"]
-            lang = request.form["lang"]
-            length = float(request.form["length"])
-            noise = float(request.form["noise"])
-            noisew = float(request.form["noisew"])
-            max = int(request.form["max"])
+            speaker_id = int(request.form.get("id", app.config.get("ID", 0)))
+            format = request.form.get("format", app.config.get("FORMAT", "wav"))
+            lang = request.form.get("lang", app.config.get("LANG", "auto"))
+            length = float(request.form.get("length", app.config.get("LENGTH", 1)))
+            noise = float(request.form.get("noise", app.config.get("NOISE", 0.667)))
+            noisew = float(request.form.get("noisew", app.config.get("NOISEW", 0.8)))
+            max = int(request.form.get("max", app.config.get("MAX", 50)))
     except Exception as e:
         res = make_response("param error")
         res.status = 400
@@ -103,11 +103,11 @@ def voice_api():
         logger.info(msg=f"text is empty")
         return res
 
-    real_id = voice_obj[0][speaker_id][0]
-    real_obj = voice_obj[0][speaker_id][1]
-
     logger.info(msg=f"VITS id:{speaker_id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew}")
     logger.info(msg=f"len:{len(text)} text：{text}")
+
+    real_id = voice_obj[0][speaker_id][0]
+    real_obj = voice_obj[0][speaker_id][1]
 
     fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
@@ -127,23 +127,25 @@ def voice_api():
     return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
 
 
-@app.route('/voice/hubert-vits', methods=["GET", "POST"])
+@app.route('/voice/hubert-vits', methods=["POST"])
 @require_api_key
 def voice_hubert_api():
     if request.method == "POST":
         try:
             voice = request.files['upload']
-            target_id = int(request.form["target_id"])
-            format = request.form["format"]
-            length = float(request.form["length"])
-            noise = float(request.form["noise"])
-            noisew = float(request.form["noisew"])
+            target_id = int(request.form.get("target_id"))
+            format = request.form.get("format", app.config.get("LANG", "auto"))
+            length = float(request.form.get("length", app.config.get("LENGTH", 1)))
+            noise = float(request.form.get("noise", app.config.get("NOISE", 0.667)))
+            noisew = float(request.form.get("noisew", app.config.get("NOISEW", 0.8)))
         except Exception as e:
             res = make_response("param error")
             res.status = 400
             res.headers["message"] = "param error"
             logger.error(msg=f"{e} {e.args}")
             return res
+
+    logger.info(msg=f"HuBert-soft id:{target_id} format:{format} length:{length} noise:{noise} noisew:{noisew}")
 
     fname = secure_filename(str(uuid.uuid1()) + "." + voice.filename.split(".")[1])
     voice.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
@@ -158,7 +160,7 @@ def voice_hubert_api():
         return res
 
     file_type = f"audio/{format}"
-    logger.info(msg=f"HuBert-soft id:{target_id} format:{format} length:{length} noise:{noise} noisew:{noisew}")
+
     t1 = time.time()
     output = real_obj.create_infer_task(target_id=real_id,
                                         format=format,
@@ -166,6 +168,69 @@ def voice_hubert_api():
                                         noise=noise,
                                         noisew=noisew,
                                         audio_path=os.path.join(app.config['UPLOAD_FOLDER'], fname))
+    t2 = time.time()
+    logger.info(msg=f"finish in {(t2 - t1):.2f}s")
+
+    return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
+
+
+@app.route('/voice/w2v2-vits', methods=["GET", "POST"])
+@require_api_key
+def voice_w2v2_api():
+    try:
+        if request.method == "GET":
+            text = request.args.get("text")
+            speaker_id = int(request.args.get("id", app.config.get("ID", 0)))
+            format = request.args.get("format", app.config.get("FORMAT", "wav"))
+            lang = request.args.get("lang", app.config.get("LANG", "auto"))
+            length = float(request.args.get("length", app.config.get("LENGTH", 1)))
+            noise = float(request.args.get("noise", app.config.get("NOISE", 0.667)))
+            noisew = float(request.args.get("noisew", app.config.get("NOISEW", 0.8)))
+            max = int(request.args.get("max", app.config.get("MAX", 50)))
+            emotion = int(request.args.get("emotion", app.config.get("EMOTION", 0)))
+        elif request.method == "POST":
+            text = request.form["text"]
+            speaker_id = int(request.form.get("id", app.config.get("ID", 0)))
+            format = request.form.get("format", app.config.get("FORMAT", "wav"))
+            lang = request.form.get("lang", app.config.get("LANG", "auto"))
+            length = float(request.form.get("length"))
+            noise = float(request.form.get("noise", app.config.get("NOISE", 0.667)))
+            noisew = float(request.form.get("noisew", app.config.get("NOISEW", 0.8)))
+            max = int(request.form.get("max", app.config.get("MAX", 50)))
+            emotion = int(request.form.get("emotion", app.config.get("EMOTION", 0)))
+    except Exception as e:
+        res = make_response("param error")
+        res.status = 400
+        res.headers["message"] = "param error"
+        logger.error(msg=f"{e} {e.args}")
+        return res
+
+    try:
+        real_id = voice_obj[2][speaker_id][0]
+        real_obj = voice_obj[2][speaker_id][1]
+    except Exception:
+        res = make_response("target id error")
+        res.status = 400
+        res.headers["message"] = "target id error"
+        return res
+
+    logger.info(msg=f"W2V2 id:{speaker_id} format:{format} lang:{lang} "
+                    f"length:{length} noise:{noise} noisew:{noisew} emotion:{emotion}")
+    logger.info(msg=f"len:{len(text)} text：{text}")
+
+    fname = f"{str(uuid.uuid1())}.{format}"
+    file_type = f"audio/{format}"
+
+    t1 = time.time()
+    output = real_obj.create_infer_task(text=text,
+                                        speaker_id=real_id,
+                                        format=format,
+                                        length=length,
+                                        noise=noise,
+                                        noisew=noisew,
+                                        max=max,
+                                        lang=lang,
+                                        emotion=emotion)
     t2 = time.time()
     logger.info(msg=f"finish in {(t2 - t1):.2f}s")
 

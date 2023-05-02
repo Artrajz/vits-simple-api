@@ -29,6 +29,8 @@ MODEL_LIST = [
     [ABS_PATH+"/Model/g/G_953000.pth", ABS_PATH+"/Model/g/config.json"],
     #HuBert-VITS
     [ABS_PATH+"/Model/louise/360_epochs.pth", ABS_PATH+"/Model/louise/config.json", ABS_PATH+"/Model/louise/hubert-soft-0d54a1f4.pt"],
+    #W2V2-VITS
+    [ABS_PATH+"/Model/w2v2-vits/1026_epochs.pth", ABS_PATH+"/Model/w2v2-vits/config.json", ABS_PATH+"/all_emotions.npy"],
 ]
 '''
 # load mutiple models
@@ -38,7 +40,7 @@ MODEL_LIST = [
 
 """
 default params
-以下选项是修改VITS GET方法 [不指定参数]时的默认值
+以下选项是修改VITS 不指定参数时的默认值
 """
 
 # GET 默认音色id

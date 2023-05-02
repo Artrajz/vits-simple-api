@@ -11,13 +11,13 @@ import sys
 import re
 import numpy as np
 import torch
-# torch.set_num_threads(1) #设置torch线程为1，防止多任务推理时服务崩溃，但flask仍然会使用多线程
 from torch import no_grad, LongTensor, inference_mode, FloatTensor
 import uuid
 from io import BytesIO
 from graiax import silkcoder
 from utils.nlp import cut, sentence_split
 
+# torch.set_num_threads(1) # 设置torch线程为1
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"torch:{torch.__version__}", f"GPU_available:{torch.cuda.is_available()}")
 print(f'device:{device} device.type:{device.type}')
@@ -60,8 +60,9 @@ class vits:
             from hubert_model import hubert_soft
             self.hubert = hubert_soft(model_)
         if self.mode_type == "w2v2":
-            import audonnx
-            self.w2v2 = audonnx.load(model_)
+            # import audonnx
+            # self.w2v2 = audonnx.load(model)
+            self.emotion_reference = np.load(model_)
 
     def get_cleaned_text(self, text, hps, cleaned=False):
         if cleaned:
@@ -95,6 +96,9 @@ class vits:
         else:
             return False, text
 
+    def get_cleaner(self):
+        return self.hps_ms.data.text_cleaners[0]
+
     def return_speakers(self, escape=False):
         return self.speakers
 
@@ -111,10 +115,7 @@ class vits:
                 return BytesIO(f.getvalue())
 
     def infer(self, params):
-        try:
-            emotion = params.get("emotion")
-        except:
-            emotion = None
+        emotion = params.get("emotion", None)
 
         with no_grad():
             x_tst = params.get("stn_tst").unsqueeze(0)
@@ -124,14 +125,14 @@ class vits:
                                         noise_scale=params.get("noise_scale"),
                                         noise_scale_w=params.get("noise_scale_w"),
                                         length_scale=params.get("length_scale"),
-                                        emotion_embedding=emotion)[0][0, 0].data.float().cpu().numpy()
+                                        emotion_embedding=emotion.to(device) if emotion!=None else None)[0][0, 0].data.float().cpu().numpy()
 
         torch.cuda.empty_cache()
         return audio
 
     def get_infer_param(self, length, noise, noisew, text=None, speaker_id=None, target_id=None, audio_path=None,
                         emotion=None):
-        emotion = None
+        emo = None
         if self.mode_type != "hubert-soft":
             length_scale, text = self.get_label_value('LENGTH', length, 'length scale', text)
             noise_scale, text = self.get_label_value('NOISE', noise, 'noise scale', text)
@@ -142,19 +143,20 @@ class vits:
             sid = LongTensor([speaker_id])
 
         if self.mode_type == "w2v2":
-            emotion_reference = input('Path of an emotion reference: ')
-            if emotion_reference.endswith('.npy'):
-                emotion = np.load(emotion_reference)
-                emotion = FloatTensor(emotion).unsqueeze(0)
-            else:
-                audio16000, sampling_rate = librosa.load(
-                    emotion_reference, sr=16000, mono=True)
-                emotion = self.w2v2(audio16000, sampling_rate)[
-                    'hidden_states']
-                emotion_reference = re.sub(
-                    r'\..*$', '', emotion_reference)
-                np.save(emotion_reference, emotion.squeeze(0))
-                emotion = FloatTensor(emotion)
+            # if emotion_reference.endswith('.npy'):
+            #     emotion = np.load(emotion_reference)
+            #     emotion = FloatTensor(emotion).unsqueeze(0)
+            # else:
+            #     audio16000, sampling_rate = librosa.load(
+            #         emotion_reference, sr=16000, mono=True)
+            #     emotion = self.w2v2(audio16000, sampling_rate)[
+            #         'hidden_states']
+            #     emotion_reference = re.sub(
+            #         r'\..*$', '', emotion_reference)
+            #     np.save(emotion_reference, emotion.squeeze(0))
+            #     emotion = FloatTensor(emotion)
+            emo = torch.FloatTensor(self.emotion_reference[emotion]).unsqueeze(0)
+
 
         elif self.mode_type == "hubert-soft":
             if self.use_f0:
@@ -188,11 +190,11 @@ class vits:
             sid = LongTensor([target_id])
         params = {"length_scale": length_scale, "noise_scale": noise_scale,
                   "noise_scale_w": noise_scale_w, "stn_tst": stn_tst,
-                  "sid": sid, "emotion": emotion}
+                  "sid": sid, "emotion": emo}
         return params
 
     def create_infer_task(self, text=None, speaker_id=None, format=None, length=1, noise=0.667, noisew=0.8,
-                          target_id=None, audio_path=None, max=50, lang="auto"):
+                          target_id=None, audio_path=None, max=50, lang="auto", emotion=0):
         # params = self.get_infer_param(text=text, speaker_id=speaker_id, length=length, noise=noise, noisew=noisew,
         #                               target_id=target_id)
         tasks = []
@@ -213,6 +215,18 @@ class vits:
             params = self.get_infer_param(speaker_id=speaker_id, length=length, noise=noise, noisew=noisew,
                                           target_id=target_id, audio_path=audio_path)
             audio = self.infer(params)
+        elif self.mode_type == "w2v2":
+            sentence_list = sentence_split(text, max, lang)
+            for sentence in sentence_list:
+                tasks.append(
+                    self.get_infer_param(text=sentence, speaker_id=speaker_id, length=length, noise=noise,
+                                         noisew=noisew,
+                                         target_id=target_id, emotion=emotion))
+            audios = []
+            for task in tasks:
+                audios.append(self.infer(task))
+
+            audio = np.concatenate(audios, axis=0)
 
         return self.encode(self.hps_ms.data.sampling_rate, audio, format)
 
