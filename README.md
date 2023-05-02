@@ -417,7 +417,7 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 | Noise                  | noise     | false   | 0.667   | float |                                                              |
 | Noise Weight           | noisew    | false   | 0.8     | float |                                                              |
 | Segmentation threshold | max       | false   | 50      | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
-| Dimensional emotion    | emotion   | false   | 0       | int   | The range depends on the emotion reference file in npy format, such as the  range of the [innnk](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)'s model all_emotions.npy, which is 0-5457. |
+| Dimensional emotion    | emotion   | false   | 0       | int   | The range depends on the emotion reference file in npy format, such as the  range of the [innnky](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)'s model all_emotions.npy, which is 0-5457. |
 
 # Communication
 
@@ -428,4 +428,5 @@ Learning and communication,now there is only Chinese [QQ group](https://qm.qq.co
 - vits:https://github.com/jaywalnut310/vits
 - MoeGoe:https://github.com/CjangCjengh/MoeGoe
 - emotional-vits:https://github.com/innnky/emotional-vits
+- vits-uma-genshin-honkai:https://huggingface.co/spaces/zomehwh/vits-uma-genshin-honkai
 

@@ -436,4 +436,5 @@ def voice_conversion(upload_path, original_id, target_id):
 - vits:https://github.com/jaywalnut310/vits
 - MoeGoe:https://github.com/CjangCjengh/MoeGoe
 - emotional-vits:https://github.com/innnky/emotional-vits
+- vits-uma-genshin-honkai:https://huggingface.co/spaces/zomehwh/vits-uma-genshin-honkai
 
