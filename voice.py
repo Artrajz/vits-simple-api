@@ -97,7 +97,7 @@ class vits:
             return False, text
 
     def get_cleaner(self):
-        return self.hps_ms.data.text_cleaners[0]
+        return getattr(self.hps_ms.data, 'text_cleaners', [None])[0]
 
     def return_speakers(self, escape=False):
         return self.speakers
@@ -125,12 +125,13 @@ class vits:
                                         noise_scale=params.get("noise_scale"),
                                         noise_scale_w=params.get("noise_scale_w"),
                                         length_scale=params.get("length_scale"),
-                                        emotion_embedding=emotion.to(device) if emotion!=None else None)[0][0, 0].data.float().cpu().numpy()
+                                        emotion_embedding=emotion.to(device) if emotion != None else None)[0][
+                0, 0].data.float().cpu().numpy()
 
         torch.cuda.empty_cache()
         return audio
 
-    def get_infer_param(self, length, noise, noisew, text=None, speaker_id=None, target_id=None, audio_path=None,
+    def get_infer_param(self, length, noise, noisew, text=None, speaker_id=None, audio_path=None,
                         emotion=None):
         emo = None
         if self.mode_type != "hubert-soft":
@@ -187,14 +188,14 @@ class vits:
                     units[:, 0] = f0 / 10
 
             stn_tst = FloatTensor(units)
-            sid = LongTensor([target_id])
+            sid = LongTensor([speaker_id])
         params = {"length_scale": length_scale, "noise_scale": noise_scale,
                   "noise_scale_w": noise_scale_w, "stn_tst": stn_tst,
                   "sid": sid, "emotion": emo}
         return params
 
     def create_infer_task(self, text=None, speaker_id=None, format=None, length=1, noise=0.667, noisew=0.8,
-                          target_id=None, audio_path=None, max=50, lang="auto", emotion=0):
+                          audio_path=None, max=50, lang="auto", emotion=0):
         # params = self.get_infer_param(text=text, speaker_id=speaker_id, length=length, noise=noise, noisew=noisew,
         #                               target_id=target_id)
         tasks = []
@@ -204,8 +205,7 @@ class vits:
             for sentence in sentence_list:
                 tasks.append(
                     self.get_infer_param(text=sentence, speaker_id=speaker_id, length=length, noise=noise,
-                                         noisew=noisew,
-                                         target_id=target_id))
+                                         noisew=noisew))
             audios = []
             for task in tasks:
                 audios.append(self.infer(task))
@@ -213,15 +213,14 @@ class vits:
             audio = np.concatenate(audios, axis=0)
         elif self.mode_type == "hubert-soft":
             params = self.get_infer_param(speaker_id=speaker_id, length=length, noise=noise, noisew=noisew,
-                                          target_id=target_id, audio_path=audio_path)
+                                          audio_path=audio_path)
             audio = self.infer(params)
         elif self.mode_type == "w2v2":
             sentence_list = sentence_split(text, max, lang)
             for sentence in sentence_list:
                 tasks.append(
                     self.get_infer_param(text=sentence, speaker_id=speaker_id, length=length, noise=noise,
-                                         noisew=noisew,
-                                         target_id=target_id, emotion=emotion))
+                                         noisew=noisew, emotion=emotion))
             audios = []
             for task in tasks:
                 audios.append(self.infer(task))
