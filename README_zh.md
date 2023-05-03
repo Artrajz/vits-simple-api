@@ -290,14 +290,14 @@ def voice_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noi
 
 
 # 语音转换 hubert-vits
-def voice_hubert_vits(upload_path, target_id, format="wav", length=1, noise=0.667, noisew=0.8):
+def voice_hubert_vits(upload_path, speaker_id, format="wav", length=1, noise=0.667, noisew=0.8):
     upload_name = os.path.basename(upload_path)
     upload_type = f'audio/{upload_name.split(".")[1]}'  # wav,ogg
 
     with open(upload_path, 'rb') as upload_file:
         fields = {
             "upload": (upload_name, upload_file, upload_type),
-            "target_id": str(target_id),
+            "speaker_id": str(speaker_id),
             "format": format,
             "length": str(length),
             "noise": str(noise),
@@ -316,7 +316,6 @@ def voice_hubert_vits(upload_path, target_id, format="wav", length=1, noise=0.66
     with open(path, "wb") as f:
         f.write(res.content)
     print(path)
-
 
 # 维度情感模型 w2v2-vits
 def voice_w2v2_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, max=50, emotion=0):
@@ -404,14 +403,14 @@ def voice_conversion(upload_path, original_id, target_id):
 
 ## HuBert-VITS 语音转换
 
-| Name          | Parameter | Is must | Default | Type  | Instruction                                      |
-| ------------- | --------- | ------- | ------- | ----- | ------------------------------------------------ |
-| 上传音频      | upload    | true    |         | file  |                                                  |
-| 目标角色id    | target_id | true    |         | int   |                                                  |
-| 音频格式      | format    | true    |         | str   | wav,ogg,silk                                     |
-| 语音长度/语速 | length    | true    |         | float | 调节语音长度，相当于调节语速，该数值越大语速越慢 |
-| 噪声          | noise     | true    |         | float |                                                  |
-| 噪声偏差      | noisew    | true    |         | float |                                                  |
+| Name          | Parameter  | Is must | Default | Type  | Instruction                                      |
+| ------------- | ---------- | ------- | ------- | ----- | ------------------------------------------------ |
+| 上传音频      | upload     | true    |         | file  |                                                  |
+| 目标角色id    | speaker_id | true    |         | int   |                                                  |
+| 音频格式      | format     | true    |         | str   | wav,ogg,silk                                     |
+| 语音长度/语速 | length     | true    |         | float | 调节语音长度，相当于调节语速，该数值越大语速越慢 |
+| 噪声          | noise      | true    |         | float |                                                  |
+| 噪声偏差      | noisew     | true    |         | float |                                                  |
 
 ## W2V2-VITS
 

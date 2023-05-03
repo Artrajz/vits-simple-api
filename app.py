@@ -97,17 +97,36 @@ def voice_api():
         logger.error(msg=f"{e} {e.args}")
         return res
 
+    logger.info(msg=f"VITS id:{speaker_id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew}")
+    logger.info(msg=f"len:{len(text)} text：{text}")
+
     if check_is_none(text):
         res = make_response(jsonify({"status": "error", "message": "text is empty"}))
         res.status = 404
         logger.info(msg=f"text is empty")
         return res
 
-    logger.info(msg=f"VITS id:{speaker_id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew}")
-    logger.info(msg=f"len:{len(text)} text：{text}")
+    if check_is_none(speaker_id):
+        res = make_response(jsonify({"status": "error", "message": "speaker id is empty"}))
+        res.status = 404
+        logger.info(msg=f"speaker id is empty")
+        return res
 
-    real_id = voice_obj[0][speaker_id][0]
-    real_obj = voice_obj[0][speaker_id][1]
+    if speaker_id < 0 or speaker_id >= len(voice_speakers[0]):
+        res = make_response(jsonify({"status": "error", "message": f"id {speaker_id} does not exist"}))
+        res.status = 404
+        logger.info(msg=f"speaker id {speaker_id} does not exist")
+        logger.info(msg=f"speaker id {speaker_id} does not exist")
+        return res
+
+    try:
+        real_id = voice_obj[0][speaker_id][0]
+        real_obj = voice_obj[0][speaker_id][1]
+    except Exception:
+        res = make_response(jsonify({"status": "error", "message": "speaker id error"}))
+        res.status = 404
+        logger.info(msg=f"speaker id error")
+        return res
 
     fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
@@ -133,7 +152,7 @@ def voice_hubert_api():
     if request.method == "POST":
         try:
             voice = request.files['upload']
-            target_id = int(request.form.get("target_id"))
+            speaker_id = int(request.form.get("speaker_id"))
             format = request.form.get("format", app.config.get("LANG", "auto"))
             length = float(request.form.get("length", app.config.get("LENGTH", 1)))
             noise = float(request.form.get("noise", app.config.get("NOISE", 0.667)))
@@ -145,24 +164,37 @@ def voice_hubert_api():
             logger.error(msg=f"{e} {e.args}")
             return res
 
-    logger.info(msg=f"HuBert-soft id:{target_id} format:{format} length:{length} noise:{noise} noisew:{noisew}")
+    logger.info(msg=f"HuBert-soft id:{speaker_id} format:{format} length:{length} noise:{noise} noisew:{noisew}")
 
     fname = secure_filename(str(uuid.uuid1()) + "." + voice.filename.split(".")[1])
     voice.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
 
+    if check_is_none(speaker_id):
+        res = make_response(jsonify({"status": "error", "message": "speaker id is empty"}))
+        res.status = 404
+        logger.info(msg=f"speaker id is empty")
+        return res
+
+    if speaker_id < 0 or speaker_id >= len(voice_speakers[1]):
+        res = make_response(jsonify({"status": "error", "message": f"id {speaker_id} does not exist"}))
+        res.status = 404
+        logger.info(msg=f"speaker id {speaker_id} does not exist")
+        logger.info(msg=f"speaker id {speaker_id} does not exist")
+        return res
+
     try:
-        real_id = voice_obj[1][target_id][0]
-        real_obj = voice_obj[1][target_id][1]
+        real_id = voice_obj[1][speaker_id][0]
+        real_obj = voice_obj[1][speaker_id][1]
     except Exception:
-        res = make_response("target id error")
-        res.status = 400
-        res.headers["message"] = "target id error"
+        res = make_response(jsonify({"status": "error", "message": "speaker id error"}))
+        res.status = 404
+        logger.info(msg=f"speaker id error")
         return res
 
     file_type = f"audio/{format}"
 
     t1 = time.time()
-    output = real_obj.create_infer_task(target_id=real_id,
+    output = real_obj.create_infer_task(speaker_id=real_id,
                                         format=format,
                                         length=length,
                                         noise=noise,
@@ -205,18 +237,37 @@ def voice_w2v2_api():
         logger.error(msg=f"{e} {e.args}")
         return res
 
+    logger.info(msg=f"W2V2 id:{speaker_id} format:{format} lang:{lang} "
+                    f"length:{length} noise:{noise} noisew:{noisew} emotion:{emotion}")
+    logger.info(msg=f"len:{len(text)} text：{text}")
+
+    if check_is_none(text):
+        res = make_response(jsonify({"status": "error", "message": "text is empty"}))
+        res.status = 404
+        logger.info(msg=f"text is empty")
+        return res
+
+    if check_is_none(speaker_id):
+        res = make_response(jsonify({"status": "error", "message": "speaker id is empty"}))
+        res.status = 404
+        logger.info(msg=f"speaker id is empty")
+        return res
+
+    if speaker_id < 0 or speaker_id >= len(voice_speakers[2]):
+        res = make_response(jsonify({"status": "error", "message": f"id {speaker_id} does not exist"}))
+        res.status = 404
+        logger.info(msg=f"speaker id {speaker_id} does not exist")
+        logger.info(msg=f"speaker id {speaker_id} does not exist")
+        return res
+
     try:
         real_id = voice_obj[2][speaker_id][0]
         real_obj = voice_obj[2][speaker_id][1]
     except Exception:
-        res = make_response("target id error")
-        res.status = 400
-        res.headers["message"] = "target id error"
+        res = make_response(jsonify({"status": "error", "message": "speaker id error"}))
+        res.status = 404
+        logger.info(msg=f"speaker id error")
         return res
-
-    logger.info(msg=f"W2V2 id:{speaker_id} format:{format} lang:{lang} "
-                    f"length:{length} noise:{noise} noisew:{noisew} emotion:{emotion}")
-    logger.info(msg=f"len:{len(text)} text：{text}")
 
     fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
@@ -307,9 +358,9 @@ def check():
         return res
 
     if check_is_none(speaker_id):
-        res = make_response(jsonify({"status": "error", "message": "id is empty"}))
+        res = make_response(jsonify({"status": "error", "message": "speaker id is empty"}))
         res.status = 404
-        logger.info(msg=f"speaker id {speaker_id} error")
+        logger.info(msg=f"speaker id is empty")
         return res
 
     if model.upper() == "VITS":

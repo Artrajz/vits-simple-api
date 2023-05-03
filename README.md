@@ -283,14 +283,14 @@ def voice_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noi
 
 
 # 语音转换 hubert-vits
-def voice_hubert_vits(upload_path, target_id, format="wav", length=1, noise=0.667, noisew=0.8):
+def voice_hubert_vits(upload_path, speaker_id, format="wav", length=1, noise=0.667, noisew=0.8):
     upload_name = os.path.basename(upload_path)
     upload_type = f'audio/{upload_name.split(".")[1]}'  # wav,ogg
 
     with open(upload_path, 'rb') as upload_file:
         fields = {
             "upload": (upload_name, upload_file, upload_type),
-            "target_id": str(target_id),
+            "speaker_id": str(speaker_id),
             "format": format,
             "length": str(length),
             "noise": str(noise),
@@ -396,14 +396,14 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 
 ## HuBert-VITS
 
-| Name           | Parameter | Is must | Default | Type  | Instruction                                                  |
-| -------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
-| Uploaded Audio | upload    | true    |         | file  | he audio file to be uploaded. It should be in wav or ogg format. |
-| Target Role ID | target_id | true    |         | int   |                                                              |
-| Audio format   | format    | true    |         | str   | wav,ogg,silk                                                 |
-| Audio length   | length    | true    |         | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
-| Noise          | noise     | true    |         | float |                                                              |
-| Noise Weight   | noisew    | true    |         | float |                                                              |
+| Name           | Parameter  | Is must | Default | Type  | Instruction                                                  |
+| -------------- | ---------- | ------- | ------- | ----- | ------------------------------------------------------------ |
+| Uploaded Audio | upload     | true    |         | file  | he audio file to be uploaded. It should be in wav or ogg format. |
+| Target Role ID | speaker_id | true    |         | int   |                                                              |
+| Audio format   | format     | true    |         | str   | wav,ogg,silk                                                 |
+| Audio length   | length     | true    |         | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise          | noise      | true    |         | float |                                                              |
+| Noise Weight   | noisew     | true    |         | float |                                                              |
 
 ## VITS
 

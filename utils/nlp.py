@@ -1,6 +1,7 @@
 import regex as re
 from fastlid import fastlid
 import config
+from .utils import check_is_none
 
 fastlid.set_languages = config.LANGUAGE_AUTOMATIC_DETECT or ["zh", "ja"]
 
@@ -63,10 +64,3 @@ def sentence_split(text, max=50, lang="auto"):
     for i in sentence_list:
         print(i)
     return sentence_list
-
-
-# is none -> True,is not none -> False
-def check_is_none(s):
-    if s is None or str(s) == "" or str(s).isspace():
-        return True
-    return False

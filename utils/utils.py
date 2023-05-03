@@ -97,8 +97,6 @@ def clean_folder(folder_path):
             os.remove(file_path)
 
 
-# is none -> True,is not none -> False
+# is none -> True, is not none -> False
 def check_is_none(s):
-    if s is None or str(s) == "" or str(s).isspace():
-        return True
-    return False
+    return s is None or (isinstance(s, str) and str(s).isspace()) or str(s) == ""
