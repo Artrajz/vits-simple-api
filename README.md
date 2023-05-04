@@ -18,19 +18,21 @@
 
 # Feature
 
-- VITS text-to-speech
-- VITS voice conversion
-- HuBert-soft VITS
-- W2V2 VITS dimensional emotion model
-- Support for loading multiple models
-- Automatic language recognition and processing,support for custom language type range
-- Customize default parameters
-- Long text batch processing
-- GPU accelerated inference
+- [x] VITS text-to-speech
+- [x] VITS voice conversion
+- [x] HuBert-soft VITS
+- [x] W2V2 VITS / emotional-vits dimensional emotion model
+- [x] Support for loading multiple models
+- [x] Automatic language recognition and processing,support for custom language type range
+- [x] Customize default parameters
+- [x] Long text batch processing
+- [x] GPU accelerated inference
+- [ ] SSML (Speech Synthesis Markup Language)
+- [ ] Set the scope of language type recognition according to model's cleaner (may remove custom language type range).
 
 <details><summary>Update Logs</summary><pre><code>
 <h2>2023.5.2</h2>
-<p>Added support for the w2v2-vits model, updated the speakers mapping table, and added support for the languages corresponding to the model.</p>
+<p>Added support for the w2v2-vits/emotional-vits model, updated the speakers mapping table, and added support for the languages corresponding to the model.</p>
 <h2>2023.4.23</h2>
 <p>Add API Key authentication, disabled by default, needs to be enabled in config.py.</p>
 <h2>2023.4.17</h2>
@@ -45,10 +47,11 @@
 </code></pre></details>
 
 
+## demo
 
-
-
-demo：`https://api.artrajz.cn/py/voice?text=你好,こんにちは&id=142`
+- `https://api.artrajz.cn/py/voice/vits?text=你好,こんにちは&id=142`
+- excited:`https://api.artrajz.cn/py/voice/w2v2-vits?text=こんにちは&id=3&emotion=111`
+- whispered:`https://api.artrajz.cn/py/voice/w2v2-vits?text=こんにちは&id=3&emotion=2077` 
 
 # Deploy
 

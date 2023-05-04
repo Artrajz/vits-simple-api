@@ -18,19 +18,21 @@
 
 # Feature
 
-- VITS语音合成
-- VITS语音转换
-- HuBert-soft VITS模型
-- W2V2 VITS维度情感模型
-- 加载多模型
-- 自动识别语言并处理，支持自定义语言类型范围
-- 自定义默认参数
-- 长文本批处理
-- GPU加速推理
+- [x] VITS语音合成
+- [x] VITS语音转换
+- [x] HuBert-soft VITS模型
+- [x] W2V2 VITS / emotional-vits维度情感模型
+- [x] 加载多模型
+- [x] 自动识别语言并处理，支持自定义语言类型范围
+- [x] 自定义默认参数
+- [x] 长文本批处理
+- [x] GPU加速推理
+- [ ] SSML语音合成标记语言
+- [ ] 根据模型的cleaner设置语言类型识别的范围（可能会移除原本的自定义语言类型范围）
 
 <details><summary>Update Logs</summary><pre><code>
 <h2>2023.5.2</h2>
-<p>增加w2v2-vits模型支持，修改了speakers映射表并添加了对应模型支持的语言</p>
+<p>增加w2v2-vits/emotional-vits模型支持，修改了speakers映射表并添加了对应模型支持的语言</p>
 <h2>2023.4.23</h2>
 <p>增加api key鉴权，默认禁用，需要在config.py中启用</p>
 <h2>2023.4.17</h2>
@@ -45,9 +47,11 @@
 </code></pre></details>
 
 
+## demo
 
-
-demo：`https://api.artrajz.cn/py/voice?text=你好,こんにちは&id=142`
+- `https://api.artrajz.cn/py/voice/vits?text=你好,こんにちは&id=142`
+- 激动：`https://api.artrajz.cn/py/voice/w2v2-vits?text=こんにちは&id=3&emotion=111`
+- 小声：`https://api.artrajz.cn/py/voice/w2v2-vits?text=こんにちは&id=3&emotion=2077`
 
 # 部署
 
