@@ -4,6 +4,8 @@ import sys
 JSON_AS_ASCII = False
 MAX_CONTENT_LENGTH = 5242880
 
+# debug
+DEBUG = False
 # port
 PORT = 23456
 # absolute path
@@ -12,9 +14,9 @@ ABS_PATH = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])))
 UPLOAD_FOLDER = ABS_PATH + "/upload"
 # cahce path
 CACHE_PATH = ABS_PATH + "/cache"
-# zh ja ko en ...
-LANGUAGE_AUTOMATIC_DETECT = ["zh","ja"]
-#set to True to enable API Key authentication
+# zh ja ko en... If it is empty then reads from the cleaner
+LANGUAGE_AUTOMATIC_DETECT = []
+# set to True to enable API Key authentication
 API_KEY_ENABLED = False
 # API_KEY is required for authentication
 API_KEY = "api-key"
@@ -55,5 +57,5 @@ LENGTH = 1
 NOISE = 0.667
 # GET 默认噪声偏差
 NOISEW = 0.8
-#长文本分段阈值，max<=0表示不分段,text will not be divided if max<=0
+# 长文本分段阈值，max<=0表示不分段,text will not be divided if max<=0
 MAX = 50

@@ -195,13 +195,13 @@ class vits:
         return params
 
     def create_infer_task(self, text=None, speaker_id=None, format=None, length=1, noise=0.667, noisew=0.8,
-                          audio_path=None, max=50, lang="auto", emotion=0):
+                          audio_path=None, max=50, lang="auto", emotion=0, speaker_lang=None):
         # params = self.get_infer_param(text=text, speaker_id=speaker_id, length=length, noise=noise, noisew=noisew,
         #                               target_id=target_id)
         tasks = []
         if self.mode_type == "vits":
 
-            sentence_list = sentence_split(text, max, lang)
+            sentence_list = sentence_split(text, max, lang, speaker_lang)
             for sentence in sentence_list:
                 tasks.append(
                     self.get_infer_param(text=sentence, speaker_id=speaker_id, length=length, noise=noise,
@@ -216,7 +216,7 @@ class vits:
                                           audio_path=audio_path)
             audio = self.infer(params)
         elif self.mode_type == "w2v2":
-            sentence_list = sentence_split(text, max, lang)
+            sentence_list = sentence_split(text, max, lang, speaker_lang)
             for sentence in sentence_list:
                 tasks.append(
                     self.get_infer_param(text=sentence, speaker_id=speaker_id, length=length, noise=noise,

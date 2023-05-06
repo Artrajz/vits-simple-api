@@ -80,7 +80,7 @@ def merge_model(merging_model):
             w2v2_vits_speakers.append({"id": new_id, "name": name, "lang": lang})
             new_id += 1
 
-    voice_obj = [vits_obj, hubert_vits_obj, w2v2_vits_obj]
-    voice_speakers = [vits_speakers, hubert_vits_speakers, w2v2_vits_speakers]
+    voice_obj = {"VITS": vits_obj, "HuBert-VITS": hubert_vits_obj, "W2V2-VITS": w2v2_vits_obj}
+    voice_speakers = {"VITS": vits_speakers, "HuBert-VITS": hubert_vits_speakers, "W2V2-VITS": w2v2_vits_speakers}
 
     return voice_obj, voice_speakers

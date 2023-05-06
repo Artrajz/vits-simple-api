@@ -1,9 +1,6 @@
 import regex as re
 from fastlid import fastlid
-import config
 from .utils import check_is_none
-
-fastlid.set_languages = config.LANGUAGE_AUTOMATIC_DETECT or ["zh", "ja"]
 
 
 def clasify_lang(text):
@@ -48,7 +45,9 @@ def cut(text, max):
     return sentence_list
 
 
-def sentence_split(text, max=50, lang="auto"):
+def sentence_split(text, max=50, lang="auto", speaker_lang=None):
+    fastlid.set_languages = speaker_lang
+
     sentence_list = []
     if max <= 0:
         sentence_list.append(

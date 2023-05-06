@@ -23,12 +23,11 @@
 - [x] HuBert-soft VITS模型
 - [x] W2V2 VITS / emotional-vits维度情感模型
 - [x] 加载多模型
-- [x] 自动识别语言并处理，支持自定义语言类型范围
+- [x] 自动识别语言并处理，根据模型的cleaner设置语言类型识别的范围，支持自定义语言类型范围
 - [x] 自定义默认参数
 - [x] 长文本批处理
 - [x] GPU加速推理
 - [ ] SSML语音合成标记语言
-- [ ] 根据模型的cleaner设置语言类型识别的范围（可能会移除原本的自定义语言类型范围）
 
 <details><summary>Update Logs</summary><pre><code>
 <h2>2023.5.2</h2>

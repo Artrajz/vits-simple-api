@@ -23,12 +23,11 @@
 - [x] HuBert-soft VITS
 - [x] W2V2 VITS / emotional-vits dimensional emotion model
 - [x] Support for loading multiple models
-- [x] Automatic language recognition and processing,support for custom language type range
+- [x] Automatic language recognition and processing,set the scope of language type recognition according to model's cleaner,support for custom language type range
 - [x] Customize default parameters
 - [x] Long text batch processing
 - [x] GPU accelerated inference
 - [ ] SSML (Speech Synthesis Markup Language)
-- [ ] Set the scope of language type recognition according to model's cleaner (may remove custom language type range).
 
 <details><summary>Update Logs</summary><pre><code>
 <h2>2023.5.2</h2>

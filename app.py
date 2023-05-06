@@ -24,13 +24,10 @@ logzero.loglevel(logging.WARNING)
 
 voice_obj, voice_speakers = merge_model(app.config["MODEL_LIST"])
 
-print(f"loaded {sum([len(voice_speakers[i]) for i in range(len(voice_speakers))])} speakers")
+print(f"loaded {sum([len(voice_speakers[i]) for i in voice_speakers])} speakers")
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    try:
-        os.mkdir(app.config['UPLOAD_FOLDER'])
-    except:
-        pass
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 
 def require_api_key(func):
@@ -58,13 +55,7 @@ def index():
 
 @app.route('/voice/speakers', methods=["GET", "POST"])
 def voice_speakers_api():
-    models_json = {
-        "VITS": voice_speakers[0],
-        "HuBert-VITS": voice_speakers[1],
-        "W2V2-VITS": voice_speakers[2]
-    }
-
-    return jsonify(models_json)
+    return jsonify(voice_speakers)
 
 
 @app.route('/voice', methods=["GET", "POST"])
@@ -112,7 +103,7 @@ def voice_api():
         logger.info(msg=f"speaker id is empty")
         return res
 
-    if speaker_id < 0 or speaker_id >= len(voice_speakers[0]):
+    if speaker_id < 0 or speaker_id >= len(voice_speakers["VITS"]):
         res = make_response(jsonify({"status": "error", "message": f"id {speaker_id} does not exist"}))
         res.status = 404
         logger.info(msg=f"speaker id {speaker_id} does not exist")
@@ -120,13 +111,23 @@ def voice_api():
         return res
 
     try:
-        real_id = voice_obj[0][speaker_id][0]
-        real_obj = voice_obj[0][speaker_id][1]
+        real_id = voice_obj["VITS"][speaker_id][0]
+        real_obj = voice_obj["VITS"][speaker_id][1]
     except Exception:
         res = make_response(jsonify({"status": "error", "message": "speaker id error"}))
         res.status = 404
         logger.info(msg=f"speaker id error")
         return res
+
+    speaker_lang = voice_speakers["VITS"][speaker_id].get('lang')
+    if lang.upper() != "AUTO" and lang.upper() != "MIX" and lang not in speaker_lang:
+        res = make_response(jsonify({"status": "error", "message": f"speaker lang not in {speaker_lang}"}))
+        res.status = 404
+        logger.info(msg=f"speaker lang not in {speaker_lang}")
+        return res
+
+    if app.config.get("LANGUAGE_AUTOMATIC_DETECT", []) != []:
+        speaker_lang = app.config.get("LANGUAGE_AUTOMATIC_DETECT")
 
     fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
@@ -139,7 +140,8 @@ def voice_api():
                                         noise=noise,
                                         noisew=noisew,
                                         max=max,
-                                        lang=lang)
+                                        lang=lang,
+                                        speaker_lang=speaker_lang)
     t2 = time.time()
     logger.info(msg=f"finish in {(t2 - t1):.2f}s")
 
@@ -175,16 +177,15 @@ def voice_hubert_api():
         logger.info(msg=f"speaker id is empty")
         return res
 
-    if speaker_id < 0 or speaker_id >= len(voice_speakers[1]):
+    if speaker_id < 0 or speaker_id >= len(voice_speakers["HuBert-VITS"]):
         res = make_response(jsonify({"status": "error", "message": f"id {speaker_id} does not exist"}))
         res.status = 404
-        logger.info(msg=f"speaker id {speaker_id} does not exist")
         logger.info(msg=f"speaker id {speaker_id} does not exist")
         return res
 
     try:
-        real_id = voice_obj[1][speaker_id][0]
-        real_obj = voice_obj[1][speaker_id][1]
+        real_id = voice_obj["HuBert-VITS"][speaker_id][0]
+        real_obj = voice_obj["HuBert-VITS"][speaker_id][1]
     except Exception:
         res = make_response(jsonify({"status": "error", "message": "speaker id error"}))
         res.status = 404
@@ -253,7 +254,7 @@ def voice_w2v2_api():
         logger.info(msg=f"speaker id is empty")
         return res
 
-    if speaker_id < 0 or speaker_id >= len(voice_speakers[2]):
+    if speaker_id < 0 or speaker_id >= len(voice_speakers["W2V2-VITS"]):
         res = make_response(jsonify({"status": "error", "message": f"id {speaker_id} does not exist"}))
         res.status = 404
         logger.info(msg=f"speaker id {speaker_id} does not exist")
@@ -261,13 +262,23 @@ def voice_w2v2_api():
         return res
 
     try:
-        real_id = voice_obj[2][speaker_id][0]
-        real_obj = voice_obj[2][speaker_id][1]
+        real_id = voice_obj["W2V2-VITS"][speaker_id][0]
+        real_obj = voice_obj["W2V2-VITS"][speaker_id][1]
     except Exception:
         res = make_response(jsonify({"status": "error", "message": "speaker id error"}))
         res.status = 404
         logger.info(msg=f"speaker id error")
         return res
+
+    speaker_lang = voice_speakers["W2V2-VITS"][speaker_id].get('lang')
+    if lang.upper() != "AUTO" and lang.upper() != "MIX" and lang not in speaker_lang:
+        res = make_response(jsonify({"status": "error", "message": f"speaker lang not in {speaker_lang}"}))
+        res.status = 404
+        logger.info(msg=f"speaker lang not in {speaker_lang}")
+        return res
+
+    if app.config.get("LANGUAGE_AUTOMATIC_DETECT", []) != []:
+        speaker_lang = app.config.get("LANGUAGE_AUTOMATIC_DETECT")
 
     fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
@@ -281,7 +292,8 @@ def voice_w2v2_api():
                                         noisew=noisew,
                                         max=max,
                                         lang=lang,
-                                        emotion=emotion)
+                                        emotion=emotion,
+                                        speaker_lang=speaker_lang)
     t2 = time.time()
     logger.info(msg=f"finish in {(t2 - t1):.2f}s")
 
@@ -309,16 +321,16 @@ def voice_conversion_api():
         voice.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
         file_type = f"audio/{format}"
 
-        real_original_id = int(voice_obj[0][original_id][0])
-        real_target_id = int(voice_obj[0][target_id][0])
-        real_obj = voice_obj[0][original_id][1]
-        real_target_obj = voice_obj[0][target_id][1]
+        real_original_id = int(voice_obj["VITS"][original_id][0])
+        real_target_id = int(voice_obj["VITS"][target_id][0])
+        real_obj = voice_obj["VITS"][original_id][1]
+        real_target_obj = voice_obj["VITS"][target_id][1]
 
-        # if voice_obj[0][original_id][2] != voice_obj[0][target_id][2]:
-        #     res = make_response("speaker IDs are in diffrent Model!")
-        #     res.status = 400
-        #     res.headers["message"] = "speaker IDs are in diffrent Model!"
-        #     return res
+        if voice_obj["VITS"][original_id][2] != voice_obj["VITS"][target_id][2]:
+            res = make_response(jsonify({"status": "error", "message": f"speakers are in diffrent VITS Model"}))
+            res.status = 400
+            logger.info(msg=f"speakers are in diffrent VITS Model")
+            return res
 
         logger.info(msg=f"voice_convetsion orginal_id:{original_id} target_id:{target_id}")
         t1 = time.time()
@@ -364,11 +376,11 @@ def check():
         return res
 
     if model.upper() == "VITS":
-        speaker_list = voice_speakers[0]
+        speaker_list = voice_speakers["VITS"]
     elif model.upper() == "HUBERT":
-        speaker_list = voice_speakers[1]
+        speaker_list = voice_speakers["HuBert-VITS"]
     elif model.upper() == "W2V2":
-        speaker_list = voice_speakers[2]
+        speaker_list = voice_speakers["W2V2-VITS"]
 
     if len(speaker_list) == 0:
         res = make_response(jsonify({"status": "error", "message": f"{model} not loaded"}))
@@ -399,5 +411,5 @@ def clean_task():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=app.config["PORT"])  # 如果对外开放用这个,docker部署也用这个
-    # app.run(host='127.0.0.1', port=app.config["PORT"], debug=True)  # 本地运行、调试
+    app.run(host='0.0.0.0', port=app.config.get("PORT", 23456), debug=app.config.get("DEBUG", False))  # 对外开放
+    # app.run(host='127.0.0.1', port=app.config.get("PORT",23456), debug=True)  # 本地运行、调试
