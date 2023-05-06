@@ -64,7 +64,7 @@ def voice_speakers_api():
 def voice_api():
     try:
         if request.method == "GET":
-            text = request.args.get("text")
+            text = request.args.get("text", "")
             speaker_id = int(request.args.get("id", app.config.get("ID", 0)))
             format = request.args.get("format", app.config.get("FORMAT", "wav"))
             lang = request.args.get("lang", app.config.get("LANG", "auto"))
@@ -73,7 +73,7 @@ def voice_api():
             noisew = float(request.args.get("noisew", app.config.get("NOISEW", 0.8)))
             max = int(request.args.get("max", app.config.get("MAX", 50)))
         elif request.method == "POST":
-            text = request.form["text"]
+            text = request.form.get("text", "")
             speaker_id = int(request.form.get("id", app.config.get("ID", 0)))
             format = request.form.get("format", app.config.get("FORMAT", "wav"))
             lang = request.form.get("lang", app.config.get("LANG", "auto"))
@@ -212,7 +212,7 @@ def voice_hubert_api():
 def voice_w2v2_api():
     try:
         if request.method == "GET":
-            text = request.args.get("text")
+            text = request.args.get("text", "")
             speaker_id = int(request.args.get("id", app.config.get("ID", 0)))
             format = request.args.get("format", app.config.get("FORMAT", "wav"))
             lang = request.args.get("lang", app.config.get("LANG", "auto"))
@@ -222,7 +222,7 @@ def voice_w2v2_api():
             max = int(request.args.get("max", app.config.get("MAX", 50)))
             emotion = int(request.args.get("emotion", app.config.get("EMOTION", 0)))
         elif request.method == "POST":
-            text = request.form["text"]
+            text = request.form.get("text", "")
             speaker_id = int(request.form.get("id", app.config.get("ID", 0)))
             format = request.form.get("format", app.config.get("FORMAT", "wav"))
             lang = request.form.get("lang", app.config.get("LANG", "auto"))
