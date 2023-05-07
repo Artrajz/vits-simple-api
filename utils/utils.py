@@ -88,6 +88,16 @@ def wav2ogg(input, output):
             for p in out_stream.encode(None):
                 o.mux(p)
 
+def wav2mp3(input, output):
+    with av.open(input, 'rb') as i:
+        with av.open(output, 'wb', format='mp3') as o:
+            out_stream = o.add_stream('mp3')
+            for frame in i.decode(audio=0):
+                for p in out_stream.encode(frame):
+                    o.mux(p)
+
+            for p in out_stream.encode(None):
+                o.mux(p)
 
 def clean_folder(folder_path):
     for filename in os.listdir(folder_path):

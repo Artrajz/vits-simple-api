@@ -111,6 +111,10 @@ class vits:
                     return BytesIO(o.getvalue())
             elif format == 'silk':
                 return BytesIO(silkcoder.encode(f))
+            elif format == 'mp3':
+                with BytesIO() as o:
+                    utils.wav2mp3(f, o)
+                    return BytesIO(o.getvalue())
             elif format == 'wav':
                 return BytesIO(f.getvalue())
 
