@@ -261,6 +261,7 @@ def voice_speakers():
         print(i)
         for j in json[i]:
             print(j)
+    return json
 
 
 # 语音合成 voice vits
@@ -288,17 +289,18 @@ def voice_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noi
     with open(path, "wb") as f:
         f.write(res.content)
     print(path)
+    return path
 
 
 # 语音转换 hubert-vits
-def voice_hubert_vits(upload_path, speaker_id, format="wav", length=1, noise=0.667, noisew=0.8):
+def voice_hubert_vits(upload_path, id, format="wav", length=1, noise=0.667, noisew=0.8):
     upload_name = os.path.basename(upload_path)
     upload_type = f'audio/{upload_name.split(".")[1]}'  # wav,ogg
 
     with open(upload_path, 'rb') as upload_file:
         fields = {
             "upload": (upload_name, upload_file, upload_type),
-            "speaker_id": str(speaker_id),
+            "id": str(id),
             "format": format,
             "length": str(length),
             "noise": str(noise),
@@ -317,6 +319,7 @@ def voice_hubert_vits(upload_path, speaker_id, format="wav", length=1, noise=0.6
     with open(path, "wb") as f:
         f.write(res.content)
     print(path)
+    return path
 
 
 # 维度情感模型 w2v2-vits
@@ -345,6 +348,7 @@ def voice_w2v2_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667
     with open(path, "wb") as f:
         f.write(res.content)
     print(path)
+    return path
 
 
 # 语音转换 同VITS模型内角色之间的音色转换
@@ -372,6 +376,27 @@ def voice_conversion(upload_path, original_id, target_id):
     with open(path, "wb") as f:
         f.write(res.content)
     print(path)
+    return path
+
+
+def voice_ssml(ssml):
+    fields = {
+        "ssml": ssml,
+    }
+    boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
+
+    m = MultipartEncoder(fields=fields, boundary=boundary)
+    headers = {"Content-Type": m.content_type}
+    url = f"{base}/voice/ssml"
+
+    res = requests.post(url=url, data=m, headers=headers)
+    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
+    path = f"{abs_path}/{fname}"
+
+    with open(path, "wb") as f:
+        f.write(res.content)
+    print(path)
+    return path
 ```
 
 ## API KEY
