@@ -1,7 +1,7 @@
 import os
 import sys
 
-from voice import vits
+from voice import vits, TTS
 
 lang_dict = {
     "japanese_cleaners": ["ja"],
@@ -80,7 +80,9 @@ def merge_model(merging_model):
             w2v2_vits_speakers.append({"id": new_id, "name": name, "lang": lang})
             new_id += 1
 
-    voice_obj = {"VITS": vits_obj, "HuBert-VITS": hubert_vits_obj, "W2V2-VITS": w2v2_vits_obj}
-    voice_speakers = {"VITS": vits_speakers, "HuBert-VITS": hubert_vits_speakers, "W2V2-VITS": w2v2_vits_speakers}
+    voice_obj = {"VITS": vits_obj, "HUBERT-VITS": hubert_vits_obj, "W2V2-VITS": w2v2_vits_obj}
+    voice_speakers = {"VITS": vits_speakers, "HUBERT-VITS": hubert_vits_speakers, "W2V2-VITS": w2v2_vits_speakers}
 
-    return voice_obj, voice_speakers
+    tts = TTS(voice_obj, voice_speakers)
+
+    return tts

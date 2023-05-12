@@ -27,9 +27,11 @@
 - [x] Customize default parameters
 - [x] Long text batch processing
 - [x] GPU accelerated inference
-- [ ] SSML (Speech Synthesis Markup Language)
+- [x] SSML (Speech Synthesis Markup Language) work in progress...
 
 <details><summary>Update Logs</summary><pre><code>
+<h2>2023.5.12</h2>
+<p>Added support for SSML, but still needs improvement. Refactored some functions and changed "speaker_id" to "id" in hubert_vits.</p>
 <h2>2023.5.2</h2>
 <p>Added support for the w2v2-vits/emotional-vits model, updated the speakers mapping table, and added support for the languages corresponding to the model.</p>
 <h2>2023.4.23</h2>
@@ -51,6 +53,10 @@
 - `https://api.artrajz.cn/py/voice/vits?text=你好,こんにちは&id=142`
 - excited:`https://api.artrajz.cn/py/voice/w2v2-vits?text=こんにちは&id=3&emotion=111`
 - whispered:`https://api.artrajz.cn/py/voice/w2v2-vits?text=こんにちは&id=3&emotion=2077` 
+
+https://user-images.githubusercontent.com/73542220/237995061-c1f25b4e-dd86-438a-9363-4bb1fe65b425.mov
+
+The demo server is unstable due to its relatively low configuration.
 
 # Deploy
 
@@ -407,7 +413,7 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 | Noise          | noise      | true    |         | float |                                                              |
 | Noise Weight   | noisew     | true    |         | float |                                                              |
 
-## VITS
+## W2V2-VITS
 
 | Name                   | Parameter | Is must | Default | Type  | Instruction                                                  |
 | ---------------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
@@ -420,6 +426,77 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 | Noise Weight           | noisew    | false   | 0.8     | float |                                                              |
 | Segmentation threshold | max       | false   | 50      | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
 | Dimensional emotion    | emotion   | false   | 0       | int   | The range depends on the emotion reference file in npy format, such as the  range of the [innnky](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)'s model all_emotions.npy, which is 0-5457. |
+
+## SSML (Speech Synthesis Markup Language)
+
+Supported Elements and Attributes
+
+`speak` Element
+
+| Attribute | Instruction                                                  | Is must |
+| --------- | ------------------------------------------------------------ | ------- |
+| id        | Default value is retrieved from `config.py`                  | false   |
+| lang      | Default value is retrieved from `config.py`                  | false   |
+| length    | Default value is retrieved from `config.py`                  | false   |
+| noise     | Default value is retrieved from `config.py`                  | false   |
+| noisew    | Default value is retrieved from `config.py`                  | false   |
+| max       | Splits text into segments based on punctuation marks. When the sum of segment lengths exceeds `max`, it is treated as one segment. `max<=0` means no segmentation. The default value is 0. | false   |
+| model     | Default is `vits`. Options: `w2v2-vits`, `emotion-vits`      | false   |
+| emotion   | Only effective when using `w2v2-vits` or `emotion-vits`. The range depends on the npy emotion reference file. | false   |
+
+`voice` Element
+
+Higher priority than `speak`.
+
+| Attribute | Instruction                                                  | Is must |
+| --------- | ------------------------------------------------------------ | ------- |
+| id        | Default value is retrieved from `config.py`                  | false   |
+| lang      | Default value is retrieved from `config.py`                  | false   |
+| length    | Default value is retrieved from `config.py`                  | false   |
+| noise     | Default value is retrieved from `config.py`                  | false   |
+| noisew    | Default value is retrieved from `config.py`                  | false   |
+| max       | Splits text into segments based on punctuation marks. When the sum of segment lengths exceeds `max`, it is treated as one segment. `max<=0` means no segmentation. The default value is 0. | false   |
+| model     | Default is `vits`. Options: `w2v2-vits`, `emotion-vits`      | false   |
+| emotion   | Only effective when using `w2v2-vits` or `emotion-vits`      | false   |
+
+`break` Element
+
+| Attribute | Instruction                                                  | Is must |
+| --------- | ------------------------------------------------------------ | ------- |
+| strength  | x-weak, weak, medium (default), strong, x-strong             | false   |
+| time      | The absolute duration of a pause in seconds (such as `2s`) or milliseconds (such as `500ms`). Valid values range from 0 to 5000 milliseconds. If you set a value greater than the supported maximum, the service will use `5000ms`. If the `time` attribute is set, the `strength` attribute is ignored. | false   |
+
+| Strength | Relative Duration |
+| :------- | :---------------- |
+| x-weak   | 250 ms            |
+| weak     | 500 ms            |
+| medium   | 750 ms            |
+| strong   | 1000 ms           |
+| x-strong | 1250 ms           |
+
+Example
+
+```xml
+<speak lang="zh" format="mp3" length="1.2">
+    <voice id="92" >这几天心里颇不宁静。</voice>
+    <voice id="125">今晚在院子里坐着乘凉，忽然想起日日走过的荷塘，在这满月的光里，总该另有一番样子吧。</voice>
+    <voice id="142">月亮渐渐地升高了，墙外马路上孩子们的欢笑，已经听不见了；</voice>
+    <voice id="98">妻在屋里拍着闰儿，迷迷糊糊地哼着眠歌。</voice>
+    <voice id="120">我悄悄地披了大衫，带上门出去。</voice><break time="2s"/>
+    <voice id="121">沿着荷塘，是一条曲折的小煤屑路。</voice>
+    <voice id="122">这是一条幽僻的路；白天也少人走，夜晚更加寂寞。</voice>
+    <voice id="123">荷塘四面，长着许多树，蓊蓊郁郁的。</voice>
+    <voice id="124">路的一旁，是些杨柳，和一些不知道名字的树。</voice>
+    <voice id="125">没有月光的晚上，这路上阴森森的，有些怕人。</voice>
+    <voice id="126">今晚却很好，虽然月光也还是淡淡的。</voice><break time="2s"/>
+    <voice id="127">路上只我一个人，背着手踱着。</voice>
+    <voice id="128">这一片天地好像是我的；我也像超出了平常的自己，到了另一个世界里。</voice>
+    <voice id="129">我爱热闹，也爱冷静；<break strength="x-weak"/>爱群居，也爱独处。</voice>
+    <voice id="130">像今晚上，一个人在这苍茫的月下，什么都可以想，什么都可以不想，便觉是个自由的人。</voice>
+    <voice id="131">白天里一定要做的事，一定要说的话，现在都可不理。</voice>
+    <voice id="132">这是独处的妙处，我且受用这无边的荷香月色好了。</voice>
+</speak>
+```
 
 # Communication
 

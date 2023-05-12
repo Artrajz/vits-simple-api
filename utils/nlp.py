@@ -1,6 +1,14 @@
 import regex as re
+import logging
+import config
 from fastlid import fastlid
 from .utils import check_is_none
+
+logger = logging.getLogger("vits-simple-api")
+level = getattr(config, "LOGGING_LEVEL", "DEBUG")
+level_dict = {'DEBUG': logging.DEBUG, 'INFO': logging.INFO, 'WARNING': logging.WARNING, 'ERROR': logging.ERROR,
+              'CRITICAL': logging.CRITICAL}
+logger.setLevel(level_dict[level])
 
 
 def clasify_lang(text):
@@ -49,17 +57,19 @@ def sentence_split(text, max=50, lang="auto", speaker_lang=None):
     fastlid.set_languages = speaker_lang
 
     sentence_list = []
-    if max <= 0:
-        sentence_list.append(
-            clasify_lang(text) if lang.upper() == "AUTO" else f"[{lang.upper()}]{text}[{lang.upper()}]")
-    else:
-        for i in cut(text, max):
-            if check_is_none(i): continue
-            if lang.upper() != "MIX":
+    if lang.upper() != "MIX":
+        if max <= 0:
+            sentence_list.append(
+                clasify_lang(text) if lang.upper() == "AUTO" else f"[{lang.upper()}]{text}[{lang.upper()}]")
+        else:
+            for i in cut(text, max):
+                if check_is_none(i): continue
                 sentence_list.append(
                     clasify_lang(i) if lang.upper() == "AUTO" else f"[{lang.upper()}]{i}[{lang.upper()}]")
-            else:
-                sentence_list.append(i)
+    else:
+        sentence_list.append(text)
+
     for i in sentence_list:
-        print(i)
+        logger.debug(i)
+
     return sentence_list

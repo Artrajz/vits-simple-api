@@ -18,13 +18,13 @@ scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()
 
-logger = logging.getLogger('vits-simple-api')
-logger.setLevel(logging.INFO)
 logzero.loglevel(logging.WARNING)
+logger = logging.getLogger("vits-simple-api")
+level = app.config.get("LOGGING_LEVEL","DEBUG")
+level_dict = {'DEBUG': logging.DEBUG, 'INFO': logging.INFO, 'WARNING': logging.WARNING, 'ERROR': logging.ERROR, 'CRITICAL': logging.CRITICAL}
+logger.setLevel(level_dict[level])
 
-voice_obj, voice_speakers = merge_model(app.config["MODEL_LIST"])
-
-print(f"loaded {sum([len(voice_speakers[i]) for i in voice_speakers])} speakers")
+tts = merge_model(app.config["MODEL_LIST"])
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -40,32 +40,29 @@ def require_api_key(func):
             if api_key and api_key == app.config['API_KEY']:
                 return func(*args, **kwargs)
             else:
-                res = make_response(jsonify({"status": "error", "message": "Invalid API Key"}))
-                res.status = 401
-                res.headers["message"] = "Invalid API Key"
-                return res
+                return make_response(jsonify({"status": "error", "message": "Invalid API Key"}), 401)
 
     return check_api_key
 
 
 @app.route('/', methods=["GET", "POST"])
 def index():
-    return ""
+    return "vits-simple-api"
 
 
 @app.route('/voice/speakers', methods=["GET", "POST"])
 def voice_speakers_api():
-    return jsonify(voice_speakers)
+    return jsonify(tts.voice_speakers)
 
 
 @app.route('/voice', methods=["GET", "POST"])
 @app.route('/voice/vits', methods=["GET", "POST"])
 @require_api_key
-def voice_api():
+def voice_vits_api():
     try:
         if request.method == "GET":
             text = request.args.get("text", "")
-            speaker_id = int(request.args.get("id", app.config.get("ID", 0)))
+            id = int(request.args.get("id", app.config.get("ID", 0)))
             format = request.args.get("format", app.config.get("FORMAT", "wav"))
             lang = request.args.get("lang", app.config.get("LANG", "auto"))
             length = float(request.args.get("length", app.config.get("LENGTH", 1)))
@@ -74,7 +71,7 @@ def voice_api():
             max = int(request.args.get("max", app.config.get("MAX", 50)))
         elif request.method == "POST":
             text = request.form.get("text", "")
-            speaker_id = int(request.form.get("id", app.config.get("ID", 0)))
+            id = int(request.form.get("id", app.config.get("ID", 0)))
             format = request.form.get("format", app.config.get("FORMAT", "wav"))
             lang = request.form.get("lang", app.config.get("LANG", "auto"))
             length = float(request.form.get("length", app.config.get("LENGTH", 1)))
@@ -82,49 +79,28 @@ def voice_api():
             noisew = float(request.form.get("noisew", app.config.get("NOISEW", 0.8)))
             max = int(request.form.get("max", app.config.get("MAX", 50)))
     except Exception as e:
-        res = make_response("param error")
-        res.status = 400
-        res.headers["message"] = "param error"
-        logger.error(msg=f"{e} {e.args}")
-        return res
+        logger.error(f"[VITS] {e}")
+        return make_response("parameter error", 400)
 
-    logger.info(msg=f"VITS id:{speaker_id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew}")
-    logger.info(msg=f"len:{len(text)} text：{text}")
+    logger.info(f"[VITS] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew}")
+    logger.info(f"[VITS] len:{len(text)} text：{text}")
 
     if check_is_none(text):
-        res = make_response(jsonify({"status": "error", "message": "text is empty"}))
-        res.status = 404
-        logger.info(msg=f"text is empty")
-        return res
+        logger.info(f"[VITS] text is empty")
+        return make_response(jsonify({"status": "error", "message": "text is empty"}), 400)
 
-    if check_is_none(speaker_id):
-        res = make_response(jsonify({"status": "error", "message": "speaker id is empty"}))
-        res.status = 404
-        logger.info(msg=f"speaker id is empty")
-        return res
+    if check_is_none(id):
+        logger.info(f"[VITS] speaker id is empty")
+        return make_response(jsonify({"status": "error", "message": "speaker id is empty"}), 400)
 
-    if speaker_id < 0 or speaker_id >= len(voice_speakers["VITS"]):
-        res = make_response(jsonify({"status": "error", "message": f"id {speaker_id} does not exist"}))
-        res.status = 404
-        logger.info(msg=f"speaker id {speaker_id} does not exist")
-        logger.info(msg=f"speaker id {speaker_id} does not exist")
-        return res
+    if id < 0 or id >= tts.vits_speakers_count:
+        logger.info(f"[VITS] speaker id {id} does not exist")
+        return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
 
-    try:
-        real_id = voice_obj["VITS"][speaker_id][0]
-        real_obj = voice_obj["VITS"][speaker_id][1]
-    except Exception:
-        res = make_response(jsonify({"status": "error", "message": "speaker id error"}))
-        res.status = 404
-        logger.info(msg=f"speaker id error")
-        return res
-
-    speaker_lang = voice_speakers["VITS"][speaker_id].get('lang')
+    speaker_lang = tts.voice_speakers["VITS"][id].get('lang')
     if lang.upper() != "AUTO" and lang.upper() != "MIX" and lang not in speaker_lang:
-        res = make_response(jsonify({"status": "error", "message": f"speaker lang not in {speaker_lang}"}))
-        res.status = 404
-        logger.info(msg=f"speaker lang not in {speaker_lang}")
-        return res
+        logger.info(f"[VITS] speaker lang not in {speaker_lang}")
+        return make_response(jsonify({"status": "error", "message": f"speaker lang not in {speaker_lang}"}), 400)
 
     if app.config.get("LANGUAGE_AUTOMATIC_DETECT", []) != []:
         speaker_lang = app.config.get("LANGUAGE_AUTOMATIC_DETECT")
@@ -133,17 +109,17 @@ def voice_api():
     file_type = f"audio/{format}"
 
     t1 = time.time()
-    output = real_obj.create_infer_task(text=text,
-                                        speaker_id=real_id,
-                                        format=format,
-                                        length=length,
-                                        noise=noise,
-                                        noisew=noisew,
-                                        max=max,
-                                        lang=lang,
-                                        speaker_lang=speaker_lang)
+    output = tts.vits_infer({"text": text,
+                             "id": id,
+                             "format": format,
+                             "length": length,
+                             "noise": noise,
+                             "noisew": noisew,
+                             "max": max,
+                             "lang": lang,
+                             "speaker_lang": speaker_lang})
     t2 = time.time()
-    logger.info(msg=f"finish in {(t2 - t1):.2f}s")
+    logger.info(f"[VITS] finish in {(t2 - t1):.2f}s")
 
     return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
 
@@ -154,55 +130,39 @@ def voice_hubert_api():
     if request.method == "POST":
         try:
             voice = request.files['upload']
-            speaker_id = int(request.form.get("speaker_id"))
+            id = int(request.form.get("id"))
             format = request.form.get("format", app.config.get("LANG", "auto"))
             length = float(request.form.get("length", app.config.get("LENGTH", 1)))
             noise = float(request.form.get("noise", app.config.get("NOISE", 0.667)))
             noisew = float(request.form.get("noisew", app.config.get("NOISEW", 0.8)))
         except Exception as e:
-            res = make_response("param error")
-            res.status = 400
-            res.headers["message"] = "param error"
-            logger.error(msg=f"{e} {e.args}")
-            return res
+            logger.error(f"[hubert] {e}")
+            return make_response("parameter error", 400)
 
-    logger.info(msg=f"HuBert-soft id:{speaker_id} format:{format} length:{length} noise:{noise} noisew:{noisew}")
+    logger.info(f"[hubert] id:{id} format:{format} length:{length} noise:{noise} noisew:{noisew}")
 
     fname = secure_filename(str(uuid.uuid1()) + "." + voice.filename.split(".")[1])
     voice.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
 
-    if check_is_none(speaker_id):
-        res = make_response(jsonify({"status": "error", "message": "speaker id is empty"}))
-        res.status = 404
-        logger.info(msg=f"speaker id is empty")
-        return res
+    if check_is_none(id):
+        logger.info(f"[hubert] speaker id is empty")
+        return make_response(jsonify({"status": "error", "message": "speaker id is empty"}), 400)
 
-    if speaker_id < 0 or speaker_id >= len(voice_speakers["HuBert-VITS"]):
-        res = make_response(jsonify({"status": "error", "message": f"id {speaker_id} does not exist"}))
-        res.status = 404
-        logger.info(msg=f"speaker id {speaker_id} does not exist")
-        return res
-
-    try:
-        real_id = voice_obj["HuBert-VITS"][speaker_id][0]
-        real_obj = voice_obj["HuBert-VITS"][speaker_id][1]
-    except Exception:
-        res = make_response(jsonify({"status": "error", "message": "speaker id error"}))
-        res.status = 404
-        logger.info(msg=f"speaker id error")
-        return res
+    if id < 0 or id >= tts.hubert_speakers_count:
+        logger.info(f"[hubert] speaker id {id} does not exist")
+        return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
 
     file_type = f"audio/{format}"
 
     t1 = time.time()
-    output = real_obj.create_infer_task(speaker_id=real_id,
-                                        format=format,
-                                        length=length,
-                                        noise=noise,
-                                        noisew=noisew,
-                                        audio_path=os.path.join(app.config['UPLOAD_FOLDER'], fname))
+    output = tts.hubert_vits_infer({"id": id,
+                                    "format": format,
+                                    "length": length,
+                                    "noise": noise,
+                                    "noisew": noisew,
+                                    "audio_path": os.path.join(app.config['UPLOAD_FOLDER'], fname)})
     t2 = time.time()
-    logger.info(msg=f"finish in {(t2 - t1):.2f}s")
+    logger.info(f"[hubert] finish in {(t2 - t1):.2f}s")
 
     return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
 
@@ -213,7 +173,7 @@ def voice_w2v2_api():
     try:
         if request.method == "GET":
             text = request.args.get("text", "")
-            speaker_id = int(request.args.get("id", app.config.get("ID", 0)))
+            id = int(request.args.get("id", app.config.get("ID", 0)))
             format = request.args.get("format", app.config.get("FORMAT", "wav"))
             lang = request.args.get("lang", app.config.get("LANG", "auto"))
             length = float(request.args.get("length", app.config.get("LENGTH", 1)))
@@ -223,7 +183,7 @@ def voice_w2v2_api():
             emotion = int(request.args.get("emotion", app.config.get("EMOTION", 0)))
         elif request.method == "POST":
             text = request.form.get("text", "")
-            speaker_id = int(request.form.get("id", app.config.get("ID", 0)))
+            id = int(request.form.get("id", app.config.get("ID", 0)))
             format = request.form.get("format", app.config.get("FORMAT", "wav"))
             lang = request.form.get("lang", app.config.get("LANG", "auto"))
             length = float(request.form.get("length"))
@@ -232,50 +192,29 @@ def voice_w2v2_api():
             max = int(request.form.get("max", app.config.get("MAX", 50)))
             emotion = int(request.form.get("emotion", app.config.get("EMOTION", 0)))
     except Exception as e:
-        res = make_response("param error")
-        res.status = 400
-        res.headers["message"] = "param error"
-        logger.error(msg=f"{e} {e.args}")
-        return res
+        logger.error(f"[w2v2] {e}")
+        return make_response(f"parameter error", 400)
 
-    logger.info(msg=f"W2V2 id:{speaker_id} format:{format} lang:{lang} "
-                    f"length:{length} noise:{noise} noisew:{noisew} emotion:{emotion}")
-    logger.info(msg=f"len:{len(text)} text：{text}")
+    logger.info(f"[w2v2] id:{id} format:{format} lang:{lang} "
+                f"length:{length} noise:{noise} noisew:{noisew} emotion:{emotion}")
+    logger.info(f"[w2v2] len:{len(text)} text：{text}")
 
     if check_is_none(text):
-        res = make_response(jsonify({"status": "error", "message": "text is empty"}))
-        res.status = 404
-        logger.info(msg=f"text is empty")
-        return res
+        logger.info(f"[w2v2] text is empty")
+        return make_response(jsonify({"status": "error", "message": "text is empty"}), 400)
 
-    if check_is_none(speaker_id):
-        res = make_response(jsonify({"status": "error", "message": "speaker id is empty"}))
-        res.status = 404
-        logger.info(msg=f"speaker id is empty")
-        return res
+    if check_is_none(id):
+        logger.info(f"[w2v2] speaker id is empty")
+        return make_response(jsonify({"status": "error", "message": "speaker id is empty"}), 400)
 
-    if speaker_id < 0 or speaker_id >= len(voice_speakers["W2V2-VITS"]):
-        res = make_response(jsonify({"status": "error", "message": f"id {speaker_id} does not exist"}))
-        res.status = 404
-        logger.info(msg=f"speaker id {speaker_id} does not exist")
-        logger.info(msg=f"speaker id {speaker_id} does not exist")
-        return res
+    if id < 0 or id >= tts.w2v2_speakers_count:
+        logger.info(f"[w2v2] speaker id {id} does not exist")
+        return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
 
-    try:
-        real_id = voice_obj["W2V2-VITS"][speaker_id][0]
-        real_obj = voice_obj["W2V2-VITS"][speaker_id][1]
-    except Exception:
-        res = make_response(jsonify({"status": "error", "message": "speaker id error"}))
-        res.status = 404
-        logger.info(msg=f"speaker id error")
-        return res
-
-    speaker_lang = voice_speakers["W2V2-VITS"][speaker_id].get('lang')
+    speaker_lang = tts.voice_speakers["W2V2-VITS"][id].get('lang')
     if lang.upper() != "AUTO" and lang.upper() != "MIX" and lang not in speaker_lang:
-        res = make_response(jsonify({"status": "error", "message": f"speaker lang not in {speaker_lang}"}))
-        res.status = 404
-        logger.info(msg=f"speaker lang not in {speaker_lang}")
-        return res
+        logger.info(f"[w2v2] speaker lang not in {speaker_lang}")
+        return make_response(jsonify({"status": "error", "message": f"speaker lang not in {speaker_lang}"}), 400)
 
     if app.config.get("LANGUAGE_AUTOMATIC_DETECT", []) != []:
         speaker_lang = app.config.get("LANGUAGE_AUTOMATIC_DETECT")
@@ -284,62 +223,82 @@ def voice_w2v2_api():
     file_type = f"audio/{format}"
 
     t1 = time.time()
-    output = real_obj.create_infer_task(text=text,
-                                        speaker_id=real_id,
-                                        format=format,
-                                        length=length,
-                                        noise=noise,
-                                        noisew=noisew,
-                                        max=max,
-                                        lang=lang,
-                                        emotion=emotion,
-                                        speaker_lang=speaker_lang)
+    output = tts.w2v2_vits_infer({"text": text,
+                                  "id": id,
+                                  "format": format,
+                                  "length": length,
+                                  "noise": noise,
+                                  "noisew": noisew,
+                                  "max": max,
+                                  "lang": lang,
+                                  "emotion": emotion,
+                                  "speaker_lang": speaker_lang})
     t2 = time.time()
-    logger.info(msg=f"finish in {(t2 - t1):.2f}s")
+    logger.info(f"[w2v2] finish in {(t2 - t1):.2f}s")
 
     return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
 
 
-@app.route('/voice/conversion', methods=["GET", "POST"])
+@app.route('/voice/conversion', methods=["POST"])
+@app.route('/voice/vits/conversion', methods=["POST"])
 @require_api_key
-def voice_conversion_api():
+def vits_voice_conversion_api():
     if request.method == "POST":
         try:
             voice = request.files['upload']
             original_id = int(request.form["original_id"])
             target_id = int(request.form["target_id"])
+            format = request.form.get("format", voice.filename.split(".")[1])
         except Exception as e:
-            res = make_response("param error")
-            res.status = 400
-            res.headers["message"] = "param error"
-            logger.error(msg=f"{e} {e.args}")
-            return res
-
-        format = voice.filename.split(".")[1]
+            logger.error(f"[w2v2] {e}")
+            return make_response("parameter error", 400)
 
         fname = secure_filename(str(uuid.uuid1()) + "." + voice.filename.split(".")[1])
-        voice.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
+        audio_path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
+        voice.save(audio_path)
         file_type = f"audio/{format}"
 
-        real_original_id = int(voice_obj["VITS"][original_id][0])
-        real_target_id = int(voice_obj["VITS"][target_id][0])
-        real_obj = voice_obj["VITS"][original_id][1]
-        real_target_obj = voice_obj["VITS"][target_id][1]
-
-        if voice_obj["VITS"][original_id][2] != voice_obj["VITS"][target_id][2]:
-            res = make_response(jsonify({"status": "error", "message": f"speakers are in diffrent VITS Model"}))
-            res.status = 400
-            logger.info(msg=f"speakers are in diffrent VITS Model")
-            return res
-
-        logger.info(msg=f"voice_convetsion orginal_id:{original_id} target_id:{target_id}")
+        logger.info(f"[vits_voice_convertsion] orginal_id:{original_id} target_id:{target_id}")
         t1 = time.time()
-        output = real_obj.voice_conversion(os.path.join(app.config['UPLOAD_FOLDER'], fname),
-                                           real_original_id, real_target_id)
+        try:
+            output = tts.vits_voice_conversion({"audio_path": audio_path,
+                                                "original_id": original_id,
+                                                "target_id": target_id,
+                                                "format": format})
+        except Exception as e:
+            logger.info(f"[vits_voice_convertsion] {e}")
+            return make_response(jsonify({"status": "error", "message": f"synthesis failure"}), 400)
         t2 = time.time()
-        logger.info(msg=f"finish in {(t2 - t1):.2f}s")
+        logger.info(f"finish in {(t2 - t1):.2f}s")
 
         return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
+
+
+@app.route('/voice/ssml', methods=["POST"])
+@require_api_key
+def ssml():
+    try:
+        ssml = request.form["ssml"]
+    except Exception as e:
+        logger.info(f"[ssml] {e}")
+        return make_response(jsonify({"status": "error", "message": f"parameter error"}), 400)
+
+    logger.debug(ssml)
+
+    t1 = time.time()
+    try:
+        output, format = tts.create_ssml_infer_task(ssml)
+    except Exception as e:
+        logger.info(f"[ssml] {e}")
+        return make_response(jsonify({"status": "error", "message": f"synthesis failure"}), 400)
+    t2 = time.time()
+
+    fname = f"{str(uuid.uuid1())}.{format}"
+    file_type = f"audio/{format}"
+
+    logger.info(f"[ssml] finish in {(t2 - t1):.2f}s")
+
+    return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
 
 
 @app.route('/voice/check', methods=["GET", "POST"])
@@ -347,60 +306,47 @@ def check():
     try:
         if request.method == "GET":
             model = request.args.get("model")
-            speaker_id = int(request.args.get("id"))
+            id = int(request.args.get("id"))
         elif request.method == "POST":
             model = request.form["model"]
-            speaker_id = int(request.form["id"])
+            id = int(request.form["id"])
     except Exception as e:
-        res = make_response(jsonify({"status": "error", "message": "param error"}))
-        res.status = 400
-        logger.info(msg=f"{e}")
-        return res
+        logger.info(f"[check] {e}")
+        return make_response(jsonify({"status": "error", "message": "parameter error"}), 400)
 
     if check_is_none(model):
-        res = make_response(jsonify({"status": "error", "message": "model is empty"}))
-        res.status = 404
-        logger.info(msg=f"model is empty")
-        return res
+        logger.info(f"[check] model {model} is empty")
+        return make_response(jsonify({"status": "error", "message": "model is empty"}), 400)
 
     if model.upper() not in ("VITS", "HUBERT", "W2V2"):
         res = make_response(jsonify({"status": "error", "message": f"model {model} does not exist"}))
         res.status = 404
-        logger.info(msg=f"speaker id {speaker_id} error")
+        logger.info(f"[check] speaker id {id} error")
         return res
 
-    if check_is_none(speaker_id):
-        res = make_response(jsonify({"status": "error", "message": "speaker id is empty"}))
-        res.status = 404
-        logger.info(msg=f"speaker id is empty")
-        return res
+    if check_is_none(id):
+        logger.info(f"[check] speaker id is empty")
+        return make_response(jsonify({"status": "error", "message": "speaker id is empty"}), 400)
 
     if model.upper() == "VITS":
-        speaker_list = voice_speakers["VITS"]
+        speaker_list = tts.voice_speakers["VITS"]
     elif model.upper() == "HUBERT":
-        speaker_list = voice_speakers["HuBert-VITS"]
+        speaker_list = tts.voice_speakers["HUBERT-VITS"]
     elif model.upper() == "W2V2":
-        speaker_list = voice_speakers["W2V2-VITS"]
+        speaker_list = tts.voice_speakers["W2V2-VITS"]
 
     if len(speaker_list) == 0:
-        res = make_response(jsonify({"status": "error", "message": f"{model} not loaded"}))
-        res.status = 404
-        logger.info(msg=f"{model} not loaded")
-        return res
+        logger.info(f"[check] {model} not loaded")
+        return make_response(jsonify({"status": "error", "message": f"{model} not loaded"}), 400)
 
-    if speaker_id < 0 or speaker_id >= len(speaker_list):
-        res = make_response(jsonify({"status": "error", "message": f"id {speaker_id} does not exist"}))
-        res.status = 404
-        logger.info(msg=f"speaker id {speaker_id} does not exist")
-        logger.info(msg=f"speaker id {speaker_id} does not exist")
-        return res
-    name = str(speaker_list[speaker_id]["name"])
-    lang = speaker_list[speaker_id]["lang"]
-    logger.info(msg=f"check id:{speaker_id} name:{name} lang:{lang}")
+    if id < 0 or id >= len(speaker_list):
+        logger.info(f"[check] speaker id {id} does not exist")
+        return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
+    name = str(speaker_list[id]["name"])
+    lang = speaker_list[id]["lang"]
+    logger.info(f"[check] check id:{id} name:{name} lang:{lang}")
 
-    res = make_response(jsonify({"status": "success", "id": speaker_id, "name": name, "lang": lang}))
-    res.status = 200
-    return res
+    return make_response(jsonify({"status": "success", "id": id, "name": name, "lang": lang}), 200)
 
 
 # regular cleaning

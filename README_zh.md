@@ -27,9 +27,11 @@
 - [x] 自定义默认参数
 - [x] 长文本批处理
 - [x] GPU加速推理
-- [ ] SSML语音合成标记语言
+- [x] SSML语音合成标记语言（完善中...）
 
 <details><summary>Update Logs</summary><pre><code>
+<h2>2023.5.12</h2>
+<p>增加ssml支持，但仍需完善。重构部分功能，hubert_vits中的speaker_id改为id</p>
 <h2>2023.5.2</h2>
 <p>增加w2v2-vits/emotional-vits模型支持，修改了speakers映射表并添加了对应模型支持的语言</p>
 <h2>2023.4.23</h2>
@@ -51,6 +53,10 @@
 - `https://api.artrajz.cn/py/voice/vits?text=你好,こんにちは&id=142`
 - 激动：`https://api.artrajz.cn/py/voice/w2v2-vits?text=こんにちは&id=3&emotion=111`
 - 小声：`https://api.artrajz.cn/py/voice/w2v2-vits?text=こんにちは&id=3&emotion=2077`
+
+https://user-images.githubusercontent.com/73542220/237995061-c1f25b4e-dd86-438a-9363-4bb1fe65b425.mov
+
+demo服务器配置比较低所以不稳定
 
 # 部署
 
@@ -263,6 +269,7 @@ def voice_speakers():
         print(i)
         for j in json[i]:
             print(j)
+    return json
 
 
 # 语音合成 voice vits
@@ -290,17 +297,18 @@ def voice_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noi
     with open(path, "wb") as f:
         f.write(res.content)
     print(path)
+    return path
 
 
 # 语音转换 hubert-vits
-def voice_hubert_vits(upload_path, speaker_id, format="wav", length=1, noise=0.667, noisew=0.8):
+def voice_hubert_vits(upload_path, id, format="wav", length=1, noise=0.667, noisew=0.8):
     upload_name = os.path.basename(upload_path)
     upload_type = f'audio/{upload_name.split(".")[1]}'  # wav,ogg
 
     with open(upload_path, 'rb') as upload_file:
         fields = {
             "upload": (upload_name, upload_file, upload_type),
-            "speaker_id": str(speaker_id),
+            "id": str(id),
             "format": format,
             "length": str(length),
             "noise": str(noise),
@@ -319,6 +327,8 @@ def voice_hubert_vits(upload_path, speaker_id, format="wav", length=1, noise=0.6
     with open(path, "wb") as f:
         f.write(res.content)
     print(path)
+    return path
+
 
 # 维度情感模型 w2v2-vits
 def voice_w2v2_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, max=50, emotion=0):
@@ -346,6 +356,7 @@ def voice_w2v2_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667
     with open(path, "wb") as f:
         f.write(res.content)
     print(path)
+    return path
 
 
 # 语音转换 同VITS模型内角色之间的音色转换
@@ -373,6 +384,27 @@ def voice_conversion(upload_path, original_id, target_id):
     with open(path, "wb") as f:
         f.write(res.content)
     print(path)
+    return path
+
+
+def voice_ssml(ssml):
+    fields = {
+        "ssml": ssml,
+    }
+    boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
+
+    m = MultipartEncoder(fields=fields, boundary=boundary)
+    headers = {"Content-Type": m.content_type}
+    url = f"{base}/voice/ssml"
+
+    res = requests.post(url=url, data=m, headers=headers)
+    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
+    path = f"{abs_path}/{fname}"
+
+    with open(path, "wb") as f:
+        f.write(res.content)
+    print(path)
+    return path
 ```
 
 ## API KEY
@@ -428,6 +460,76 @@ def voice_conversion(upload_path, original_id, target_id):
 | 噪声偏差      | noisew    | false   | 0.8     | float |                                                              |
 | 分段阈值      | max       | false   | 50      | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
 | 维度情感      | emotion   | false   | 0       | int   | 范围取决于npy情感参考文件，如[innnky](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)的all_emotions.npy模型范围是0-5457 |
+
+## SSML语音合成标记语言
+目前支持的元素与属性
+
+`speak`元素
+
+| Attribute | Description                                                  | Is must |
+| --------- | ------------------------------------------------------------ | ------- |
+| id        | 默认值从`config.py`中读取                                    | false   |
+| lang      | 默认值从`config.py`中读取                                    | false   |
+| length    | 默认值从`config.py`中读取                                    | false   |
+| noise     | 默认值从`config.py`中读取                                    | false   |
+| noisew    | 默认值从`config.py`中读取                                    | false   |
+| max       | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段，这里默认为0。 | false   |
+| model     | 默认为vits，可选`w2v2-vits`，`emotion-vits`                  | false   |
+| emotion   | 只有用`w2v2-vits`或`emotion-vits`时`emotion`才生效，范围取决于npy情感参考文件 | false   |
+
+`voice`元素
+
+优先级大于`speak`
+
+| Attribute | Description                                                  | Is must |
+| --------- | ------------------------------------------------------------ | ------- |
+| id        | 默认值从`config.py`中读取                                    | false   |
+| lang      | 默认值从`config.py`中读取                                    | false   |
+| length    | 默认值从`config.py`中读取                                    | false   |
+| noise     | 默认值从`config.py`中读取                                    | false   |
+| noisew    | 默认值从`config.py`中读取                                    | false   |
+| max       | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段，这里默认为0。 | false   |
+| model     | 默认为vits，可选`w2v2-vits`，`emotion-vits`                  | false   |
+| emotion   | 只有用`w2v2-vits`或`emotion-vits`时`emotion`才会生效         | false   |
+
+`break`元素
+
+| Attribute | Description                                                  | Is must |
+| --------- | ------------------------------------------------------------ | ------- |
+| strength  | x-weak,weak,medium（默认值）,strong,x-strong                 | false   |
+| time      | 暂停的绝对持续时间，以秒为单位（例如 `2s`）或以毫秒为单位（例如 `500ms`）。 有效值的范围为 0 到 5000 毫秒。 如果设置的值大于支持的最大值，则服务将使用 `5000ms`。 如果设置了 `time` 属性，则会忽略 `strength` 属性。 | false   |
+
+| Strength | Relative Duration |
+| :------- | :---------------- |
+| x-weak   | 250 毫秒          |
+| weak     | 500 毫秒          |
+| Medium   | 750 毫秒          |
+| Strong   | 1000 毫秒         |
+| x-strong | 1250 毫秒         |
+
+示例
+
+```xml
+<speak lang="zh" format="mp3" length="1.2">
+    <voice id="92" >这几天心里颇不宁静。</voice>
+    <voice id="125">今晚在院子里坐着乘凉，忽然想起日日走过的荷塘，在这满月的光里，总该另有一番样子吧。</voice>
+    <voice id="142">月亮渐渐地升高了，墙外马路上孩子们的欢笑，已经听不见了；</voice>
+    <voice id="98">妻在屋里拍着闰儿，迷迷糊糊地哼着眠歌。</voice>
+    <voice id="120">我悄悄地披了大衫，带上门出去。</voice><break time="2s"/>
+    <voice id="121">沿着荷塘，是一条曲折的小煤屑路。</voice>
+    <voice id="122">这是一条幽僻的路；白天也少人走，夜晚更加寂寞。</voice>
+    <voice id="123">荷塘四面，长着许多树，蓊蓊郁郁的。</voice>
+    <voice id="124">路的一旁，是些杨柳，和一些不知道名字的树。</voice>
+    <voice id="125">没有月光的晚上，这路上阴森森的，有些怕人。</voice>
+    <voice id="126">今晚却很好，虽然月光也还是淡淡的。</voice><break time="2s"/>
+    <voice id="127">路上只我一个人，背着手踱着。</voice>
+    <voice id="128">这一片天地好像是我的；我也像超出了平常的自己，到了另一个世界里。</voice>
+    <voice id="129">我爱热闹，也爱冷静；<break strength="x-weak"/>爱群居，也爱独处。</voice>
+    <voice id="130">像今晚上，一个人在这苍茫的月下，什么都可以想，什么都可以不想，便觉是个自由的人。</voice>
+    <voice id="131">白天里一定要做的事，一定要说的话，现在都可不理。</voice>
+    <voice id="132">这是独处的妙处，我且受用这无边的荷香月色好了。</voice>
+</speak>
+```
 
 # 交流平台
 

@@ -4,7 +4,7 @@ import sys
 JSON_AS_ASCII = False
 MAX_CONTENT_LENGTH = 5242880
 
-# debug
+# flask debug mode
 DEBUG = False
 # port
 PORT = 23456
@@ -20,6 +20,8 @@ LANGUAGE_AUTOMATIC_DETECT = []
 API_KEY_ENABLED = False
 # API_KEY is required for authentication
 API_KEY = "api-key"
+# logging_level:DEBUG/INFO/WARNING/ERROR/CRITICAL
+LOGGING_LEVEL = "DEBUG"
 
 '''
 For each model, the filling method is as follows 模型列表中每个模型的填写方法如下
@@ -47,15 +49,15 @@ default params
 
 # GET 默认音色id
 ID = 0
-# GET 默认音频格式 可选wav,ogg,silk
+# GET 默认音频格式 可选wav,ogg,silk,mp3
 FORMAT = "wav"
 # GET 默认语言
 LANG = "AUTO"
 # GET 默认语音长度，相当于调节语速，该数值越大语速越慢
 LENGTH = 1
 # GET 默认噪声
-NOISE = 0.667
+NOISE = 0.33
 # GET 默认噪声偏差
-NOISEW = 0.8
+NOISEW = 0.4
 # 长文本分段阈值，max<=0表示不分段,text will not be divided if max<=0
 MAX = 50
