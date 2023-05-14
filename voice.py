@@ -404,7 +404,7 @@ class TTS:
                 voice_tasks.append({"break": brk})
 
         for i in voice_tasks:
-            logger.debug(i)
+            self.logger.debug(i)
 
         return voice_tasks, format
 
