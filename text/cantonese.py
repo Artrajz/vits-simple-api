@@ -1,9 +1,9 @@
 import re
 import cn2an
 import opencc
+import config
 
-
-converter = opencc.OpenCC('chinese_dialect_lexicons/jyutjyu_2')
+converter = opencc.OpenCC(config.ABS_PATH + '/chinese_dialect_lexicons/jyutjyu_2')
 
 # List of (Latin alphabet, ipa) pairs:
 _latin_to_ipa = [(re.compile('%s' % x[0]), x[1]) for x in [
@@ -48,8 +48,8 @@ def latin_to_ipa(text):
 
 def cantonese_to_ipa(text):
     text = number_to_cantonese(text.upper())
-    text = converter.convert(text).replace('-','').replace('$',' ')
-    text = re.sub(r'[A-Z]', lambda x: latin_to_ipa(x.group())+' ', text)
+    text = converter.convert(text).replace('-', '').replace('$', ' ')
+    text = re.sub(r'[A-Z]', lambda x: latin_to_ipa(x.group()) + ' ', text)
     text = re.sub(r'[、；：]', '，', text)
     text = re.sub(r'\s*，\s*', ', ', text)
     text = re.sub(r'\s*。\s*', '. ', text)

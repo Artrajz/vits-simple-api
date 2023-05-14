@@ -99,9 +99,9 @@ def voice_vits_api():
         return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
 
     speaker_lang = tts.voice_speakers["VITS"][id].get('lang')
-    if lang.upper() != "AUTO" and lang.upper() != "MIX" and lang not in speaker_lang:
-        logger.info(f"[VITS] speaker lang not in {speaker_lang}")
-        return make_response(jsonify({"status": "error", "message": f"speaker lang not in {speaker_lang}"}), 400)
+    if lang.upper() != "AUTO" and lang.upper() != "MIX" and len(speaker_lang) != 1 and lang not in speaker_lang:
+        logger.info(f"[VITS] lang \"{lang}\" is not in {speaker_lang}")
+        return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}), 400)
 
     if app.config.get("LANGUAGE_AUTOMATIC_DETECT", []) != []:
         speaker_lang = app.config.get("LANGUAGE_AUTOMATIC_DETECT")
@@ -213,9 +213,9 @@ def voice_w2v2_api():
         return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
 
     speaker_lang = tts.voice_speakers["W2V2-VITS"][id].get('lang')
-    if lang.upper() != "AUTO" and lang.upper() != "MIX" and lang not in speaker_lang:
-        logger.info(f"[w2v2] speaker lang not in {speaker_lang}")
-        return make_response(jsonify({"status": "error", "message": f"speaker lang not in {speaker_lang}"}), 400)
+    if lang.upper() != "AUTO" and lang.upper() != "MIX" and len(speaker_lang) != 1 and lang not in speaker_lang:
+        logger.info(f"[w2v2] lang \"{lang}\" is not in {speaker_lang}")
+        return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}), 400)
 
     if app.config.get("LANGUAGE_AUTOMATIC_DETECT", []) != []:
         speaker_lang = app.config.get("LANGUAGE_AUTOMATIC_DETECT")

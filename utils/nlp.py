@@ -54,7 +54,14 @@ def cut(text, max):
 
 
 def sentence_split(text, max=50, lang="auto", speaker_lang=None):
-    fastlid.set_languages = speaker_lang
+    # 如果该speaker只支持一种语言
+    if speaker_lang is not None and len(speaker_lang) == 1:
+        if lang.upper() != "AUTO" and lang.lower() != speaker_lang[0]:
+            logger.debug(
+                f"lang \"{lang}\" is not in speaker_lang {speaker_lang},automatically set lang={speaker_lang[0]}")
+        lang = speaker_lang[0]
+    else:
+        fastlid.set_languages = speaker_lang
 
     sentence_list = []
     if lang.upper() != "MIX":

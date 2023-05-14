@@ -422,7 +422,7 @@ def voice_ssml(ssml):
 | 合成文本      | text      | true    |         | str   |                                                              |
 | 角色id        | id        | false   | 0       | int   |                                                              |
 | 音频格式      | format    | false   | wav     | str   | wav,ogg,silk                                                 |
-| 文本语言      | lang      | false   | auto    | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹, |
+| 文本语言      | lang      | false   | auto    | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹。方言无法自动识别。 |
 | 语音长度/语速 | length    | false   | 1.0     | float | 调节语音长度，相当于调节语速，该数值越大语速越慢             |
 | 噪声          | noise     | false   | 0.667   | float |                                                              |
 | 噪声偏差      | noisew    | false   | 0.8     | float |                                                              |
@@ -454,7 +454,7 @@ def voice_ssml(ssml):
 | 合成文本      | text      | true    |         | str   |                                                              |
 | 角色id        | id        | false   | 0       | int   |                                                              |
 | 音频格式      | format    | false   | wav     | str   | wav,ogg,silk                                                 |
-| 文本语言      | lang      | false   | auto    | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹, |
+| 文本语言      | lang      | false   | auto    | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹。方言无法自动识别。 |
 | 语音长度/语速 | length    | false   | 1.0     | float | 调节语音长度，相当于调节语速，该数值越大语速越慢             |
 | 噪声          | noise     | false   | 0.667   | float |                                                              |
 | 噪声偏差      | noisew    | false   | 0.8     | float |                                                              |
