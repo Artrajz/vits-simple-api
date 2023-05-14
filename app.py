@@ -20,9 +20,10 @@ scheduler.start()
 
 logzero.loglevel(logging.WARNING)
 logger = logging.getLogger("vits-simple-api")
-level = app.config.get("LOGGING_LEVEL","DEBUG")
-level_dict = {'DEBUG': logging.DEBUG, 'INFO': logging.INFO, 'WARNING': logging.WARNING, 'ERROR': logging.ERROR, 'CRITICAL': logging.CRITICAL}
-logger.setLevel(level_dict[level])
+level = app.config.get("LOGGING_LEVEL", "DEBUG")
+level_dict = {'DEBUG': logging.DEBUG, 'INFO': logging.INFO, 'WARNING': logging.WARNING, 'ERROR': logging.ERROR,
+              'CRITICAL': logging.CRITICAL}
+logging.basicConfig(level=level_dict[level])
 
 tts = merge_model(app.config["MODEL_LIST"])
 

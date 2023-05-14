@@ -19,11 +19,6 @@ import xml.etree.ElementTree as ET
 import config
 import logging
 
-logger = logging.getLogger("vits-simple-api")
-level = getattr(config, "LOGGING_LEVEL", "DEBUG")
-level_dict = {'DEBUG': logging.DEBUG, 'INFO': logging.INFO, 'WARNING': logging.WARNING, 'ERROR': logging.ERROR, 'CRITICAL': logging.CRITICAL}
-logger.setLevel(level_dict[level])
-
 # torch.set_num_threads(1) # 设置torch线程为1
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -275,14 +270,17 @@ class TTS:
         self._voice_speakers = voice_speakers
         self._strength_dict = {"x-weak": 0.25, "weak": 0.5, "Medium": 0.75, "Strong": 1, "x-strong": 1.25}
         self._speakers_count = sum([len(self._voice_speakers[i]) for i in self._voice_speakers])
-        self._vits_speakers_count = len(voice_speakers["VITS"])
-        self._hubert_speakers_count = len(voice_speakers["HUBERT-VITS"])
-        self._w2v2_speakers_count = len(voice_speakers["W2V2-VITS"])
+        self._vits_speakers_count = len(self._voice_speakers["VITS"])
+        self._hubert_speakers_count = len(self._voice_speakers["HUBERT-VITS"])
+        self._w2v2_speakers_count = len(self._voice_speakers["W2V2-VITS"])
 
         # Initialization information
-        logger.info(f"torch:{torch.__version__} cuda_available:{torch.cuda.is_available()}")
-        logger.info(f'device:{device} device.type:{device.type}')
-        logger.info(f"loaded {self._speakers_count} speakers")
+        self.logger = logging.getLogger("vits-simple-api")
+        self.logger.info(f"torch:{torch.__version__} cuda_available:{torch.cuda.is_available()}")
+        self.logger.info(f'device:{device} device.type:{device.type}')
+        self.logger.info(f"Loaded {self._speakers_count} speakers")
+        if self._speakers_count == 0:
+            self.logger.warning(f"No model was found")
 
     @property
     def voice_speakers(self):
