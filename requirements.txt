@@ -24,3 +24,4 @@ graiax-silkcoder[libsndfile]
 flask_apscheduler
 fasttext
 fastlid
+phonemizer==3.2.1
