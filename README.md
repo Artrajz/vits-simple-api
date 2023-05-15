@@ -30,6 +30,8 @@
 - [x] SSML (Speech Synthesis Markup Language) work in progress...
 
 <details><summary>Update Logs</summary><pre><code>
+<h2>2023.5.15</h2>
+<p>Added english_cleaner. To use it, you need to install espeak separately.</p>
 <h2>2023.5.12</h2>
 <p>Added support for SSML, but still needs improvement. Refactored some functions and changed "speaker_id" to "id" in hubert_vits.</p>
 <h2>2023.5.2</h2>

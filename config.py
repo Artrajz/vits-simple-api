@@ -2,26 +2,39 @@ import os
 import sys
 
 JSON_AS_ASCII = False
+
 MAX_CONTENT_LENGTH = 5242880
 
-# flask debug mode
+# Flask debug mode
 DEBUG = False
-# port
+
+# Server port
 PORT = 23456
-# absolute path
+
+# Absolute path of vits-simple-api
 ABS_PATH = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])))
-# upload path
+
+# Upload path
 UPLOAD_FOLDER = ABS_PATH + "/upload"
-# cahce path
+
+# Cahce path
 CACHE_PATH = ABS_PATH + "/cache"
-# zh ja ko en... If it is empty then reads from the cleaner
+
+# zh ja ko en... If it is empty, it will be read based on the text_cleaners specified in the config.json.
 LANGUAGE_AUTOMATIC_DETECT = []
-# set to True to enable API Key authentication
+
+# Set to True to enable API Key authentication
 API_KEY_ENABLED = False
+
 # API_KEY is required for authentication
 API_KEY = "api-key"
+
 # logging_level:DEBUG/INFO/WARNING/ERROR/CRITICAL
 LOGGING_LEVEL = "DEBUG"
+
+# To use the english_cleaner, you need to install espeak and provide the path of libespeak-ng.dll as input here.
+# If ESPEAK_LIBRARY is set to empty, it will be read from the environment variable.
+ESPEAK_LIBRARY = "C:/Program Files/eSpeak NG/libespeak-ng.dll"
 
 '''
 For each model, the filling method is as follows 模型列表中每个模型的填写方法如下
@@ -37,27 +50,28 @@ MODEL_LIST = [
     [ABS_PATH+"/Model/w2v2-vits/1026_epochs.pth", ABS_PATH+"/Model/w2v2-vits/config.json", ABS_PATH+"/all_emotions.npy"],
 ]
 '''
-# load mutiple models
+
+# Fill in the model path here, and follow the examples above for different models
 MODEL_LIST = [
 
 ]
 
 """
-default params
-以下选项是修改VITS 不指定参数时的默认值
+Default parameter
 """
 
-# GET 默认音色id
 ID = 0
-# GET 默认音频格式 可选wav,ogg,silk,mp3
+
 FORMAT = "wav"
-# GET 默认语言
+
 LANG = "AUTO"
-# GET 默认语音长度，相当于调节语速，该数值越大语速越慢
+
 LENGTH = 1
-# GET 默认噪声
+
 NOISE = 0.33
-# GET 默认噪声偏差
+
 NOISEW = 0.4
-# 长文本分段阈值，max<=0表示不分段,text will not be divided if max<=0
+
+# 长文本分段阈值，max<=0表示不分段.
+# Batch processing threshold. Text will not be processed in batches if max<=0
 MAX = 50

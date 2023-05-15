@@ -1,4 +1,67 @@
 import re
+import config
+from unidecode import unidecode
+from phonemizer import phonemize
+from phonemizer.backend.espeak.wrapper import EspeakWrapper
+
+ESPEAK_LIBRARY = getattr(config, "ESPEAK_LIBRARY", "")
+if ESPEAK_LIBRARY != "":
+    EspeakWrapper.set_library(ESPEAK_LIBRARY)
+
+# List of (regular expression, replacement) pairs for abbreviations:
+_abbreviations = [(re.compile('\\b%s\\.' % x[0], re.IGNORECASE), x[1]) for x in [
+    ('mrs', 'misess'),
+    ('mr', 'mister'),
+    ('dr', 'doctor'),
+    ('st', 'saint'),
+    ('co', 'company'),
+    ('jr', 'junior'),
+    ('maj', 'major'),
+    ('gen', 'general'),
+    ('drs', 'doctors'),
+    ('rev', 'reverend'),
+    ('lt', 'lieutenant'),
+    ('hon', 'honorable'),
+    ('sgt', 'sergeant'),
+    ('capt', 'captain'),
+    ('esq', 'esquire'),
+    ('ltd', 'limited'),
+    ('col', 'colonel'),
+    ('ft', 'fort'),
+]]
+
+
+def expand_abbreviations(text):
+    for regex, replacement in _abbreviations:
+        text = re.sub(regex, replacement, text)
+    return text
+
+
+def transliteration_cleaners(text):
+    '''Pipeline for non-English text that transliterates to ASCII.'''
+    _whitespace_re = re.compile(r'\s+')
+    text = unidecode(text)
+    text = text.lower()
+    text = re.sub(_whitespace_re, ' ', text)
+    text = expand_abbreviations(text)
+    return text
+
+
+# for English text
+def english_cleaners(text):
+    '''Pipeline for English text, including abbreviation expansion.'''
+    text = re.sub(r'\[EN\](.*?)\[EN\]', lambda x: transliteration_cleaners(x.group(1)) + ' ', text)
+    phonemes = phonemize(text, language='en-us', backend='espeak', strip=True)
+    return phonemes
+
+
+# for non-English text that can be transliterated to ASCII
+def english_cleaners2(text):
+    '''Pipeline for English text, including abbreviation expansion. + punctuation + stress'''
+    text = re.sub(r'\[EN\](.*?)\[EN\]', lambda x: transliteration_cleaners(x.group(1)) + ' ', text)
+    phonemes = phonemize(text, language='en-us', backend='espeak', strip=True, preserve_punctuation=True,
+                         with_stress=True)
+    return phonemes
 
 
 def japanese_cleaners(text):

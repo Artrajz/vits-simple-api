@@ -30,6 +30,8 @@
 - [x] SSML语音合成标记语言（完善中...）
 
 <details><summary>Update Logs</summary><pre><code>
+<h2>2023.5.15</h2>
+<p>增加english_cleaner，需要额外安装espeak才能</p>
 <h2>2023.5.12</h2>
 <p>增加ssml支持，但仍需完善。重构部分功能，hubert_vits中的speaker_id改为id</p>
 <h2>2023.5.2</h2>

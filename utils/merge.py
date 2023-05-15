@@ -4,6 +4,8 @@ import sys
 from voice import vits, TTS
 
 lang_dict = {
+    "english_cleaners": ["en"],
+    "english_cleaners2": ["en"],
     "japanese_cleaners": ["ja"],
     "japanese_cleaners2": ["ja"],
     "korean_cleaners": ["ko"],
