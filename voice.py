@@ -194,6 +194,9 @@ class vits:
         audio_path = voice.get("audio_path", None)
         emotion = voice.get("emotion", 0)
 
+        # 去除所有多余的空白字符
+        text = re.sub(r'\s+', ' ', text).strip()
+
         # 停顿0.75s，避免语音分段合成再拼接后的连接突兀
         brk = np.zeros(int(0.75 * 22050), dtype=np.int16)
 

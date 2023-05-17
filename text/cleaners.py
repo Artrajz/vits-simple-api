@@ -39,10 +39,9 @@ def expand_abbreviations(text):
 
 def transliteration_cleaners(text):
     '''Pipeline for non-English text that transliterates to ASCII.'''
-    _whitespace_re = re.compile(r'\s+')
     text = unidecode(text)
     text = text.lower()
-    text = re.sub(_whitespace_re, ' ', text)
+    text = re.sub(r'\s+', ' ', text)
     text = expand_abbreviations(text)
     return text
 
