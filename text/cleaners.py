@@ -96,9 +96,10 @@ def korean_cleaners(text):
 
 def chinese_cleaners(text):
     '''Pipeline for Chinese text'''
-    from text.mandarin import number_to_chinese, chinese_to_bopomofo, latin_to_bopomofo
+    from text.mandarin import number_to_chinese, chinese_to_bopomofo, latin_to_bopomofo, symbols_to_chinese
 
     def clean(text):
+        text = symbols_to_chinese(text)
         text = number_to_chinese(text)
         text = chinese_to_bopomofo(text)
         text = latin_to_bopomofo(text)

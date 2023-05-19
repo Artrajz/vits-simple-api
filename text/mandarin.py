@@ -235,6 +235,16 @@ _bopomofo_to_ipa2 = [(re.compile('%s' % x[0]), x[1]) for x in [
     ('—', '-')
 ]]
 
+_symbols_to_chinese = [(re.compile(f'{x[0]}'), x[1]) for x in [
+    ('([0-9]+(?:\.?[0-9]+)?)%', r'百分之\1'),
+]]
+
+
+def symbols_to_chinese(text):
+    for regex, replacement in _symbols_to_chinese:
+        text = re.sub(regex, replacement, text)
+    return text
+
 
 def number_to_chinese(text):
     numbers = re.findall(r'[0-9]+(?:\.?[0-9]+)?', text)
@@ -285,6 +295,7 @@ def bopomofo_to_ipa2(text):
 
 
 def chinese_to_romaji(text):
+    text = symbols_to_chinese(text)
     text = number_to_chinese(text)
     text = chinese_to_bopomofo(text)
     text = latin_to_bopomofo(text)
@@ -305,6 +316,7 @@ def chinese_to_lazy_ipa(text):
 
 
 def chinese_to_ipa(text):
+    text = symbols_to_chinese(text)
     text = number_to_chinese(text)
     text = chinese_to_bopomofo(text)
     text = latin_to_bopomofo(text)
@@ -318,6 +330,7 @@ def chinese_to_ipa(text):
 
 
 def chinese_to_ipa2(text):
+    text = symbols_to_chinese(text)
     text = number_to_chinese(text)
     text = chinese_to_bopomofo(text)
     text = latin_to_bopomofo(text)

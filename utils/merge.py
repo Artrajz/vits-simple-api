@@ -18,6 +18,9 @@ lang_dict = {
     "cje_cleaners": ["zh", "ja", "en"],
     "thai_cleaners": ["th"],
     "shanghainese_cleaners": ["sh"],
+    "chinese_dialect_cleaners": ["zh", "ja", "sh", "gd", "en", "SZ", "WX", "CZ", "HZ", "SX", "NB", "JJ", "YX", "JD",
+                                 "ZR", "PH", "TX", "JS", "HN", "LP", "XS", "FY", "RA", "CX", "SM", "TT", "WZ", "SC",
+                                 "YB"],
 }
 
 

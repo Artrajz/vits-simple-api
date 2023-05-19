@@ -35,6 +35,16 @@ _latin_to_ipa = [(re.compile('%s' % x[0]), x[1]) for x in [
     ('Z', 'zᴇ')
 ]]
 
+_symbols_to_chinese = [(re.compile(f'{x[0]}'), x[1]) for x in [
+    ('([0-9]+(?:\.?[0-9]+)?)%', r'百分之\1'),
+]]
+
+
+def symbols_to_chinese(text):
+    for regex, replacement in _symbols_to_chinese:
+        text = re.sub(regex, replacement, text)
+    return text
+
 
 def _number_to_shanghainese(num):
     num = cn2an.an2cn(num).replace('一十', '十').replace('二十', '廿').replace('二', '两')
@@ -52,6 +62,7 @@ def latin_to_ipa(text):
 
 
 def shanghainese_to_ipa(text):
+    text = symbols_to_chinese(text)
     text = number_to_shanghainese(text.upper())
     text = converter.convert(text).replace('-', '').replace('$', ' ')
     text = re.sub(r'[A-Z]', lambda x: latin_to_ipa(x.group()) + ' ', text)
