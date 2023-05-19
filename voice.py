@@ -65,7 +65,7 @@ class vits:
             if isinstance(model_, list):
                 self.emotion_reference = np.empty((0, 1024))
                 for i in model_:
-                    tmp = np.load(i)
+                    tmp = np.load(i).reshape(-1, 1024)
                     self.emotion_reference = np.append(self.emotion_reference, tmp, axis=0)
             else:
                 self.emotion_reference = np.load(model_)

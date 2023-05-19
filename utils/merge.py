@@ -57,7 +57,7 @@ def merge_model(merging_model):
                     if _model_extention != ".npy":
                         raise ValueError(f"Unsupported model type: {_model_extention}")
 
-                    w2v2_vits_list.append(l)
+                w2v2_vits_list.append(l)
             else:
                 _model_extention = os.path.splitext(_model)[1]
 
