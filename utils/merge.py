@@ -42,15 +42,31 @@ def merge_model(merging_model):
     if not os.path.exists(cache_path):
         os.makedirs(cache_path, exist_ok=True)
 
-    # classify
+    # Analysis model type
     for l in merging_model:
         if len(l) == 2:
             vits_list.append(l)
         elif len(l) == 3:
-            if os.path.splitext(l[2])[1] == ".pt":
-                hubert_vits_list.append(l)
-            elif os.path.splitext(l[2])[1] == ".npy":
-                w2v2_vits_list.append(l)
+            _model = l[2]
+
+            if isinstance(_model, list):
+
+                for i in _model:
+                    _model_extention = os.path.splitext(i)[1]
+
+                    if _model_extention != ".npy":
+                        raise ValueError(f"Unsupported model type: {_model_extention}")
+
+                    w2v2_vits_list.append(l)
+            else:
+                _model_extention = os.path.splitext(_model)[1]
+
+                if _model_extention == ".pt":
+                    hubert_vits_list.append(l)
+                elif _model_extention == ".npy":
+                    w2v2_vits_list.append(l)
+                else:
+                    raise ValueError(f"Unsupported model type: {_model_extention}")
 
     # merge vits
     new_id = 0

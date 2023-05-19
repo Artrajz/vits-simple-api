@@ -40,20 +40,22 @@ ESPEAK_LIBRARY = "C:/Program Files/eSpeak NG/libespeak-ng.dll"
 For each model, the filling method is as follows 模型列表中每个模型的填写方法如下
 example 示例:
 MODEL_LIST = [
-    #VITS
+    # VITS
     [ABS_PATH+"/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH+"/Model/Nene_Nanami_Rong_Tang/config.json"],
     [ABS_PATH+"/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH+"/Model/Zero_no_tsukaima/config.json"],
     [ABS_PATH+"/Model/g/G_953000.pth", ABS_PATH+"/Model/g/config.json"],
-    #HuBert-VITS
+    # HuBert-VITS
     [ABS_PATH+"/Model/louise/360_epochs.pth", ABS_PATH+"/Model/louise/config.json", ABS_PATH+"/Model/louise/hubert-soft-0d54a1f4.pt"],
-    #W2V2-VITS
+    # W2V2-VITS
     [ABS_PATH+"/Model/w2v2-vits/1026_epochs.pth", ABS_PATH+"/Model/w2v2-vits/config.json", ABS_PATH+"/all_emotions.npy"],
+    # W2V2-VITS load mutiple npy
+    [ABS_PATH + "/Model/w2v2-vits/1026_epochs.pth", ABS_PATH + "/Model/w2v2-vits/config.json", [ABS_PATH + "/emotions1.npy", ABS_PATH + "/emotions2.npy"]],
 ]
 '''
 
 # Fill in the model path here, and follow the examples above for different models
 MODEL_LIST = [
-
+[ABS_PATH+"/Model/w2v2-vits/1026_epochs.pth", ABS_PATH+"/Model/w2v2-vits/config.json", ABS_PATH+"/all_emotions.npy"],
 ]
 
 """
