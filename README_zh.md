@@ -30,6 +30,8 @@
 - [x] SSML语音合成标记语言（完善中...）
 
 <details><summary>Update Logs</summary><pre><code>
+<h2>2023.5.24</h2>
+<p>添加dimensional_emotion api,从文件夹加载多个npy文件,Docker添加了Linux/ARM64和Linux/ARM64/v8平台</p>
 <h2>2023.5.15</h2>
 <p>增加english_cleaner，需要额外安装espeak才能使用</p>
 <h2>2023.5.12</h2>
@@ -48,6 +50,7 @@
 <p>加入自动识别语种选项auto，lang参数默认修改为auto，自动识别仍有一定缺陷，请自行选择</p>
 <p>统一POST请求类型为multipart/form-data</p>
 </code></pre></details>
+
 
 
 ## demo
@@ -78,6 +81,9 @@ bash -c "$(wget -O- https://raw.githubusercontent.com/Artrajz/vits-simple-api/ma
 将模型放入`/usr/local/vits-simple-api/Model`
 
 <details><summary>Folder structure</summary><pre><code>
+│  hubert-soft-0d54a1f4.pt
+│  model.onnx
+│  model.yaml
 ├─g
 │      config.json
 │      G_953000.pth
@@ -85,16 +91,20 @@ bash -c "$(wget -O- https://raw.githubusercontent.com/Artrajz/vits-simple-api/ma
 ├─louise
 │      360_epochs.pth
 │      config.json
-│      hubert-soft-0d54a1f4.pt
 │
 ├─Nene_Nanami_Rong_Tang
 │      1374_epochs.pth
 │      config.json
 │
-└─Zero_no_tsukaima
-        1158_epochs.pth
-        config.json
+├─Zero_no_tsukaima
+│       1158_epochs.pth
+│       config.json
+│
+└─npy
+       25ecb3f6-f968-11ed-b094-e0d4e84af078.npy
+       all_emotions.npy
 </code></pre></details>
+
 
 
 ### 修改模型路径
@@ -102,17 +112,28 @@ bash -c "$(wget -O- https://raw.githubusercontent.com/Artrajz/vits-simple-api/ma
 Modify in  `/usr/local/vits-simple-api/config.py` 
 
 <details><summary>config.py</summary><pre><code>
-For each model, the filling method is as follows 模型列表中每个模型的填写方法如下
-example 示例:
+# Fill in the model path here
 MODEL_LIST = [
-    #VITS
-    [ABS_PATH+"/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH+"/Model/Nene_Nanami_Rong_Tang/config.json"],
-    [ABS_PATH+"/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH+"/Model/Zero_no_tsukaima/config.json"],
-    [ABS_PATH+"/Model/g/G_953000.pth", ABS_PATH+"/Model/g/config.json"],
-    #HuBert-VITS
-    [ABS_PATH+"/Model/louise/360_epochs.pth", ABS_PATH+"/Model/louise/config.json", ABS_PATH+"/Model/louise/hubert-soft-0d54a1f4.pt"],
+    # VITS
+    # [ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/config.json"],
+    # [ABS_PATH + "/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH + "/Model/Zero_no_tsukaima/config.json"],
+    # [ABS_PATH + "/Model/g/G_953000.pth", ABS_PATH + "/Model/g/config.json"],
+    # HuBert-VITS (Need to configure HUBERT_SOFT_MODEL)
+    [ABS_PATH + "/Model/louise/360_epochs.pth", ABS_PATH + "/Model/louise/config.json"],
+    # W2V2-VITS (Need to configure DIMENSIONAL_EMOTION_NPY)
+    [ABS_PATH + "/Model/w2v2-vits/1026_epochs.pth", ABS_PATH + "/Model/w2v2-vits/config.json"],
 ]
+# hubert-vits: hubert soft model
+HUBERT_SOFT_MODEL = ABS_PATH + "/Model/hubert-soft-0d54a1f4.pt"
+# w2v2-vits: Dimensional emotion npy file
+# load single npy: ABS_PATH+"/all_emotions.npy
+# load mutiple npy: [ABS_PATH + "/emotions1.npy", ABS_PATH + "/emotions2.npy"]
+# load mutiple npy from folder: ABS_PATH + "/Model/npy"
+DIMENSIONAL_EMOTION_NPY = ABS_PATH + "/Model/npy"
+# w2v2-vits: Need to have both `model.onnx` and `model.yaml` files in the same path.
+DIMENSIONAL_EMOTION_MODEL = ABS_PATH + "/Model/model.yaml"
 </code></pre></details>
+
 
 ### 启动
 
@@ -173,17 +194,28 @@ pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2
 在 `/path/to/vits-simple-api/config.py` 修改
 
 <details><summary>config.py</summary><pre><code>
-For each model, the filling method is as follows 模型列表中每个模型的填写方法如下
-example 示例:
+# Fill in the model path here
 MODEL_LIST = [
-    #VITS
-    [ABS_PATH+"/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH+"/Model/Nene_Nanami_Rong_Tang/config.json"],
-    [ABS_PATH+"/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH+"/Model/Zero_no_tsukaima/config.json"],
-    [ABS_PATH+"/Model/g/G_953000.pth", ABS_PATH+"/Model/g/config.json"],
-    #HuBert-VITS
-    [ABS_PATH+"/Model/louise/360_epochs.pth", ABS_PATH+"/Model/louise/config.json", ABS_PATH+"/Model/louise/hubert-soft-0d54a1f4.pt"],
+    # VITS
+    # [ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/config.json"],
+    # [ABS_PATH + "/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH + "/Model/Zero_no_tsukaima/config.json"],
+    # [ABS_PATH + "/Model/g/G_953000.pth", ABS_PATH + "/Model/g/config.json"],
+    # HuBert-VITS (Need to configure HUBERT_SOFT_MODEL)
+    [ABS_PATH + "/Model/louise/360_epochs.pth", ABS_PATH + "/Model/louise/config.json"],
+    # W2V2-VITS (Need to configure DIMENSIONAL_EMOTION_NPY)
+    [ABS_PATH + "/Model/w2v2-vits/1026_epochs.pth", ABS_PATH + "/Model/w2v2-vits/config.json"],
 ]
+# hubert-vits: hubert soft model
+HUBERT_SOFT_MODEL = ABS_PATH + "/Model/hubert-soft-0d54a1f4.pt"
+# w2v2-vits: Dimensional emotion npy file
+# load single npy: ABS_PATH+"/all_emotions.npy
+# load mutiple npy: [ABS_PATH + "/emotions1.npy", ABS_PATH + "/emotions2.npy"]
+# load mutiple npy from folder: ABS_PATH + "/Model/npy"
+DIMENSIONAL_EMOTION_NPY = ABS_PATH + "/Model/npy"
+# w2v2-vits: Need to have both `model.onnx` and `model.yaml` files in the same path.
+DIMENSIONAL_EMOTION_MODEL = ABS_PATH + "/Model/model.yaml"
 </code></pre></details>
+
 
 ### 启动
 
@@ -407,6 +439,29 @@ def voice_ssml(ssml):
         f.write(res.content)
     print(path)
     return path
+
+def voice_dimensional_emotion(upload_path):
+    upload_name = os.path.basename(upload_path)
+    upload_type = f'audio/{upload_name.split(".")[1]}'  # wav,ogg
+
+    with open(upload_path, 'rb') as upload_file:
+        fields = {
+            "upload": (upload_name, upload_file, upload_type),
+        }
+        boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
+
+        m = MultipartEncoder(fields=fields, boundary=boundary)
+        headers = {"Content-Type": m.content_type}
+        url = f"{base}/voice/dimension-emotion"
+
+        res = requests.post(url=url, data=m, headers=headers)
+    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
+    path = f"{abs_path}/{fname}"
+
+    with open(path, "wb") as f:
+        f.write(res.content)
+    print(path)
+    return path
 ```
 
 ## API KEY
@@ -448,6 +503,12 @@ def voice_ssml(ssml):
 | 语音长度/语速 | length     | true    |         | float | 调节语音长度，相当于调节语速，该数值越大语速越慢 |
 | 噪声          | noise      | true    |         | float |                                                  |
 | 噪声偏差      | noisew     | true    |         | float |                                                  |
+
+## Dimensional emotion
+
+| Name     | Parameter | Is must | Default | Type | Instruction                   |
+| -------- | --------- | ------- | ------- | ---- | ----------------------------- |
+| 上传音频 | upload    | true    |         | file | 返回存储维度情感向量的npy文件 |
 
 ## W2V2-VITS
 

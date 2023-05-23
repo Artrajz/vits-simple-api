@@ -1,31 +1,30 @@
 import os
 import librosa
-from scipy.io.wavfile import write
-from mel_processing import spectrogram_torch
-from text import text_to_sequence, _clean_text
-from models import SynthesizerTrn
-from utils import utils
 import commons
 import sys
 import re
 import numpy as np
 import torch
-from torch import no_grad, LongTensor, inference_mode, FloatTensor
-import uuid
-from io import BytesIO
-from graiax import silkcoder
-from utils.nlp import cut, sentence_split
 import xml.etree.ElementTree as ET
 import config
 import logging
+from torch import no_grad, LongTensor, inference_mode, FloatTensor
+from io import BytesIO
+from graiax import silkcoder
+from utils.nlp import cut, sentence_split
+from scipy.io.wavfile import write
+from mel_processing import spectrogram_torch
+from text import text_to_sequence, _clean_text
+from models import SynthesizerTrn
+from utils import utils
 
 # torch.set_num_threads(1) # 设置torch线程为1
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class vits:
-    def __init__(self, model, config, model_=None):
-        self.mode_type = None
+    def __init__(self, model, config, model_=None, model_type=None):
+        self.model_type = model_type
         self.hps_ms = utils.get_hparams_from_file(config)
         self.n_speakers = self.hps_ms.data.n_speakers if 'n_speakers' in self.hps_ms.data.keys() else 0
         self.n_symbols = len(self.hps_ms.symbols) if 'symbols' in self.hps_ms.keys() else 0
@@ -42,33 +41,16 @@ class vits:
             **self.hps_ms.model)
         _ = self.net_g_ms.eval()
 
-        if self.n_symbols != 0:
-            if not self.emotion_embedding:
-                self.mode_type = "vits"
-            else:
-                self.mode_type = "w2v2"
-        else:
-            self.mode_type = "hubert-soft"
-
         # load model
         self.load_model(model, model_)
 
     def load_model(self, model, model_=None):
         utils.load_checkpoint(model, self.net_g_ms)
         self.net_g_ms.to(device)
-        if self.mode_type == "hubert-soft":
-            from hubert_model import hubert_soft
-            self.hubert = hubert_soft(model_)
-        if self.mode_type == "w2v2":
-            # import audonnx
-            # self.w2v2 = audonnx.load(model)
-            if isinstance(model_, list):
-                self.emotion_reference = np.empty((0, 1024))
-                for i in model_:
-                    tmp = np.load(i).reshape(-1, 1024)
-                    self.emotion_reference = np.append(self.emotion_reference, tmp, axis=0)
-            else:
-                self.emotion_reference = np.load(model_)
+        if self.model_type == "hubert":
+            self.hubert = model_
+        elif self.model_type == "w2v2":
+            self.emotion_reference = model_
 
     def get_cleaned_text(self, text, hps, cleaned=False):
         if cleaned:
@@ -128,7 +110,7 @@ class vits:
     def get_infer_param(self, length, noise, noisew, text=None, speaker_id=None, audio_path=None,
                         emotion=None):
         emo = None
-        if self.mode_type != "hubert-soft":
+        if self.model_type != "hubert":
             length_scale, text = self.get_label_value('LENGTH', length, 'length scale', text)
             noise_scale, text = self.get_label_value('NOISE', noise, 'noise scale', text)
             noise_scale_w, text = self.get_label_value('NOISEW', noisew, 'deviation of noise', text)
@@ -137,7 +119,7 @@ class vits:
             stn_tst = self.get_cleaned_text(text, self.hps_ms, cleaned=cleaned)
             sid = LongTensor([speaker_id])
 
-        if self.mode_type == "w2v2":
+        if self.model_type == "w2v2":
             # if emotion_reference.endswith('.npy'):
             #     emotion = np.load(emotion_reference)
             #     emotion = FloatTensor(emotion).unsqueeze(0)
@@ -153,7 +135,7 @@ class vits:
             emo = torch.FloatTensor(self.emotion_reference[emotion]).unsqueeze(0)
 
 
-        elif self.mode_type == "hubert-soft":
+        elif self.model_type == "hubert":
             if self.use_f0:
                 audio, sampling_rate = librosa.load(
                     audio_path, sr=self.hps_ms.data.sampling_rate, mono=True)
@@ -189,7 +171,7 @@ class vits:
         return params
 
     def get_audio(self, voice, auto_break=False):
-        text = voice.get("text")
+        text = voice.get("text", None)
         speaker_id = voice.get("id", 0)
         length = voice.get("length", 1)
         noise = voice.get("noise", 0.667)
@@ -201,13 +183,13 @@ class vits:
         emotion = voice.get("emotion", 0)
 
         # 去除所有多余的空白字符
-        text = re.sub(r'\s+', ' ', text).strip()
+        if text is not None: text = re.sub(r'\s+', ' ', text).strip()
 
         # 停顿0.75s，避免语音分段合成再拼接后的连接突兀
         brk = np.zeros(int(0.75 * 22050), dtype=np.int16)
 
         tasks = []
-        if self.mode_type == "vits":
+        if self.model_type == "vits":
             sentence_list = sentence_split(text, max, lang, speaker_lang)
             for sentence in sentence_list:
                 tasks.append(
@@ -222,12 +204,12 @@ class vits:
 
             audio = np.concatenate(audios, axis=0)
 
-        elif self.mode_type == "hubert-soft":
+        elif self.model_type == "hubert":
             params = self.get_infer_param(speaker_id=speaker_id, length=length, noise=noise, noisew=noisew,
                                           audio_path=audio_path)
             audio = self.infer(params)
 
-        elif self.mode_type == "w2v2":
+        elif self.model_type == "w2v2":
             sentence_list = sentence_split(text, max, lang, speaker_lang)
             for sentence in sentence_list:
                 tasks.append(
@@ -282,14 +264,26 @@ class TTS:
         self._vits_speakers_count = len(self._voice_speakers["VITS"])
         self._hubert_speakers_count = len(self._voice_speakers["HUBERT-VITS"])
         self._w2v2_speakers_count = len(self._voice_speakers["W2V2-VITS"])
+        self.dem = None
+        if getattr(config, "DIMENSIONAL_EMOTION_MODEL", None) != None:
+            try:
+                import audonnx
+                root = os.path.dirname(config.DIMENSIONAL_EMOTION_MODEL)
+                model_file = config.DIMENSIONAL_EMOTION_MODEL
+                self.dem = audonnx.load(root=root, model_file=model_file)
+            except Exception as e:
+                raise ValueError(f"Load DIMENSIONAL_EMOTION_MODEL failed {e}")
 
         # Initialization information
         self.logger = logging.getLogger("vits-simple-api")
         self.logger.info(f"torch:{torch.__version__} cuda_available:{torch.cuda.is_available()}")
         self.logger.info(f'device:{device} device.type:{device.type}')
-        self.logger.info(f"Loaded {self._speakers_count} speakers")
+        if self._vits_speakers_count != 0: self.logger.info(f"[VITS] {self._vits_speakers_count} speakers")
+        if self._hubert_speakers_count != 0: self.logger.info(f"[hubert] {self._hubert_speakers_count} speakers")
+        if self._w2v2_speakers_count != 0: self.logger.info(f"[w2v2] {self._w2v2_speakers_count} speakers")
+        self.logger.info(f"{self._speakers_count} speakers in total")
         if self._speakers_count == 0:
-            self.logger.warning(f"No model was found")
+            self.logger.warning(f"No model was loaded")
 
     @property
     def voice_speakers(self):
@@ -479,3 +473,14 @@ class TTS:
         audio = voice_obj.voice_conversion(voice)
 
         return self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format)
+
+    def get_dimensional_emotion_npy(self, audio):
+        if self.dem is None:
+            raise ValueError(f"Please configure DIMENSIONAL_EMOTION_MODEL path in config.py")
+        audio16000, sampling_rate = librosa.load(audio, sr=16000, mono=True)
+        emotion = self.dem(audio16000, sampling_rate)['hidden_states']
+        emotion_npy = BytesIO()
+        np.save(emotion_npy, emotion.squeeze(0))
+        emotion_npy.seek(0)
+
+        return emotion_npy

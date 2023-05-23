@@ -8,8 +8,8 @@ from werkzeug.utils import secure_filename
 from flask_apscheduler import APScheduler
 from functools import wraps
 from utils.utils import clean_folder, check_is_none
-from utils.nlp import clasify_lang
 from utils.merge import merge_model
+from io import BytesIO
 
 app = Flask(__name__)
 app.config.from_pyfile("config.py")
@@ -24,11 +24,15 @@ level = app.config.get("LOGGING_LEVEL", "DEBUG")
 level_dict = {'DEBUG': logging.DEBUG, 'INFO': logging.INFO, 'WARNING': logging.WARNING, 'ERROR': logging.ERROR,
               'CRITICAL': logging.CRITICAL}
 logging.basicConfig(level=level_dict[level])
+logging.getLogger('numba').setLevel(logging.WARNING)
 
 tts = merge_model(app.config["MODEL_LIST"])
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+if not os.path.exists(app.config['CACHE_PATH']):
+    os.makedirs(app.config['CACHE_PATH'], exist_ok=True)
 
 
 def require_api_key(func):
@@ -251,7 +255,7 @@ def vits_voice_conversion_api():
             target_id = int(request.form["target_id"])
             format = request.form.get("format", voice.filename.split(".")[1])
         except Exception as e:
-            logger.error(f"[w2v2] {e}")
+            logger.error(f"[vits_voice_convertsion] {e}")
             return make_response("parameter error", 400)
 
         fname = secure_filename(str(uuid.uuid1()) + "." + voice.filename.split(".")[1])
@@ -298,6 +302,24 @@ def ssml():
     file_type = f"audio/{format}"
 
     logger.info(f"[ssml] finish in {(t2 - t1):.2f}s")
+
+    return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
+
+
+@app.route('/voice/dimension-emotion', methods=["POST"])
+def dimensional_emotion():
+    if request.method == "POST":
+        try:
+            audio = request.files['upload']
+        except Exception as e:
+            logger.error(f"[dimensional_emotion] {e}")
+            return make_response("parameter error", 400)
+
+    content = BytesIO(audio.read())
+
+    file_type = "application/octet-stream; charset=ascii"
+    fname = os.path.splitext(audio.filename)[0] + ".npy"
+    output = tts.get_dimensional_emotion_npy(content)
 
     return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
 

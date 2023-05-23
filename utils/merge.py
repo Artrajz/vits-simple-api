@@ -1,6 +1,9 @@
 import os
-import sys
-
+import json
+import logging
+import config
+import numpy as np
+from utils.utils import check_is_none
 from voice import vits, TTS
 
 lang_dict = {
@@ -24,6 +27,59 @@ lang_dict = {
 }
 
 
+def analysis(model_config_json):
+    model_config = json.load(model_config_json)
+    symbols = model_config.get("symbols", None)
+    emotion_embedding = model_config.get("data").get("emotion_embedding", False)
+    if symbols != None:
+        if not emotion_embedding:
+            mode_type = "vits"
+        else:
+            mode_type = "w2v2"
+    else:
+        mode_type = "hubert-soft"
+    return mode_type
+
+
+def load_npy(model_):
+    if isinstance(model_, list):
+        # check if is .npy
+        for i in model_:
+            _model_extention = os.path.splitext(i)[1]
+            if _model_extention != ".npy":
+                raise ValueError(f"Unsupported model type: {_model_extention}")
+
+        # merge npy files
+        emotion_reference = np.empty((0, 1024))
+        for i in model_:
+            tmp = np.load(i).reshape(-1, 1024)
+            emotion_reference = np.append(emotion_reference, tmp, axis=0)
+
+    elif os.path.isdir(model_):
+        emotion_reference = np.empty((0, 1024))
+        for root, dirs, files in os.walk(model_):
+            for file_name in files:
+                # check if is .npy
+                _model_extention = os.path.splitext(file_name)[1]
+                if _model_extention != ".npy":
+                    continue
+                file_path = os.path.join(root, file_name)
+
+                # merge npy files
+                tmp = np.load(file_path).reshape(-1, 1024)
+                emotion_reference = np.append(emotion_reference, tmp, axis=0)
+
+    elif os.path.isfile(model_):
+        # check if is .npy
+        _model_extention = os.path.splitext(model_)[1]
+        if _model_extention != ".npy":
+            raise ValueError(f"Unsupported model type: {_model_extention}")
+
+        emotion_reference = np.load(model_)
+    logging.info(f"Loaded emotional dimention npy range:{len(emotion_reference)}")
+    return emotion_reference
+
+
 def merge_model(merging_model):
     vits_obj = []
     vits_speakers = []
@@ -37,41 +93,20 @@ def merge_model(merging_model):
     hubert_vits_list = []
     w2v2_vits_list = []
 
-    cache_path = os.path.dirname(os.path.realpath(sys.argv[0])) + "/cache"
-
-    if not os.path.exists(cache_path):
-        os.makedirs(cache_path, exist_ok=True)
-
-    # Analysis model type
     for l in merging_model:
-        if len(l) == 2:
+        with open(l[1]) as model_config:
+            model_type = analysis(model_config)
+        if model_type == "vits":
             vits_list.append(l)
-        elif len(l) == 3:
-            _model = l[2]
-
-            if isinstance(_model, list):
-
-                for i in _model:
-                    _model_extention = os.path.splitext(i)[1]
-
-                    if _model_extention != ".npy":
-                        raise ValueError(f"Unsupported model type: {_model_extention}")
-
-                w2v2_vits_list.append(l)
-            else:
-                _model_extention = os.path.splitext(_model)[1]
-
-                if _model_extention == ".pt":
-                    hubert_vits_list.append(l)
-                elif _model_extention == ".npy":
-                    w2v2_vits_list.append(l)
-                else:
-                    raise ValueError(f"Unsupported model type: {_model_extention}")
+        elif model_type == "hubert-soft":
+            hubert_vits_list.append(l)
+        elif model_type == "w2v2":
+            w2v2_vits_list.append(l)
 
     # merge vits
     new_id = 0
     for obj_id, i in enumerate(vits_list):
-        obj = vits(model=i[0], config=i[1])
+        obj = vits(model=i[0], config=i[1], model_type="vits")
         lang = lang_dict.get(obj.get_cleaner(), obj.get_cleaner())
 
         for id, name in enumerate(obj.return_speakers()):
@@ -80,9 +115,18 @@ def merge_model(merging_model):
             new_id += 1
 
     # merge hubert-vits
+    if hubert_vits_list != []:
+        if getattr(config, "HUBERT_SOFT_MODEL", None) == None or check_is_none(config.HUBERT_SOFT_MODEL):
+            raise ValueError(f"Please configure HUBERT_SOFT_MODEL path in config.py")
+        try:
+            from hubert_model import hubert_soft
+            hubert = hubert_soft(config.HUBERT_SOFT_MODEL)
+        except Exception as e:
+            raise ValueError(f"Load HUBERT_SOFT_MODEL failed {e}")
+
     new_id = 0
     for obj_id, i in enumerate(hubert_vits_list):
-        obj = vits(model=i[0], config=i[1], model_=i[2])
+        obj = vits(model=i[0], config=i[1], model_=hubert, model_type="hubert")
         lang = lang_dict.get(obj.get_cleaner(), obj.get_cleaner())
 
         for id, name in enumerate(obj.return_speakers()):
@@ -91,9 +135,17 @@ def merge_model(merging_model):
             new_id += 1
 
     # merge w2v2-vits
+    if w2v2_vits_list != []:
+        if getattr(config, "DIMENSIONAL_EMOTION_NPY", None) == None or check_is_none(config.DIMENSIONAL_EMOTION_NPY):
+            raise ValueError(f"Please configure DIMENSIONAL_EMOTION_NPY path in config.py")
+        try:
+            emotion_reference = load_npy(config.DIMENSIONAL_EMOTION_NPY)
+        except Exception as e:
+            raise ValueError(f"Load DIMENSIONAL_EMOTION_NPY failed {e}")
+
     new_id = 0
     for obj_id, i in enumerate(w2v2_vits_list):
-        obj = vits(model=i[0], config=i[1], model_=i[2])
+        obj = vits(model=i[0], config=i[1], model_=emotion_reference, model_type="w2v2")
         lang = lang_dict.get(obj.get_cleaner(), obj.get_cleaner())
 
         for id, name in enumerate(obj.return_speakers()):
