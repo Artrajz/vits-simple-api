@@ -73,7 +73,7 @@ The demo server is unstable due to its relatively low configuration.
 bash -c "$(wget -O- https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/vits-simple-api-installer-latest.sh)"
 ```
 
-- The image size is 5GB, and it will be 8GB after decompression. Please prepare enough disk space.
+- The platforms currently supported by Docker images are `linux/amd64` and `linux/arm64`.
 - After a successful pull, the vits model needs to be imported before use. Please follow the steps below to import the model.
 
 ### Download  VITS model
@@ -84,6 +84,7 @@ Put the model into `/usr/local/vits-simple-api/Model`
 │  hubert-soft-0d54a1f4.pt
 │  model.onnx
 │  model.yaml
+│
 ├─g
 │      config.json
 │      G_953000.pth
@@ -108,6 +109,7 @@ Put the model into `/usr/local/vits-simple-api/Model`
 
 
 
+
 ### Modify model path
 
 Modify in  `/usr/local/vits-simple-api/config.py` 
@@ -116,9 +118,9 @@ Modify in  `/usr/local/vits-simple-api/config.py`
 # Fill in the model path here
 MODEL_LIST = [
     # VITS
-    # [ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/config.json"],
-    # [ABS_PATH + "/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH + "/Model/Zero_no_tsukaima/config.json"],
-    # [ABS_PATH + "/Model/g/G_953000.pth", ABS_PATH + "/Model/g/config.json"],
+    [ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/config.json"],
+    [ABS_PATH + "/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH + "/Model/Zero_no_tsukaima/config.json"],
+    [ABS_PATH + "/Model/g/G_953000.pth", ABS_PATH + "/Model/g/config.json"],
     # HuBert-VITS (Need to configure HUBERT_SOFT_MODEL)
     [ABS_PATH + "/Model/louise/360_epochs.pth", ABS_PATH + "/Model/louise/config.json"],
     # W2V2-VITS (Need to configure DIMENSIONAL_EMOTION_NPY)
@@ -134,6 +136,7 @@ DIMENSIONAL_EMOTION_NPY = ABS_PATH + "/Model/npy"
 # w2v2-vits: Need to have both `model.onnx` and `model.yaml` files in the same path.
 DIMENSIONAL_EMOTION_MODEL = ABS_PATH + "/Model/model.yaml"
 </code></pre></details>
+
 
 
 
@@ -177,6 +180,7 @@ Put the model into `/path/to/vits-simple-api/Model`
 │  hubert-soft-0d54a1f4.pt
 │  model.onnx
 │  model.yaml
+│
 ├─g
 │      config.json
 │      G_953000.pth
@@ -199,6 +203,7 @@ Put the model into `/path/to/vits-simple-api/Model`
 </code></pre></details>
 
 
+
 ### Modify model path
 
 Modify in  `/path/to/vits-simple-api/config.py` 
@@ -207,9 +212,9 @@ Modify in  `/path/to/vits-simple-api/config.py`
 # Fill in the model path here
 MODEL_LIST = [
     # VITS
-    # [ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/config.json"],
-    # [ABS_PATH + "/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH + "/Model/Zero_no_tsukaima/config.json"],
-    # [ABS_PATH + "/Model/g/G_953000.pth", ABS_PATH + "/Model/g/config.json"],
+    [ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/config.json"],
+    [ABS_PATH + "/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH + "/Model/Zero_no_tsukaima/config.json"],
+    [ABS_PATH + "/Model/g/G_953000.pth", ABS_PATH + "/Model/g/config.json"],
     # HuBert-VITS (Need to configure HUBERT_SOFT_MODEL)
     [ABS_PATH + "/Model/louise/360_epochs.pth", ABS_PATH + "/Model/louise/config.json"],
     # W2V2-VITS (Need to configure DIMENSIONAL_EMOTION_NPY)
@@ -225,6 +230,7 @@ DIMENSIONAL_EMOTION_NPY = ABS_PATH + "/Model/npy"
 # w2v2-vits: Need to have both `model.onnx` and `model.yaml` files in the same path.
 DIMENSIONAL_EMOTION_MODEL = ABS_PATH + "/Model/model.yaml"
 </code></pre></details>
+
 
 
 ### Startup

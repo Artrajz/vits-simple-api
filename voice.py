@@ -272,7 +272,7 @@ class TTS:
                 model_file = config.DIMENSIONAL_EMOTION_MODEL
                 self.dem = audonnx.load(root=root, model_file=model_file)
             except Exception as e:
-                raise ValueError(f"Load DIMENSIONAL_EMOTION_MODEL failed {e}")
+                self.logger.warning(f"Load DIMENSIONAL_EMOTION_MODEL failed {e}")
 
         # Initialization information
         self.logger = logging.getLogger("vits-simple-api")

@@ -73,7 +73,7 @@ demo服务器配置比较低所以不稳定
 bash -c "$(wget -O- https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/vits-simple-api-installer-latest.sh)"
 ```
 
-- 镜像大小为5GB，安装完成后为8GB，请准备足够的硬盘空间。
+- 目前docker镜像支持的平台`linux/amd64,linux/arm64`
 - 在拉取完成后，需要导入VITS模型才能使用，请根据以下步骤导入模型。
 
 ### 下载VITS模型
@@ -112,27 +112,28 @@ bash -c "$(wget -O- https://raw.githubusercontent.com/Artrajz/vits-simple-api/ma
 Modify in  `/usr/local/vits-simple-api/config.py` 
 
 <details><summary>config.py</summary><pre><code>
-# Fill in the model path here
+# 在此填写模型路径
 MODEL_LIST = [
     # VITS
-    # [ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/config.json"],
-    # [ABS_PATH + "/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH + "/Model/Zero_no_tsukaima/config.json"],
-    # [ABS_PATH + "/Model/g/G_953000.pth", ABS_PATH + "/Model/g/config.json"],
+    [ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/config.json"],
+    [ABS_PATH + "/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH + "/Model/Zero_no_tsukaima/config.json"],
+    [ABS_PATH + "/Model/g/G_953000.pth", ABS_PATH + "/Model/g/config.json"],
     # HuBert-VITS (Need to configure HUBERT_SOFT_MODEL)
     [ABS_PATH + "/Model/louise/360_epochs.pth", ABS_PATH + "/Model/louise/config.json"],
     # W2V2-VITS (Need to configure DIMENSIONAL_EMOTION_NPY)
     [ABS_PATH + "/Model/w2v2-vits/1026_epochs.pth", ABS_PATH + "/Model/w2v2-vits/config.json"],
 ]
-# hubert-vits: hubert soft model
+# hubert-vits: hubert soft 编码器
 HUBERT_SOFT_MODEL = ABS_PATH + "/Model/hubert-soft-0d54a1f4.pt"
 # w2v2-vits: Dimensional emotion npy file
-# load single npy: ABS_PATH+"/all_emotions.npy
-# load mutiple npy: [ABS_PATH + "/emotions1.npy", ABS_PATH + "/emotions2.npy"]
-# load mutiple npy from folder: ABS_PATH + "/Model/npy"
+# 加载单独的npy: ABS_PATH+"/all_emotions.npy
+# 加载多个npy: [ABS_PATH + "/emotions1.npy", ABS_PATH + "/emotions2.npy"]
+# 从文件夹里加载npy: ABS_PATH + "/Model/npy"
 DIMENSIONAL_EMOTION_NPY = ABS_PATH + "/Model/npy"
-# w2v2-vits: Need to have both `model.onnx` and `model.yaml` files in the same path.
+# w2v2-vits: 需要在同一路径下有model.onnx和model.yaml
 DIMENSIONAL_EMOTION_MODEL = ABS_PATH + "/Model/model.yaml"
 </code></pre></details>
+
 
 
 ### 启动
@@ -194,27 +195,28 @@ pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2
 在 `/path/to/vits-simple-api/config.py` 修改
 
 <details><summary>config.py</summary><pre><code>
-# Fill in the model path here
+# 在此填写模型路径
 MODEL_LIST = [
     # VITS
-    # [ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/config.json"],
-    # [ABS_PATH + "/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH + "/Model/Zero_no_tsukaima/config.json"],
-    # [ABS_PATH + "/Model/g/G_953000.pth", ABS_PATH + "/Model/g/config.json"],
+    [ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/config.json"],
+    [ABS_PATH + "/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH + "/Model/Zero_no_tsukaima/config.json"],
+    [ABS_PATH + "/Model/g/G_953000.pth", ABS_PATH + "/Model/g/config.json"],
     # HuBert-VITS (Need to configure HUBERT_SOFT_MODEL)
     [ABS_PATH + "/Model/louise/360_epochs.pth", ABS_PATH + "/Model/louise/config.json"],
     # W2V2-VITS (Need to configure DIMENSIONAL_EMOTION_NPY)
     [ABS_PATH + "/Model/w2v2-vits/1026_epochs.pth", ABS_PATH + "/Model/w2v2-vits/config.json"],
 ]
-# hubert-vits: hubert soft model
+# hubert-vits: hubert soft 编码器
 HUBERT_SOFT_MODEL = ABS_PATH + "/Model/hubert-soft-0d54a1f4.pt"
 # w2v2-vits: Dimensional emotion npy file
-# load single npy: ABS_PATH+"/all_emotions.npy
-# load mutiple npy: [ABS_PATH + "/emotions1.npy", ABS_PATH + "/emotions2.npy"]
-# load mutiple npy from folder: ABS_PATH + "/Model/npy"
+# 加载单独的npy: ABS_PATH+"/all_emotions.npy
+# 加载多个npy: [ABS_PATH + "/emotions1.npy", ABS_PATH + "/emotions2.npy"]
+# 从文件夹里加载npy: ABS_PATH + "/Model/npy"
 DIMENSIONAL_EMOTION_NPY = ABS_PATH + "/Model/npy"
-# w2v2-vits: Need to have both `model.onnx` and `model.yaml` files in the same path.
+# w2v2-vits: 需要在同一路径下有model.onnx和model.yaml
 DIMENSIONAL_EMOTION_MODEL = ABS_PATH + "/Model/model.yaml"
 </code></pre></details>
+
 
 
 ### 启动

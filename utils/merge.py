@@ -98,7 +98,7 @@ def merge_model(merging_model):
             model_type = analysis(model_config)
         if model_type == "vits":
             vits_list.append(l)
-        elif model_type == "hubert-soft":
+        elif model_type == "hubert":
             hubert_vits_list.append(l)
         elif model_type == "w2v2":
             w2v2_vits_list.append(l)
@@ -115,7 +115,7 @@ def merge_model(merging_model):
             new_id += 1
 
     # merge hubert-vits
-    if hubert_vits_list != []:
+    if len(hubert_vits_list) != 0:
         if getattr(config, "HUBERT_SOFT_MODEL", None) == None or check_is_none(config.HUBERT_SOFT_MODEL):
             raise ValueError(f"Please configure HUBERT_SOFT_MODEL path in config.py")
         try:
@@ -135,7 +135,7 @@ def merge_model(merging_model):
             new_id += 1
 
     # merge w2v2-vits
-    if w2v2_vits_list != []:
+    if len(w2v2_vits_list) != 0:
         if getattr(config, "DIMENSIONAL_EMOTION_NPY", None) == None or check_is_none(config.DIMENSIONAL_EMOTION_NPY):
             raise ValueError(f"Please configure DIMENSIONAL_EMOTION_NPY path in config.py")
         try:
