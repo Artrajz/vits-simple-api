@@ -14,7 +14,7 @@ fi
 
 wget -O $INSTALL_DIR/docker-compose.yaml https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/docker-compose.yaml
 
-echo -e "${YELLOW}The image size is 5GB and it takes a long time to pull the image\n${PLAIN}"
+echo -e "${YELLOW}Pulling the image might take a while, so why not grab a cup of java first?\n${PLAIN}"
 
 docker compose pull
 docker compose up -d

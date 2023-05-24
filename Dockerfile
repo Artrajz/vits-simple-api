@@ -25,7 +25,7 @@ RUN wget https://raw.githubusercontent.com/Artrajz/archived/main/openjtalk/openj
     rm -f openjtalk-0.3.0.dev2.tar.gz && \
     rm -rf openjtalk-0.3.0.dev2
 
-RUN pip install torch
+RUN pip install torch --index-url https://download.pytorch.org/whl/cpu
 
 COPY requirements.txt /app
 RUN pip install -r requirements.txt
