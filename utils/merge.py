@@ -94,7 +94,7 @@ def merge_model(merging_model):
     w2v2_vits_list = []
 
     for l in merging_model:
-        with open(l[1]) as model_config:
+        with open(l[1], 'r', encoding='utf-8') as model_config:
             model_type = analysis(model_config)
         if model_type == "vits":
             vits_list.append(l)
