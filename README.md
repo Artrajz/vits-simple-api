@@ -254,6 +254,16 @@ You can find the corresponding command for the version you need on the [official
 ## Linux
 The installation process is similar, but I don't have the environment to test it.
 
+# Openjtalk Installation Issue
+
+If you are using an arm64 architecture platform, you may encounter some issues during installation due to the lack of arm64-compatible whl files on the official PyPI website. In such cases, you can use the whl file I have built to install Openjtalk.
+
+```
+pip install openjtalk==0.3.0.dev2 --index-url https://pypi.artrajz.cn/simple
+```
+
+Alternatively, you can manually build a whl file by following the instructions in this [tutorial](https://artrajz.cn/index.php/archives/167/).
+
 # API
 
 ## GET
@@ -499,14 +509,14 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 
 ## HuBert-VITS
 
-| Name           | Parameter  | Is must | Default | Type  | Instruction                                                  |
-| -------------- | ---------- | ------- | ------- | ----- | ------------------------------------------------------------ |
-| Uploaded Audio | upload     | true    |         | file  | he audio file to be uploaded. It should be in wav or ogg format. |
-| Target Role ID | speaker_id | true    |         | int   |                                                              |
-| Audio format   | format     | true    |         | str   | wav,ogg,silk                                                 |
-| Audio length   | length     | true    |         | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
-| Noise          | noise      | true    |         | float |                                                              |
-| Noise Weight   | noisew     | true    |         | float |                                                              |
+| Name           | Parameter | Is must | Default | Type  | Instruction                                                  |
+| -------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
+| Uploaded Audio | upload    | true    |         | file  | he audio file to be uploaded. It should be in wav or ogg format. |
+| Target Role ID | id        | true    |         | int   |                                                              |
+| Audio format   | format    | true    |         | str   | wav,ogg,silk                                                 |
+| Audio length   | length    | true    |         | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise          | noise     | true    |         | float |                                                              |
+| Noise Weight   | noisew    | true    |         | float |                                                              |
 
 ## W2V2-VITS
 

@@ -251,6 +251,16 @@ pip3 install torch torchvision torchaudio --index-url https://download.pytorch.o
 
 安装过程类似，但我没有相应的环境所以没办法测试
 
+# Openjtalk安装问题
+
+如果你是arm64架构的平台，由于pypi官网上没有arm64对应的whl，可能安装会出现一些问题，你可以使用我构建的whl来安装
+
+```
+pip install openjtalk==0.3.0.dev2 --index-url https://pypi.artrajz.cn/simple
+```
+
+或者是自己手动构建一个whl，可以根据[教程](https://artrajz.cn/index.php/archives/167/)来构建
+
 # API
 
 ## GET
@@ -497,14 +507,14 @@ def voice_dimensional_emotion(upload_path):
 
 ## HuBert-VITS 语音转换
 
-| Name          | Parameter  | Is must | Default | Type  | Instruction                                      |
-| ------------- | ---------- | ------- | ------- | ----- | ------------------------------------------------ |
-| 上传音频      | upload     | true    |         | file  |                                                  |
-| 目标角色id    | speaker_id | true    |         | int   |                                                  |
-| 音频格式      | format     | true    |         | str   | wav,ogg,silk                                     |
-| 语音长度/语速 | length     | true    |         | float | 调节语音长度，相当于调节语速，该数值越大语速越慢 |
-| 噪声          | noise      | true    |         | float |                                                  |
-| 噪声偏差      | noisew     | true    |         | float |                                                  |
+| Name          | Parameter | Is must | Default | Type  | Instruction                                      |
+| ------------- | --------- | ------- | ------- | ----- | ------------------------------------------------ |
+| 上传音频      | upload    | true    |         | file  |                                                  |
+| 目标角色id    | id        | true    |         | int   |                                                  |
+| 音频格式      | format    | true    |         | str   | wav,ogg,silk                                     |
+| 语音长度/语速 | length    | true    |         | float | 调节语音长度，相当于调节语速，该数值越大语速越慢 |
+| 噪声          | noise     | true    |         | float |                                                  |
+| 噪声偏差      | noisew    | true    |         | float |                                                  |
 
 ## Dimensional emotion
 
