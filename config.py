@@ -34,7 +34,8 @@ LOGGING_LEVEL = "DEBUG"
 
 # To use the english_cleaner, you need to install espeak and provide the path of libespeak-ng.dll as input here.
 # If ESPEAK_LIBRARY is set to empty, it will be read from the environment variable.
-ESPEAK_LIBRARY = "C:/Program Files/eSpeak NG/libespeak-ng.dll"
+# For windows : "C:/Program Files/eSpeak NG/libespeak-ng.dll"
+ESPEAK_LIBRARY = ""
 
 # Fill in the model path here
 MODEL_LIST = [
