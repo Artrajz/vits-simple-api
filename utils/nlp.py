@@ -1,7 +1,6 @@
 import regex as re
 import logging
 import config
-from fastlid import fastlid
 from .utils import check_is_none
 
 logger = logging.getLogger("vits-simple-api")
@@ -11,7 +10,7 @@ level_dict = {'DEBUG': logging.DEBUG, 'INFO': logging.INFO, 'WARNING': logging.W
 logger.setLevel(level_dict[level])
 
 
-def clasify_lang(text):
+def clasify_lang(text, speaker_lang):
     pattern = r'[\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\>\=\?\@\[\]\{\}\\\\\^\_\`' \
               r'\！？｡＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」' \
               r'『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘\'\‛\“\”\„\‟…‧﹏.]+'
@@ -22,7 +21,20 @@ def clasify_lang(text):
     for word in words:
 
         if check_is_none(word): continue
-        lang = fastlid(word)[0]
+
+        # 读取配置选择语种识别库
+        clf = getattr(config, "LANGUAGE_IDENTIFICATION_LIBRARY", "fastlid")
+        if clf.upper() == "FASTLID" or clf.upper() == "FASTTEXT":
+            from fastlid import fastlid
+            lang = fastlid(word)[0]
+            if speaker_lang != None: fastlid.set_languages = speaker_lang
+        elif clf.upper() == "LANGID":
+            import langid
+            lang = langid.classify(word)[0]
+            if speaker_lang != None: langid.set_languages(speaker_lang)
+        else:
+            raise ValueError(f"Wrong LANGUAGE_IDENTIFICATION_LIBRARY in config.py")
+
         if pre == "":
             text = text[:p] + text[p:].replace(word, f'[{lang.upper()}]' + word, 1)
             p += len(f'[{lang.upper()}]')
@@ -37,19 +49,24 @@ def clasify_lang(text):
 
 
 def cut(text, max):
-    pattern = r'[\!\(\)\,\-\.\/\:\;\?\？\。\，\、\；\：]+'
+    pattern = r'[!(),—+\-.:;?？。，、；：]+'
     sentences = re.split(pattern, text)
-    sentence_list = []
-    count = 0
-    p = 0
-    for sentence in sentences:
-        count += len(sentence) + 1
+    discarded_chars = re.findall(pattern, text)
+
+    sentence_list, count, p = [], 0, 0
+
+    # 按被分割的符号遍历
+    for i, discarded_chars in enumerate(discarded_chars):
+        count += len(sentences[i]) + len(discarded_chars)
         if count >= max:
-            sentence_list.append(text[p:p + count])
+            sentence_list.append(text[p:p + count].strip())
             p += count
             count = 0
+
+    # 加入最后剩余的文本
     if p < len(text):
         sentence_list.append(text[p:])
+
     return sentence_list
 
 
@@ -60,19 +77,19 @@ def sentence_split(text, max=50, lang="auto", speaker_lang=None):
             logger.debug(
                 f"lang \"{lang}\" is not in speaker_lang {speaker_lang},automatically set lang={speaker_lang[0]}")
         lang = speaker_lang[0]
-    else:
-        fastlid.set_languages = speaker_lang
 
     sentence_list = []
     if lang.upper() != "MIX":
         if max <= 0:
             sentence_list.append(
-                clasify_lang(text) if lang.upper() == "AUTO" else f"[{lang.upper()}]{text}[{lang.upper()}]")
+                clasify_lang(text,
+                             speaker_lang) if lang.upper() == "AUTO" else f"[{lang.upper()}]{text}[{lang.upper()}]")
         else:
             for i in cut(text, max):
                 if check_is_none(i): continue
                 sentence_list.append(
-                    clasify_lang(i) if lang.upper() == "AUTO" else f"[{lang.upper()}]{i}[{lang.upper()}]")
+                    clasify_lang(i,
+                                 speaker_lang) if lang.upper() == "AUTO" else f"[{lang.upper()}]{i}[{lang.upper()}]")
     else:
         sentence_list.append(text)
 

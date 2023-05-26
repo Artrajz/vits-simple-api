@@ -102,11 +102,13 @@ def voice_vits_api():
         logger.info(f"[VITS] speaker id {id} does not exist")
         return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
 
+    # 校验模型是否支持输入的语言
     speaker_lang = tts.voice_speakers["VITS"][id].get('lang')
     if lang.upper() != "AUTO" and lang.upper() != "MIX" and len(speaker_lang) != 1 and lang not in speaker_lang:
         logger.info(f"[VITS] lang \"{lang}\" is not in {speaker_lang}")
         return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}), 400)
 
+    # 如果配置文件中设置了LANGUAGE_AUTOMATIC_DETECT则强制将speaker_lang设置为LANGUAGE_AUTOMATIC_DETECT
     if app.config.get("LANGUAGE_AUTOMATIC_DETECT", []) != []:
         speaker_lang = app.config.get("LANGUAGE_AUTOMATIC_DETECT")
 
@@ -216,11 +218,13 @@ def voice_w2v2_api():
         logger.info(f"[w2v2] speaker id {id} does not exist")
         return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
 
+    # 校验模型是否支持输入的语言
     speaker_lang = tts.voice_speakers["W2V2-VITS"][id].get('lang')
     if lang.upper() != "AUTO" and lang.upper() != "MIX" and len(speaker_lang) != 1 and lang not in speaker_lang:
         logger.info(f"[w2v2] lang \"{lang}\" is not in {speaker_lang}")
         return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}), 400)
 
+    # 如果配置文件中设置了LANGUAGE_AUTOMATIC_DETECT则强制将speaker_lang设置为LANGUAGE_AUTOMATIC_DETECT
     if app.config.get("LANGUAGE_AUTOMATIC_DETECT", []) != []:
         speaker_lang = app.config.get("LANGUAGE_AUTOMATIC_DETECT")
 
