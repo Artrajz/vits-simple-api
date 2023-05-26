@@ -52,16 +52,16 @@
 </code></pre></details>
 
 
-
 ## demo
 
-- `https://api.artrajz.cn/py/voice/vits?text=你好,こんにちは&id=142`
-- 激动：`https://api.artrajz.cn/py/voice/w2v2-vits?text=こんにちは&id=3&emotion=111`
-- 小声：`https://api.artrajz.cn/py/voice/w2v2-vits?text=こんにちは&id=3&emotion=2077`
+[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/Artrajz/vits-simple-api)
+
+
+- `https://artrajz-vits-simple-api.hf.space/voice/vits?text=你好,こんにちは&id=164`
+- 激动：`https://artrajz-vits-simple-api.hf.space/voice/w2v2-vits?text=こんにちは&id=3&emotion=111`
+- 小声：`https://artrajz-vits-simple-api.hf.space/voice/w2v2-vits?text=こんにちは&id=3&emotion=2077`
 
 https://user-images.githubusercontent.com/73542220/237995061-c1f25b4e-dd86-438a-9363-4bb1fe65b425.mov
-
-demo服务器配置比较低所以不稳定
 
 # 部署
 

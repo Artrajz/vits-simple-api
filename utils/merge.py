@@ -37,7 +37,7 @@ def analysis(model_config_json):
         else:
             mode_type = "w2v2"
     else:
-        mode_type = "hubert-soft"
+        mode_type = "hubert"
     return mode_type
 
 
