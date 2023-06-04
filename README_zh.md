@@ -58,6 +58,7 @@
 
 
 - `https://artrajz-vits-simple-api.hf.space/voice/vits?text=你好,こんにちは&id=164`
+- `https://artrajz-vits-simple-api.hf.space/voice/vits?text=Difficult the first time, easy the second.&id=4`
 - 激动：`https://artrajz-vits-simple-api.hf.space/voice/w2v2-vits?text=こんにちは&id=3&emotion=111`
 - 小声：`https://artrajz-vits-simple-api.hf.space/voice/w2v2-vits?text=こんにちは&id=3&emotion=2077`
 
@@ -273,15 +274,15 @@ pip install openjtalk==0.3.0.dev2 --index-url https://pypi.artrajz.cn/simple
 
 #### voice vits
 
-- GET http://127.0.0.1/voice?text=text
+- GET http://127.0.0.1:23456/voice/vits?text=text
 
   其他参数不指定时均为默认值
 
-- GET http://127.0.0.1/voice?text=[ZH]text[ZH][JA]text[JA]&lang=mix
+- GET http://127.0.0.1:23456/voice/vits?text=[ZH]text[ZH][JA]text[JA]&lang=mix
 
   lang=mix时文本要标注
 
-- GET http://127.0.0.1/voice?text=text&id=142&format=wav&lang=zh&length=1.4
+- GET http://127.0.0.1:23456/voice/vits?text=text&id=142&format=wav&lang=zh&length=1.4
 
   文本为text，角色id为142，音频格式为wav，文本语言为zh，语音长度为1.4，其余参数默认
 

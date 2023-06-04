@@ -11,10 +11,10 @@ import logging
 from torch import no_grad, LongTensor, inference_mode, FloatTensor
 from io import BytesIO
 from graiax import silkcoder
-from utils.nlp import cut, sentence_split
+from utils.nlp import sentence_split
 from scipy.io.wavfile import write
 from mel_processing import spectrogram_torch
-from text import text_to_sequence, _clean_text
+from text import text_to_sequence
 from models import SynthesizerTrn
 from utils import utils
 
@@ -105,6 +105,7 @@ class vits:
                 0, 0].data.float().cpu().numpy()
 
         torch.cuda.empty_cache()
+
         return audio
 
     def get_infer_param(self, length, noise, noisew, text=None, speaker_id=None, audio_path=None,
@@ -168,6 +169,7 @@ class vits:
         params = {"length_scale": length_scale, "noise_scale": noise_scale,
                   "noise_scale_w": noise_scale_w, "stn_tst": stn_tst,
                   "sid": sid, "emotion": emo}
+
         return params
 
     def get_audio(self, voice, auto_break=False):
@@ -265,6 +267,12 @@ class TTS:
         self._hubert_speakers_count = len(self._voice_speakers["HUBERT-VITS"])
         self._w2v2_speakers_count = len(self._voice_speakers["W2V2-VITS"])
         self.dem = None
+
+        # Initialization information
+        self.logger = logging.getLogger("vits-simple-api")
+        self.logger.info(f"torch:{torch.__version__} cuda_available:{torch.cuda.is_available()}")
+        self.logger.info(f'device:{device} device.type:{device.type}')
+
         if getattr(config, "DIMENSIONAL_EMOTION_MODEL", None) != None:
             try:
                 import audonnx
@@ -274,10 +282,6 @@ class TTS:
             except Exception as e:
                 self.logger.warning(f"Load DIMENSIONAL_EMOTION_MODEL failed {e}")
 
-        # Initialization information
-        self.logger = logging.getLogger("vits-simple-api")
-        self.logger.info(f"torch:{torch.__version__} cuda_available:{torch.cuda.is_available()}")
-        self.logger.info(f'device:{device} device.type:{device.type}')
         if self._vits_speakers_count != 0: self.logger.info(f"[VITS] {self._vits_speakers_count} speakers")
         if self._hubert_speakers_count != 0: self.logger.info(f"[hubert] {self._hubert_speakers_count} speakers")
         if self._w2v2_speakers_count != 0: self.logger.info(f"[w2v2] {self._w2v2_speakers_count} speakers")
@@ -428,32 +432,36 @@ class TTS:
                 audios.append(voice_obj.get_audio(voice))
 
         audio = np.concatenate(audios, axis=0)
+        output = self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format)
 
-        return self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format), format
+        return output, format
 
     def vits_infer(self, voice):
         format = voice.get("format", "wav")
         voice_obj = self._voice_obj["VITS"][voice.get("id")][1]
         voice["id"] = self._voice_obj["VITS"][voice.get("id")][0]
         audio = voice_obj.get_audio(voice, auto_break=True)
+        output = self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format)
 
-        return self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format)
+        return output
 
     def hubert_vits_infer(self, voice):
         format = voice.get("format", "wav")
         voice_obj = self._voice_obj["HUBERT-VITS"][voice.get("id")][1]
         voice["id"] = self._voice_obj["HUBERT-VITS"][voice.get("id")][0]
         audio = voice_obj.get_audio(voice)
+        output = self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format)
 
-        return self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format)
+        return output
 
     def w2v2_vits_infer(self, voice):
         format = voice.get("format", "wav")
         voice_obj = self._voice_obj["W2V2-VITS"][voice.get("id")][1]
         voice["id"] = self._voice_obj["W2V2-VITS"][voice.get("id")][0]
         audio = voice_obj.get_audio(voice, auto_break=True)
+        output = self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format)
 
-        return self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format)
+        return output
 
     def vits_voice_conversion(self, voice):
         original_id = voice.get("original_id")
@@ -471,8 +479,9 @@ class TTS:
 
         voice_obj = self._voice_obj["VITS"][original_id][1]
         audio = voice_obj.voice_conversion(voice)
+        output = self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format)
 
-        return self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format)
+        return output
 
     def get_dimensional_emotion_npy(self, audio):
         if self.dem is None:

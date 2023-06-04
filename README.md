@@ -57,6 +57,7 @@
 [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/Artrajz/vits-simple-api)
 
 - `https://artrajz-vits-simple-api.hf.space/voice/vits?text=你好,こんにちは&id=164`
+- `https://artrajz-vits-simple-api.hf.space/voice/vits?text=Difficult the first time, easy the second.&id=4`
 - excited:`https://artrajz-vits-simple-api.hf.space/voice/w2v2-vits?text=こんにちは&id=3&emotion=111`
 - whispered:`https://artrajz-vits-simple-api.hf.space/w2v2-vits?text=こんにちは&id=3&emotion=2077` 
 
@@ -275,15 +276,15 @@ Alternatively, you can manually build a whl file by following the instructions i
 
 #### voice vits
 
-- GET http://127.0.0.1/voice?text=text
+- GET http://127.0.0.1:23456/voice/vits?text=text
 
   Default values are used when other parameters are not specified.
 
-- GET http://127.0.0.1/voice?text=[ZH]text[ZH][JA]text[JA]&lang=mix
+- GET http://127.0.0.1:23456/voice/vits?text=[ZH]text[ZH][JA]text[JA]&lang=mix
 
   When lang=mix, the text needs to be annotated.
 
-- GET http://127.0.0.1/voice?text=text&id=142&format=wav&lang=zh&length=1.4
+- GET http://127.0.0.1:23456/voice/vits?text=text&id=142&format=wav&lang=zh&length=1.4
 
    The text is "text", the role ID is 142, the audio format is wav, the text language is zh, the speech length is 1.4, and the other parameters are default.
 
