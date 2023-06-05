@@ -63,7 +63,7 @@
 
 
 - `https://artrajz-vits-simple-api.hf.space/voice/vits?text=你好,こんにちは&id=164`
-- `https://artrajz-vits-simple-api.hf.space/voice/vits?text=你知道1+1=几吗？我觉得1+1≠3&id=164&lang=zh`
+- `https://artrajz-vits-simple-api.hf.space/voice/vits?text=我觉得1%2B1≠3&id=164&lang=zh`（get中一些字符需要转义不然会被过滤掉）
 - `https://artrajz-vits-simple-api.hf.space/voice/vits?text=Difficult the first time, easy the second.&id=4`
 - 激动：`https://artrajz-vits-simple-api.hf.space/voice/w2v2-vits?text=こんにちは&id=3&emotion=111`
 - 小声：`https://artrajz-vits-simple-api.hf.space/voice/w2v2-vits?text=こんにちは&id=3&emotion=2077`
