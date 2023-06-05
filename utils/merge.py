@@ -109,7 +109,7 @@ def merge_model(merging_model):
         obj = vits(model=i[0], config=i[1], model_type="vits")
         lang = lang_dict.get(obj.get_cleaner(), obj.get_cleaner())
 
-        for id, name in enumerate(obj.return_speakers()):
+        for id, name in enumerate(obj.get_speakers()):
             vits_obj.append([int(id), obj, obj_id])
             vits_speakers.append({"id": new_id, "name": name, "lang": lang})
             new_id += 1
@@ -129,7 +129,7 @@ def merge_model(merging_model):
         obj = vits(model=i[0], config=i[1], model_=hubert, model_type="hubert")
         lang = lang_dict.get(obj.get_cleaner(), obj.get_cleaner())
 
-        for id, name in enumerate(obj.return_speakers()):
+        for id, name in enumerate(obj.get_speakers()):
             hubert_vits_obj.append([int(id), obj, obj_id])
             hubert_vits_speakers.append({"id": new_id, "name": name, "lang": lang})
             new_id += 1
@@ -148,7 +148,7 @@ def merge_model(merging_model):
         obj = vits(model=i[0], config=i[1], model_=emotion_reference, model_type="w2v2")
         lang = lang_dict.get(obj.get_cleaner(), obj.get_cleaner())
 
-        for id, name in enumerate(obj.return_speakers()):
+        for id, name in enumerate(obj.get_speakers()):
             w2v2_vits_obj.append([int(id), obj, obj_id])
             w2v2_vits_speakers.append({"id": new_id, "name": name, "lang": lang})
             new_id += 1

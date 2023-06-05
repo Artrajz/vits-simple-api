@@ -30,6 +30,8 @@
 - [x] SSML (Speech Synthesis Markup Language) work in progress...
 
 <details><summary>Update Logs</summary><pre><code>
+<h2>2023.6.5</h2>
+<p>Replace the library used for audio encoding, add support for the FLAC format, and enhance support for reading simple mathematical formulas in Chinese.</p>
 <h2>2023.5.24</h2>
 <p>Added api dimensional_emotion,load mutiple npy from folder.Docker add linux/arm64 and linux/arm64/v8 platforms</p>
 <h2>2023.5.15</h2>
@@ -52,9 +54,12 @@
 </code></pre></details>
 
 
+
 ## demo
 
 [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/Artrajz/vits-simple-api)
+
+Please note that different IDs may support different languages.[speakers](https://artrajz-vits-simple-api.hf.space/voice/speakers)
 
 - `https://artrajz-vits-simple-api.hf.space/voice/vits?text=你好,こんにちは&id=164`
 - `https://artrajz-vits-simple-api.hf.space/voice/vits?text=Difficult the first time, easy the second.&id=4`
@@ -492,7 +497,7 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 | ---------------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
 | Synthesized text       | text      | true    |         | str   |                                                              |
 | Role ID                | id        | false   | 0       | int   |                                                              |
-| Audio format           | format    | false   | wav     | str   | Support for wav,ogg,silk                                     |
+| Audio format           | format    | false   | wav     | str   | Support for wav,ogg,silk,mp3,flac                            |
 | Text language          | lang      | false   | auto    | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
 | Audio length           | length    | false   | 1.0     | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
 | Noise                  | noise     | false   | 0.667   | float |                                                              |
@@ -524,7 +529,7 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 | ---------------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
 | Synthesized text       | text      | true    |         | str   |                                                              |
 | Role ID                | id        | false   | 0       | int   |                                                              |
-| Audio format           | format    | false   | wav     | str   | Support for wav,ogg,silk                                     |
+| Audio format           | format    | false   | wav     | str   | Support for wav,ogg,silk,mp3,flac                            |
 | Text language          | lang      | false   | auto    | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
 | Audio length           | length    | false   | 1.0     | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
 | Noise                  | noise     | false   | 0.667   | float |                                                              |

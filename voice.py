@@ -8,11 +8,11 @@ import torch
 import xml.etree.ElementTree as ET
 import config
 import logging
+import soundfile as sf
 from torch import no_grad, LongTensor, inference_mode, FloatTensor
 from io import BytesIO
 from graiax import silkcoder
 from utils.nlp import sentence_split
-from scipy.io.wavfile import write
 from mel_processing import spectrogram_torch
 from text import text_to_sequence
 from models import SynthesizerTrn
@@ -62,36 +62,15 @@ class vits:
         text_norm = LongTensor(text_norm)
         return text_norm
 
-    def get_label_value(self, label, default, warning_name='value', text=""):
-        value = re.search(rf'\[{label}=(.+?)\]', text)
-        if value:
-            try:
-                text = re.sub(rf'\[{label}=(.+?)\]', '', text, 1)
-                value = float(value.group(1))
-            except:
-                print(f'Invalid {warning_name}!')
-                sys.exit(1)
-        else:
-            value = default
-        if text == "":
-            return value
-        else:
-            return value, text
-
-    def get_label(self, text, label):
-        if f'[{label}]' in text:
-            return True, text.replace(f'[{label}]', '')
-        else:
-            return False, text
-
     def get_cleaner(self):
         return getattr(self.hps_ms.data, 'text_cleaners', [None])[0]
 
-    def return_speakers(self, escape=False):
+    def get_speakers(self, escape=False):
         return self.speakers
 
     def infer(self, params):
         emotion = params.get("emotion", None)
+        emotion = emotion.to(device) if emotion != None else None
 
         with no_grad():
             x_tst = params.get("stn_tst").unsqueeze(0)
@@ -101,22 +80,16 @@ class vits:
                                         noise_scale=params.get("noise_scale"),
                                         noise_scale_w=params.get("noise_scale_w"),
                                         length_scale=params.get("length_scale"),
-                                        emotion_embedding=emotion.to(device) if emotion != None else None)[0][
-                0, 0].data.float().cpu().numpy()
+                                        emotion_embedding=emotion)[0][0, 0].data.float().cpu().numpy()
 
         torch.cuda.empty_cache()
 
         return audio
 
-    def get_infer_param(self, length, noise, noisew, text=None, speaker_id=None, audio_path=None,
-                        emotion=None):
+    def get_infer_param(self, length_scale, noise_scale, noise_scale_w, text=None, speaker_id=None, audio_path=None,
+                        emotion=None, cleaned=False, f0_scale=1):
         emo = None
         if self.model_type != "hubert":
-            length_scale, text = self.get_label_value('LENGTH', length, 'length scale', text)
-            noise_scale, text = self.get_label_value('NOISE', noise, 'noise scale', text)
-            noise_scale_w, text = self.get_label_value('NOISEW', noisew, 'deviation of noise', text)
-            cleaned, text = self.get_label(text, 'CLEANED')
-
             stn_tst = self.get_cleaned_text(text, self.hps_ms, cleaned=cleaned)
             sid = LongTensor([speaker_id])
 
@@ -138,22 +111,14 @@ class vits:
 
         elif self.model_type == "hubert":
             if self.use_f0:
-                audio, sampling_rate = librosa.load(
-                    audio_path, sr=self.hps_ms.data.sampling_rate, mono=True)
-                audio16000 = librosa.resample(
-                    audio, orig_sr=sampling_rate, target_sr=16000)
+                audio, sampling_rate = librosa.load(audio_path, sr=self.hps_ms.data.sampling_rate, mono=True)
+                audio16000 = librosa.resample(audio, orig_sr=sampling_rate, target_sr=16000)
             else:
-                audio16000, sampling_rate = librosa.load(
-                    audio_path, sr=16000, mono=True)
-
-            length_scale = self.get_label_value('LENGTH', length, 'length scale')
-            noise_scale = self.get_label_value('NOISE', noise, 'noise scale')
-            noise_scale_w = self.get_label_value('NOISEW', noisew, 'deviation of noise')
+                audio16000, sampling_rate = librosa.load(audio_path, sr=16000, mono=True)
 
             with inference_mode():
                 units = self.hubert.units(FloatTensor(audio16000).unsqueeze(0).unsqueeze(0)).squeeze(0).numpy()
                 if self.use_f0:
-                    f0_scale = self.get_label_value('F0', 1, 'f0 scale')
                     f0 = librosa.pyin(audio,
                                       sr=sampling_rate,
                                       fmin=librosa.note_to_hz('C0'),
@@ -195,10 +160,10 @@ class vits:
             sentence_list = sentence_split(text, max, lang, speaker_lang)
             for sentence in sentence_list:
                 tasks.append(
-                    self.get_infer_param(text=sentence, speaker_id=speaker_id, length=length, noise=noise,
-                                         noisew=noisew))
-            audios = []
+                    self.get_infer_param(text=sentence, speaker_id=speaker_id, length_scale=length, noise_scale=noise,
+                                         noise_scale_w=noisew))
 
+            audios = []
             for task in tasks:
                 audios.append(self.infer(task))
                 if auto_break:
@@ -207,16 +172,16 @@ class vits:
             audio = np.concatenate(audios, axis=0)
 
         elif self.model_type == "hubert":
-            params = self.get_infer_param(speaker_id=speaker_id, length=length, noise=noise, noisew=noisew,
-                                          audio_path=audio_path)
+            params = self.get_infer_param(speaker_id=speaker_id, length_scale=length, noise_scale=noise,
+                                          noise_scale_w=noisew, audio_path=audio_path)
             audio = self.infer(params)
 
         elif self.model_type == "w2v2":
             sentence_list = sentence_split(text, max, lang, speaker_lang)
             for sentence in sentence_list:
                 tasks.append(
-                    self.get_infer_param(text=sentence, speaker_id=speaker_id, length=length, noise=noise,
-                                         noisew=noisew, emotion=emotion))
+                    self.get_infer_param(text=sentence, speaker_id=speaker_id, length_scale=length, noise_scale=noise,
+                                         noise_scale_w=noisew, emotion=emotion))
 
             audios = []
             for task in tasks:
@@ -311,19 +276,23 @@ class TTS:
 
     def encode(self, sampling_rate, audio, format):
         with BytesIO() as f:
-            write(f, sampling_rate, audio)
             if format.upper() == 'OGG':
-                with BytesIO() as o:
-                    utils.wav2ogg(f, o)
-                    return BytesIO(o.getvalue())
+                sf.write(f, audio, sampling_rate, format="ogg")
+                return BytesIO(f.getvalue())
             elif format.upper() == 'SILK':
+                sf.write(f, audio, sampling_rate, format="wav")
                 return BytesIO(silkcoder.encode(f))
             elif format.upper() == 'MP3':
-                with BytesIO() as o:
-                    utils.wav2mp3(f, o)
-                    return BytesIO(o.getvalue())
-            elif format.upper() == 'WAV':
+                sf.write(f, audio, sampling_rate, format="mp3")
                 return BytesIO(f.getvalue())
+            elif format.upper() == 'WAV':
+                sf.write(f, audio, sampling_rate, format="wav")
+                return BytesIO(f.getvalue())
+            elif format.upper() == 'FLAC':
+                sf.write(f, audio, sampling_rate, format="flac")
+                return BytesIO(f.getvalue())
+            else:
+                raise ValueError(f"Unsupported format:{format}")
 
     def convert_time_string(self, time_string):
         time_value = float(re.findall(r'\d+\.?\d*', time_string)[0])
@@ -428,8 +397,8 @@ class TTS:
                     raise ValueError(f"Unsupported model: {voice.get('model')}")
                 voice_obj = self._voice_obj[model][voice.get("id")][1]
                 voice["id"] = self._voice_obj[model][voice.get("id")][0]
-
-                audios.append(voice_obj.get_audio(voice))
+                audio = voice_obj.get_audio(voice)
+                audios.append(audio)
 
         audio = np.concatenate(audios, axis=0)
         output = self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format)

@@ -30,6 +30,8 @@
 - [x] SSML语音合成标记语言（完善中...）
 
 <details><summary>Update Logs</summary><pre><code>
+<h2>2023.6.5</h2>
+<p>更换音频编码使用的库，增加flac格式，增加中文对读简单数学公式的支持</p>
 <h2>2023.5.24</h2>
 <p>添加dimensional_emotion api,从文件夹加载多个npy文件,Docker添加了Linux/ARM64和Linux/ARM64/v8平台</p>
 <h2>2023.5.15</h2>
@@ -52,12 +54,16 @@
 </code></pre></details>
 
 
+
 ## demo
 
 [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/Artrajz/vits-simple-api)
 
+注意不同的id支持的语言可能有所不同。[speakers](https://artrajz-vits-simple-api.hf.space/voice/speakers)
+
 
 - `https://artrajz-vits-simple-api.hf.space/voice/vits?text=你好,こんにちは&id=164`
+- `https://artrajz-vits-simple-api.hf.space/voice/vits?text=你知道1+1=几吗？我觉得1+1≠3&id=164&lang=zh`
 - `https://artrajz-vits-simple-api.hf.space/voice/vits?text=Difficult the first time, easy the second.&id=4`
 - 激动：`https://artrajz-vits-simple-api.hf.space/voice/w2v2-vits?text=こんにちは&id=3&emotion=111`
 - 小声：`https://artrajz-vits-simple-api.hf.space/voice/w2v2-vits?text=こんにちは&id=3&emotion=2077`
@@ -491,7 +497,7 @@ def voice_dimensional_emotion(upload_path):
 | ------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
 | 合成文本      | text      | true    |         | str   |                                                              |
 | 角色id        | id        | false   | 0       | int   |                                                              |
-| 音频格式      | format    | false   | wav     | str   | wav,ogg,silk                                                 |
+| 音频格式      | format    | false   | wav     | str   | 支持wav,ogg,silk,mp3,flac                                    |
 | 文本语言      | lang      | false   | auto    | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹。方言无法自动识别。 |
 | 语音长度/语速 | length    | false   | 1.0     | float | 调节语音长度，相当于调节语速，该数值越大语速越慢             |
 | 噪声          | noise     | false   | 0.667   | float |                                                              |
@@ -529,7 +535,7 @@ def voice_dimensional_emotion(upload_path):
 | ------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
 | 合成文本      | text      | true    |         | str   |                                                              |
 | 角色id        | id        | false   | 0       | int   |                                                              |
-| 音频格式      | format    | false   | wav     | str   | wav,ogg,silk                                                 |
+| 音频格式      | format    | false   | wav     | str   | 支持wav,ogg,silk,mp3,flac                                    |
 | 文本语言      | lang      | false   | auto    | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹。方言无法自动识别。 |
 | 语音长度/语速 | length    | false   | 1.0     | float | 调节语音长度，相当于调节语速，该数值越大语速越慢             |
 | 噪声          | noise     | false   | 0.667   | float |                                                              |

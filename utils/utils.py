@@ -1,7 +1,6 @@
 import logging
 import os
 from json import loads
-import av
 from torch import load, FloatTensor
 from numpy import float32
 import librosa
@@ -76,28 +75,6 @@ def load_audio_to_torch(full_path, target_sampling_rate):
     audio, sampling_rate = librosa.load(full_path, sr=target_sampling_rate, mono=True)
     return FloatTensor(audio.astype(float32))
 
-
-def wav2ogg(input, output):
-    with av.open(input, 'rb') as i:
-        with av.open(output, 'wb', format='ogg') as o:
-            out_stream = o.add_stream('libvorbis')
-            for frame in i.decode(audio=0):
-                for p in out_stream.encode(frame):
-                    o.mux(p)
-
-            for p in out_stream.encode(None):
-                o.mux(p)
-
-def wav2mp3(input, output):
-    with av.open(input, 'rb') as i:
-        with av.open(output, 'wb', format='mp3') as o:
-            out_stream = o.add_stream('mp3')
-            for frame in i.decode(audio=0):
-                for p in out_stream.encode(frame):
-                    o.mux(p)
-
-            for p in out_stream.encode(None):
-                o.mux(p)
 
 def clean_folder(folder_path):
     for filename in os.listdir(folder_path):

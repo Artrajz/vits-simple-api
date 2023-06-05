@@ -20,7 +20,6 @@ num_thai
 opencc
 audonnx
 flask==2.2.3
-av
 soundfile==0.12.1
 graiax-silkcoder[libsndfile]
 flask_apscheduler
