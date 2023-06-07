@@ -75,14 +75,19 @@ def voice_vits_api():
             noisew = float(request.args.get("noisew", app.config.get("NOISEW", 0.8)))
             max = int(request.args.get("max", app.config.get("MAX", 50)))
         elif request.method == "POST":
-            text = request.form.get("text", "")
-            id = int(request.form.get("id", app.config.get("ID", 0)))
-            format = request.form.get("format", app.config.get("FORMAT", "wav"))
-            lang = request.form.get("lang", app.config.get("LANG", "auto"))
-            length = float(request.form.get("length", app.config.get("LENGTH", 1)))
-            noise = float(request.form.get("noise", app.config.get("NOISE", 0.667)))
-            noisew = float(request.form.get("noisew", app.config.get("NOISEW", 0.8)))
-            max = int(request.form.get("max", app.config.get("MAX", 50)))
+            content_type = request.headers.get('Content-Type')
+            if content_type == 'application/json':
+                data = request.get_json()
+            else:
+                data = request.form
+            text = data.get("text", "")
+            id = int(data.get("id", app.config.get("ID", 0)))
+            format = data.get("format", app.config.get("FORMAT", "wav"))
+            lang = data.get("lang", app.config.get("LANG", "auto"))
+            length = float(data.get("length", app.config.get("LENGTH", 1)))
+            noise = float(data.get("noise", app.config.get("NOISE", 0.667)))
+            noisew = float(data.get("noisew", app.config.get("NOISEW", 0.8)))
+            max = int(data.get("max", app.config.get("MAX", 50)))
     except Exception as e:
         logger.error(f"[VITS] {e}")
         return make_response("parameter error", 400)
@@ -189,15 +194,20 @@ def voice_w2v2_api():
             max = int(request.args.get("max", app.config.get("MAX", 50)))
             emotion = int(request.args.get("emotion", app.config.get("EMOTION", 0)))
         elif request.method == "POST":
-            text = request.form.get("text", "")
-            id = int(request.form.get("id", app.config.get("ID", 0)))
-            format = request.form.get("format", app.config.get("FORMAT", "wav"))
-            lang = request.form.get("lang", app.config.get("LANG", "auto"))
-            length = float(request.form.get("length"))
-            noise = float(request.form.get("noise", app.config.get("NOISE", 0.667)))
-            noisew = float(request.form.get("noisew", app.config.get("NOISEW", 0.8)))
-            max = int(request.form.get("max", app.config.get("MAX", 50)))
-            emotion = int(request.form.get("emotion", app.config.get("EMOTION", 0)))
+            content_type = request.headers.get('Content-Type')
+            if content_type == 'application/json':
+                data = request.get_json()
+            else:
+                data = request.form
+            text = data.get("text", "")
+            id = int(data.get("id", app.config.get("ID", 0)))
+            format = data.get("format", app.config.get("FORMAT", "wav"))
+            lang = data.get("lang", app.config.get("LANG", "auto"))
+            length = float(data.get("length"))
+            noise = float(data.get("noise", app.config.get("NOISE", 0.667)))
+            noisew = float(data.get("noisew", app.config.get("NOISEW", 0.8)))
+            max = int(data.get("max", app.config.get("MAX", 50)))
+            emotion = int(data.get("emotion", app.config.get("EMOTION", 0)))
     except Exception as e:
         logger.error(f"[w2v2] {e}")
         return make_response(f"parameter error", 400)
@@ -287,7 +297,12 @@ def vits_voice_conversion_api():
 @require_api_key
 def ssml():
     try:
-        ssml = request.form["ssml"]
+        content_type = request.headers.get('Content-Type')
+        if content_type == 'application/json':
+            data = request.get_json()
+        else:
+            data = request.form
+        ssml = data.get("ssml")
     except Exception as e:
         logger.info(f"[ssml] {e}")
         return make_response(jsonify({"status": "error", "message": f"parameter error"}), 400)
@@ -335,8 +350,13 @@ def check():
             model = request.args.get("model")
             id = int(request.args.get("id"))
         elif request.method == "POST":
-            model = request.form["model"]
-            id = int(request.form["id"])
+            content_type = request.headers.get('Content-Type')
+            if content_type == 'application/json':
+                data = request.get_json()
+            else:
+                data = request.form
+            model = data.get("model")
+            id = int(data.get("id"))
     except Exception as e:
         logger.info(f"[check] {e}")
         return make_response(jsonify({"status": "error", "message": "parameter error"}), 400)
