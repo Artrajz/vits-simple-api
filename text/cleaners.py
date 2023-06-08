@@ -247,3 +247,9 @@ def chinese_dialect_cleaners(text):
     text = re.sub(r'\s+$', '', text)
     text = re.sub(r'([^\.,!\?\-…~])$', r'\1.', text)
     return text
+
+
+def vits_chinese_cleaners(text):
+    matches = re.findall(r"\[ZH\](.*?)\[ZH\]", text)
+    text = "".join(matches)
+    return text

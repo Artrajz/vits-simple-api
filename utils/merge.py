@@ -24,6 +24,7 @@ lang_dict = {
     "chinese_dialect_cleaners": ["zh", "ja", "sh", "gd", "en", "SZ", "WX", "CZ", "HZ", "SX", "NB", "JJ", "YX", "JD",
                                  "ZR", "PH", "TX", "JS", "HN", "LP", "XS", "FY", "RA", "CX", "SM", "TT", "WZ", "SC",
                                  "YB"],
+    "vits_chinese_cleaners":["zh"],
 }
 
 

@@ -27,3 +27,4 @@ fasttext
 fastlid
 langid
 phonemizer==3.2.1
+transformers

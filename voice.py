@@ -31,6 +31,10 @@ class vits:
         self.speakers = self.hps_ms.speakers if 'speakers' in self.hps_ms.keys() else ['0']
         self.use_f0 = self.hps_ms.data.use_f0 if 'use_f0' in self.hps_ms.data.keys() else False
         self.emotion_embedding = self.hps_ms.data.emotion_embedding if 'emotion_embedding' in self.hps_ms.data.keys() else False
+        self.bert = False
+        for name in self.hps_ms.data.text_cleaners:
+            if name == "vits_chinese_cleaners":
+                self.bert = True
 
         self.net_g_ms = SynthesizerTrn(
             self.n_symbols,
@@ -38,6 +42,7 @@ class vits:
             self.hps_ms.train.segment_size // self.hps_ms.data.hop_length,
             n_speakers=self.n_speakers,
             emotion_embedding=self.emotion_embedding,
+            bert=self.bert,
             **self.hps_ms.model)
         _ = self.net_g_ms.eval()
 
@@ -56,7 +61,12 @@ class vits:
         if cleaned:
             text_norm = text_to_sequence(text, hps.symbols, [])
         else:
-            text_norm = text_to_sequence(text, hps.symbols, hps.data.text_cleaners)
+            if self.bert:
+                text_norm, char_embed = text_to_sequence(text, hps.symbols, hps.data.text_cleaners, bert=self.bert)
+                text_norm = LongTensor(text_norm)
+                return text_norm, char_embed
+            else:
+                text_norm = text_to_sequence(text, hps.symbols, hps.data.text_cleaners)
         if hps.data.add_blank:
             text_norm = commons.intersperse(text_norm, 0)
         text_norm = LongTensor(text_norm)
@@ -69,18 +79,21 @@ class vits:
         return self.speakers
 
     def infer(self, params):
-        emotion = params.get("emotion", None)
-        emotion = emotion.to(device) if emotion != None else None
-
         with no_grad():
-            x_tst = params.get("stn_tst").unsqueeze(0)
-            x_tst_lengths = LongTensor([params.get("stn_tst").size(0)])
+            x_tst = params.get("stn_tst").unsqueeze(0).to(device)
+            x_tst_lengths = LongTensor([params.get("stn_tst").size(0)]).to(device)
+            x_tst_prosody = torch.FloatTensor(params.get("char_embeds")).unsqueeze(0).to(device) if self.bert else None
+            sid = params.get("sid").to(device) if not self.bert else None
+            emotion = params.get("emotion").to(device) if self.emotion_embedding else None
 
-            audio = self.net_g_ms.infer(x_tst.to(device), x_tst_lengths.to(device), sid=params.get("sid").to(device),
+            audio = self.net_g_ms.infer(x=x_tst,
+                                        x_lengths=x_tst_lengths,
+                                        sid=sid,
                                         noise_scale=params.get("noise_scale"),
                                         noise_scale_w=params.get("noise_scale_w"),
                                         length_scale=params.get("length_scale"),
-                                        emotion_embedding=emotion)[0][0, 0].data.float().cpu().numpy()
+                                        emotion_embedding=emotion,
+                                        bert=x_tst_prosody)[0][0, 0].data.float().cpu().numpy()
 
         torch.cuda.empty_cache()
 
@@ -89,9 +102,14 @@ class vits:
     def get_infer_param(self, length_scale, noise_scale, noise_scale_w, text=None, speaker_id=None, audio_path=None,
                         emotion=None, cleaned=False, f0_scale=1):
         emo = None
+        char_embeds = None
         if self.model_type != "hubert":
-            stn_tst = self.get_cleaned_text(text, self.hps_ms, cleaned=cleaned)
-            sid = LongTensor([speaker_id])
+            if self.bert:
+                stn_tst, char_embeds = self.get_cleaned_text(text, self.hps_ms, cleaned=cleaned)
+                sid = None
+            else:
+                stn_tst = self.get_cleaned_text(text, self.hps_ms, cleaned=cleaned)
+                sid = LongTensor([speaker_id])
 
         if self.model_type == "w2v2":
             # if emotion_reference.endswith('.npy'):
@@ -133,7 +151,7 @@ class vits:
             sid = LongTensor([speaker_id])
         params = {"length_scale": length_scale, "noise_scale": noise_scale,
                   "noise_scale_w": noise_scale_w, "stn_tst": stn_tst,
-                  "sid": sid, "emotion": emo}
+                  "sid": sid, "emotion": emo, "char_embeds": char_embeds}
 
         return params
 

@@ -40,7 +40,7 @@ class HParams():
 
 def load_checkpoint(checkpoint_path, model):
     checkpoint_dict = load(checkpoint_path, map_location='cpu')
-    iteration = checkpoint_dict['iteration']
+    iteration = checkpoint_dict.get('iteration', None)
     saved_state_dict = checkpoint_dict['model']
     if hasattr(model, 'module'):
         state_dict = model.module.state_dict()
@@ -51,14 +51,16 @@ def load_checkpoint(checkpoint_path, model):
         try:
             new_state_dict[k] = saved_state_dict[k]
         except:
-            logging.info("%s is not in the checkpoint" % k)
+            logging.info(f"{k} is not in the checkpoint")
             new_state_dict[k] = v
     if hasattr(model, 'module'):
         model.module.load_state_dict(new_state_dict)
     else:
         model.load_state_dict(new_state_dict)
-    logging.info("Loaded checkpoint '{}' (iteration {})".format(
-        checkpoint_path, iteration))
+    if iteration:
+        logging.info(f"Loaded checkpoint '{checkpoint_path}' (iteration {iteration})")
+    else:
+        logging.info(f"Loaded checkpoint '{checkpoint_path}'")
     return
 
 
