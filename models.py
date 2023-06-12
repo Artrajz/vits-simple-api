@@ -141,7 +141,7 @@ class TextEncoder(nn.Module):
                  kernel_size,
                  p_dropout,
                  emotion_embedding,
-                 bert):
+                 bert_embedding):
         super().__init__()
         self.n_vocab = n_vocab
         self.out_channels = out_channels
@@ -157,7 +157,7 @@ class TextEncoder(nn.Module):
             self.emb = nn.Embedding(n_vocab, hidden_channels)
             if emotion_embedding:
                 self.emo_proj = nn.Linear(1024, hidden_channels)
-            if bert:
+            if bert_embedding:
                 self.emb_bert = nn.Linear(256, hidden_channels)
             nn.init.normal_(self.emb.weight, 0.0, hidden_channels ** -0.5)
 
@@ -330,7 +330,7 @@ class SynthesizerTrn(nn.Module):
                  gin_channels=0,
                  use_sdp=True,
                  emotion_embedding=False,
-                 bert=False,
+                 bert_embedding=False,
                  **kwargs):
 
         super().__init__()
@@ -352,8 +352,9 @@ class SynthesizerTrn(nn.Module):
         self.segment_size = segment_size
         self.n_speakers = n_speakers
         self.gin_channels = gin_channels
-
         self.use_sdp = use_sdp
+        self.emotion_embedding = emotion_embedding
+        self.bert_embedding = bert_embedding
 
         self.enc_p = TextEncoder(n_vocab,
                                  inter_channels,
@@ -364,7 +365,7 @@ class SynthesizerTrn(nn.Module):
                                  kernel_size,
                                  p_dropout,
                                  emotion_embedding,
-                                 bert)
+                                 bert_embedding)
         self.dec = Generator(inter_channels, resblock, resblock_kernel_sizes, resblock_dilation_sizes, upsample_rates,
                              upsample_initial_channel, upsample_kernel_sizes, gin_channels=gin_channels)
         self.enc_q = PosteriorEncoder(spec_channels, inter_channels, hidden_channels, 5, 1, 16,

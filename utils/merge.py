@@ -24,7 +24,7 @@ lang_dict = {
     "chinese_dialect_cleaners": ["zh", "ja", "sh", "gd", "en", "SZ", "WX", "CZ", "HZ", "SX", "NB", "JJ", "YX", "JD",
                                  "ZR", "PH", "TX", "JS", "HN", "LP", "XS", "FY", "RA", "CX", "SM", "TT", "WZ", "SC",
                                  "YB"],
-    "vits_chinese_cleaners":["zh"],
+    "bert_chinese_cleaners":["zh"],
 }
 
 
@@ -108,7 +108,7 @@ def merge_model(merging_model):
     new_id = 0
     for obj_id, i in enumerate(vits_list):
         obj = vits(model=i[0], config=i[1], model_type="vits")
-        lang = lang_dict.get(obj.get_cleaner(), obj.get_cleaner())
+        lang = lang_dict.get(obj.get_cleaner(), ["unknown"])
 
         for id, name in enumerate(obj.get_speakers()):
             vits_obj.append([int(id), obj, obj_id])
@@ -128,7 +128,7 @@ def merge_model(merging_model):
     new_id = 0
     for obj_id, i in enumerate(hubert_vits_list):
         obj = vits(model=i[0], config=i[1], model_=hubert, model_type="hubert")
-        lang = lang_dict.get(obj.get_cleaner(), obj.get_cleaner())
+        lang = lang_dict.get(obj.get_cleaner(), ["unknown"])
 
         for id, name in enumerate(obj.get_speakers()):
             hubert_vits_obj.append([int(id), obj, obj_id])
@@ -147,7 +147,7 @@ def merge_model(merging_model):
     new_id = 0
     for obj_id, i in enumerate(w2v2_vits_list):
         obj = vits(model=i[0], config=i[1], model_=emotion_reference, model_type="w2v2")
-        lang = lang_dict.get(obj.get_cleaner(), obj.get_cleaner())
+        lang = lang_dict.get(obj.get_cleaner(), ["unknown"])
 
         for id, name in enumerate(obj.get_speakers()):
             w2v2_vits_obj.append([int(id), obj, obj_id])

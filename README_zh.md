@@ -623,4 +623,5 @@ def voice_dimensional_emotion(upload_path):
 - MoeGoe:https://github.com/CjangCjengh/MoeGoe
 - emotional-vits:https://github.com/innnky/emotional-vits
 - vits-uma-genshin-honkai:https://huggingface.co/spaces/zomehwh/vits-uma-genshin-honkai
+- vits_chinese:https://github.com/PlayVoice/vits_chinese
 

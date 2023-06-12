@@ -26,23 +26,22 @@ class vits:
     def __init__(self, model, config, model_=None, model_type=None):
         self.model_type = model_type
         self.hps_ms = utils.get_hparams_from_file(config)
-        self.n_speakers = self.hps_ms.data.n_speakers if 'n_speakers' in self.hps_ms.data.keys() else 0
-        self.n_symbols = len(self.hps_ms.symbols) if 'symbols' in self.hps_ms.keys() else 0
-        self.speakers = self.hps_ms.speakers if 'speakers' in self.hps_ms.keys() else ['0']
-        self.use_f0 = self.hps_ms.data.use_f0 if 'use_f0' in self.hps_ms.data.keys() else False
-        self.emotion_embedding = self.hps_ms.data.emotion_embedding if 'emotion_embedding' in self.hps_ms.data.keys() else False
-        self.bert = False
-        for name in self.hps_ms.data.text_cleaners:
-            if name == "vits_chinese_cleaners":
-                self.bert = True
+        self.n_speakers = getattr(self.hps_ms.data, 'n_speakers', 0)
+        self.n_symbols = len(getattr(self.hps_ms, 'symbols', 0))
+        self.speakers = getattr(self.hps_ms, 'speakers', ['0'])
+        self.use_f0 = getattr(self.hps_ms.data, 'use_f0', False)
+        self.emotion_embedding = getattr(self.hps_ms.data, 'emotion_embedding',
+                                         getattr(self.hps_ms.model, 'emotion_embedding', False))
+        self.bert_embedding = getattr(self.hps_ms.data, 'bert_embedding',
+                                      getattr(self.hps_ms.model, 'bert_embedding', False))
+        self.hps_ms.model.emotion_embedding = self.emotion_embedding
+        self.hps_ms.model.bert_embedding = self.bert_embedding
 
         self.net_g_ms = SynthesizerTrn(
             self.n_symbols,
             self.hps_ms.data.filter_length // 2 + 1,
             self.hps_ms.train.segment_size // self.hps_ms.data.hop_length,
             n_speakers=self.n_speakers,
-            emotion_embedding=self.emotion_embedding,
-            bert=self.bert,
             **self.hps_ms.model)
         _ = self.net_g_ms.eval()
 
@@ -61,8 +60,9 @@ class vits:
         if cleaned:
             text_norm = text_to_sequence(text, hps.symbols, [])
         else:
-            if self.bert:
-                text_norm, char_embed = text_to_sequence(text, hps.symbols, hps.data.text_cleaners, bert=self.bert)
+            if self.bert_embedding:
+                text_norm, char_embed = text_to_sequence(text, hps.symbols, hps.data.text_cleaners,
+                                                         bert_embedding=self.bert_embedding)
                 text_norm = LongTensor(text_norm)
                 return text_norm, char_embed
             else:
@@ -82,8 +82,9 @@ class vits:
         with no_grad():
             x_tst = params.get("stn_tst").unsqueeze(0).to(device)
             x_tst_lengths = LongTensor([params.get("stn_tst").size(0)]).to(device)
-            x_tst_prosody = torch.FloatTensor(params.get("char_embeds")).unsqueeze(0).to(device) if self.bert else None
-            sid = params.get("sid").to(device) if not self.bert else None
+            x_tst_prosody = torch.FloatTensor(params.get("char_embeds")).unsqueeze(0).to(
+                device) if self.bert_embedding else None
+            sid = params.get("sid").to(device) if not self.bert_embedding else None
             emotion = params.get("emotion").to(device) if self.emotion_embedding else None
 
             audio = self.net_g_ms.infer(x=x_tst,
@@ -104,7 +105,7 @@ class vits:
         emo = None
         char_embeds = None
         if self.model_type != "hubert":
-            if self.bert:
+            if self.bert_embedding:
                 stn_tst, char_embeds = self.get_cleaned_text(text, self.hps_ms, cleaned=cleaned)
                 sid = None
             else:

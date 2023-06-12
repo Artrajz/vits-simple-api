@@ -249,7 +249,9 @@ def chinese_dialect_cleaners(text):
     return text
 
 
-def vits_chinese_cleaners(text):
+def bert_chinese_cleaners(text):
+    from text.mandarin import symbols_to_chinese
     matches = re.findall(r"\[ZH\](.*?)\[ZH\]", text)
     text = "".join(matches)
+    text = symbols_to_chinese(text)
     return text
