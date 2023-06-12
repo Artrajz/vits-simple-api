@@ -250,8 +250,10 @@ def chinese_dialect_cleaners(text):
 
 
 def bert_chinese_cleaners(text):
-    from text.mandarin import symbols_to_chinese
+    from text import mandarin
     matches = re.findall(r"\[ZH\](.*?)\[ZH\]", text)
     text = "".join(matches)
-    text = symbols_to_chinese(text)
+    if text[-1] not in [".", "。", ",", "，"]: text += "."
+    text = mandarin.symbols_to_chinese(text)
+    text = mandarin.number_transform_to_chinese(text)
     return text

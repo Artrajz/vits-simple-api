@@ -35,25 +35,6 @@ _latin_to_ipa = [(re.compile('%s' % x[0]), x[1]) for x in [
     ('Z', 'iː˨sɛːt̚˥')
 ]]
 
-_symbols_to_chinese = [(re.compile(f'{x[0]}'), x[1]) for x in [
-    ('([0-9]+(?:\.?[0-9]+)?)%', r'百分之\1'),
-    ('([0-9]+)/([0-9]+)', r'\2分之\1'),
-    ('\+', r'加'),
-    ('([0-9]+)-([0-9]+)', r'\1减\2'),
-    ('×', r'乘以'),
-    ('([0-9]+)x([0-9]+)', r'\1乘以\2'),
-    ('([0-9]+)\*([0-9]+)', r'\1乘以\2'),
-    ('÷', r'除以'),
-    ('=', r'等于'),
-    ('≠', r'不等于'),
-]]
-
-
-def symbols_to_chinese(text):
-    for regex, replacement in _symbols_to_chinese:
-        text = re.sub(regex, replacement, text)
-    return text
-
 
 def number_to_cantonese(text):
     return re.sub(r'\d+(?:\.?\d+)?', lambda x: cn2an.an2cn(x.group()), text)
@@ -66,6 +47,7 @@ def latin_to_ipa(text):
 
 
 def cantonese_to_ipa(text):
+    from text.mandarin import symbols_to_chinese
     text = symbols_to_chinese(text)
     text = number_to_cantonese(text.upper())
     text = converter.convert(text).replace('-', '').replace('$', ' ')

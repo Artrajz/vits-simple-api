@@ -262,6 +262,11 @@ def number_to_chinese(text):
     return text
 
 
+def number_transform_to_chinese(text):
+    text = cn2an.transform(text, "an2cn")
+    return text
+
+
 def chinese_to_bopomofo(text):
     text = text.replace('、', '，').replace('；', '，').replace('：', '，')
     words = jieba.lcut(text, cut_all=False)
@@ -305,7 +310,7 @@ def bopomofo_to_ipa2(text):
 
 def chinese_to_romaji(text):
     text = symbols_to_chinese(text)
-    text = number_to_chinese(text)
+    text = number_transform_to_chinese(text)
     text = chinese_to_bopomofo(text)
     text = latin_to_bopomofo(text)
     text = bopomofo_to_romaji(text)
@@ -326,7 +331,7 @@ def chinese_to_lazy_ipa(text):
 
 def chinese_to_ipa(text):
     text = symbols_to_chinese(text)
-    text = number_to_chinese(text)
+    text = number_transform_to_chinese(text)
     text = chinese_to_bopomofo(text)
     text = latin_to_bopomofo(text)
     text = bopomofo_to_ipa(text)
@@ -340,7 +345,7 @@ def chinese_to_ipa(text):
 
 def chinese_to_ipa2(text):
     text = symbols_to_chinese(text)
-    text = number_to_chinese(text)
+    text = number_transform_to_chinese(text)
     text = chinese_to_bopomofo(text)
     text = latin_to_bopomofo(text)
     text = bopomofo_to_ipa2(text)

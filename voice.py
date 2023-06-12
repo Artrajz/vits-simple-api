@@ -27,7 +27,7 @@ class vits:
         self.model_type = model_type
         self.hps_ms = utils.get_hparams_from_file(config)
         self.n_speakers = getattr(self.hps_ms.data, 'n_speakers', 0)
-        self.n_symbols = len(getattr(self.hps_ms, 'symbols', 0))
+        self.n_symbols = len(getattr(self.hps_ms, 'symbols', []))
         self.speakers = getattr(self.hps_ms, 'speakers', ['0'])
         self.use_f0 = getattr(self.hps_ms.data, 'use_f0', False)
         self.emotion_embedding = getattr(self.hps_ms.data, 'emotion_embedding',
