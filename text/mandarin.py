@@ -354,3 +354,13 @@ def chinese_to_ipa2(text):
     text = re.sub(r'([ʂɹ]ʰ?)([˩˨˧˦˥ ]+|$)', r'\1ʅ\2', text)
     text = re.sub(r'(sʰ?)([˩˨˧˦˥ ]+|$)', r'\1ɿ\2', text)
     return text
+
+
+def VITS_PinYin_model():
+    import torch
+    import config
+    from vits_pinyin import VITS_PinYin
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # pinyin
+    tts_front = VITS_PinYin(f"{config.ABS_PATH}/bert", device)
+    return tts_front
