@@ -78,6 +78,7 @@ def voice_vits_api():
             noise = float(request.args.get("noise", app.config.get("NOISE", 0.667)))
             noisew = float(request.args.get("noisew", app.config.get("NOISEW", 0.8)))
             max = int(request.args.get("max", app.config.get("MAX", 50)))
+            use_streaming = request.args.get('streaming', False, type=bool)
         elif request.method == "POST":
             content_type = request.headers.get('Content-Type')
             if content_type == 'application/json':
@@ -92,6 +93,7 @@ def voice_vits_api():
             noise = float(data.get("noise", app.config.get("NOISE", 0.667)))
             noisew = float(data.get("noisew", app.config.get("NOISEW", 0.8)))
             max = int(data.get("max", app.config.get("MAX", 50)))
+            use_streaming = request.form.get('streaming', False, type=bool)
     except Exception as e:
         logger.error(f"[VITS] {e}")
         return make_response("parameter error", 400)
@@ -123,21 +125,28 @@ def voice_vits_api():
 
     fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
+    task = {"text": text,
+            "id": id,
+            "format": format,
+            "length": length,
+            "noise": noise,
+            "noisew": noisew,
+            "max": max,
+            "lang": lang,
+            "speaker_lang": speaker_lang}
 
     t1 = time.time()
-    output = tts.vits_infer({"text": text,
-                             "id": id,
-                             "format": format,
-                             "length": length,
-                             "noise": noise,
-                             "noisew": noisew,
-                             "max": max,
-                             "lang": lang,
-                             "speaker_lang": speaker_lang})
+    audio = tts.vits_infer(task)
     t2 = time.time()
     logger.info(f"[VITS] finish in {(t2 - t1):.2f}s")
-
-    return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
+    if use_streaming:
+        audio = tts.generate_audio_chunks(audio)
+        response = make_response(audio)
+        response.headers['Content-Disposition'] = f'attachment; filename={fname}'
+        response.headers['Content-Type'] = file_type
+        return response
+    else:
+        return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
 
 @app.route('/voice/hubert-vits', methods=["POST"])
@@ -151,6 +160,7 @@ def voice_hubert_api():
             length = float(request.form.get("length", app.config.get("LENGTH", 1)))
             noise = float(request.form.get("noise", app.config.get("NOISE", 0.667)))
             noisew = float(request.form.get("noisew", app.config.get("NOISEW", 0.8)))
+            use_streaming = request.form.get('streaming', False, type=bool)
         except Exception as e:
             logger.error(f"[hubert] {e}")
             return make_response("parameter error", 400)
@@ -169,18 +179,25 @@ def voice_hubert_api():
         return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
 
     file_type = f"audio/{format}"
+    task = {"id": id,
+            "format": format,
+            "length": length,
+            "noise": noise,
+            "noisew": noisew,
+            "audio_path": os.path.join(app.config['UPLOAD_FOLDER'], fname)}
 
     t1 = time.time()
-    output = tts.hubert_vits_infer({"id": id,
-                                    "format": format,
-                                    "length": length,
-                                    "noise": noise,
-                                    "noisew": noisew,
-                                    "audio_path": os.path.join(app.config['UPLOAD_FOLDER'], fname)})
+    audio = tts.hubert_vits_infer(task)
     t2 = time.time()
     logger.info(f"[hubert] finish in {(t2 - t1):.2f}s")
-
-    return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
+    if use_streaming:
+        audio = tts.generate_audio_chunks(audio)
+        response = make_response(audio)
+        response.headers['Content-Disposition'] = f'attachment; filename={fname}'
+        response.headers['Content-Type'] = file_type
+        return response
+    else:
+        return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
 
 @app.route('/voice/w2v2-vits', methods=["GET", "POST"])
@@ -197,6 +214,7 @@ def voice_w2v2_api():
             noisew = float(request.args.get("noisew", app.config.get("NOISEW", 0.8)))
             max = int(request.args.get("max", app.config.get("MAX", 50)))
             emotion = int(request.args.get("emotion", app.config.get("EMOTION", 0)))
+            use_streaming = request.args.get('streaming', False, type=bool)
         elif request.method == "POST":
             content_type = request.headers.get('Content-Type')
             if content_type == 'application/json':
@@ -212,6 +230,7 @@ def voice_w2v2_api():
             noisew = float(data.get("noisew", app.config.get("NOISEW", 0.8)))
             max = int(data.get("max", app.config.get("MAX", 50)))
             emotion = int(data.get("emotion", app.config.get("EMOTION", 0)))
+            use_streaming = request.form.get('streaming', False, type=bool)
     except Exception as e:
         logger.error(f"[w2v2] {e}")
         return make_response(f"parameter error", 400)
@@ -244,22 +263,29 @@ def voice_w2v2_api():
 
     fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
+    task = {"text": text,
+            "id": id,
+            "format": format,
+            "length": length,
+            "noise": noise,
+            "noisew": noisew,
+            "max": max,
+            "lang": lang,
+            "emotion": emotion,
+            "speaker_lang": speaker_lang}
 
     t1 = time.time()
-    output = tts.w2v2_vits_infer({"text": text,
-                                  "id": id,
-                                  "format": format,
-                                  "length": length,
-                                  "noise": noise,
-                                  "noisew": noisew,
-                                  "max": max,
-                                  "lang": lang,
-                                  "emotion": emotion,
-                                  "speaker_lang": speaker_lang})
+    audio = tts.w2v2_vits_infer(task)
     t2 = time.time()
     logger.info(f"[w2v2] finish in {(t2 - t1):.2f}s")
-
-    return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
+    if use_streaming:
+        audio = tts.generate_audio_chunks(audio)
+        response = make_response(audio)
+        response.headers['Content-Disposition'] = f'attachment; filename={fname}'
+        response.headers['Content-Type'] = file_type
+        return response
+    else:
+        return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
 
 @app.route('/voice/conversion', methods=["POST"])
@@ -272,29 +298,34 @@ def vits_voice_conversion_api():
             original_id = int(request.form["original_id"])
             target_id = int(request.form["target_id"])
             format = request.form.get("format", voice.filename.split(".")[1])
+            use_streaming = request.form.get('streaming', False, type=bool)
         except Exception as e:
             logger.error(f"[vits_voice_convertsion] {e}")
             return make_response("parameter error", 400)
-
+        
+        logger.info(f"[vits_voice_convertsion] orginal_id:{original_id} target_id:{target_id}")
         fname = secure_filename(str(uuid.uuid1()) + "." + voice.filename.split(".")[1])
         audio_path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
         voice.save(audio_path)
         file_type = f"audio/{format}"
+        task = {"audio_path": audio_path,
+                "original_id": original_id,
+                "target_id": target_id,
+                "format": format}
 
-        logger.info(f"[vits_voice_convertsion] orginal_id:{original_id} target_id:{target_id}")
+    
         t1 = time.time()
-        try:
-            output = tts.vits_voice_conversion({"audio_path": audio_path,
-                                                "original_id": original_id,
-                                                "target_id": target_id,
-                                                "format": format})
-        except Exception as e:
-            logger.info(f"[vits_voice_convertsion] {e}")
-            return make_response(jsonify({"status": "error", "message": f"synthesis failure"}), 400)
+        audio = tts.vits_voice_conversion(task)
         t2 = time.time()
         logger.info(f"finish in {(t2 - t1):.2f}s")
-
-        return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
+        if use_streaming:
+            audio = tts.generate_audio_chunks(audio)
+            response = make_response(audio)
+            response.headers['Content-Disposition'] = f'attachment; filename={fname}'
+            response.headers['Content-Type'] = file_type
+            return response
+        else:
+            return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
 
 @app.route('/voice/ssml', methods=["POST"])
@@ -314,11 +345,7 @@ def ssml():
     logger.debug(ssml)
 
     t1 = time.time()
-    try:
-        output, format = tts.create_ssml_infer_task(ssml)
-    except Exception as e:
-        logger.info(f"[ssml] {e}")
-        return make_response(jsonify({"status": "error", "message": f"synthesis failure"}), 400)
+    audio, format = tts.create_ssml_infer_task(ssml)
     t2 = time.time()
 
     fname = f"{str(uuid.uuid1())}.{format}"
@@ -326,7 +353,14 @@ def ssml():
 
     logger.info(f"[ssml] finish in {(t2 - t1):.2f}s")
 
-    return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
+    if eval(ssml.get('streaming', False)):
+        audio = tts.generate_audio_chunks(audio)
+        response = make_response(audio)
+        response.headers['Content-Disposition'] = f'attachment; filename={fname}'
+        response.headers['Content-Type'] = file_type
+        return response
+    else:
+        return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
 
 @app.route('/voice/dimension-emotion', methods=["POST"])
@@ -334,6 +368,7 @@ def dimensional_emotion():
     if request.method == "POST":
         try:
             audio = request.files['upload']
+            use_streaming = request.form.get('streaming', False, type=bool)
         except Exception as e:
             logger.error(f"[dimensional_emotion] {e}")
             return make_response("parameter error", 400)
@@ -342,9 +377,15 @@ def dimensional_emotion():
 
     file_type = "application/octet-stream; charset=ascii"
     fname = os.path.splitext(audio.filename)[0] + ".npy"
-    output = tts.get_dimensional_emotion_npy(content)
-
-    return send_file(path_or_file=output, mimetype=file_type, download_name=fname)
+    audio = tts.get_dimensional_emotion_npy(content)
+    if use_streaming:
+        audio = tts.generate_audio_chunks(audio)
+        response = make_response(audio)
+        response.headers['Content-Disposition'] = f'attachment; filename={fname}'
+        response.headers['Content-Type'] = file_type
+        return response
+    else:
+        return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
 
 @app.route('/voice/check', methods=["GET", "POST"])

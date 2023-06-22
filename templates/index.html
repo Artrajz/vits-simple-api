@@ -190,7 +190,7 @@
     }
 
     function setAudioSource() {
-        var url = getLink();
+        var url = getLink()+'&streaming=true';
         var audioPlayer = document.getElementById("audioPlayer");
         audioPlayer.src = url;
     }

@@ -16,13 +16,10 @@ def text_to_sequence(text, symbols, cleaner_names, bert_embedding=False):
     if bert_embedding:
         cleaned_text, char_embeds = _clean_text(text, cleaner_names)
         sequence = [_symbol_to_id[symbol] for symbol in cleaned_text.split()]
+        return sequence, char_embeds
     else:
         cleaned_text = _clean_text(text, cleaner_names)
         sequence = [_symbol_to_id[symbol] for symbol in cleaned_text if symbol in _symbol_to_id.keys()]
-
-    if bert_embedding:
-        return sequence, char_embeds
-    else:
         return sequence
 
 

@@ -156,7 +156,7 @@ class vits:
 
         return params
 
-    def get_audio(self, voice, auto_break=False):
+    def get_tasks(self, voice):
         text = voice.get("text", None)
         speaker_id = voice.get("id", 0)
         length = voice.get("length", 1)
@@ -171,46 +171,56 @@ class vits:
         # 去除所有多余的空白字符
         if text is not None: text = re.sub(r'\s+', ' ', text).strip()
 
-        # 停顿0.75s，避免语音分段合成再拼接后的连接突兀
-        brk = np.zeros(int(0.75 * 22050), dtype=np.int16)
-
         tasks = []
         if self.model_type == "vits":
             sentence_list = sentence_split(text, max, lang, speaker_lang)
             for sentence in sentence_list:
-                tasks.append(
-                    self.get_infer_param(text=sentence, speaker_id=speaker_id, length_scale=length, noise_scale=noise,
-                                         noise_scale_w=noisew))
-
-            audios = []
-            for task in tasks:
-                audios.append(self.infer(task))
-                if auto_break:
-                    audios.append(brk)
-
-            audio = np.concatenate(audios, axis=0)
+                params = self.get_infer_param(text=sentence, speaker_id=speaker_id, length_scale=length,
+                                              noise_scale=noise, noise_scale_w=noisew)
+                tasks.append(params)
 
         elif self.model_type == "hubert":
             params = self.get_infer_param(speaker_id=speaker_id, length_scale=length, noise_scale=noise,
                                           noise_scale_w=noisew, audio_path=audio_path)
-            audio = self.infer(params)
+            tasks.append(params)
 
         elif self.model_type == "w2v2":
             sentence_list = sentence_split(text, max, lang, speaker_lang)
             for sentence in sentence_list:
-                tasks.append(
-                    self.get_infer_param(text=sentence, speaker_id=speaker_id, length_scale=length, noise_scale=noise,
-                                         noise_scale_w=noisew, emotion=emotion))
+                params = self.get_infer_param(text=sentence, speaker_id=speaker_id, length_scale=length,
+                                              noise_scale=noise, noise_scale_w=noisew, emotion=emotion)
+                tasks.append(params)
 
-            audios = []
-            for task in tasks:
-                audios.append(self.infer(task))
-                if auto_break:
-                    audios.append(brk)
+        return tasks
 
-            audio = np.concatenate(audios, axis=0)
+    def get_audio(self, voice, auto_break=False):
+        tasks = self.get_tasks(voice)
+        # 停顿0.75s，避免语音分段合成再拼接后的连接突兀
+        brk = np.zeros(int(0.75 * 22050), dtype=np.int16)
 
+        audios = []
+        for task in tasks:
+            if auto_break:
+                chunk = np.concatenate((self.infer(task), brk), axis=0)
+            else:
+                chunk = self.infer(task)
+            audios.append(chunk)
+
+        audio = np.concatenate(audios, axis=0)
         return audio
+
+    def get_stream_audio(self, voice, auto_break=False):
+        tasks = self.get_tasks(voice)
+
+        brk = np.zeros(int(0.75 * 22050), dtype=np.int16)
+
+        for task in tasks:
+            if auto_break:
+                chunk = np.concatenate((self.infer(task), brk), axis=0)
+            else:
+                chunk = self.infer(task)
+
+            yield chunk
 
     def voice_conversion(self, voice):
         audio_path = voice.get("audio_path")
@@ -330,6 +340,15 @@ class TTS:
         else:
             raise ValueError("Unsupported time unit: {}".format(time_unit))
 
+    def generate_audio_chunks(self, audio):
+        chunk_size = 2048
+
+        while True:
+            chunk = audio.read(chunk_size)
+            if not chunk:
+                break
+            yield chunk
+
     def parse_ssml(self, ssml):
         root = ET.fromstring(ssml)
         format = root.attrib.get("format", "wav")
@@ -423,22 +442,45 @@ class TTS:
         output = self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format)
 
         return output, format
-
+    
     def vits_infer(self, voice):
         format = voice.get("format", "wav")
         voice_obj = self._voice_obj["VITS"][voice.get("id")][1]
         voice["id"] = self._voice_obj["VITS"][voice.get("id")][0]
+        sampling_rate = voice_obj.hps_ms.data.sampling_rate
         audio = voice_obj.get_audio(voice, auto_break=True)
-        output = self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format)
+        encoded_audio = self.encode(sampling_rate, audio, format)
+        return encoded_audio
+           
 
-        return output
+    def stream_vits_infer(self, voice):
+        format = voice.get("format", "wav")
+        voice_obj = self._voice_obj["VITS"][voice.get("id")][1]
+        voice["id"] = self._voice_obj["VITS"][voice.get("id")][0]
+        sampling_rate = voice_obj.hps_ms.data.sampling_rate
+        audio = voice_obj.get_audio(voice, auto_break=True)
+        encoded_audio = self.encode(sampling_rate, audio, format)
+        for output_chunk in self.generate_audio_chunks(encoded_audio):
+                yield output_chunk
+
 
     def hubert_vits_infer(self, voice):
         format = voice.get("format", "wav")
         voice_obj = self._voice_obj["HUBERT-VITS"][voice.get("id")][1]
         voice["id"] = self._voice_obj["HUBERT-VITS"][voice.get("id")][0]
+        sampling_rate = voice_obj.hps_ms.data.sampling_rate
         audio = voice_obj.get_audio(voice)
-        output = self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format)
+        output = self.encode(sampling_rate, audio, format)
+
+        return output
+    
+    def stream_hubert_vits_infer(self, voice):
+        format = voice.get("format", "wav")
+        voice_obj = self._voice_obj["HUBERT-VITS"][voice.get("id")][1]
+        voice["id"] = self._voice_obj["HUBERT-VITS"][voice.get("id")][0]
+        sampling_rate = voice_obj.hps_ms.data.sampling_rate
+        audio = voice_obj.get_audio(voice)
+        output = self.encode(sampling_rate, audio, format)
 
         return output
 
@@ -446,8 +488,9 @@ class TTS:
         format = voice.get("format", "wav")
         voice_obj = self._voice_obj["W2V2-VITS"][voice.get("id")][1]
         voice["id"] = self._voice_obj["W2V2-VITS"][voice.get("id")][0]
+        sampling_rate = voice_obj.hps_ms.data.sampling_rate
         audio = voice_obj.get_audio(voice, auto_break=True)
-        output = self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format)
+        output = self.encode(sampling_rate, audio, format)
 
         return output
 
@@ -466,8 +509,10 @@ class TTS:
         voice["target_id"] = int(self._voice_obj["VITS"][target_id][0])
 
         voice_obj = self._voice_obj["VITS"][original_id][1]
+        sampling_rate = voice_obj.hps_ms.data.sampling_rate
+
         audio = voice_obj.voice_conversion(voice)
-        output = self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format)
+        output = self.encode(sampling_rate, audio, format)
 
         return output
 
