@@ -3,7 +3,7 @@ import logging
 import time
 import logzero
 import uuid
-from flask import Flask, request, send_file, jsonify, make_response
+from flask import Flask, request, send_file, jsonify, make_response, render_template
 from werkzeug.utils import secure_filename
 from flask_apscheduler import APScheduler
 from functools import wraps
@@ -52,7 +52,11 @@ def require_api_key(func):
 
 @app.route('/', methods=["GET", "POST"])
 def index():
-    return "vits-simple-api"
+    kwargs = {
+        "speakers": tts.voice_speakers,
+        "speakers_count": tts.speakers_count
+    }
+    return render_template("index.html", **kwargs)
 
 
 @app.route('/voice/speakers', methods=["GET", "POST"])
