@@ -341,8 +341,7 @@ class TTS:
             raise ValueError("Unsupported time unit: {}".format(time_unit))
 
     def generate_audio_chunks(self, audio):
-        chunk_size = 2048
-
+        chunk_size = 4096
         while True:
             chunk = audio.read(chunk_size)
             if not chunk:
@@ -442,7 +441,7 @@ class TTS:
         output = self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format)
 
         return output, format
-    
+
     def vits_infer(self, voice):
         format = voice.get("format", "wav")
         voice_obj = self._voice_obj["VITS"][voice.get("id")][1]
@@ -451,18 +450,17 @@ class TTS:
         audio = voice_obj.get_audio(voice, auto_break=True)
         encoded_audio = self.encode(sampling_rate, audio, format)
         return encoded_audio
-           
 
     def stream_vits_infer(self, voice):
         format = voice.get("format", "wav")
         voice_obj = self._voice_obj["VITS"][voice.get("id")][1]
         voice["id"] = self._voice_obj["VITS"][voice.get("id")][0]
         sampling_rate = voice_obj.hps_ms.data.sampling_rate
-        audio = voice_obj.get_audio(voice, auto_break=True)
-        encoded_audio = self.encode(sampling_rate, audio, format)
-        for output_chunk in self.generate_audio_chunks(encoded_audio):
-                yield output_chunk
-
+        genertator = voice_obj.get_stream_audio(voice, auto_break=True)
+        for chunk in genertator:
+            encoded_audio = self.encode(sampling_rate, chunk, format)
+            for encoded_audio_chunk in self.generate_audio_chunks(encoded_audio):
+                yield encoded_audio_chunk
 
     def hubert_vits_infer(self, voice):
         format = voice.get("format", "wav")
@@ -473,7 +471,7 @@ class TTS:
         output = self.encode(sampling_rate, audio, format)
 
         return output
-    
+
     def stream_hubert_vits_infer(self, voice):
         format = voice.get("format", "wav")
         voice_obj = self._voice_obj["HUBERT-VITS"][voice.get("id")][1]

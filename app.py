@@ -122,6 +122,10 @@ def voice_vits_api():
     # 如果配置文件中设置了LANGUAGE_AUTOMATIC_DETECT则强制将speaker_lang设置为LANGUAGE_AUTOMATIC_DETECT
     if app.config.get("LANGUAGE_AUTOMATIC_DETECT", []) != []:
         speaker_lang = app.config.get("LANGUAGE_AUTOMATIC_DETECT")
+        
+    if use_streaming and format.upper() != "MP3":
+        format = "mp3"
+        logger.warning("Streaming response only supports MP3 format.")
 
     fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
@@ -135,17 +139,17 @@ def voice_vits_api():
             "lang": lang,
             "speaker_lang": speaker_lang}
 
-    t1 = time.time()
-    audio = tts.vits_infer(task)
-    t2 = time.time()
-    logger.info(f"[VITS] finish in {(t2 - t1):.2f}s")
     if use_streaming:
-        audio = tts.generate_audio_chunks(audio)
+        audio = tts.stream_vits_infer(task)
         response = make_response(audio)
         response.headers['Content-Disposition'] = f'attachment; filename={fname}'
         response.headers['Content-Type'] = file_type
         return response
     else:
+        t1 = time.time()
+        audio = tts.vits_infer(task)
+        t2 = time.time()
+        logger.info(f"[VITS] finish in {(t2 - t1):.2f}s")
         return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
 
@@ -261,6 +265,10 @@ def voice_w2v2_api():
     if app.config.get("LANGUAGE_AUTOMATIC_DETECT", []) != []:
         speaker_lang = app.config.get("LANGUAGE_AUTOMATIC_DETECT")
 
+    if use_streaming and format.upper() != "MP3":
+        format = "mp3"
+        logger.warning("Streaming response only supports MP3 format.")
+    
     fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
     task = {"text": text,
@@ -274,17 +282,17 @@ def voice_w2v2_api():
             "emotion": emotion,
             "speaker_lang": speaker_lang}
 
-    t1 = time.time()
-    audio = tts.w2v2_vits_infer(task)
-    t2 = time.time()
-    logger.info(f"[w2v2] finish in {(t2 - t1):.2f}s")
     if use_streaming:
-        audio = tts.generate_audio_chunks(audio)
+        audio = tts.stream_vits_infer(task)
         response = make_response(audio)
         response.headers['Content-Disposition'] = f'attachment; filename={fname}'
         response.headers['Content-Type'] = file_type
         return response
     else:
+        t1 = time.time()
+        audio = tts.w2v2_vits_infer(task)
+        t2 = time.time()
+        logger.info(f"[w2v2] finish in {(t2 - t1):.2f}s")
         return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
 
@@ -302,7 +310,7 @@ def vits_voice_conversion_api():
         except Exception as e:
             logger.error(f"[vits_voice_convertsion] {e}")
             return make_response("parameter error", 400)
-        
+
         logger.info(f"[vits_voice_convertsion] orginal_id:{original_id} target_id:{target_id}")
         fname = secure_filename(str(uuid.uuid1()) + "." + voice.filename.split(".")[1])
         audio_path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
@@ -313,7 +321,6 @@ def vits_voice_conversion_api():
                 "target_id": target_id,
                 "format": format}
 
-    
         t1 = time.time()
         audio = tts.vits_voice_conversion(task)
         t2 = time.time()

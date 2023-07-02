@@ -109,6 +109,10 @@
             <source src="" type="audio/mp3"/>
             Your browser does not support the audio element.
         </audio>
+        <div class="form-group form-check">
+            <input type="checkbox" id="streaming">
+            <label class="form-check-label">流式响应</label>
+        </div>
     </div>
     <div>自动识别语言：可识别的语言根据不同speaker而不同，方言无法自动识别</div>
     <div>方言模型需要手动指定语言，比如粤语Cantonese要指定参数lang=gd</div>
@@ -190,9 +194,15 @@
     }
 
     function setAudioSource() {
-        var url = getLink()+'&streaming=true';
+        var streaming = document.getElementById('streaming');
+        var url = getLink();
+        if (streaming.checked){
+            url += '&streaming=true';
+        }
+        
         var audioPlayer = document.getElementById("audioPlayer");
         audioPlayer.src = url;
+        audioPlayer.play();
     }
 
     var button = document.getElementById("getAudio");
