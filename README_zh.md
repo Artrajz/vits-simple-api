@@ -503,6 +503,7 @@ def voice_dimensional_emotion(upload_path):
 | 噪声          | noise     | false   | 0.667   | float |                                                              |
 | 噪声偏差      | noisew    | false   | 0.8     | float |                                                              |
 | 分段阈值      | max       | false   | 50      | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
+| 流式响应      | streaming | false   | false   | bool  | 流式合成语音，更快的首包响应。                               |
 
 ## VITS 语音转换
 
