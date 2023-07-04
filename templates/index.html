@@ -57,7 +57,7 @@
                 aria-expanded="false" aria-controls="collapseExample">
             Advanced
         </button>
-        {% if speakers_count == 0%}
+        {% if speakers_count == 0 %}
             <div style="color: red;">未加载任何模型</div>
         {% endif %}
     </p>
@@ -110,7 +110,7 @@
             Your browser does not support the audio element.
         </audio>
         <div class="form-group form-check">
-            <input type="checkbox" id="streaming">
+            <input type="checkbox" id="streaming" onchange="updateLink()">
             <label class="form-check-label">流式响应</label>
         </div>
     </div>
@@ -163,6 +163,7 @@
         var noise = document.getElementById("inputNoise").value;
         var noisew = document.getElementById("inputNoisew").value;
         var max = document.getElementById("inputMax").value;
+        var streaming = document.getElementById('streaming');
 
         var url = baseUrl + "/voice/vits?text=" + text + "&id=" + id;
         if (format != "") {
@@ -183,6 +184,9 @@
         if (max != "") {
             url += "&max=" + max;
         }
+        if (streaming.checked) {
+            url += '&streaming=true';
+        }
         return url;
     }
 
@@ -194,12 +198,7 @@
     }
 
     function setAudioSource() {
-        var streaming = document.getElementById('streaming');
         var url = getLink();
-        if (streaming.checked){
-            url += '&streaming=true';
-        }
-        
         var audioPlayer = document.getElementById("audioPlayer");
         audioPlayer.src = url;
         audioPlayer.play();
