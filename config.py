@@ -20,6 +20,12 @@ UPLOAD_FOLDER = ABS_PATH + "/upload"
 # Cahce path
 CACHE_PATH = ABS_PATH + "/cache"
 
+# If CLEAN_INTERVAL_SECONDS <= 0, the cleaning task will not be executed.
+CLEAN_INTERVAL_SECONDS = 3600
+
+# save audio to CACHE_PATH
+SAVE_AUDIO = True
+
 # zh ja ko en... If it is empty, it will be read based on the text_cleaners specified in the config.json.
 LANGUAGE_AUTOMATIC_DETECT = []
 

@@ -89,3 +89,7 @@ def clean_folder(folder_path):
 # is none -> True, is not none -> False
 def check_is_none(s):
     return s is None or (isinstance(s, str) and str(s).isspace()) or str(s) == ""
+
+def save_audio(audio, path):
+    with open(path,"wb") as f:
+        f.write(audio)

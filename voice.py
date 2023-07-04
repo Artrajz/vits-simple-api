@@ -1,7 +1,6 @@
 import os
 import librosa
 import commons
-import sys
 import re
 import numpy as np
 import torch
@@ -421,7 +420,7 @@ class TTS:
 
         return voice_tasks, format
 
-    def create_ssml_infer_task(self, ssml):
+    def create_ssml_infer_task(self, ssml, fname):
         voice_tasks, format = self.parse_ssml(ssml)
 
         audios = []
@@ -438,61 +437,66 @@ class TTS:
                 audios.append(audio)
 
         audio = np.concatenate(audios, axis=0)
-        output = self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format)
+        encoded_audio = self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format)
+        if config.SAVE_AUDIO:
+            path = f"{config.CACHE_PATH}/{fname}"
+            utils.save_audio(encoded_audio.getvalue(), path)
+        return encoded_audio, format
 
-        return output, format
-
-    def vits_infer(self, voice):
+    def vits_infer(self, voice, fname):
         format = voice.get("format", "wav")
         voice_obj = self._voice_obj["VITS"][voice.get("id")][1]
         voice["id"] = self._voice_obj["VITS"][voice.get("id")][0]
         sampling_rate = voice_obj.hps_ms.data.sampling_rate
         audio = voice_obj.get_audio(voice, auto_break=True)
         encoded_audio = self.encode(sampling_rate, audio, format)
+        if config.SAVE_AUDIO:
+            path = f"{config.CACHE_PATH}/{fname}"
+            utils.save_audio(encoded_audio.getvalue(), path)
         return encoded_audio
 
-    def stream_vits_infer(self, voice):
+    def stream_vits_infer(self, voice, fname):
         format = voice.get("format", "wav")
         voice_obj = self._voice_obj["VITS"][voice.get("id")][1]
         voice["id"] = self._voice_obj["VITS"][voice.get("id")][0]
         sampling_rate = voice_obj.hps_ms.data.sampling_rate
         genertator = voice_obj.get_stream_audio(voice, auto_break=True)
+        audio = BytesIO()
         for chunk in genertator:
             encoded_audio = self.encode(sampling_rate, chunk, format)
             for encoded_audio_chunk in self.generate_audio_chunks(encoded_audio):
                 yield encoded_audio_chunk
+            if config.SAVE_AUDIO:
+                audio.write(encoded_audio.getvalue()) 
+        if config.SAVE_AUDIO:
+            path = f"{config.CACHE_PATH}/{fname}"
+            utils.save_audio(audio.getvalue(), path)
 
-    def hubert_vits_infer(self, voice):
+    def hubert_vits_infer(self, voice, fname):
         format = voice.get("format", "wav")
         voice_obj = self._voice_obj["HUBERT-VITS"][voice.get("id")][1]
         voice["id"] = self._voice_obj["HUBERT-VITS"][voice.get("id")][0]
         sampling_rate = voice_obj.hps_ms.data.sampling_rate
         audio = voice_obj.get_audio(voice)
-        output = self.encode(sampling_rate, audio, format)
+        encoded_audio = self.encode(sampling_rate, audio, format)
+        if config.SAVE_AUDIO:
+            path = f"{config.CACHE_PATH}/{fname}"
+            utils.save_audio(encoded_audio.getvalue(), path)
+        return encoded_audio
 
-        return output
-
-    def stream_hubert_vits_infer(self, voice):
-        format = voice.get("format", "wav")
-        voice_obj = self._voice_obj["HUBERT-VITS"][voice.get("id")][1]
-        voice["id"] = self._voice_obj["HUBERT-VITS"][voice.get("id")][0]
-        sampling_rate = voice_obj.hps_ms.data.sampling_rate
-        audio = voice_obj.get_audio(voice)
-        output = self.encode(sampling_rate, audio, format)
-
-        return output
-
-    def w2v2_vits_infer(self, voice):
+    def w2v2_vits_infer(self, voice, fname):
         format = voice.get("format", "wav")
         voice_obj = self._voice_obj["W2V2-VITS"][voice.get("id")][1]
         voice["id"] = self._voice_obj["W2V2-VITS"][voice.get("id")][0]
         sampling_rate = voice_obj.hps_ms.data.sampling_rate
         audio = voice_obj.get_audio(voice, auto_break=True)
-        output = self.encode(sampling_rate, audio, format)
+        encoded_audio = self.encode(sampling_rate, audio, format)
+        if config.SAVE_AUDIO:
+            path = f"{config.CACHE_PATH}/{fname}"
+            utils.save_audio(encoded_audio.getvalue(), path)
+        return encoded_audio
 
-        return output
-
-    def vits_voice_conversion(self, voice):
+    def vits_voice_conversion(self, voice, fname):
         original_id = voice.get("original_id")
         target_id = voice.get("target_id")
         format = voice.get("format")
@@ -510,9 +514,11 @@ class TTS:
         sampling_rate = voice_obj.hps_ms.data.sampling_rate
 
         audio = voice_obj.voice_conversion(voice)
-        output = self.encode(sampling_rate, audio, format)
-
-        return output
+        encoded_audio = self.encode(sampling_rate, audio, format)
+        if config.SAVE_AUDIO:
+            path = f"{config.CACHE_PATH}/{fname}"
+            utils.save_audio(encoded_audio.getvalue(), path)
+        return encoded_audio
 
     def get_dimensional_emotion_npy(self, audio):
         if self.dem is None:

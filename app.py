@@ -16,7 +16,8 @@ app.config.from_pyfile("config.py")
 
 scheduler = APScheduler()
 scheduler.init_app(app)
-scheduler.start()
+if app.config.get("CLEAN_INTERVAL_SECONDS", 3600) > 0:
+    scheduler.start()
 
 logzero.loglevel(logging.WARNING)
 logger = logging.getLogger("vits-simple-api")
@@ -122,7 +123,7 @@ def voice_vits_api():
     # 如果配置文件中设置了LANGUAGE_AUTOMATIC_DETECT则强制将speaker_lang设置为LANGUAGE_AUTOMATIC_DETECT
     if app.config.get("LANGUAGE_AUTOMATIC_DETECT", []) != []:
         speaker_lang = app.config.get("LANGUAGE_AUTOMATIC_DETECT")
-        
+
     if use_streaming and format.upper() != "MP3":
         format = "mp3"
         logger.warning("Streaming response only supports MP3 format.")
@@ -138,16 +139,19 @@ def voice_vits_api():
             "max": max,
             "lang": lang,
             "speaker_lang": speaker_lang}
+    
+    if app.config.get("SAVE_AUDIO", False):
+        logger.debug(f"[VITS] {fname}")
 
     if use_streaming:
-        audio = tts.stream_vits_infer(task)
+        audio = tts.stream_vits_infer(task, fname)
         response = make_response(audio)
         response.headers['Content-Disposition'] = f'attachment; filename={fname}'
         response.headers['Content-Type'] = file_type
         return response
     else:
         t1 = time.time()
-        audio = tts.vits_infer(task)
+        audio = tts.vits_infer(task, fname)
         t2 = time.time()
         logger.info(f"[VITS] finish in {(t2 - t1):.2f}s")
         return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
@@ -191,8 +195,10 @@ def voice_hubert_api():
             "audio_path": os.path.join(app.config['UPLOAD_FOLDER'], fname)}
 
     t1 = time.time()
-    audio = tts.hubert_vits_infer(task)
+    audio = tts.hubert_vits_infer(task, fname)
     t2 = time.time()
+    if app.config.get("SAVE_AUDIO", False):
+        logger.debug(f"[hubert] {fname}")
     logger.info(f"[hubert] finish in {(t2 - t1):.2f}s")
     if use_streaming:
         audio = tts.generate_audio_chunks(audio)
@@ -268,7 +274,7 @@ def voice_w2v2_api():
     if use_streaming and format.upper() != "MP3":
         format = "mp3"
         logger.warning("Streaming response only supports MP3 format.")
-    
+
     fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
     task = {"text": text,
@@ -281,17 +287,19 @@ def voice_w2v2_api():
             "lang": lang,
             "emotion": emotion,
             "speaker_lang": speaker_lang}
-
+    
+    t1 = time.time()
+    audio = tts.w2v2_vits_infer(task, fname)
+    t2 = time.time()
+    if app.config.get("SAVE_AUDIO", False):
+        logger.debug(f"[W2V2] {fname}")
     if use_streaming:
-        audio = tts.stream_vits_infer(task)
+        audio = tts.generate_audio_chunks(audio)
         response = make_response(audio)
         response.headers['Content-Disposition'] = f'attachment; filename={fname}'
         response.headers['Content-Type'] = file_type
         return response
     else:
-        t1 = time.time()
-        audio = tts.w2v2_vits_infer(task)
-        t2 = time.time()
         logger.info(f"[w2v2] finish in {(t2 - t1):.2f}s")
         return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
@@ -322,9 +330,11 @@ def vits_voice_conversion_api():
                 "format": format}
 
         t1 = time.time()
-        audio = tts.vits_voice_conversion(task)
+        audio = tts.vits_voice_conversion(task, fname)
         t2 = time.time()
-        logger.info(f"finish in {(t2 - t1):.2f}s")
+        if app.config.get("SAVE_AUDIO", False):
+            logger.debug(f"[Voice conversion] {fname}")
+        logger.info(f"[Voice conversion] finish in {(t2 - t1):.2f}s")
         if use_streaming:
             audio = tts.generate_audio_chunks(audio)
             response = make_response(audio)
@@ -351,13 +361,14 @@ def ssml():
 
     logger.debug(ssml)
 
-    t1 = time.time()
-    audio, format = tts.create_ssml_infer_task(ssml)
-    t2 = time.time()
-
     fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
 
+    t1 = time.time()
+    audio, format = tts.create_ssml_infer_task(ssml, fname)
+    t2 = time.time()
+    if app.config.get("SAVE_AUDIO", False):
+        logger.debug(f"[ssml] {fname}")
     logger.info(f"[ssml] finish in {(t2 - t1):.2f}s")
 
     if eval(ssml.get('streaming', False)):
@@ -449,7 +460,8 @@ def check():
 
 
 # regular cleaning
-@scheduler.task('interval', id='clean_task', seconds=3600, misfire_grace_time=900)
+@scheduler.task('interval', id='clean_task', seconds=app.config.get("CLEAN_INTERVAL_SECONDS", 3600),
+                misfire_grace_time=900)
 def clean_task():
     clean_folder(app.config["UPLOAD_FOLDER"])
     clean_folder(app.config["CACHE_PATH"])
