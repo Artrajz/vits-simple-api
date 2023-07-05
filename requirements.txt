@@ -28,3 +28,4 @@ fastlid
 langid
 phonemizer==3.2.1
 transformers
+pydantic==1.10.6

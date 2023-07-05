@@ -438,7 +438,7 @@ class TTS:
 
         audio = np.concatenate(audios, axis=0)
         encoded_audio = self.encode(voice_obj.hps_ms.data.sampling_rate, audio, format)
-        if config.SAVE_AUDIO:
+        if getattr(config, "SAVE_AUDIO", False):
             path = f"{config.CACHE_PATH}/{fname}"
             utils.save_audio(encoded_audio.getvalue(), path)
         return encoded_audio, format
@@ -450,7 +450,7 @@ class TTS:
         sampling_rate = voice_obj.hps_ms.data.sampling_rate
         audio = voice_obj.get_audio(voice, auto_break=True)
         encoded_audio = self.encode(sampling_rate, audio, format)
-        if config.SAVE_AUDIO:
+        if getattr(config, "SAVE_AUDIO", False):
             path = f"{config.CACHE_PATH}/{fname}"
             utils.save_audio(encoded_audio.getvalue(), path)
         return encoded_audio
@@ -466,9 +466,9 @@ class TTS:
             encoded_audio = self.encode(sampling_rate, chunk, format)
             for encoded_audio_chunk in self.generate_audio_chunks(encoded_audio):
                 yield encoded_audio_chunk
-            if config.SAVE_AUDIO:
-                audio.write(encoded_audio.getvalue()) 
-        if config.SAVE_AUDIO:
+            if getattr(config, "SAVE_AUDIO", False):
+                audio.write(encoded_audio.getvalue())
+        if getattr(config, "SAVE_AUDIO", False):
             path = f"{config.CACHE_PATH}/{fname}"
             utils.save_audio(audio.getvalue(), path)
 
@@ -479,7 +479,7 @@ class TTS:
         sampling_rate = voice_obj.hps_ms.data.sampling_rate
         audio = voice_obj.get_audio(voice)
         encoded_audio = self.encode(sampling_rate, audio, format)
-        if config.SAVE_AUDIO:
+        if getattr(config, "SAVE_AUDIO", False):
             path = f"{config.CACHE_PATH}/{fname}"
             utils.save_audio(encoded_audio.getvalue(), path)
         return encoded_audio
@@ -491,7 +491,7 @@ class TTS:
         sampling_rate = voice_obj.hps_ms.data.sampling_rate
         audio = voice_obj.get_audio(voice, auto_break=True)
         encoded_audio = self.encode(sampling_rate, audio, format)
-        if config.SAVE_AUDIO:
+        if getattr(config, "SAVE_AUDIO", False):
             path = f"{config.CACHE_PATH}/{fname}"
             utils.save_audio(encoded_audio.getvalue(), path)
         return encoded_audio
@@ -515,7 +515,7 @@ class TTS:
 
         audio = voice_obj.voice_conversion(voice)
         encoded_audio = self.encode(sampling_rate, audio, format)
-        if config.SAVE_AUDIO:
+        if getattr(config, "SAVE_AUDIO", False):
             path = f"{config.CACHE_PATH}/{fname}"
             utils.save_audio(encoded_audio.getvalue(), path)
         return encoded_audio
