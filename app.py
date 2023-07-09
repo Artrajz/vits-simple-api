@@ -26,6 +26,8 @@ level_dict = {'DEBUG': logging.DEBUG, 'INFO': logging.INFO, 'WARNING': logging.W
               'CRITICAL': logging.CRITICAL}
 logging.basicConfig(level=level_dict[level])
 logging.getLogger('numba').setLevel(logging.WARNING)
+logging.getLogger("langid.langid").setLevel(logging.INFO)
+logging.getLogger("apscheduler.scheduler").setLevel(logging.INFO)
 
 tts = merge_model(app.config["MODEL_LIST"])
 
@@ -139,7 +141,7 @@ def voice_vits_api():
             "max": max,
             "lang": lang,
             "speaker_lang": speaker_lang}
-    
+
     if app.config.get("SAVE_AUDIO", False):
         logger.debug(f"[VITS] {fname}")
 
@@ -287,7 +289,7 @@ def voice_w2v2_api():
             "lang": lang,
             "emotion": emotion,
             "speaker_lang": speaker_lang}
-    
+
     t1 = time.time()
     audio = tts.w2v2_vits_infer(task, fname)
     t2 = time.time()
