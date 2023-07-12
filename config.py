@@ -20,6 +20,9 @@ UPLOAD_FOLDER = ABS_PATH + "/upload"
 # Cahce path
 CACHE_PATH = ABS_PATH + "/cache"
 
+# Logs path
+LOGS_PATH = ABS_PATH + "/logs"
+
 # If CLEAN_INTERVAL_SECONDS <= 0, the cleaning task will not be executed.
 CLEAN_INTERVAL_SECONDS = 3600
 
