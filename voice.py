@@ -420,9 +420,7 @@ class TTS:
 
         return voice_tasks, format
 
-    def create_ssml_infer_task(self, ssml, fname):
-        voice_tasks, format = self.parse_ssml(ssml)
-
+    def create_ssml_infer_task(self, voice_tasks, format, fname):
         audios = []
         for voice in voice_tasks:
             if voice.get("break"):
@@ -441,7 +439,7 @@ class TTS:
         if getattr(config, "SAVE_AUDIO", False):
             path = f"{config.CACHE_PATH}/{fname}"
             utils.save_audio(encoded_audio.getvalue(), path)
-        return encoded_audio, format
+        return encoded_audio
 
     def vits_infer(self, voice, fname):
         format = voice.get("format", "wav")

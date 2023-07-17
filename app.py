@@ -371,25 +371,18 @@ def ssml():
         return make_response(jsonify({"status": "error", "message": f"parameter error"}), 400)
 
     logger.debug(ssml)
-
+    voice_tasks, format = tts.parse_ssml(ssml)
     fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
 
     t1 = time.time()
-    audio, format = tts.create_ssml_infer_task(ssml, fname)
+    audio = tts.create_ssml_infer_task(voice_tasks, format, fname)
     t2 = time.time()
     if app.config.get("SAVE_AUDIO", False):
         logger.debug(f"[ssml] {fname}")
     logger.info(f"[ssml] finish in {(t2 - t1):.2f}s")
 
-    if eval(ssml.get('streaming', False)):
-        audio = tts.generate_audio_chunks(audio)
-        response = make_response(audio)
-        response.headers['Content-Disposition'] = f'attachment; filename={fname}'
-        response.headers['Content-Type'] = file_type
-        return response
-    else:
-        return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
+    return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
 
 @app.route('/voice/dimension-emotion', methods=["POST"])
