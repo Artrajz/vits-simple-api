@@ -12,7 +12,32 @@ if [ ! -f config.py ]; then
     wget -O $INSTALL_DIR/config.py https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/config.py
 fi
 
-wget -O $INSTALL_DIR/docker-compose.yaml https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/docker-compose.yaml
+if [ ! -f gunicorn_config.py ]; then
+    echo -e "${YELLOW}download config.py\n${PLAIN}"
+    wget -O $INSTALL_DIR/gunicorn_config.py https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/gunicorn_config.py
+fi
+
+while true; do
+    echo -e "${GREEN}Which version of docker-compose.yaml do you want to download?"
+    echo -e "1. docker-compose.yaml (CPU version)"
+    echo -e "2. docker-compose-gpu.yaml (GPU version)"
+    read -p "Enter your choice (1 or 2): " choice
+    case $choice in
+        1)
+            echo -e "${YELLOW}Downloading docker-compose.yaml (CPU version)\n${PLAIN}"
+            wget -O $INSTALL_DIR/docker-compose.yaml https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/docker-compose.yaml
+            break
+            ;;
+        2)
+            echo -e "${YELLOW}Downloading docker-compose-gpu.yaml (GPU version)\n${PLAIN}"
+            wget -O $INSTALL_DIR/docker-compose.yaml https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/docker-compose-gpu.yaml
+            break
+            ;;
+        *)
+            echo -e "${RED}Invalid choice. Please enter 1 or 2.${PLAIN}"
+            ;;
+    esac
+done
 
 echo -e "${YELLOW}Pulling the image might take a while, so why not grab a cup of java first?\n${PLAIN}"
 
