@@ -11,3 +11,4 @@ services:
     volumes:
       - ./Model:/app/Model # 挂载模型文件夹
       - ./config.py:/app/config.py # 挂载配置文件
+      - ./gunicorn_config.py:/app/gunicorn_config.py # gunicorn configuration

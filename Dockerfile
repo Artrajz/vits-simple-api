@@ -30,8 +30,10 @@ RUN pip install torch --index-url https://download.pytorch.org/whl/cpu
 COPY requirements.txt /app
 RUN pip install -r requirements.txt
 
+RUN pip install gunicorn
+
 COPY . /app
 
 EXPOSE 23456
 
-CMD ["python", "/app/app.py"]
+CMD ["gunicorn", "-c", "gunicorn_config.py", "app:app"]
