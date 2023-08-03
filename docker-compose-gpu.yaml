@@ -1,7 +1,7 @@
 version: '3.4'
 services:
   vits:
-    image: artrajz/vits-simple-api-gpu:latest
+    image: artrajz/vits-simple-api:latest-gpu
     restart: always
     ports:
       - 23456:23456
