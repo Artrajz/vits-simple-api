@@ -12,7 +12,7 @@ DEBUG = False
 PORT = 23456
 
 # Absolute path of vits-simple-api
-ABS_PATH = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])))
+ABS_PATH = os.path.dirname(os.path.realpath(__file__))
 
 # Upload path
 UPLOAD_FOLDER = ABS_PATH + "/upload"

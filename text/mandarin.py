@@ -1,5 +1,4 @@
-import os
-import sys
+import config
 import re
 from pypinyin import lazy_pinyin, BOPOMOFO
 import jieba
@@ -7,7 +6,7 @@ import cn2an
 import logging
 
 logging.getLogger('jieba').setLevel(logging.WARNING)
-jieba.set_dictionary(os.path.dirname(os.path.realpath(sys.argv[0])) + '/jieba/dict.txt')
+jieba.set_dictionary(config.ABS_PATH + '/jieba/dict.txt')
 jieba.initialize()
 
 # List of (Latin alphabet, bopomofo) pairs:

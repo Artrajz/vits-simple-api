@@ -1,4 +1,4 @@
 import multiprocessing
 
 bind = "0.0.0.0:23456"
-workers = multiprocessing.cpu_count() * 2 + 1
+workers = multiprocessing.cpu_count()
