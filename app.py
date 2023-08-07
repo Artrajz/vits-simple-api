@@ -1,9 +1,7 @@
 import os
-import logging
-import sys
 import time
-import logzero
 import uuid
+from logger import logger
 from flask import Flask, request, send_file, jsonify, make_response, render_template
 from werkzeug.utils import secure_filename
 from flask_apscheduler import APScheduler
@@ -11,7 +9,6 @@ from functools import wraps
 from utils.utils import clean_folder, check_is_none
 from utils.merge import merge_model
 from io import BytesIO
-from logging.handlers import TimedRotatingFileHandler
 
 app = Flask(__name__)
 app.config.from_pyfile("config.py")
@@ -21,42 +18,11 @@ scheduler.init_app(app)
 if app.config.get("CLEAN_INTERVAL_SECONDS", 3600) > 0:
     scheduler.start()
 
-logzero.loglevel(logging.WARNING)
-logger = logging.getLogger("vits-simple-api")
-level = app.config.get("LOGGING_LEVEL", "DEBUG")
-level_dict = {'DEBUG': logging.DEBUG, 'INFO': logging.INFO, 'WARNING': logging.WARNING, 'ERROR': logging.ERROR,
-              'CRITICAL': logging.CRITICAL}
-logging.basicConfig(level=level_dict[level])
-logging.getLogger('numba').setLevel(logging.WARNING)
-logging.getLogger("langid.langid").setLevel(logging.INFO)
-logging.getLogger("apscheduler.scheduler").setLevel(logging.INFO)
-
 for path in (app.config['LOGS_PATH'], app.config['UPLOAD_FOLDER'], app.config['CACHE_PATH']):
-    if not os.path.exists(path):
+    try:
         os.makedirs(path, exist_ok=True)
-
-log_file = os.path.join(app.config['LOGS_PATH'], 'latest.log')
-handler = TimedRotatingFileHandler(log_file, when="midnight", interval=1, encoding='utf-8')
-handler.suffix = "%Y-%m-%d.log"
-formatter = logging.Formatter('%(levelname)s:%(name)s %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-logging.getLogger("werkzeug").addHandler(handler)
-logging.getLogger("apscheduler.scheduler").addHandler(handler)
-
-
-# Custom function to handle uncaught exceptions
-def handle_exception(exc_type, exc_value, exc_traceback):
-    # If it's a keyboard interrupt, don't handle it, just return
-    if issubclass(exc_type, KeyboardInterrupt):
-        sys.__excepthook__(exc_type, exc_value, exc_traceback)
-        return
-
-    logger.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
-
-
-# Set the global exception handler in Python
-sys.excepthook = handle_exception
+    except Exception as e:
+        logger.error(f"Unable to create directory {path}: {str(e)}")
 
 # load model
 tts = merge_model(app.config["MODEL_LIST"])

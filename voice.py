@@ -6,7 +6,6 @@ import numpy as np
 import torch
 import xml.etree.ElementTree as ET
 import config
-import logging
 import soundfile as sf
 from torch import no_grad, LongTensor, inference_mode, FloatTensor
 from io import BytesIO
@@ -16,6 +15,7 @@ from mel_processing import spectrogram_torch
 from text import text_to_sequence
 from models import SynthesizerTrn
 from utils import utils
+from logger import logger
 
 # torch.set_num_threads(1) # 设置torch线程为1
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -262,7 +262,7 @@ class TTS:
         self.dem = None
 
         # Initialization information
-        self.logger = logging.getLogger("vits-simple-api")
+        self.logger = logger
         self.logger.info(f"torch:{torch.__version__} cuda_available:{torch.cuda.is_available()}")
         self.logger.info(f'device:{device} device.type:{device.type}')
 

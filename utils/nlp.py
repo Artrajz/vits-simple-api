@@ -1,13 +1,7 @@
 import regex as re
-import logging
 import config
 from .utils import check_is_none
-
-logger = logging.getLogger("vits-simple-api")
-level = getattr(config, "LOGGING_LEVEL", "DEBUG")
-level_dict = {'DEBUG': logging.DEBUG, 'INFO': logging.INFO, 'WARNING': logging.WARNING, 'ERROR': logging.ERROR,
-              'CRITICAL': logging.CRITICAL}
-logger.setLevel(level_dict[level])
+from logger import logger
 
 
 def clasify_lang(text, speaker_lang):
