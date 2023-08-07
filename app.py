@@ -1,5 +1,6 @@
 import os
 import logging
+import sys
 import time
 import logzero
 import uuid
@@ -42,6 +43,20 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logging.getLogger("werkzeug").addHandler(handler)
 logging.getLogger("apscheduler.scheduler").addHandler(handler)
+
+
+# Custom function to handle uncaught exceptions
+def handle_exception(exc_type, exc_value, exc_traceback):
+    # If it's a keyboard interrupt, don't handle it, just return
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    logger.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+
+# Set the global exception handler in Python
+sys.excepthook = handle_exception
 
 # load model
 tts = merge_model(app.config["MODEL_LIST"])
