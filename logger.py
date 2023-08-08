@@ -17,7 +17,8 @@ logging.getLogger("apscheduler.scheduler").setLevel(logging.INFO)
 
 os.makedirs(config.LOGS_PATH, exist_ok=True)
 log_file = os.path.join(config.LOGS_PATH, 'latest.log')
-handler = TimedRotatingFileHandler(log_file, when="midnight", interval=1, encoding='utf-8')
+backup_count = getattr(config, "LOGS_BACKUPCOUNT", 30)
+handler = TimedRotatingFileHandler(log_file, when="midnight", interval=1, backupCount=backup_count, encoding='utf-8')
 handler.suffix = "%Y-%m-%d.log"
 formatter = logging.Formatter('%(levelname)s:%(name)s %(message)s')
 handler.setFormatter(formatter)

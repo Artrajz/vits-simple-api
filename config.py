@@ -23,6 +23,9 @@ CACHE_PATH = ABS_PATH + "/cache"
 # Logs path
 LOGS_PATH = ABS_PATH + "/logs"
 
+# Set the number of backup log files to keep. 
+LOGS_BACKUPCOUNT = 30
+
 # If CLEAN_INTERVAL_SECONDS <= 0, the cleaning task will not be executed.
 CLEAN_INTERVAL_SECONDS = 3600
 
