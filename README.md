@@ -495,13 +495,13 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 
 | Name                   | Parameter | Is must | Default | Type  | Instruction                                                  |
 | ---------------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
-| Synthesized text       | text      | true    |         | str   |                                                              |
-| Role ID                | id        | false   | 0       | int   |                                                              |
+| Synthesized text       | text      | true    |         | str   | Text needed for voice synthesis.                             |
+| Speaker ID             | id        | false   | 0       | int   | The speaker ID.                                              |
 | Audio format           | format    | false   | wav     | str   | Support for wav,ogg,silk,mp3,flac                            |
 | Text language          | lang      | false   | auto    | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
 | Audio length           | length    | false   | 1.0     | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
-| Noise                  | noise     | false   | 0.667   | float |                                                              |
-| Noise Weight           | noisew    | false   | 0.8     | float |                                                              |
+| Noise                  | noise     | false   | 0.33    | float | Sample noise, controlling the randomness of the synthesis.   |
+| SDP noise              | noisew    | false   | 0.4     | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
 | Segmentation threshold | max       | false   | 50      | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
 | Streaming response     | streaming | false   | false   | bool  | Streamed synthesized speech with faster initial response.    |
 
@@ -515,26 +515,26 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 
 ## HuBert-VITS
 
-| Name           | Parameter | Is must | Default | Type  | Instruction                                                  |
-| -------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
-| Uploaded Audio | upload    | true    |         | file  | he audio file to be uploaded. It should be in wav or ogg format. |
-| Target Role ID | id        | true    |         | int   |                                                              |
-| Audio format   | format    | true    |         | str   | wav,ogg,silk                                                 |
-| Audio length   | length    | true    |         | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
-| Noise          | noise     | true    |         | float |                                                              |
-| Noise Weight   | noisew    | true    |         | float |                                                              |
+| Name              | Parameter | Is must | Default | Type  | Instruction                                                  |
+| ----------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
+| Uploaded Audio    | upload    | true    |         | file  | The audio file to be uploaded. It should be in wav or ogg format. |
+| Target speaker ID | id        | true    |         | int   | The target  speaker ID.                                      |
+| Audio format      | format    | true    |         | str   | wav,ogg,silk                                                 |
+| Audio length      | length    | true    |         | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise             | noise     | true    |         | float | Sample noise, controlling the randomness of the synthesis.   |
+| sdp noise         | noisew    | true    |         | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
 
 ## W2V2-VITS
 
 | Name                   | Parameter | Is must | Default | Type  | Instruction                                                  |
 | ---------------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
-| Synthesized text       | text      | true    |         | str   |                                                              |
-| Role ID                | id        | false   | 0       | int   |                                                              |
+| Synthesized text       | text      | true    |         | str   | Text needed for voice synthesis.                             |
+| Speaker ID             | id        | false   | 0       | int   | The speaker ID.                                              |
 | Audio format           | format    | false   | wav     | str   | Support for wav,ogg,silk,mp3,flac                            |
 | Text language          | lang      | false   | auto    | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
 | Audio length           | length    | false   | 1.0     | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
-| Noise                  | noise     | false   | 0.667   | float |                                                              |
-| Noise Weight           | noisew    | false   | 0.8     | float |                                                              |
+| Noise                  | noise     | false   | 0.33    | float | Sample noise, controlling the randomness of the synthesis.   |
+| SDP noise              | noisew    | false   | 0.4     | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
 | Segmentation threshold | max       | false   | 50      | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
 | Dimensional emotion    | emotion   | false   | 0       | int   | The range depends on the emotion reference file in npy format, such as the  range of the [innnky](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)'s model all_emotions.npy, which is 0-5457. |
 
