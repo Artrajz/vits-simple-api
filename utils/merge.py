@@ -110,11 +110,16 @@ def merge_model(merging_model):
     for obj_id, i in enumerate(vits_list):
         obj = vits(model=i[0], config=i[1], model_type="vits")
         lang = lang_dict.get(obj.get_cleaner(), ["unknown"])
-
-        for id, name in enumerate(obj.get_speakers()):
-            vits_obj.append([int(id), obj, obj_id])
-            vits_speakers.append({"id": new_id, "name": name, "lang": lang})
-            new_id += 1
+        if isinstance(obj.get_speakers(), list):
+            for id, name in enumerate(obj.get_speakers()):
+                vits_obj.append([int(id), obj, obj_id])
+                vits_speakers.append({"id": new_id, "name": name, "lang": lang})
+                new_id += 1
+        else:
+            for id, (name, _) in enumerate(obj.get_speakers().items()):
+                vits_obj.append([int(id), obj, obj_id])
+                vits_speakers.append({"id": new_id, "name": name, "lang": lang})
+                new_id += 1
 
     # merge hubert-vits
     if len(hubert_vits_list) != 0:

@@ -43,7 +43,7 @@ jobs:
           context: .
           file: ./Dockerfile_GPU
           push: true
-          platforms: 'linux/amd64,linux/arm64'
+          platforms: 'linux/amd64'
           tags: artrajz/vits-simple-api:latest-gpu
           cache-from: type=gha
           cache-to: type=gha,mode=max
