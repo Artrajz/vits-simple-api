@@ -47,7 +47,10 @@ def require_api_key(func):
 def index():
     kwargs = {
         "speakers": tts.voice_speakers,
-        "speakers_count": tts.speakers_count
+        "speakers_count": tts.speakers_count,
+        "vits_speakers_count":tts._vits_speakers_count,
+        "w2v2_speakers_count":tts._w2v2_speakers_count,
+        "w2v2_emotion_count":tts._w2v2_emotion_count
     }
     return render_template("index.html", **kwargs)
 

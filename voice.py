@@ -251,7 +251,7 @@ class vits:
 
 
 class TTS:
-    def __init__(self, voice_obj, voice_speakers):
+    def __init__(self, voice_obj, voice_speakers, w2v2_emotion_count=0):
         self._voice_obj = voice_obj
         self._voice_speakers = voice_speakers
         self._strength_dict = {"x-weak": 0.25, "weak": 0.5, "Medium": 0.75, "Strong": 1, "x-strong": 1.25}
@@ -259,6 +259,7 @@ class TTS:
         self._vits_speakers_count = len(self._voice_speakers["VITS"])
         self._hubert_speakers_count = len(self._voice_speakers["HUBERT-VITS"])
         self._w2v2_speakers_count = len(self._voice_speakers["W2V2-VITS"])
+        self._w2v2_emotion_count = w2v2_emotion_count
         self.dem = None
 
         # Initialization information

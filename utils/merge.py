@@ -142,6 +142,7 @@ def merge_model(merging_model):
             new_id += 1
 
     # merge w2v2-vits
+    emotion_reference = None
     if len(w2v2_vits_list) != 0:
         if getattr(config, "DIMENSIONAL_EMOTION_NPY", None) == None or check_is_none(config.DIMENSIONAL_EMOTION_NPY):
             raise ValueError(f"Please configure DIMENSIONAL_EMOTION_NPY path in config.py")
@@ -162,7 +163,8 @@ def merge_model(merging_model):
 
     voice_obj = {"VITS": vits_obj, "HUBERT-VITS": hubert_vits_obj, "W2V2-VITS": w2v2_vits_obj}
     voice_speakers = {"VITS": vits_speakers, "HUBERT-VITS": hubert_vits_speakers, "W2V2-VITS": w2v2_vits_speakers}
-
-    tts = TTS(voice_obj, voice_speakers)
+    w2v2_emotion_count = len(emotion_reference) if emotion_reference is not None else 0
+    
+    tts = TTS(voice_obj, voice_speakers, w2v2_emotion_count=w2v2_emotion_count)
 
     return tts
