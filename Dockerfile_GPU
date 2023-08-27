@@ -12,7 +12,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 RUN pip install --upgrade pip --no-cache-dir && \
-    pip install MarkupSafe==2.1.2 numpy==1.23.3 cython six==1.16.0 --no-cache-dir
+    pip install MarkupSafe==2.1.2 numpy==1.23.3 cython six==1.16.0  safetensors==0.3.2 --no-cache-dir
 
 RUN wget https://raw.githubusercontent.com/Artrajz/archived/main/openjtalk/openjtalk-0.3.0.dev2.tar.gz && \
     tar -zxvf openjtalk-0.3.0.dev2.tar.gz && \
