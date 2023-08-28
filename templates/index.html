@@ -194,10 +194,6 @@
                         <source src="" type="audio/mp3"/>
                         Your browser does not support the audio element.
                     </audio>
-                    <div class="form-group form-check">
-                        <input type="checkbox" id="streaming2" onchange="updateLink()">
-                        <label class="form-check-label">流式响应</label>
-                    </div>
                 </div>
             </div>
         </div>
@@ -282,10 +278,10 @@
         var noise = document.getElementById("inputNoise" + modelType).value;
         var noisew = document.getElementById("inputNoisew" + modelType).value;
         var max = document.getElementById("inputMax" + modelType).value;
-        var streaming = document.getElementById('streaming' + modelType);
 
         if (modelType == 1) {
             var url = baseUrl + "/voice/vits?text=" + text + "&id=" + id;
+            var streaming = document.getElementById('streaming' + modelType);
         } else if (modelType == 2) {
             var emotion = document.getElementById('emotion').value;
             var url = baseUrl + "/voice/w2v2-vits?text=" + text + "&id=" + id + "&emotion=" + emotion;
@@ -308,8 +304,7 @@
         if (max != "") {
             url += "&max=" + max;
         }
-
-        if (streaming.checked) {
+        if (modelType == 1 && streaming.checked) {
             url += '&streaming=true';
         }
         return url;
@@ -323,11 +318,11 @@
     }
 
     function setAudioSource() {
-        if (modelType==1 && !vitsStatus){
+        if (modelType == 1 && !vitsStatus) {
             alert("未加载VITS模型");
             return;
         }
-        if (modelType==2 && !w2v2Status){
+        if (modelType == 2 && !w2v2Status) {
             alert("未加载W2V2-VITS模型");
             return;
         }
