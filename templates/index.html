@@ -327,6 +327,11 @@
             return;
         }
         var url = getLink();
+        
+        // Add a timestamp parameter to prevent browser caching
+        var timestamp = new Date().getTime();
+        url += '&t=' + timestamp;
+        
         var audioPlayer = document.getElementById("audioPlayer" + modelType);
         audioPlayer.src = url;
         audioPlayer.play();
