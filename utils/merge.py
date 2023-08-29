@@ -1,10 +1,14 @@
 import os
 import json
 import logging
+import torch
 import config
 import numpy as np
 from utils.utils import check_is_none
-from voice import vits, TTS
+from vits import VITS
+from voice import TTS
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 lang_dict = {
     "english_cleaners": ["en"],
@@ -108,7 +112,7 @@ def merge_model(merging_model):
     # merge vits
     new_id = 0
     for obj_id, i in enumerate(vits_list):
-        obj = vits(model=i[0], config=i[1], model_type="vits")
+        obj = VITS(model=i[0], config=i[1], model_type="vits")
         lang = lang_dict.get(obj.get_cleaner(), ["unknown"])
         if isinstance(obj.get_speakers(), list):
             for id, name in enumerate(obj.get_speakers()):
@@ -126,14 +130,14 @@ def merge_model(merging_model):
         if getattr(config, "HUBERT_SOFT_MODEL", None) == None or check_is_none(config.HUBERT_SOFT_MODEL):
             raise ValueError(f"Please configure HUBERT_SOFT_MODEL path in config.py")
         try:
-            from hubert_model import hubert_soft
+            from vits.hubert_model import hubert_soft
             hubert = hubert_soft(config.HUBERT_SOFT_MODEL)
         except Exception as e:
             raise ValueError(f"Load HUBERT_SOFT_MODEL failed {e}")
 
     new_id = 0
     for obj_id, i in enumerate(hubert_vits_list):
-        obj = vits(model=i[0], config=i[1], model_=hubert, model_type="hubert")
+        obj = VITS(model=i[0], config=i[1], model_=hubert, model_type="hubert")
         lang = lang_dict.get(obj.get_cleaner(), ["unknown"])
 
         for id, name in enumerate(obj.get_speakers()):
@@ -153,7 +157,7 @@ def merge_model(merging_model):
 
     new_id = 0
     for obj_id, i in enumerate(w2v2_vits_list):
-        obj = vits(model=i[0], config=i[1], model_=emotion_reference, model_type="w2v2")
+        obj = VITS(model=i[0], config=i[1], model_=emotion_reference, model_type="w2v2")
         lang = lang_dict.get(obj.get_cleaner(), ["unknown"])
 
         for id, name in enumerate(obj.get_speakers()):
