@@ -6,7 +6,6 @@ from torch.nn import functional as F
 from bert_vits2 import commons
 from bert_vits2 import modules
 from bert_vits2 import attentions
-from bert_vits2 import monotonic_align
 
 from torch.nn import Conv1d, ConvTranspose1d, AvgPool1d, Conv2d
 from torch.nn.utils import weight_norm, remove_weight_norm, spectral_norm
@@ -564,8 +563,8 @@ class ReferenceEncoder(nn.Module):
 
 class SynthesizerTrn(nn.Module):
     """
-  Synthesizer for Training
-  """
+      Synthesizer for Training
+      """
 
     def __init__(self,
                  n_vocab,
@@ -648,50 +647,6 @@ class SynthesizerTrn(nn.Module):
             self.emb_g = nn.Embedding(n_speakers, gin_channels)
         else:
             self.ref_enc = ReferenceEncoder(spec_channels, gin_channels)
-
-    def forward(self, x, x_lengths, y, y_lengths, sid, tone, language, bert):
-        if self.n_speakers > 0:
-            g = self.emb_g(sid).unsqueeze(-1)  # [b, h, 1]
-        else:
-            g = self.ref_enc(y.transpose(1, 2)).unsqueeze(-1)
-        x, m_p, logs_p, x_mask = self.enc_p(x, x_lengths, tone, language, bert, g=g)
-        z, m_q, logs_q, y_mask = self.enc_q(y, y_lengths, g=g)
-        z_p = self.flow(z, y_mask, g=g)
-
-        with torch.no_grad():
-            # negative cross-entropy
-            s_p_sq_r = torch.exp(-2 * logs_p)  # [b, d, t]
-            neg_cent1 = torch.sum(-0.5 * math.log(2 * math.pi) - logs_p, [1], keepdim=True)  # [b, 1, t_s]
-            neg_cent2 = torch.matmul(-0.5 * (z_p ** 2).transpose(1, 2),
-                                     s_p_sq_r)  # [b, t_t, d] x [b, d, t_s] = [b, t_t, t_s]
-            neg_cent3 = torch.matmul(z_p.transpose(1, 2), (m_p * s_p_sq_r))  # [b, t_t, d] x [b, d, t_s] = [b, t_t, t_s]
-            neg_cent4 = torch.sum(-0.5 * (m_p ** 2) * s_p_sq_r, [1], keepdim=True)  # [b, 1, t_s]
-            neg_cent = neg_cent1 + neg_cent2 + neg_cent3 + neg_cent4
-            if self.use_noise_scaled_mas:
-                epsilon = torch.std(neg_cent) * torch.randn_like(neg_cent) * self.current_mas_noise_scale
-                neg_cent = neg_cent + epsilon
-
-            attn_mask = torch.unsqueeze(x_mask, 2) * torch.unsqueeze(y_mask, -1)
-            attn = monotonic_align.maximum_path(neg_cent, attn_mask.squeeze(1)).unsqueeze(1).detach()
-
-        w = attn.sum(2)
-
-        l_length_sdp = self.sdp(x, x_mask, w, g=g)
-        l_length_sdp = l_length_sdp / torch.sum(x_mask)
-
-        logw_ = torch.log(w + 1e-6) * x_mask
-        logw = self.dp(x, x_mask, g=g)
-        l_length_dp = torch.sum((logw - logw_) ** 2, [1, 2]) / torch.sum(x_mask)  # for averaging
-
-        l_length = l_length_dp + l_length_sdp
-
-        # expand prior
-        m_p = torch.matmul(attn.squeeze(1), m_p.transpose(1, 2)).transpose(1, 2)
-        logs_p = torch.matmul(attn.squeeze(1), logs_p.transpose(1, 2)).transpose(1, 2)
-
-        z_slice, ids_slice = commons.rand_slice_segments(z, y_lengths, self.segment_size)
-        o = self.dec(z_slice, g=g)
-        return o, l_length, attn, ids_slice, x_mask, y_mask, (z, z_p, m_p, logs_p, m_q, logs_q), (x, logw, logw_)
 
     def infer(self, x, x_lengths, sid, tone, language, bert, noise_scale=.667, length_scale=1, noise_scale_w=0.8,
               max_len=None, sdp_ratio=0, y=None):

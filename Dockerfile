@@ -29,10 +29,6 @@ RUN pip install torch --index-url https://download.pytorch.org/whl/cpu --no-cach
 
 RUN pip install -r requirements.txt --no-cache-dir
 
-RUN cd /app/bert_vits2/monotonic_align && \
-    python setup.py build_ext --inplace && \
-    cd /app
-
 RUN pip install gunicorn --no-cache-dir
 
 EXPOSE 23456
