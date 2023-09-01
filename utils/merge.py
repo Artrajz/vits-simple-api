@@ -6,7 +6,6 @@ import config
 import numpy as np
 from utils.utils import check_is_none
 from vits import VITS
-from bert_vits2 import Bert_VITS2
 from voice import TTS
 
 device = torch.device("cpu")
@@ -177,6 +176,7 @@ def merge_model(merging_model):
     # merge Bert_VITS2
     new_id = 0
     for obj_id, i in enumerate(bert_vits2_list):
+        from bert_vits2 import Bert_VITS2
         obj = Bert_VITS2(model=i[0], config=i[1], device=device)
         lang = ["ZH"]
         if isinstance(obj.get_speakers(), list):
