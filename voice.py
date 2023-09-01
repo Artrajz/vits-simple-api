@@ -25,6 +25,7 @@ class TTS:
         self._hubert_speakers_count = len(self._voice_speakers["HUBERT-VITS"])
         self._w2v2_speakers_count = len(self._voice_speakers["W2V2-VITS"])
         self._w2v2_emotion_count = w2v2_emotion_count
+        self._bert_vits2_speakers_count = len(self._voice_speakers["BERT-VITS2"])
         self.dem = None
 
         # Initialization information
@@ -67,6 +68,10 @@ class TTS:
     @property
     def w2v2_speakers_count(self):
         return self._w2v2_speakers_count
+
+    @property
+    def bert_vits2_speakers_count(self):
+        return self._bert_vits2_speakers_count
 
     def encode(self, sampling_rate, audio, format):
         with BytesIO() as f:
@@ -294,3 +299,15 @@ class TTS:
         emotion_npy.seek(0)
 
         return emotion_npy
+
+    def bert_vits2_infer(self, voice, fname):
+        format = voice.get("format", "wav")
+        voice_obj = self._voice_obj["BERT-VITS2"][voice.get("id")][1]
+        voice["id"] = self._voice_obj["BERT-VITS2"][voice.get("id")][0]
+        sampling_rate = voice_obj.hps_ms.data.sampling_rate
+        audio = voice_obj.get_audio(voice, auto_break=True)
+        encoded_audio = self.encode(sampling_rate, audio, format)
+        if getattr(config, "SAVE_AUDIO", False):
+            path = f"{config.CACHE_PATH}/{fname}"
+            utils.save_audio(encoded_audio.getvalue(), path)
+        return encoded_audio

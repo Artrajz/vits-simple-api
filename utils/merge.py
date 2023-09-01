@@ -6,9 +6,10 @@ import config
 import numpy as np
 from utils.utils import check_is_none
 from vits import VITS
+from bert_vits2 import Bert_VITS2
 from voice import TTS
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")
 
 lang_dict = {
     "english_cleaners": ["en"],
@@ -37,6 +38,9 @@ def analysis(model_config_json):
     model_config = json.load(model_config_json)
     symbols = model_config.get("symbols", None)
     emotion_embedding = model_config.get("data").get("emotion_embedding", False)
+    if "use_spk_conditioned_encoder" in model_config.get("model"):
+        model_type = 'bert_vits2'
+        return model_type
     if symbols != None:
         if not emotion_embedding:
             mode_type = "vits"
@@ -93,11 +97,14 @@ def merge_model(merging_model):
     hubert_vits_speakers = []
     w2v2_vits_obj = []
     w2v2_vits_speakers = []
+    bert_vits2_obj = []
+    bert_vits2_speakers = []
 
     # model list
     vits_list = []
     hubert_vits_list = []
     w2v2_vits_list = []
+    bert_vits2_list = []
 
     for l in merging_model:
         with open(l[1], 'r', encoding='utf-8') as model_config:
@@ -108,11 +115,13 @@ def merge_model(merging_model):
             hubert_vits_list.append(l)
         elif model_type == "w2v2":
             w2v2_vits_list.append(l)
+        elif model_type == "bert_vits2":
+            bert_vits2_list.append(l)
 
     # merge vits
     new_id = 0
     for obj_id, i in enumerate(vits_list):
-        obj = VITS(model=i[0], config=i[1], model_type="vits")
+        obj = VITS(model=i[0], config=i[1], model_type="vits", device=device)
         lang = lang_dict.get(obj.get_cleaner(), ["unknown"])
         if isinstance(obj.get_speakers(), list):
             for id, name in enumerate(obj.get_speakers()):
@@ -137,7 +146,7 @@ def merge_model(merging_model):
 
     new_id = 0
     for obj_id, i in enumerate(hubert_vits_list):
-        obj = VITS(model=i[0], config=i[1], model_=hubert, model_type="hubert")
+        obj = VITS(model=i[0], config=i[1], model_=hubert, model_type="hubert", device=device)
         lang = lang_dict.get(obj.get_cleaner(), ["unknown"])
 
         for id, name in enumerate(obj.get_speakers()):
@@ -157,7 +166,7 @@ def merge_model(merging_model):
 
     new_id = 0
     for obj_id, i in enumerate(w2v2_vits_list):
-        obj = VITS(model=i[0], config=i[1], model_=emotion_reference, model_type="w2v2")
+        obj = VITS(model=i[0], config=i[1], model_=emotion_reference, model_type="w2v2", device=device)
         lang = lang_dict.get(obj.get_cleaner(), ["unknown"])
 
         for id, name in enumerate(obj.get_speakers()):
@@ -165,10 +174,28 @@ def merge_model(merging_model):
             w2v2_vits_speakers.append({"id": new_id, "name": name, "lang": lang})
             new_id += 1
 
-    voice_obj = {"VITS": vits_obj, "HUBERT-VITS": hubert_vits_obj, "W2V2-VITS": w2v2_vits_obj}
-    voice_speakers = {"VITS": vits_speakers, "HUBERT-VITS": hubert_vits_speakers, "W2V2-VITS": w2v2_vits_speakers}
+    # merge Bert_VITS2
+    new_id = 0
+    for obj_id, i in enumerate(bert_vits2_list):
+        obj = Bert_VITS2(model=i[0], config=i[1], device=device)
+        lang = ["ZH"]
+        if isinstance(obj.get_speakers(), list):
+            for id, name in enumerate(obj.get_speakers()):
+                bert_vits2_obj.append([int(id), obj, obj_id])
+                bert_vits2_speakers.append({"id": new_id, "name": name, "lang": lang})
+                new_id += 1
+        else:
+            for id, (name, _) in enumerate(obj.get_speakers().items()):
+                bert_vits2_obj.append([int(id), obj, obj_id])
+                bert_vits2_speakers.append({"id": new_id, "name": name, "lang": lang})
+                new_id += 1
+
+    voice_obj = {"VITS": vits_obj, "HUBERT-VITS": hubert_vits_obj, "W2V2-VITS": w2v2_vits_obj,
+                 "BERT-VITS2": bert_vits2_obj}
+    voice_speakers = {"VITS": vits_speakers, "HUBERT-VITS": hubert_vits_speakers, "W2V2-VITS": w2v2_vits_speakers,
+                      "BERT-VITS2": bert_vits2_speakers}
     w2v2_emotion_count = len(emotion_reference) if emotion_reference is not None else 0
-    
+
     tts = TTS(voice_obj, voice_speakers, w2v2_emotion_count=w2v2_emotion_count)
 
     return tts

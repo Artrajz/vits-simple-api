@@ -1,0 +1,15 @@
+Cython
+librosa==0.9.1
+matplotlib==3.3.1
+numpy
+phonemizer
+scipy
+tensorboard
+torch
+torchvision
+Unidecode
+amfm_decompy
+jieba
+transformers
+pypinyin
+cn2an

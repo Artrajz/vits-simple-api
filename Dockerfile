@@ -28,6 +28,11 @@ RUN pip install torch --index-url https://download.pytorch.org/whl/cpu --no-cach
 COPY requirements.txt /app
 RUN pip install -r requirements.txt --no-cache-dir
 
+RUN cd bert_vits2/monotonic_align && \
+    mkdir monotonic_align && \
+    python setup.py build_ext --inplace && \
+    cd /app
+
 RUN pip install gunicorn --no-cache-dir
 
 COPY . /app

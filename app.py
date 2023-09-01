@@ -48,9 +48,9 @@ def index():
     kwargs = {
         "speakers": tts.voice_speakers,
         "speakers_count": tts.speakers_count,
-        "vits_speakers_count":tts._vits_speakers_count,
-        "w2v2_speakers_count":tts._w2v2_speakers_count,
-        "w2v2_emotion_count":tts._w2v2_emotion_count
+        "vits_speakers_count": tts._vits_speakers_count,
+        "w2v2_speakers_count": tts._w2v2_speakers_count,
+        "w2v2_emotion_count": tts._w2v2_emotion_count
     }
     return render_template("index.html", **kwargs)
 
@@ -370,6 +370,7 @@ def ssml():
 
 
 @app.route('/voice/dimension-emotion', methods=["POST"])
+@require_api_key
 def dimensional_emotion():
     if request.method == "POST":
         try:
@@ -392,6 +393,90 @@ def dimensional_emotion():
         return response
     else:
         return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
+
+
+@app.route('/voice/bert_vits2', methods=["GET", "POST"])
+@require_api_key
+def voice_bert_vits2_api():
+    try:
+        if request.method == "GET":
+            text = request.args.get("text", "")
+            id = int(request.args.get("id", app.config.get("ID", 0)))
+            format = request.args.get("format", app.config.get("FORMAT", "wav"))
+            # lang = request.args.get("lang", app.config.get("LANG", "auto"))
+            lang = "ZH"
+            length = float(request.args.get("length", app.config.get("LENGTH", 1)))
+            noise = float(request.args.get("noise", app.config.get("NOISE", 0.5)))
+            noisew = float(request.args.get("noisew", app.config.get("NOISEW", 0.6)))
+            sdp_ratio = float(request.args.get("sdp_ratio", 0.2))
+            max = int(request.args.get("max", app.config.get("MAX", 50)))
+        elif request.method == "POST":
+            content_type = request.headers.get('Content-Type')
+            if content_type == 'application/json':
+                data = request.get_json()
+            else:
+                data = request.form
+            text = data.get("text", "")
+            id = int(data.get("id", app.config.get("ID", 0)))
+            format = data.get("format", app.config.get("FORMAT", "wav"))
+            # lang = data.get("lang", app.config.get("LANG", "auto"))
+            lang = "ZH"
+            length = float(data.get("length", app.config.get("LENGTH", 1)))
+            noise = float(data.get("noise", app.config.get("NOISE", 0.667)))
+            noisew = float(data.get("noisew", app.config.get("NOISEW", 0.8)))
+            sdp_ratio = float(data.get("noisew", app.config.get("SDP_RATIO", 0.2)))
+            max = int(data.get("max", app.config.get("MAX", 50)))
+    except Exception as e:
+        logger.error(f"[Bert-VITS2] {e}")
+        return make_response("parameter error", 400)
+
+    logger.info(f"[Bert-VITS2] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio}")
+    logger.info(f"[Bert-VITS2] len:{len(text)} text：{text}")
+
+    if check_is_none(text):
+        logger.info(f"[Bert-VITS2] text is empty")
+        return make_response(jsonify({"status": "error", "message": "text is empty"}), 400)
+
+    if check_is_none(id):
+        logger.info(f"[Bert-VITS2] speaker id is empty")
+        return make_response(jsonify({"status": "error", "message": "speaker id is empty"}), 400)
+
+    if id < 0 or id >= tts.bert_vits2_speakers_count:
+        logger.info(f"[Bert-VITS2] speaker id {id} does not exist")
+        return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
+
+    # 校验模型是否支持输入的语言
+    speaker_lang = tts.voice_speakers["BERT-VITS2"][id].get('lang')
+    if lang.upper() != "AUTO" and lang.upper() != "MIX" and len(speaker_lang) != 1 and lang not in speaker_lang:
+        logger.info(f"[Bert-VITS2] lang \"{lang}\" is not in {speaker_lang}")
+        return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}), 400)
+
+    # 如果配置文件中设置了LANGUAGE_AUTOMATIC_DETECT则强制将speaker_lang设置为LANGUAGE_AUTOMATIC_DETECT
+    if app.config.get("LANGUAGE_AUTOMATIC_DETECT", []) != []:
+        speaker_lang = app.config.get("LANGUAGE_AUTOMATIC_DETECT")
+
+    fname = f"{str(uuid.uuid1())}.{format}"
+    file_type = f"audio/{format}"
+    task = {"text": text,
+            "id": id,
+            "format": format,
+            "length": length,
+            "noise": noise,
+            "noisew": noisew,
+            "sdp_ratio": sdp_ratio,
+            "max": max,
+            "lang": lang,
+            "speaker_lang": speaker_lang}
+
+    if app.config.get("SAVE_AUDIO", False):
+        logger.debug(f"[Bert-VITS2] {fname}")
+
+
+    t1 = time.time()
+    audio = tts.bert_vits2_infer(task, fname)
+    t2 = time.time()
+    logger.info(f"[Bert-VITS2] finish in {(t2 - t1):.2f}s")
+    return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
 
 @app.route('/voice/check', methods=["GET", "POST"])

@@ -63,6 +63,8 @@ MODEL_LIST = [
     # [ABS_PATH + "/Model/louise/360_epochs.pth", ABS_PATH + "/Model/louise/config.json"],
     # W2V2-VITS (Need to configure DIMENSIONAL_EMOTION_NPY)
     # [ABS_PATH + "/Model/w2v2-vits/1026_epochs.pth", ABS_PATH + "/Model/w2v2-vits/config.json"],
+    # Bert-VITS2
+    # [ABS_PATH + "/bert_vits2/G_9000.pth", ABS_PATH + "/bert_vits2/config.json"],
 ]
 
 # hubert-vits: hubert soft model
@@ -96,3 +98,6 @@ NOISEW = 0.4
 # 长文本分段阈值，max<=0表示不分段.
 # Batch processing threshold. Text will not be processed in batches if max<=0
 MAX = 50
+
+# Bert_VITS2
+SDP_RATIO = 0.2
