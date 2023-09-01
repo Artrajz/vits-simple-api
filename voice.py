@@ -70,6 +70,10 @@ class TTS:
         return self._w2v2_speakers_count
 
     @property
+    def w2v2_emotion_count(self):
+        return self._w2v2_emotion_count
+
+    @property
     def bert_vits2_speakers_count(self):
         return self._bert_vits2_speakers_count
 

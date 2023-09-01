@@ -48,9 +48,10 @@ def index():
     kwargs = {
         "speakers": tts.voice_speakers,
         "speakers_count": tts.speakers_count,
-        "vits_speakers_count": tts._vits_speakers_count,
-        "w2v2_speakers_count": tts._w2v2_speakers_count,
-        "w2v2_emotion_count": tts._w2v2_emotion_count
+        "vits_speakers_count": tts.vits_speakers_count,
+        "w2v2_speakers_count": tts.w2v2_speakers_count,
+        "w2v2_emotion_count": tts.w2v2_emotion_count,
+        "bert_vits2_speakers_count": tts.bert_vits2_speakers_count
     }
     return render_template("index.html", **kwargs)
 
@@ -395,7 +396,7 @@ def dimensional_emotion():
         return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
 
-@app.route('/voice/bert_vits2', methods=["GET", "POST"])
+@app.route('/voice/bert-vits2', methods=["GET", "POST"])
 @require_api_key
 def voice_bert_vits2_api():
     try:
