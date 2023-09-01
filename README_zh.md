@@ -18,10 +18,10 @@
 
 # Feature
 
-- [x] VITS语音合成
-- [x] VITS语音转换
+- [x] VITS语音合成，语音转换
 - [x] HuBert-soft VITS模型
 - [x] W2V2 VITS / emotional-vits维度情感模型
+- [x] Bert-VITS2
 - [x] 加载多模型
 - [x] 自动识别语言并处理，根据模型的cleaner设置语言类型识别的范围，支持自定义语言类型范围
 - [x] 自定义默认参数
@@ -30,6 +30,8 @@
 - [x] SSML语音合成标记语言（完善中...）
 
 <details><summary>Update Logs</summary><pre><code>
+<h2>2023.9.1</h2>
+<p>更新Bert-VITS2支持，更换为GPLv3许可证。</p>
 <h2>2023.6.5</h2>
 <p>更换音频编码使用的库，增加flac格式，增加中文对读简单数学公式的支持</p>
 <h2>2023.5.24</h2>
@@ -524,12 +526,6 @@ def voice_dimensional_emotion(upload_path):
 | 噪声          | noise     | true    |         | float | 样本噪声，控制合成的随机性。                     |
 | sdp噪声       | noisew    | true    |         | float | 随机时长预测器噪声，控制音素发音长度。           |
 
-## Dimensional emotion
-
-| Name     | Parameter | Is must | Default | Type | Instruction                   |
-| -------- | --------- | ------- | ------- | ---- | ----------------------------- |
-| 上传音频 | upload    | true    |         | file | 返回存储维度情感向量的npy文件 |
-
 ## W2V2-VITS
 
 | Name          | Parameter | Is must | Default | Type  | Instruction                                                  |
@@ -543,6 +539,26 @@ def voice_dimensional_emotion(upload_path):
 | sdp噪声       | noisew    | false   | 0.4     | float | 随机时长预测器噪声，控制音素发音长度。                       |
 | 分段阈值      | max       | false   | 50      | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
 | 维度情感      | emotion   | false   | 0       | int   | 范围取决于npy情感参考文件，如[innnky](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)的all_emotions.npy模型范围是0-5457 |
+
+## Dimensional emotion
+
+| Name     | Parameter | Is must | Default | Type | Instruction                   |
+| -------- | --------- | ------- | ------- | ---- | ----------------------------- |
+| 上传音频 | upload    | true    |         | file | 返回存储维度情感向量的npy文件 |
+
+## Bert-VITS2语音合成
+
+| Name          | Parameter | Is must | Default | Type  | Instruction                                                  |
+| ------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
+| 合成文本      | text      | true    |         | str   | 需要合成语音的文本。                                         |
+| 角色id        | id        | false   | 0       | int   | 即说话人id。                                                 |
+| 音频格式      | format    | false   | wav     | str   | 支持wav,ogg,silk,mp3,flac                                    |
+| 文本语言      | lang      | false   | auto    | str   | 目前只有中文。                                               |
+| 语音长度/语速 | length    | false   | 1.0     | float | 调节语音长度，相当于调节语速，该数值越大语速越慢。           |
+| 噪声          | noise     | false   | 0.5     | float | 样本噪声，控制合成的随机性。                                 |
+| sdp噪声       | noisew    | false   | 0.6     | float | 随机时长预测器噪声，控制音素发音长度。                       |
+| 分段阈值      | max       | false   | 50      | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
+| SDP/DP混合比  | sdp_ratio | false   | 0.2     | int   | SDP在合成时的占比，理论上此比率越高，合成的语音语调方差越大。 |
 
 ## SSML语音合成标记语言
 目前支持的元素与属性
