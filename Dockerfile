@@ -5,6 +5,8 @@ WORKDIR /app
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+COPY . /app
+
 RUN apt-get update && \
     apt-get install -yq build-essential espeak-ng cmake wget && \
     apt-get clean && \
@@ -25,7 +27,6 @@ RUN wget https://raw.githubusercontent.com/Artrajz/archived/main/openjtalk/openj
 
 RUN pip install torch --index-url https://download.pytorch.org/whl/cpu --no-cache-dir
 
-COPY requirements.txt /app
 RUN pip install -r requirements.txt --no-cache-dir
 
 RUN cd bert_vits2/monotonic_align && \
@@ -35,7 +36,7 @@ RUN cd bert_vits2/monotonic_align && \
 
 RUN pip install gunicorn --no-cache-dir
 
-COPY . /app
+
 
 EXPOSE 23456
 
