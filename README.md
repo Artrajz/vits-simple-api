@@ -18,9 +18,9 @@
 
 # Feature
 
-- [x] VITS text-to-speech
-- [x] VITS voice conversion
+- [x] VITS text-to-speech, voice conversion
 - [x] HuBert-soft VITS
+- [x] Bert-VITS2
 - [x] W2V2 VITS / emotional-vits dimensional emotion model
 - [x] Support for loading multiple models
 - [x] Automatic language recognition and processing,set the scope of language type recognition according to model's cleaner,support for custom language type range
@@ -30,6 +30,8 @@
 - [x] SSML (Speech Synthesis Markup Language) work in progress...
 
 <details><summary>Update Logs</summary><pre><code>
+<h2>2023.9.1</h2>
+<p>Updated support for Bert-VITS2. Switched to the GPLv3 license.</p>
 <h2>2023.6.5</h2>
 <p>Replace the library used for audio encoding, add support for the FLAC format, and enhance support for reading simple mathematical formulas in Chinese.</p>
 <h2>2023.5.24</h2>
@@ -543,6 +545,20 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 | Name           | Parameter | Is must | Default | Type | Instruction                                                  |
 | -------------- | --------- | ------- | ------- | ---- | ------------------------------------------------------------ |
 | Uploaded Audio | upload    | true    |         | file | Return the npy file that stores the dimensional emotion vectors. |
+
+## Bert-VITS2
+
+| Name                   | Parameter | Is must | Default | Type  | Instruction                                                  |
+| ---------------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
+| Synthesized text       | text      | true    |         | str   | Text needed for voice synthesis.                             |
+| Speaker ID             | id        | false   | 0       | int   | The speaker ID.                                              |
+| Audio format           | format    | false   | wav     | str   | Support for wav,ogg,silk,mp3,flac                            |
+| Text language          | lang      | false   | auto    | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
+| Audio length           | length    | false   | 1.0     | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise                  | noise     | false   | 0.33    | float | Sample noise, controlling the randomness of the synthesis.   |
+| SDP noise              | noisew    | false   | 0.4     | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
+| Segmentation threshold | max       | false   | 50      | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
+| SDP/DP mix ratio       | sdp_ratio | false   | 0.2     | int   | The theoretical proportion of SDP during synthesis, the higher the ratio, the larger the variance in synthesized voice tone. |
 
 ## SSML (Speech Synthesis Markup Language)
 

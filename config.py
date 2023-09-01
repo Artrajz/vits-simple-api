@@ -55,13 +55,16 @@ ESPEAK_LIBRARY = ""
 # Fill in the model path here
 MODEL_LIST = [
     # VITS
-    [ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/config.json"],
-    [ABS_PATH + "/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH + "/Model/Zero_no_tsukaima/config.json"],
-    [ABS_PATH + "/Model/g/G_953000.pth", ABS_PATH + "/Model/g/config.json"],
+    # [ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/config.json"],
+    # [ABS_PATH + "/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH + "/Model/Zero_no_tsukaima/config.json"],
+    # [ABS_PATH + "/Model/g/G_953000.pth", ABS_PATH + "/Model/g/config.json"],
+    # [ABS_PATH + "/Model/vits_chinese/vits_bert_model.pth", ABS_PATH + "/Model/vits_chinese/bert_vits.json"],
     # HuBert-VITS (Need to configure HUBERT_SOFT_MODEL)
     # [ABS_PATH + "/Model/louise/360_epochs.pth", ABS_PATH + "/Model/louise/config.json"],
     # W2V2-VITS (Need to configure DIMENSIONAL_EMOTION_NPY)
     # [ABS_PATH + "/Model/w2v2-vits/1026_epochs.pth", ABS_PATH + "/Model/w2v2-vits/config.json"],
+    # Bert-VITS2
+    # [ABS_PATH + "/bert_vits2/G_9000.pth", ABS_PATH + "/bert_vits2/config.json"],
 ]
 
 # hubert-vits: hubert soft model
@@ -95,3 +98,6 @@ NOISEW = 0.4
 # 长文本分段阈值，max<=0表示不分段.
 # Batch processing threshold. Text will not be processed in batches if max<=0
 MAX = 50
+
+# Bert_VITS2
+SDP_RATIO = 0.2

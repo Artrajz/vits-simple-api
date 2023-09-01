@@ -1,0 +1,1 @@
+from .vits import VITS

@@ -13,3 +13,4 @@ services:
       - ./config.py:/app/config.py # 挂载配置文件
       - ./logs:/app/logs # logging logs
       - ./gunicorn_config.py:/app/gunicorn_config.py # gunicorn configuration
+      - ./bert_vits2/bert/chinese-roberta-wwm-ext-large:/app/bert_vits2/bert/chinese-roberta-wwm-ext-large
