@@ -4,7 +4,6 @@ import re
 import cn2an
 from pypinyin import lazy_pinyin, Style
 
-from bert_vits2.text import symbols
 from bert_vits2.text.symbols import punctuation
 from bert_vits2.text.tone_sandhi import ToneSandhi
 
@@ -175,12 +174,12 @@ def text_normalize(text):
 
 
 def get_bert_feature(text, word2ph):
-    from text import chinese_bert
+    from bert_vits2.text import chinese_bert
     return chinese_bert.get_bert_feature(text, word2ph)
 
 
 if __name__ == '__main__':
-    from text.chinese_bert import get_bert_feature
+    from bert_vits2.text import get_bert_feature
 
     text = "啊！但是《原神》是由,米哈\游自主，  [研发]的一款全.新开放世界.冒险游戏"
     text = text_normalize(text)

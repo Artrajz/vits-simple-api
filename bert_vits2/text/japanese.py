@@ -4,7 +4,7 @@ import sys
 
 import pyopenjtalk
 
-from text import symbols
+from bert_vits2.text import symbols
 
 # Regular expression matching Japanese without punctuation marks:
 _japanese_characters = re.compile(
