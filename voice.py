@@ -45,9 +45,10 @@ class TTS:
         if self._vits_speakers_count != 0: self.logger.info(f"[VITS] {self._vits_speakers_count} speakers")
         if self._hubert_speakers_count != 0: self.logger.info(f"[hubert] {self._hubert_speakers_count} speakers")
         if self._w2v2_speakers_count != 0: self.logger.info(f"[w2v2] {self._w2v2_speakers_count} speakers")
-        self.logger.info(f"{self._speakers_count} speakers in total")
+        if self._bert_vits2_speakers_count != 0: self.logger.info(f"[Bert-VITS2] {self._bert_vits2_speakers_count} speakers")
+        self.logger.info(f"{self._speakers_count} speakers in total.")
         if self._speakers_count == 0:
-            self.logger.warning(f"No model was loaded")
+            self.logger.warning(f"No model was loaded.")
 
     @property
     def voice_speakers(self):

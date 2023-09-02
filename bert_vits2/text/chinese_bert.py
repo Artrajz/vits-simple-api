@@ -1,12 +1,19 @@
 import config
 import torch
 from transformers import AutoTokenizer, AutoModelForMaskedLM
+from logger import logger
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-tokenizer = AutoTokenizer.from_pretrained(config.ABS_PATH + "/bert_vits2/bert/chinese-roberta-wwm-ext-large")
-model = AutoModelForMaskedLM.from_pretrained(config.ABS_PATH + "/bert_vits2/bert/chinese-roberta-wwm-ext-large").to(
-    device)
+try:
+    logger.info("Loading chinese-roberta-wwm-ext-large...")
+    tokenizer = AutoTokenizer.from_pretrained(config.ABS_PATH + "/bert_vits2/bert/chinese-roberta-wwm-ext-large")
+    model = AutoModelForMaskedLM.from_pretrained(config.ABS_PATH + "/bert_vits2/bert/chinese-roberta-wwm-ext-large").to(
+        device)
+    logger.info("Loading finished.")
+except Exception as e:
+    logger.error(e)
+    logger.error(f"Please download model from hfl/chinese-roberta-wwm-ext-large.")
 
 
 def get_bert_feature(text, word2ph):
