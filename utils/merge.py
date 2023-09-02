@@ -8,7 +8,7 @@ from utils.utils import check_is_none
 from vits import VITS
 from voice import TTS
 
-device = torch.device("cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 lang_dict = {
     "english_cleaners": ["en"],
@@ -196,6 +196,6 @@ def merge_model(merging_model):
                       "BERT-VITS2": bert_vits2_speakers}
     w2v2_emotion_count = len(emotion_reference) if emotion_reference is not None else 0
 
-    tts = TTS(voice_obj, voice_speakers, w2v2_emotion_count=w2v2_emotion_count)
+    tts = TTS(voice_obj, voice_speakers, w2v2_emotion_count=w2v2_emotion_count, device=device)
 
     return tts
