@@ -128,7 +128,8 @@ def merge_model(merging_model):
                 vits_speakers.append({"id": new_id, "name": name, "lang": lang})
                 new_id += 1
         else:
-            for id, (name, _) in enumerate(obj.get_speakers().items()):
+            speakers = [item[0] for item in sorted(list(obj.get_speakers().items()), key=lambda x: x[1])]
+            for id, name in enumerate(speakers):
                 vits_obj.append([int(id), obj, obj_id])
                 vits_speakers.append({"id": new_id, "name": name, "lang": lang})
                 new_id += 1
