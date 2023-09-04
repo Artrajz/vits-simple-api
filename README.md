@@ -20,7 +20,8 @@
 
 - [x] VITS text-to-speech, voice conversion
 - [x] HuBert-soft VITS
-- [x] Bert-VITS2
+- [x] [vits_chinese](https://github.com/PlayVoice/vits_chinese)
+- [x] [Bert-VITS2](https://github.com/Stardust-minus/Bert-VITS2)
 - [x] W2V2 VITS / emotional-vits dimensional emotion model
 - [x] Support for loading multiple models
 - [x] Automatic language recognition and processing,set the scope of language type recognition according to model's cleaner,support for custom language type range
@@ -28,33 +29,6 @@
 - [x] Long text batch processing
 - [x] GPU accelerated inference
 - [x] SSML (Speech Synthesis Markup Language) work in progress...
-
-<details><summary>Update Logs</summary><pre><code>
-<h2>2023.9.1</h2>
-<p>Updated support for Bert-VITS2. Switched to the GPLv3 license.</p>
-<h2>2023.6.5</h2>
-<p>Replace the library used for audio encoding, add support for the FLAC format, and enhance support for reading simple mathematical formulas in Chinese.</p>
-<h2>2023.5.24</h2>
-<p>Added api dimensional_emotion,load mutiple npy from folder.Docker add linux/arm64 and linux/arm64/v8 platforms</p>
-<h2>2023.5.15</h2>
-<p>Added english_cleaner. To use it, you need to install espeak separately.</p>
-<h2>2023.5.12</h2>
-<p>Added support for SSML, but still needs improvement. Refactored some functions and changed "speaker_id" to "id" in hubert_vits.</p>
-<h2>2023.5.2</h2>
-<p>Added support for the w2v2-vits/emotional-vits model, updated the speakers mapping table, and added support for the languages corresponding to the model.</p>
-<h2>2023.4.23</h2>
-<p>Add API Key authentication, disabled by default, needs to be enabled in config.py.</p>
-<h2>2023.4.17</h2>
-<p>Added the feature that the cleaner for a single language needs to be annotated to clean, and added GPU acceleration for inference, but the GPU inference environment needs to be manually installed.</p>
-<h2>2023.4.12</h2>
-<p>Renamed the project from MoeGoe-Simple-API to vits-simple-api, added support for batch processing of long texts, and added a segment threshold "max" for long texts.</p>
-<h2>2023.4.7</h2>
-<p>Added a configuration file to customize default parameters. This update requires manually updating config.py. See config.py for specific usage.</p>
-<h2>2023.4.6</h2>
-<p>Added the "auto" option for automatically recognizing the language of the text. Modified the default value of the "lang" parameter to "auto". Automatic recognition still has some defects, please choose manually.</p>
-<p>Unified the POST request type as multipart/form-data.</p>
-</code></pre></details>
-
 
 
 ## demo
@@ -495,17 +469,17 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 
 ## VITS
 
-| Name                   | Parameter | Is must | Default | Type  | Instruction                                                  |
-| ---------------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
-| Synthesized text       | text      | true    |         | str   | Text needed for voice synthesis.                             |
-| Speaker ID             | id        | false   | 0       | int   | The speaker ID.                                              |
-| Audio format           | format    | false   | wav     | str   | Support for wav,ogg,silk,mp3,flac                            |
-| Text language          | lang      | false   | auto    | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
-| Audio length           | length    | false   | 1.0     | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
-| Noise                  | noise     | false   | 0.33    | float | Sample noise, controlling the randomness of the synthesis.   |
-| SDP noise              | noisew    | false   | 0.4     | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
-| Segmentation threshold | max       | false   | 50      | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
-| Streaming response     | streaming | false   | false   | bool  | Streamed synthesized speech with faster initial response.    |
+| Name                   | Parameter | Is must | Default          | Type  | Instruction                                                  |
+| ---------------------- | --------- | ------- | ---------------- | ----- | ------------------------------------------------------------ |
+| Synthesized text       | text      | true    |                  | str   | Text needed for voice synthesis.                             |
+| Speaker ID             | id        | false   | From `config.py` | int   | The speaker ID.                                              |
+| Audio format           | format    | false   | From `config.py` | str   | Support for wav,ogg,silk,mp3,flac                            |
+| Text language          | lang      | false   | From `config.py` | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
+| Audio length           | length    | false   | From `config.py` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise                  | noise     | false   | From `config.py` | float | Sample noise, controlling the randomness of the synthesis.   |
+| SDP noise              | noisew    | false   | From `config.py` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
+| Segmentation threshold | max       | false   | v                | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
+| Streaming response     | streaming | false   | false            | bool  | Streamed synthesized speech with faster initial response.    |
 
 ## VITS voice conversion
 
@@ -528,17 +502,17 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 
 ## W2V2-VITS
 
-| Name                   | Parameter | Is must | Default | Type  | Instruction                                                  |
-| ---------------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
-| Synthesized text       | text      | true    |         | str   | Text needed for voice synthesis.                             |
-| Speaker ID             | id        | false   | 0       | int   | The speaker ID.                                              |
-| Audio format           | format    | false   | wav     | str   | Support for wav,ogg,silk,mp3,flac                            |
-| Text language          | lang      | false   | auto    | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
-| Audio length           | length    | false   | 1.0     | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
-| Noise                  | noise     | false   | 0.33    | float | Sample noise, controlling the randomness of the synthesis.   |
-| SDP noise              | noisew    | false   | 0.4     | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
-| Segmentation threshold | max       | false   | 50      | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
-| Dimensional emotion    | emotion   | false   | 0       | int   | The range depends on the emotion reference file in npy format, such as the  range of the [innnky](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)'s model all_emotions.npy, which is 0-5457. |
+| Name                   | Parameter | Is must | Default          | Type  | Instruction                                                  |
+| ---------------------- | --------- | ------- | ---------------- | ----- | ------------------------------------------------------------ |
+| Synthesized text       | text      | true    |                  | str   | Text needed for voice synthesis.                             |
+| Speaker ID             | id        | false   | From `config.py` | int   | The speaker ID.                                              |
+| Audio format           | format    | false   | From `config.py` | str   | Support for wav,ogg,silk,mp3,flac                            |
+| Text language          | lang      | false   | From `config.py` | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
+| Audio length           | length    | false   | From `config.py` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise                  | noise     | false   | From `config.py` | float | Sample noise, controlling the randomness of the synthesis.   |
+| SDP noise              | noisew    | false   | From `config.py` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
+| Segmentation threshold | max       | false   | From `config.py` | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
+| Dimensional emotion    | emotion   | false   | 0                | int   | The range depends on the emotion reference file in npy format, such as the  range of the [innnky](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)'s model all_emotions.npy, which is 0-5457. |
 
 ## Dimensional emotion
 
@@ -548,17 +522,17 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 
 ## Bert-VITS2
 
-| Name                   | Parameter | Is must | Default | Type  | Instruction                                                  |
-| ---------------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
-| Synthesized text       | text      | true    |         | str   | Text needed for voice synthesis.                             |
-| Speaker ID             | id        | false   | 0       | int   | The speaker ID.                                              |
-| Audio format           | format    | false   | wav     | str   | Support for wav,ogg,silk,mp3,flac                            |
-| Text language          | lang      | false   | auto    | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
-| Audio length           | length    | false   | 1.0     | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
-| Noise                  | noise     | false   | 0.33    | float | Sample noise, controlling the randomness of the synthesis.   |
-| SDP noise              | noisew    | false   | 0.4     | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
-| Segmentation threshold | max       | false   | 50      | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
-| SDP/DP mix ratio       | sdp_ratio | false   | 0.2     | int   | The theoretical proportion of SDP during synthesis, the higher the ratio, the larger the variance in synthesized voice tone. |
+| Name                   | Parameter | Is must | Default          | Type  | Instruction                                                  |
+| ---------------------- | --------- | ------- | ---------------- | ----- | ------------------------------------------------------------ |
+| Synthesized text       | text      | true    |                  | str   | Text needed for voice synthesis.                             |
+| Speaker ID             | id        | false   | From `config.py` | int   | The speaker ID.                                              |
+| Audio format           | format    | false   | From `config.py` | str   | Support for wav,ogg,silk,mp3,flac                            |
+| Text language          | lang      | false   | From `config.py` | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
+| Audio length           | length    | false   | From `config.py` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise                  | noise     | false   | From `config.py` | float | Sample noise, controlling the randomness of the synthesis.   |
+| SDP noise              | noisew    | false   | From `config.py` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
+| Segmentation threshold | max       | false   | From `config.py` | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
+| SDP/DP mix ratio       | sdp_ratio | false   | From `config.py` | int   | The theoretical proportion of SDP during synthesis, the higher the ratio, the larger the variance in synthesized voice tone. |
 
 ## SSML (Speech Synthesis Markup Language)
 

@@ -21,40 +21,14 @@
 - [x] VITS语音合成，语音转换
 - [x] HuBert-soft VITS模型
 - [x] W2V2 VITS / emotional-vits维度情感模型
-- [x] Bert-VITS2
+- [x] [vits_chinese](https://github.com/PlayVoice/vits_chinese)
+- [x] [Bert-VITS2](https://github.com/Stardust-minus/Bert-VITS2)
 - [x] 加载多模型
 - [x] 自动识别语言并处理，根据模型的cleaner设置语言类型识别的范围，支持自定义语言类型范围
 - [x] 自定义默认参数
 - [x] 长文本批处理
 - [x] GPU加速推理
 - [x] SSML语音合成标记语言（完善中...）
-
-<details><summary>Update Logs</summary><pre><code>
-<h2>2023.9.1</h2>
-<p>更新Bert-VITS2支持，更换为GPLv3许可证。</p>
-<h2>2023.6.5</h2>
-<p>更换音频编码使用的库，增加flac格式，增加中文对读简单数学公式的支持</p>
-<h2>2023.5.24</h2>
-<p>添加dimensional_emotion api,从文件夹加载多个npy文件,Docker添加了Linux/ARM64和Linux/ARM64/v8平台</p>
-<h2>2023.5.15</h2>
-<p>增加english_cleaner，需要额外安装espeak才能使用</p>
-<h2>2023.5.12</h2>
-<p>增加ssml支持，但仍需完善。重构部分功能，hubert_vits中的speaker_id改为id</p>
-<h2>2023.5.2</h2>
-<p>增加w2v2-vits/emotional-vits模型支持，修改了speakers映射表并添加了对应模型支持的语言</p>
-<h2>2023.4.23</h2>
-<p>增加api key鉴权，默认禁用，需要在config.py中启用</p>
-<h2>2023.4.17</h2>
-<p>修改单语言的cleaner需要标注才会clean，增加GPU加速推理，但需要手动安装gpu推理环境</p>
-<h2>2023.4.12</h2>
-<p>项目由MoeGoe-Simple-API更名为vits-simple-api，支持长文本批处理，增加长文本分段阈值max</p>
-<h2>2023.4.7</h2>
-<p>增加配置文件可自定义默认参数，本次更新需要手动更新config.py，具体使用方法见config.py</p>
-<h2>2023.4.6</h2>
-<p>加入自动识别语种选项auto，lang参数默认修改为auto，自动识别仍有一定缺陷，请自行选择</p>
-<p>统一POST请求类型为multipart/form-data</p>
-</code></pre></details>
-
 
 
 ## demo
@@ -495,17 +469,17 @@ def voice_dimensional_emotion(upload_path):
 
 ## VITS语音合成
 
-| Name          | Parameter | Is must | Default | Type  | Instruction                                                  |
-| ------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
-| 合成文本      | text      | true    |         | str   | 需要合成语音的文本。                                         |
-| 角色id        | id        | false   | 0       | int   | 即说话人id。                                                 |
-| 音频格式      | format    | false   | wav     | str   | 支持wav,ogg,silk,mp3,flac                                    |
-| 文本语言      | lang      | false   | auto    | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹。方言无法自动识别。 |
-| 语音长度/语速 | length    | false   | 1.0     | float | 调节语音长度，相当于调节语速，该数值越大语速越慢。           |
-| 噪声          | noise     | false   | 0.33    | float | 样本噪声，控制合成的随机性。                                 |
-| sdp噪声       | noisew    | false   | 0.4     | float | 随机时长预测器噪声，控制音素发音长度。                       |
-| 分段阈值      | max       | false   | 50      | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
-| 流式响应      | streaming | false   | false   | bool  | 流式合成语音，更快的首包响应。                               |
+| Name          | Parameter | Is must | Default             | Type  | Instruction                                                  |
+| ------------- | --------- | ------- | ------------------- | ----- | ------------------------------------------------------------ |
+| 合成文本      | text      | true    |                     | str   | 需要合成语音的文本。                                         |
+| 角色id        | id        | false   | 从`config.py`中获取 | int   | 即说话人id。                                                 |
+| 音频格式      | format    | false   | 从`config.py`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
+| 文本语言      | lang      | false   | 从`config.py`中获取 | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹。方言无法自动识别。 |
+| 语音长度/语速 | length    | false   | 从`config.py`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢。           |
+| 噪声          | noise     | false   | 从`config.py`中获取 | float | 样本噪声，控制合成的随机性。                                 |
+| sdp噪声       | noisew    | false   | 从`config.py`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
+| 分段阈值      | max       | false   | 从`config.py`中获取 | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
+| 流式响应      | streaming | false   | false               | bool  | 流式合成语音，更快的首包响应。                               |
 
 ## VITS 语音转换
 
@@ -528,17 +502,17 @@ def voice_dimensional_emotion(upload_path):
 
 ## W2V2-VITS
 
-| Name          | Parameter | Is must | Default | Type  | Instruction                                                  |
-| ------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
-| 合成文本      | text      | true    |         | str   | 需要合成语音的文本。                                         |
-| 角色id        | id        | false   | 0       | int   | 即说话人id。                                                 |
-| 音频格式      | format    | false   | wav     | str   | 支持wav,ogg,silk,mp3,flac                                    |
-| 文本语言      | lang      | false   | auto    | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹。方言无法自动识别。 |
-| 语音长度/语速 | length    | false   | 1.0     | float | 调节语音长度，相当于调节语速，该数值越大语速越慢             |
-| 噪声          | noise     | false   | 0.33    | float | 样本噪声，控制合成的随机性。                                 |
-| sdp噪声       | noisew    | false   | 0.4     | float | 随机时长预测器噪声，控制音素发音长度。                       |
-| 分段阈值      | max       | false   | 50      | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
-| 维度情感      | emotion   | false   | 0       | int   | 范围取决于npy情感参考文件，如[innnky](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)的all_emotions.npy模型范围是0-5457 |
+| Name          | Parameter | Is must | Default             | Type  | Instruction                                                  |
+| ------------- | --------- | ------- | ------------------- | ----- | ------------------------------------------------------------ |
+| 合成文本      | text      | true    |                     | str   | 需要合成语音的文本。                                         |
+| 角色id        | id        | false   | 从`config.py`中获取 | int   | 即说话人id。                                                 |
+| 音频格式      | format    | false   | 从`config.py`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
+| 文本语言      | lang      | false   | 从`config.py`中获取 | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹。方言无法自动识别。 |
+| 语音长度/语速 | length    | false   | 从`config.py`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢             |
+| 噪声          | noise     | false   | 从`config.py`中获取 | float | 样本噪声，控制合成的随机性。                                 |
+| sdp噪声       | noisew    | false   | 从`config.py`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
+| 分段阈值      | max       | false   | 从`config.py`中获取 | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
+| 维度情感      | emotion   | false   | 0                   | int   | 范围取决于npy情感参考文件，如[innnky](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)的all_emotions.npy模型范围是0-5457 |
 
 ## Dimensional emotion
 
@@ -548,17 +522,17 @@ def voice_dimensional_emotion(upload_path):
 
 ## Bert-VITS2语音合成
 
-| Name          | Parameter | Is must | Default | Type  | Instruction                                                  |
-| ------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
-| 合成文本      | text      | true    |         | str   | 需要合成语音的文本。                                         |
-| 角色id        | id        | false   | 0       | int   | 即说话人id。                                                 |
-| 音频格式      | format    | false   | wav     | str   | 支持wav,ogg,silk,mp3,flac                                    |
-| 文本语言      | lang      | false   | auto    | str   | 目前只有中文。                                               |
-| 语音长度/语速 | length    | false   | 1.0     | float | 调节语音长度，相当于调节语速，该数值越大语速越慢。           |
-| 噪声          | noise     | false   | 0.5     | float | 样本噪声，控制合成的随机性。                                 |
-| sdp噪声       | noisew    | false   | 0.6     | float | 随机时长预测器噪声，控制音素发音长度。                       |
-| 分段阈值      | max       | false   | 50      | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
-| SDP/DP混合比  | sdp_ratio | false   | 0.2     | int   | SDP在合成时的占比，理论上此比率越高，合成的语音语调方差越大。 |
+| Name          | Parameter | Is must | Default             | Type  | Instruction                                                  |
+| ------------- | --------- | ------- | ------------------- | ----- | ------------------------------------------------------------ |
+| 合成文本      | text      | true    |                     | str   | 需要合成语音的文本。                                         |
+| 角色id        | id        | false   | 从`config.py`中获取 | int   | 即说话人id。                                                 |
+| 音频格式      | format    | false   | 从`config.py`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
+| 文本语言      | lang      | false   | 从`config.py`中获取 | str   | 目前只有中文。                                               |
+| 语音长度/语速 | length    | false   | 从`config.py`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢。           |
+| 噪声          | noise     | false   | 从`config.py`中获取 | float | 样本噪声，控制合成的随机性。                                 |
+| sdp噪声       | noisew    | false   | 从`config.py`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
+| 分段阈值      | max       | false   | 从`config.py`中获取 | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
+| SDP/DP混合比  | sdp_ratio | false   | 从`config.py`中获取 | int   | SDP在合成时的占比，理论上此比率越高，合成的语音语调方差越大。 |
 
 ## SSML语音合成标记语言
 目前支持的元素与属性
