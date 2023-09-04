@@ -66,7 +66,9 @@ class Bert_VITS2:
             audio = self.net_g.infer(x_tst, x_tst_lengths, speakers, tones, lang_ids, bert, sdp_ratio=sdp_ratio
                                      , noise_scale=noise_scale, noise_scale_w=noise_scale_w, length_scale=length_scale)[
                 0][0, 0].data.cpu().float().numpy()
-            return audio
+
+        torch.cuda.empty_cache()
+        return audio
 
     def get_audio(self, voice, auto_break=False):
         text = voice.get("text", None)
