@@ -18,6 +18,8 @@ class VITS:
         self.n_speakers = getattr(self.hps_ms.data, 'n_speakers', 0)
         self.n_symbols = len(getattr(self.hps_ms, 'symbols', []))
         self.speakers = getattr(self.hps_ms, 'speakers', ['0'])
+        if not isinstance(self.speakers, list):
+            self.speakers = [item[0] for item in sorted(list(self.speakers.items()), key=lambda x: x[1])]
         self.use_f0 = getattr(self.hps_ms.data, 'use_f0', False)
         self.emotion_embedding = getattr(self.hps_ms.data, 'emotion_embedding',
                                          getattr(self.hps_ms.model, 'emotion_embedding', False))

@@ -122,17 +122,10 @@ def merge_model(merging_model):
     for obj_id, i in enumerate(vits_list):
         obj = VITS(model=i[0], config=i[1], model_type="vits", device=device)
         lang = lang_dict.get(obj.get_cleaner(), ["unknown"])
-        if isinstance(obj.get_speakers(), list):
-            for id, name in enumerate(obj.get_speakers()):
-                vits_obj.append([int(id), obj, obj_id])
-                vits_speakers.append({"id": new_id, "name": name, "lang": lang})
-                new_id += 1
-        else:
-            speakers = [item[0] for item in sorted(list(obj.get_speakers().items()), key=lambda x: x[1])]
-            for id, name in enumerate(speakers):
-                vits_obj.append([int(id), obj, obj_id])
-                vits_speakers.append({"id": new_id, "name": name, "lang": lang})
-                new_id += 1
+        for id, name in enumerate(obj.get_speakers()):
+            vits_obj.append([int(id), obj, obj_id])
+            vits_speakers.append({"id": new_id, "name": name, "lang": lang})
+            new_id += 1
 
     # merge hubert-vits
     if len(hubert_vits_list) != 0:
@@ -180,16 +173,11 @@ def merge_model(merging_model):
         from bert_vits2 import Bert_VITS2
         obj = Bert_VITS2(model=i[0], config=i[1], device=device)
         lang = ["ZH"]
-        if isinstance(obj.get_speakers(), list):
-            for id, name in enumerate(obj.get_speakers()):
-                bert_vits2_obj.append([int(id), obj, obj_id])
-                bert_vits2_speakers.append({"id": new_id, "name": name, "lang": lang})
-                new_id += 1
-        else:
-            for id, (name, _) in enumerate(obj.get_speakers().items()):
-                bert_vits2_obj.append([int(id), obj, obj_id])
-                bert_vits2_speakers.append({"id": new_id, "name": name, "lang": lang})
-                new_id += 1
+        for id, name in enumerate(obj.get_speakers()):
+            bert_vits2_obj.append([int(id), obj, obj_id])
+            bert_vits2_speakers.append({"id": new_id, "name": name, "lang": lang})
+            new_id += 1
+
 
     voice_obj = {"VITS": vits_obj, "HUBERT-VITS": hubert_vits_obj, "W2V2-VITS": w2v2_vits_obj,
                  "BERT-VITS2": bert_vits2_obj}

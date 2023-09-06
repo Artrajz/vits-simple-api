@@ -15,7 +15,7 @@ class Bert_VITS2:
         self.hps_ms = utils.get_hparams_from_file(config)
         self.n_speakers = getattr(self.hps_ms.data, 'n_speakers', 0)
         self.speakers = [item[0] for item in
-                         sorted(list(getattr(self.hps_ms, 'spk2id', {'0': 0}).items()), key=lambda x: x[1])]
+                         sorted(list(getattr(self.hps_ms.data, 'spk2id', {'0': 0}).items()), key=lambda x: x[1])]
         self.net_g = SynthesizerTrn(
             len(symbols),
             self.hps_ms.data.filter_length // 2 + 1,
