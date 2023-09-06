@@ -76,7 +76,7 @@ class Bert_VITS2:
         noise_scale = voice.get("noise", 0.5)
         noise_scale_w = voice.get("noisew", 0.6)
         length_scale = voice.get("length", 1)
-        sid = voice.get("sid", 0)
+        sid = voice.get("id", 0)
         max = voice.get("max", 50)
         sentence_list = sentence_split(text, max, "ZH", ["zh"])
         audios = []
