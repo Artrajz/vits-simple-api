@@ -7,7 +7,7 @@ from bert_vits2 import utils, commons
 from bert_vits2.models import SynthesizerTrn
 from bert_vits2.text import symbols, cleaned_text_to_sequence, get_bert
 from bert_vits2.text.cleaner import clean_text
-from utils.nlp import sentence_split
+from utils.nlp import sentence_split, cut
 
 
 class Bert_VITS2:
@@ -78,7 +78,8 @@ class Bert_VITS2:
         length_scale = voice.get("length", 1)
         sid = voice.get("id", 0)
         max = voice.get("max", 50)
-        sentence_list = sentence_split(text, max, "ZH", ["zh"])
+        # sentence_list = sentence_split(text, max, "ZH", ["zh"])
+        sentence_list = cut(text, max)
         audios = []
         for sentence in sentence_list:
             audio = self.infer(sentence, sdp_ratio, noise_scale, noise_scale_w, length_scale, sid)
