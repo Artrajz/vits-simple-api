@@ -1,20 +1,30 @@
-FROM python:3.10.11-slim-bullseye
+FROM nvidia/cuda:11.3.1-cudnn8-runtime-ubuntu20.04
 
-RUN mkdir -p /app
+ENV PYTHON_VERSION=3.10.11
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        python3=$PYTHON_VERSION* \
+        python3-pip \
+        build-essential \
+        espeak-ng \
+        cmake \
+        wget && \
+    apt-get clean && \
+    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
+    rm -rf /var/lib/apt/lists/* && \
+    ln -s python3 /usr/bin/python && \
+    ln -s pip3 /usr/bin/pip
+
 WORKDIR /app
-
-ENV DEBIAN_FRONTEND=noninteractive
 
 COPY . /app
 
-RUN apt-get update && \
-    apt-get install -yq build-essential espeak-ng cmake wget && \
-    apt-get clean && \
-    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
-    rm -rf /var/lib/apt/lists/*
-
 RUN pip install --upgrade pip --no-cache-dir && \
-    pip install MarkupSafe==2.1.2 numpy==1.23.3 cython six==1.16.0  safetensors==0.3.2 --no-cache-dir
+    pip install MarkupSafe==2.1.2 numpy==1.23.3 cython six==1.16.0 safetensors==0.3.2 --no-cache-dir && \
+    pip install -r requirements.txt --no-cache-dir && \
+    pip install gunicorn --no-cache-dir
+
+RUN pip install torch --index-url https://download.pytorch.org/whl/cu117 --no-cache-dir
 
 RUN wget https://raw.githubusercontent.com/Artrajz/archived/main/openjtalk/openjtalk-0.3.0.dev2.tar.gz && \
     tar -zxvf openjtalk-0.3.0.dev2.tar.gz && \
@@ -25,12 +35,5 @@ RUN wget https://raw.githubusercontent.com/Artrajz/archived/main/openjtalk/openj
     rm -f openjtalk-0.3.0.dev2.tar.gz && \
     rm -rf openjtalk-0.3.0.dev2
 
-RUN pip install torch --index-url https://download.pytorch.org/whl/cu117 --no-cache-dir
-
-RUN pip install -r requirements.txt --no-cache-dir
-
-RUN pip install gunicorn --no-cache-dir
-
 EXPOSE 23456
-
 CMD ["gunicorn", "-c", "gunicorn_config.py", "app:app"]

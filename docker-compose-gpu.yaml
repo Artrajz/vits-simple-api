@@ -1,4 +1,5 @@
-version: '3.4'
+version: '3.8'
+
 services:
   vits:
     image: artrajz/vits-simple-api:latest-gpu
@@ -14,3 +15,5 @@ services:
       - ./logs:/app/logs # logging logs
       - ./gunicorn_config.py:/app/gunicorn_config.py # gunicorn configuration
       - ./bert_vits2/bert/chinese-roberta-wwm-ext-large:/app/bert_vits2/bert/chinese-roberta-wwm-ext-large
+    devices:
+      - "/dev/nvidia0:/dev/nvidia0"
