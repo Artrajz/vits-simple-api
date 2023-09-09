@@ -13,23 +13,10 @@ RUN apt-get update && \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade pip --no-cache-dir && \
-    pip install MarkupSafe==2.1.2 numpy==1.23.3 cython six==1.16.0 safetensors==0.3.2 --no-cache-dir
-
-RUN wget https://raw.githubusercontent.com/Artrajz/archived/main/openjtalk/openjtalk-0.3.0.dev2.tar.gz && \
-    tar -zxvf openjtalk-0.3.0.dev2.tar.gz && \
-    cd openjtalk-0.3.0.dev2 && \
-    rm -rf ./pyopenjtalk/open_jtalk_dic_utf_8-1.11 && \
-    python setup.py install && \
-    cd ../ && \
-    rm -f openjtalk-0.3.0.dev2.tar.gz && \
-    rm -rf openjtalk-0.3.0.dev2
-
 RUN pip install torch --index-url https://download.pytorch.org/whl/cpu --no-cache-dir
 
-RUN pip install -r requirements.txt --no-cache-dir
-
-RUN pip install gunicorn --no-cache-dir
+RUN pip install -r requirements.txt --no-cache-dir -f https://pypi.artrajz.cn/simple && \
+    pip install gunicorn --no-cache-dir
 
 EXPOSE 23456
 
