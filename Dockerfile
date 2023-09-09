@@ -15,7 +15,8 @@ RUN apt-get update && \
 
 RUN pip install torch --index-url https://download.pytorch.org/whl/cpu --no-cache-dir
 
-RUN pip install -r requirements.txt --no-cache-dir -f https://pypi.artrajz.cn/simple && \
+RUN pip install pyopenjtalk==0.3.2 -i https://pypi.artrajz.cn/simple && \
+    pip install -r requirements.txt --no-cache-dir -f https://pypi.artrajz.cn/simple && \
     pip install gunicorn --no-cache-dir
 
 EXPOSE 23456

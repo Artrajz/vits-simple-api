@@ -6,7 +6,7 @@ MarkupSafe==2.1.2
 torch
 unidecode
 six==1.16.0
-openjtalk==0.3.0.dev2
+pyopenjtalk==0.3.2
 jamo
 pypinyin
 jieba

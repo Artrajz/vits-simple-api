@@ -1,27 +1,19 @@
-FROM nvidia/cuda:11.3.1-cudnn8-runtime-ubuntu20.04
+FROM anibali/pytorch:2.0.1-cuda11.8-ubuntu22.04
 
-ENV PYTHON_VERSION=3.10.11
+ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        python3=$PYTHON_VERSION* \
-        python3-pip \
-        build-essential \
-        espeak-ng \
-        cmake \
-        wget && \
+RUN apt-get update && \
+    apt-get install -yq build-essential espeak-ng cmake wget && \
     apt-get clean && \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
-    rm -rf /var/lib/apt/lists/* && \
-    ln -s python3 /usr/bin/python && \
-    ln -s pip3 /usr/bin/pip
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 COPY . /app
 
-RUN pip install torch --index-url https://download.pytorch.org/whl/cu117 --no-cache-dir
-
-RUN pip install -r requirements.txt --no-cache-dir -f https://pypi.artrajz.cn/simple && \
+RUN pip install pyopenjtalk==0.3.2 -i https://pypi.artrajz.cn/simple && \
+    pip install -r requirements.txt --no-cache-dir -f https://pypi.artrajz.cn/simple && \
     pip install gunicorn --no-cache-dir
 
 EXPOSE 23456
