@@ -1,4 +1,4 @@
-FROM anibali/pytorch:2.0.1-cuda11.8-ubuntu22.04
+FROM anibali/pytorch:2.0.0-cuda11.8-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
