@@ -5,8 +5,6 @@ WORKDIR /app
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-COPY . /app
-
 RUN apt-get update && \
     apt-get install -yq build-essential espeak-ng cmake wget && \
     apt-get clean && \
@@ -15,9 +13,14 @@ RUN apt-get update && \
 
 RUN pip install torch --index-url https://download.pytorch.org/whl/cpu --no-cache-dir
 
-RUN pip install pyopenjtalk==0.3.2 -i https://pypi.artrajz.cn/simple --no-cache-dir && \
-    pip install -r requirements.txt --no-cache-dir -f https://pypi.artrajz.cn/simple && \
-    pip install gunicorn --no-cache-dir
+COPY requirements.txt /app/
+RUN pip install --upgrade pip && \
+    pip install pyopenjtalk==0.3.2 -i https://pypi.artrajz.cn/simple --no-cache-dir && \
+    pip install gunicorn --no-cache-dir && \
+    pip install -r requirements.txt --no-cache-dir&& \
+    rm -rf /root/.cache/pip/*
+
+COPY . /app
 
 EXPOSE 23456
 

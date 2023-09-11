@@ -1,4 +1,4 @@
-name: Docker build latest
+name: Docker build latest gpu
 
 on:
   workflow_dispatch:
@@ -30,9 +30,9 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./Dockerfile
+          file: ./Dockerfile_GPU
           push: true
-          platforms: 'linux/amd64,linux/arm64'
-          tags: artrajz/vits-simple-api:latest
+          platforms: 'linux/amd64'
+          tags: artrajz/vits-simple-api:latest-gpu
           cache-from: type=gha
           cache-to: type=gha,mode=max

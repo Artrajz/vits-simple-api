@@ -1,5 +1,8 @@
 FROM anibali/pytorch:2.0.0-cuda11.8-ubuntu22.04
 
+RUN mkdir -p /app
+WORKDIR /app
+
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN sudo apt-get update && \
@@ -8,13 +11,14 @@ RUN sudo apt-get update && \
     sudo apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
     sudo rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+COPY requirements.txt /app/
+RUN pip install --upgrade pip && \
+    pip install pyopenjtalk==0.3.2 -i https://pypi.artrajz.cn/simple --no-cache-dir && \
+    pip install gunicorn --no-cache-dir && \
+    pip install -r requirements.txt --no-cache-dir&& \
+    sudo rm -rf /root/.cache/pip/*
 
 COPY . /app
-
-RUN pip install pyopenjtalk==0.3.2 -i https://pypi.artrajz.cn/simple --no-cache-dir && \
-    pip install -r requirements.txt --no-cache-dir -f https://pypi.artrajz.cn/simple && \
-    pip install gunicorn --no-cache-dir
 
 EXPOSE 23456
 CMD ["gunicorn", "-c", "gunicorn_config.py", "app:app"]
