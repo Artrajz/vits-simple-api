@@ -1,22 +1,22 @@
-FROM anibali/pytorch:2.0.0-cuda11.8-ubuntu22.04
+FROM cnstark/pytorch:2.0.1-py3.10.11-cuda11.8.0-ubuntu22.04
 
 RUN mkdir -p /app
 WORKDIR /app
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN sudo apt-get update && \
-    sudo apt-get install -yq build-essential espeak-ng cmake wget && \
-    sudo apt-get clean && \
-    sudo apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
-    sudo rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -yq build-essential espeak-ng cmake wget && \
+    apt-get clean && \
+    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /app/
 RUN pip install --upgrade pip && \
-    pip install pyopenjtalk==0.3.2 -i https://pypi.artrajz.cn/simple --no-cache-dir && \
+    pip install pyopenjtalk==0.3.2 fasttext -i https://pypi.artrajz.cn/simple --no-cache-dir && \
     pip install gunicorn --no-cache-dir && \
     pip install -r requirements.txt --no-cache-dir&& \
-    sudo rm -rf /root/.cache/pip/*
+    rm -rf /root/.cache/pip/*
 
 COPY . /app
 
