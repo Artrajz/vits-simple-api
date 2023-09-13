@@ -3,6 +3,9 @@ import config
 from .utils import check_is_none
 from logger import logger
 
+# 读取配置选择语种识别库
+clf = getattr(config, "LANGUAGE_IDENTIFICATION_LIBRARY", "fastlid")
+
 
 def clasify_lang(text, speaker_lang):
     pattern = r'[\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\>\=\?\@\[\]\{\}\\\\\^\_\`' \
@@ -12,22 +15,23 @@ def clasify_lang(text, speaker_lang):
 
     pre = ""
     p = 0
+
+    if clf.upper() == "FASTLID" or clf.upper() == "FASTTEXT":
+        from fastlid import fastlid
+        detect = fastlid
+        if speaker_lang != None: fastlid.set_languages = speaker_lang
+    elif clf.upper() == "LANGID":
+        import langid
+        detect = langid.classify
+        if speaker_lang != None: langid.set_languages(speaker_lang)
+    else:
+        raise ValueError(f"Wrong LANGUAGE_IDENTIFICATION_LIBRARY in config.py")
+
     for word in words:
 
         if check_is_none(word): continue
 
-        # 读取配置选择语种识别库
-        clf = getattr(config, "LANGUAGE_IDENTIFICATION_LIBRARY", "fastlid")
-        if clf.upper() == "FASTLID" or clf.upper() == "FASTTEXT":
-            from fastlid import fastlid
-            lang = fastlid(word)[0]
-            if speaker_lang != None: fastlid.set_languages = speaker_lang
-        elif clf.upper() == "LANGID":
-            import langid
-            lang = langid.classify(word)[0]
-            if speaker_lang != None: langid.set_languages(speaker_lang)
-        else:
-            raise ValueError(f"Wrong LANGUAGE_IDENTIFICATION_LIBRARY in config.py")
+        lang = detect(word)[0]
 
         if pre == "":
             text = text[:p] + text[p:].replace(word, f'[{lang.upper()}]' + word, 1)
