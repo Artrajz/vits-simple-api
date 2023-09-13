@@ -1,5 +1,5 @@
 **/__pycache__
 /Model/
-/bert_vits2/monotonic_align/monotonic_align.egg-info/
-/bert_vits2/monotonic_align/dist/
-/bert_vits2/monotonic_align/build/
+/logs/
+/cache/
+/upload/

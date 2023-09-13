@@ -54,7 +54,7 @@ https://user-images.githubusercontent.com/73542220/237995061-c1f25b4e-dd86-438a-
 bash -c "$(wget -O- https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/vits-simple-api-installer-latest.sh)"
 ```
 
-- The platforms currently supported by Docker images are `linux/amd64` and `linux/arm64`.
+- The platforms currently supported by Docker images are `linux/amd64` and `linux/arm64`.(arm64 only has a CPU version)
 - After a successful pull, the vits model needs to be imported before use. Please follow the steps below to import the model.
 
 ### Download  VITS model
@@ -235,15 +235,13 @@ You can find the corresponding command for the version you need on the [official
 ## Linux
 The installation process is similar, but I don't have the environment to test it.
 
-# Openjtalk Installation Issue
+# Dependency Installation Issues
 
-If you are using an arm64 architecture platform, you may encounter some issues during installation due to the lack of arm64-compatible whl files on the official PyPI website. In such cases, you can use the whl file I have built to install Openjtalk.
+Since pypi.org does not have the `pyopenjtalk` whl file, it usually needs to be installed from the source code. This process might be troublesome for some people. Therefore, you can also use the whl I built for installation.
 
 ```
-pip install openjtalk==0.3.0.dev2 --index-url https://pypi.artrajz.cn/simple
+pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 ```
-
-Alternatively, you can manually build a whl file by following the instructions in this [tutorial](https://artrajz.cn/index.php/archives/167/).
 
 # API
 

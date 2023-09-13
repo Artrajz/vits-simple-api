@@ -56,7 +56,7 @@ https://user-images.githubusercontent.com/73542220/237995061-c1f25b4e-dd86-438a-
 bash -c "$(wget -O- https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/vits-simple-api-installer-latest.sh)"
 ```
 
-- 目前docker镜像支持的平台`linux/amd64,linux/arm64`
+- 目前docker镜像支持的平台`linux/amd64,linux/arm64`（arm64仅有CPU版本）
 - 在拉取完成后，需要导入VITS模型才能使用，请根据以下步骤导入模型。
 
 ### 下载VITS模型
@@ -234,15 +234,13 @@ pip3 install torch torchvision torchaudio --index-url https://download.pytorch.o
 
 安装过程类似，但我没有相应的环境所以没办法测试
 
-# Openjtalk安装问题
+# 依赖安装问题
 
-如果你是arm64架构的平台，由于pypi官网上没有arm64对应的whl，可能安装会出现一些问题，你可以使用我构建的whl来安装
+由于pypi.org没有pyopenjtalk的whl文件，通常需要从源代码来安装，这一过程对于一些人来说可能比较麻烦，所以你也可以使用我构建的whl来安装。
 
 ```
-pip install openjtalk==0.3.0.dev2 --index-url https://pypi.artrajz.cn/simple
+pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 ```
-
-或者是自己手动构建一个whl，可以根据[教程](https://artrajz.cn/index.php/archives/167/)来构建
 
 # API
 
