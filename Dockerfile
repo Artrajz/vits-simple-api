@@ -9,7 +9,20 @@ RUN apt-get update && \
     apt-get install -yq build-essential espeak-ng cmake wget && \
     apt-get clean && \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* 
+
+# Install jemalloc
+RUN wget https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 && \
+    tar -xvf jemalloc-5.3.0.tar.bz2 && \
+    cd jemalloc-5.3.0 && \
+    ./configure && \
+    make && \
+    make install && \
+    cd .. && \
+    rm -rf jemalloc-5.3.0* && \
+    ldconfig 
+
+ENV LD_PRELOAD=/usr/local/lib/libjemalloc.so
 
 RUN pip install torch --index-url https://download.pytorch.org/whl/cpu --no-cache-dir
 
