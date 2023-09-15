@@ -6,10 +6,12 @@ WORKDIR /app
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
-    apt-get install -yq build-essential espeak-ng cmake wget && \
+    apt-get install -yq build-essential espeak-ng cmake wget ca-certificates && \
+    update-ca-certificates && \
     apt-get clean && \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
     rm -rf /var/lib/apt/lists/* 
+
 
 # Install jemalloc
 RUN wget https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 && \
