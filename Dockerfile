@@ -24,4 +24,4 @@ COPY . /app
 
 EXPOSE 23456
 
-CMD ["gunicorn", "-c", "gunicorn_config.py", "app:app", "--preload"]
+CMD ["gunicorn", "-c", "gunicorn_config.py", "app:app"]
