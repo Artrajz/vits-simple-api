@@ -8,7 +8,7 @@ services:
       - 23456:23456
     environment:
       LANG: 'C.UTF-8'
-      TZ: Asia/Shanghai #timezone
+      #TZ: Asia/Shanghai #timezone
     volumes:
       - ./Model:/app/Model # 挂载模型文件夹
       - ./config.py:/app/config.py # 挂载配置文件
@@ -17,5 +17,10 @@ services:
       - ./vits/bert:/app/vits/bert # vits_chinese
       - ./bert_vits2/bert/chinese-roberta-wwm-ext-large:/app/bert_vits2/bert/chinese-roberta-wwm-ext-large # Bert-vits2
       - ./pyopenjtalk/open_jtalk_dic_utf_8-1.11:/usr/local/lib/python3.10/site-packages/pyopenjtalk/open_jtalk_dic_utf_8-1.11 #pyopentjalk
-    devices:
-      - "/dev/nvidia0:/dev/nvidia0"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              #device_ids: ['0', '3']
+              capabilities: [gpu]
