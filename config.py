@@ -64,7 +64,7 @@ MODEL_LIST = [
     # W2V2-VITS (Need to configure DIMENSIONAL_EMOTION_NPY)
     # [ABS_PATH + "/Model/w2v2-vits/1026_epochs.pth", ABS_PATH + "/Model/w2v2-vits/config.json"],
     # Bert-VITS2
-    # [ABS_PATH + "/bert_vits2/G_9000.pth", ABS_PATH + "/bert_vits2/config.json"],
+    # [ABS_PATH + "/Model/bert_vits2/G_9000.pth", ABS_PATH + "/Model/bert_vits2/config.json"],
 ]
 
 # hubert-vits: hubert soft model
