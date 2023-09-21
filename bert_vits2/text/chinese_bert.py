@@ -3,20 +3,18 @@ import torch
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 from logger import logger
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 try:
     logger.info("Loading chinese-roberta-wwm-ext-large...")
     tokenizer = AutoTokenizer.from_pretrained(config.ABS_PATH + "/bert_vits2/bert/chinese-roberta-wwm-ext-large")
     model = AutoModelForMaskedLM.from_pretrained(config.ABS_PATH + "/bert_vits2/bert/chinese-roberta-wwm-ext-large").to(
-        device)
+        config.DEVICE)
     logger.info("Loading finished.")
 except Exception as e:
     logger.error(e)
-    logger.error(f"Please download model from hfl/chinese-roberta-wwm-ext-large.")
+    logger.error(f"Please download pytorch_model.bin from hfl/chinese-roberta-wwm-ext-large.")
 
 
-def get_bert_feature(text, word2ph):
+def get_bert_feature(text, word2ph, device=config.DEVICE):
     with torch.no_grad():
         inputs = tokenizer(text, return_tensors='pt')
         for i in inputs:
@@ -37,7 +35,6 @@ def get_bert_feature(text, word2ph):
 
 
 if __name__ == '__main__':
-    # feature = get_bert_feature('你好,我是说的道理。')
     import torch
 
     word_level_feature = torch.rand(38, 1024)  # 12个词,每个词1024维特征

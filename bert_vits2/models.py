@@ -11,7 +11,6 @@ from torch.nn import Conv1d, ConvTranspose1d, AvgPool1d, Conv2d
 from torch.nn.utils import weight_norm, remove_weight_norm, spectral_norm
 
 from bert_vits2.commons import init_weights, get_padding
-from bert_vits2.text import symbols, num_tones, num_languages
 
 
 class DurationDiscriminator(nn.Module):  # vits2
@@ -254,7 +253,10 @@ class TextEncoder(nn.Module):
                  n_layers,
                  kernel_size,
                  p_dropout,
-                 gin_channels=0):
+                 gin_channels=0,
+                 symbols=None,
+                 num_tones=None,
+                 num_languages=None):
         super().__init__()
         self.n_vocab = n_vocab
         self.out_channels = out_channels
@@ -620,6 +622,9 @@ class SynthesizerTrn(nn.Module):
         self.current_mas_noise_scale = self.mas_noise_scale_initial
         if self.use_spk_conditioned_encoder and gin_channels > 0:
             self.enc_gin_channels = gin_channels
+        symbols = kwargs.get("symbols")
+        num_tones = kwargs.get("num_tones")
+        num_languages = kwargs.get("num_languages")
         self.enc_p = TextEncoder(n_vocab,
                                  inter_channels,
                                  hidden_channels,
@@ -628,7 +633,11 @@ class SynthesizerTrn(nn.Module):
                                  n_layers,
                                  kernel_size,
                                  p_dropout,
-                                 gin_channels=self.enc_gin_channels)
+                                 gin_channels=self.enc_gin_channels,
+                                 symbols=symbols,
+                                 num_tones=num_tones,
+                                 num_languages=num_languages
+                                 )
         self.dec = Generator(inter_channels, resblock, resblock_kernel_sizes, resblock_dilation_sizes, upsample_rates,
                              upsample_initial_channel, upsample_kernel_sizes, gin_channels=gin_channels)
         self.enc_q = PosteriorEncoder(spec_channels, inter_channels, hidden_channels, 5, 1, 16,

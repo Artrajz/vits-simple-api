@@ -4,7 +4,7 @@ import re
 import numpy as np
 import torch
 from torch import no_grad, LongTensor, inference_mode, FloatTensor
-from utils.nlp import sentence_split
+from utils.sentence import sentence_split
 from vits.mel_processing import spectrogram_torch
 from vits.text import text_to_sequence
 from vits.models import SynthesizerTrn

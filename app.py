@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 from flask_apscheduler import APScheduler
 from functools import wraps
 from utils.utils import clean_folder, check_is_none
-from utils.merge import merge_model
+from utils.load_model import merge_model
 from io import BytesIO
 
 app = Flask(__name__)
