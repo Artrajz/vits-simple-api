@@ -172,7 +172,7 @@ def merge_model(merging_model):
     for obj_id, i in enumerate(bert_vits2_list):
         from bert_vits2 import Bert_VITS2
         obj = Bert_VITS2(model=i[0], config=i[1], device=device)
-        lang = ["ZH"]
+        lang = ["ZH","JP"]
         for id, name in enumerate(obj.get_speakers()):
             bert_vits2_obj.append([int(id), obj, obj_id])
             bert_vits2_speakers.append({"id": new_id, "name": name, "lang": lang})
