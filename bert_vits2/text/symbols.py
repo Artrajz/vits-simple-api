@@ -168,10 +168,9 @@ num_en_tones = 4
 
 
 def get_symbols(legacy=False):
-    if legacy:
-        ja_symbols = ja_symbols_legacy
+    local_ja_symbols = ja_symbols_legacy if legacy else ja_symbols
     # combine all symbols
-    normal_symbols = sorted(set(zh_symbols + ja_symbols + en_symbols))
+    normal_symbols = sorted(set(zh_symbols + local_ja_symbols + en_symbols))
     symbols = [pad] + normal_symbols + pu_symbols
     sil_phonemes_ids = [symbols.index(i) for i in pu_symbols]
 

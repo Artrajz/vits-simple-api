@@ -1,14 +1,13 @@
 import os
 import json
 import logging
-import torch
 import config
 import numpy as np
 from utils.utils import check_is_none
 from vits import VITS
 from voice import TTS
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = config.DEVICE
 
 lang_dict = {
     "english_cleaners": ["en"],
