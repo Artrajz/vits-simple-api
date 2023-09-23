@@ -17,7 +17,7 @@ class Bert_VITS2:
         self.n_speakers = getattr(self.hps_ms.data, 'n_speakers', 0)
         self.speakers = [item[0] for item in
                          sorted(list(getattr(self.hps_ms.data, 'spk2id', {'0': 0}).items()), key=lambda x: x[1])]
-        
+
         self.legacy = getattr(self.hps_ms.data, 'legacy', False)
         symbols, num_tones, self.language_id_map, num_languages, self.language_tone_start_map = get_symbols(
             legacy=self.legacy)
@@ -44,7 +44,6 @@ class Bert_VITS2:
 
     def get_text(self, text, language_str, hps):
         norm_text, phone, tone, word2ph = clean_text(text, language_str)
-        # print([f"{p}{t}" for p, t in zip(phone, tone)])
         phone, tone, language = cleaned_text_to_sequence(phone, tone, language_str, self._symbol_to_id,
                                                          self.language_tone_start_map, self.language_id_map)
 
@@ -56,25 +55,37 @@ class Bert_VITS2:
                 word2ph[i] = word2ph[i] * 2
             word2ph[0] += 1
         bert = get_bert(norm_text, word2ph, language_str)
+        del word2ph
+        assert bert.shape[-1] == len(phone), phone
 
-        assert bert.shape[-1] == len(phone)
-
+        if language_str == "zh":
+            bert = bert
+            ja_bert = torch.zeros(768, len(phone))
+        elif language_str == "ja":
+            ja_bert = bert
+            bert = torch.zeros(1024, len(phone))
+        else:
+            bert = torch.zeros(1024, len(phone))
+            ja_bert = torch.zeros(768, len(phone))
+        assert bert.shape[-1] == len(
+            phone
+        ), f"Bert seq len {bert.shape[-1]} != {len(phone)}"
         phone = torch.LongTensor(phone)
         tone = torch.LongTensor(tone)
         language = torch.LongTensor(language)
+        return bert, ja_bert, phone, tone, language
 
-        return bert, phone, tone, language
-
-    def infer(self, text, sdp_ratio, noise_scale, noise_scale_w, length_scale, sid):
-        bert, phones, tones, lang_ids = self.get_text(text, "ZH", self.hps_ms)
+    def infer(self, text, lang, sdp_ratio, noise_scale, noise_scale_w, length_scale, sid):
+        bert, ja_bert, phones, tones, lang_ids = self.get_text(text, lang, self.hps_ms)
         with torch.no_grad():
             x_tst = phones.to(self.device).unsqueeze(0)
             tones = tones.to(self.device).unsqueeze(0)
             lang_ids = lang_ids.to(self.device).unsqueeze(0)
             bert = bert.to(self.device).unsqueeze(0)
+            ja_bert = ja_bert.to(self.device).unsqueeze(0)
             x_tst_lengths = torch.LongTensor([phones.size(0)]).to(self.device)
             speakers = torch.LongTensor([int(sid)]).to(self.device)
-            audio = self.net_g.infer(x_tst, x_tst_lengths, speakers, tones, lang_ids, bert, sdp_ratio=sdp_ratio
+            audio = self.net_g.infer(x_tst, x_tst_lengths, speakers, tones, lang_ids, bert, ja_bert, sdp_ratio=sdp_ratio
                                      , noise_scale=noise_scale, noise_scale_w=noise_scale_w, length_scale=length_scale)[
                 0][0, 0].data.cpu().float().numpy()
 
@@ -83,6 +94,7 @@ class Bert_VITS2:
 
     def get_audio(self, voice, auto_break=False):
         text = voice.get("text", None)
+        lang = voice.get("lang", "zh")
         sdp_ratio = voice.get("sdp_ratio", 0.2)
         noise_scale = voice.get("noise", 0.5)
         noise_scale_w = voice.get("noisew", 0.6)
@@ -93,7 +105,7 @@ class Bert_VITS2:
         sentence_list = cut(text, max)
         audios = []
         for sentence in sentence_list:
-            audio = self.infer(sentence, sdp_ratio, noise_scale, noise_scale_w, length_scale, sid)
+            audio = self.infer(sentence, lang, sdp_ratio, noise_scale, noise_scale_w, length_scale, sid)
             audios.append(audio)
         audio = np.concatenate(audios)
         return audio

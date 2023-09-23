@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 from flask_apscheduler import APScheduler
 from functools import wraps
 from utils.utils import clean_folder, check_is_none
-from utils.load_model import merge_model
+from utils.load_model import load_model
 from io import BytesIO
 
 app = Flask(__name__)
@@ -25,7 +25,7 @@ for path in (app.config['LOGS_PATH'], app.config['UPLOAD_FOLDER'], app.config['C
         logger.error(f"Unable to create directory {path}: {str(e)}")
 
 # load model
-tts = merge_model(app.config["MODEL_LIST"])
+tts = load_model(app.config["MODEL_LIST"])
 
 
 def require_api_key(func):
@@ -70,7 +70,7 @@ def voice_vits_api():
             text = request.args.get("text", "")
             id = int(request.args.get("id", app.config.get("ID", 0)))
             format = request.args.get("format", app.config.get("FORMAT", "wav"))
-            lang = request.args.get("lang", app.config.get("LANG", "auto"))
+            lang = request.args.get("lang", app.config.get("LANG", "auto")).lower()
             length = float(request.args.get("length", app.config.get("LENGTH", 1)))
             noise = float(request.args.get("noise", app.config.get("NOISE", 0.667)))
             noisew = float(request.args.get("noisew", app.config.get("NOISEW", 0.8)))
@@ -85,7 +85,7 @@ def voice_vits_api():
             text = data.get("text", "")
             id = int(data.get("id", app.config.get("ID", 0)))
             format = data.get("format", app.config.get("FORMAT", "wav"))
-            lang = data.get("lang", app.config.get("LANG", "auto"))
+            lang = data.get("lang", app.config.get("LANG", "auto")).lower()
             length = float(data.get("length", app.config.get("LENGTH", 1)))
             noise = float(data.get("noise", app.config.get("NOISE", 0.667)))
             noisew = float(data.get("noisew", app.config.get("NOISEW", 0.8)))
@@ -112,7 +112,7 @@ def voice_vits_api():
 
     # 校验模型是否支持输入的语言
     speaker_lang = tts.voice_speakers["VITS"][id].get('lang')
-    if lang.upper() != "AUTO" and lang.upper() != "MIX" and len(speaker_lang) != 1 and lang not in speaker_lang:
+    if lang not in ["auto", "mix"] and len(speaker_lang) != 1 and lang not in speaker_lang:
         logger.info(f"[VITS] lang \"{lang}\" is not in {speaker_lang}")
         return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}), 400)
 
@@ -214,7 +214,7 @@ def voice_w2v2_api():
             text = request.args.get("text", "")
             id = int(request.args.get("id", app.config.get("ID", 0)))
             format = request.args.get("format", app.config.get("FORMAT", "wav"))
-            lang = request.args.get("lang", app.config.get("LANG", "auto"))
+            lang = request.args.get("lang", app.config.get("LANG", "auto")).lower()
             length = float(request.args.get("length", app.config.get("LENGTH", 1)))
             noise = float(request.args.get("noise", app.config.get("NOISE", 0.667)))
             noisew = float(request.args.get("noisew", app.config.get("NOISEW", 0.8)))
@@ -230,7 +230,7 @@ def voice_w2v2_api():
             text = data.get("text", "")
             id = int(data.get("id", app.config.get("ID", 0)))
             format = data.get("format", app.config.get("FORMAT", "wav"))
-            lang = data.get("lang", app.config.get("LANG", "auto"))
+            lang = data.get("lang", app.config.get("LANG", "auto")).lower()
             length = float(data.get("length"))
             noise = float(data.get("noise", app.config.get("NOISE", 0.667)))
             noisew = float(data.get("noisew", app.config.get("NOISEW", 0.8)))
@@ -259,7 +259,7 @@ def voice_w2v2_api():
 
     # 校验模型是否支持输入的语言
     speaker_lang = tts.voice_speakers["W2V2-VITS"][id].get('lang')
-    if lang.upper() != "AUTO" and lang.upper() != "MIX" and len(speaker_lang) != 1 and lang not in speaker_lang:
+    if lang not in ["auto", "mix"] and len(speaker_lang) != 1 and lang not in speaker_lang:
         logger.info(f"[w2v2] lang \"{lang}\" is not in {speaker_lang}")
         return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}), 400)
 
@@ -404,8 +404,8 @@ def voice_bert_vits2_api():
             text = request.args.get("text", "")
             id = int(request.args.get("id", app.config.get("ID", 0)))
             format = request.args.get("format", app.config.get("FORMAT", "wav"))
-            # lang = request.args.get("lang", app.config.get("LANG", "auto"))
-            lang = "ZH"
+            lang = request.args.get("lang", "zh").lower()
+            # lang = "ZH"
             length = float(request.args.get("length", app.config.get("LENGTH", 1)))
             noise = float(request.args.get("noise", app.config.get("NOISE", 0.5)))
             noisew = float(request.args.get("noisew", app.config.get("NOISEW", 0.6)))
@@ -420,8 +420,8 @@ def voice_bert_vits2_api():
             text = data.get("text", "")
             id = int(data.get("id", app.config.get("ID", 0)))
             format = data.get("format", app.config.get("FORMAT", "wav"))
-            # lang = data.get("lang", app.config.get("LANG", "auto"))
-            lang = "ZH"
+            lang = data.get("lang", "zh").lower()
+            # lang = "ZH"
             length = float(data.get("length", app.config.get("LENGTH", 1)))
             noise = float(data.get("noise", app.config.get("NOISE", 0.667)))
             noisew = float(data.get("noisew", app.config.get("NOISEW", 0.8)))
@@ -431,7 +431,8 @@ def voice_bert_vits2_api():
         logger.error(f"[Bert-VITS2] {e}")
         return make_response("parameter error", 400)
 
-    logger.info(f"[Bert-VITS2] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio}")
+    logger.info(
+        f"[Bert-VITS2] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio}")
     logger.info(f"[Bert-VITS2] len:{len(text)} text：{text}")
 
     if check_is_none(text):
@@ -448,7 +449,7 @@ def voice_bert_vits2_api():
 
     # 校验模型是否支持输入的语言
     speaker_lang = tts.voice_speakers["BERT-VITS2"][id].get('lang')
-    if lang.upper() != "AUTO" and lang.upper() != "MIX" and len(speaker_lang) != 1 and lang not in speaker_lang:
+    if lang not in ["auto", "mix"] and len(speaker_lang) != 1 and lang not in speaker_lang:
         logger.info(f"[Bert-VITS2] lang \"{lang}\" is not in {speaker_lang}")
         return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}), 400)
 
@@ -471,7 +472,6 @@ def voice_bert_vits2_api():
 
     if app.config.get("SAVE_AUDIO", False):
         logger.debug(f"[Bert-VITS2] {fname}")
-
 
     t1 = time.time()
     audio = tts.bert_vits2_infer(task, fname)

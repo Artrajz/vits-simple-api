@@ -5,7 +5,8 @@ import unicodedata
 
 from transformers import AutoTokenizer
 
-from bert_vits2.text import punctuation, symbols
+from bert_vits2.text import punctuation
+from bert_vits2.text.symbols import ja_symbols as symbols
 from bert_vits2.text.japanese_bert import tokenizer
 
 try:

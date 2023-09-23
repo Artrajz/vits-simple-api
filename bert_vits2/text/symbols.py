@@ -178,13 +178,13 @@ def get_symbols(legacy=False):
     num_tones = num_zh_tones + num_ja_tones + num_en_tones
 
     # language maps
-    language_id_map = {"ZH": 0, "JP": 1, "EN": 2}
+    language_id_map = {"zh": 0, "ja": 1, "en": 2}
     num_languages = len(language_id_map.keys())
 
     language_tone_start_map = {
-        "ZH": 0,
-        "JP": num_zh_tones,
-        "EN": num_zh_tones + num_ja_tones,
+        "zh": 0,
+        "ja": num_zh_tones,
+        "en": num_zh_tones + num_ja_tones,
     }
     return symbols, num_tones, language_id_map, num_languages, language_tone_start_map
 
@@ -192,8 +192,8 @@ def get_symbols(legacy=False):
 if __name__ == "__main__":
     zh = set(zh_symbols)
     en = set(en_symbols)
-    jp = set(ja_symbols)
+    ja = set(ja_symbols)
     print(zh)
     print(en)
-    print(jp)
+    print(ja)
     print(sorted(zh & en))

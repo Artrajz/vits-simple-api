@@ -1,4 +1,8 @@
 from bert_vits2.text.symbols import punctuation
+from .chinese_bert import get_bert_feature as zh_bert
+from .english_bert_mock import get_bert_feature as en_bert
+from .japanese_bert import get_bert_feature as ja_bert
+
 
 def cleaned_text_to_sequence(cleaned_text, tones, language, _symbol_to_id, language_tone_start_map, language_id_map):
     """Converts a string of text to a sequence of IDs corresponding to the symbols in the text.
@@ -16,15 +20,6 @@ def cleaned_text_to_sequence(cleaned_text, tones, language, _symbol_to_id, langu
 
 
 def get_bert(norm_text, word2ph, language):
-    if language == "ZH":
-        from .chinese_bert import get_bert_feature as zh_bert
-        lang_bert_func = zh_bert
-    elif language == "EN":
-        from .english_bert_mock import get_bert_feature as en_bert
-        lang_bert_func = en_bert
-    elif language == "JP":
-        from .japanese_bert import get_bert_feature as jp_bert
-        lang_bert_func = jp_bert
-
-    bert = lang_bert_func(norm_text, word2ph)
+    lang_bert_func_map = {"zh": zh_bert, "en": en_bert, "ja": ja_bert}
+    bert = lang_bert_func_map[language](norm_text, word2ph)
     return bert

@@ -88,7 +88,7 @@ def load_npy(model_):
     return emotion_reference
 
 
-def merge_model(merging_model):
+def load_model(model_list) -> TTS:
     vits_obj = []
     vits_speakers = []
     hubert_vits_obj = []
@@ -104,7 +104,7 @@ def merge_model(merging_model):
     w2v2_vits_list = []
     bert_vits2_list = []
 
-    for l in merging_model:
+    for l in model_list:
         with open(l[1], 'r', encoding='utf-8') as model_config:
             model_type = analysis(model_config)
         if model_type == "vits":
@@ -171,12 +171,11 @@ def merge_model(merging_model):
     for obj_id, i in enumerate(bert_vits2_list):
         from bert_vits2 import Bert_VITS2
         obj = Bert_VITS2(model=i[0], config=i[1], device=device)
-        lang = ["ZH","JP"]
+        lang = ["zh", "ja"]
         for id, name in enumerate(obj.get_speakers()):
             bert_vits2_obj.append([int(id), obj, obj_id])
             bert_vits2_speakers.append({"id": new_id, "name": name, "lang": lang})
             new_id += 1
-
 
     voice_obj = {"VITS": vits_obj, "HUBERT-VITS": hubert_vits_obj, "W2V2-VITS": w2v2_vits_obj,
                  "BERT-VITS2": bert_vits2_obj}
