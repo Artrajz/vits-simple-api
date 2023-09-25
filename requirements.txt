@@ -30,3 +30,4 @@ phonemizer==3.2.1
 transformers
 pydantic==2.3.0
 num2words
+py7zr

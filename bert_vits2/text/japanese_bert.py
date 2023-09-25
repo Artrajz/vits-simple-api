@@ -1,8 +1,20 @@
+import os
+
 import torch
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 
 import config
 from logger import logger
+from utils.download import download_and_verify
+
+URLS = [
+    "https://huggingface.co/cl-tohoku/bert-base-japanese-v3/resolve/main/pytorch_model.bin",
+]
+TARGET_PATH = os.path.join(config.ABS_PATH, "bert_vits2/bert/bert-base-japanese-v3/pytorch_model.bin")
+EXPECTED_MD5 = None
+
+if not os.path.exists(TARGET_PATH):
+    success, message = download_and_verify(URLS, TARGET_PATH, EXPECTED_MD5)
 
 try:
     logger.info("Loading bert-base-japanese-v3...")

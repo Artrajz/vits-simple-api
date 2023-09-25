@@ -228,19 +228,6 @@ read -p "${MESSAGES["ENTER_CHOICE"]}" choice_download_bert_vits2
 if [ "$choice_download_bert_vits2" -eq 1 ]; then
   mkdir -p bert_vits2/bert/chinese-roberta-wwm-ext-large
 
-  EXPECTED_MD5="78ef42421495cb23372bef9d069a75f3"
-  FILE_PATH="bert_vits2/bert/chinese-roberta-wwm-ext-large/flax_model.msgpack"
-  echo -e "${MESSAGES["VERIFYING"]}$FILE_PATH"
-  ACTUAL_MD5=$(md5sum $FILE_PATH | awk '{print $1}')
-
-  if [ "$EXPECTED_MD5" == "$ACTUAL_MD5" ]; then
-    echo "${MESSAGES["DOWNLOADED"]}"
-  else
-    echo "${MESSAGES["CORRUPTED"]}"
-    download_with_fallback bert_vits2/bert/chinese-roberta-wwm-ext-large/flax_model.msgpack \
-      "https://huggingface.co/hfl/chinese-roberta-wwm-ext-large/resolve/main/flax_model.msgpack"
-  fi
-
   EXPECTED_MD5="15d7435868fef1bd4222ff7820149a2a"
   FILE_PATH="bert_vits2/bert/chinese-roberta-wwm-ext-large/pytorch_model.bin"
   echo -e "${MESSAGES["VERIFYING"]}$FILE_PATH"
@@ -252,19 +239,6 @@ if [ "$choice_download_bert_vits2" -eq 1 ]; then
     echo ${MESSAGES["CORRUPTED"]}
     download_with_fallback bert_vits2/bert/chinese-roberta-wwm-ext-large/pytorch_model.bin \
       "https://huggingface.co/hfl/chinese-roberta-wwm-ext-large/resolve/main/pytorch_model.bin"
-  fi
-
-  EXPECTED_MD5="d15991416bd4a86fa127c70d3c0f4779"
-  FILE_PATH="bert_vits2/bert/chinese-roberta-wwm-ext-large/tf_model.h5"
-  echo -e "${MESSAGES["VERIFYING"]}$FILE_PATH"
-  ACTUAL_MD5=$(md5sum $FILE_PATH | awk '{print $1}')
-
-  if [ "$EXPECTED_MD5" == "$ACTUAL_MD5" ]; then
-    echo "${MESSAGES["DOWNLOADED"]}"
-  else
-    echo "${MESSAGES["CORRUPTED"]}"
-    download_with_fallback bert_vits2/bert/chinese-roberta-wwm-ext-large/tf_model.h5 \
-      "https://huggingface.co/hfl/chinese-roberta-wwm-ext-large/resolve/main/tf_model.h5"
   fi
 
 fi

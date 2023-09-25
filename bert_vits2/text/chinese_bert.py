@@ -1,7 +1,19 @@
+import os
+
 import config
 import torch
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 from logger import logger
+from utils.download import download_and_verify
+
+URLS = [
+    "https://huggingface.co/hfl/chinese-roberta-wwm-ext-large/resolve/main/pytorch_model.bin",
+]
+TARGET_PATH = os.path.join(config.ABS_PATH, "bert_vits2/bert/chinese-roberta-wwm-ext-large/pytorch_model.bin")
+EXPECTED_MD5 = None
+
+if not os.path.exists(TARGET_PATH):
+    success, message = download_and_verify(URLS, TARGET_PATH, EXPECTED_MD5)
 
 try:
     logger.info("Loading chinese-roberta-wwm-ext-large...")
