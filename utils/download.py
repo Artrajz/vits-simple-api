@@ -73,6 +73,7 @@ def download_and_verify(urls, target_path, expected_md5=None, extract_destinatio
     # If it's a compressed file, extract it
     if target_path.endswith(('.zip', '.tar.gz', '.tar.bz2', '.7z')):
         extract_file(target_path, extract_destination)
+        os.remove(target_path)
 
     return True, "File downloaded, verified, and extracted successfully!"
 
