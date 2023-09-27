@@ -31,3 +31,4 @@ transformers
 pydantic==2.3.0
 num2words
 py7zr
+tqdm
