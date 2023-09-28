@@ -1,10 +1,10 @@
-from bert_vits2.text.symbols import punctuation
+from bert_vits2.text.symbols import *
 from .chinese_bert import get_bert_feature as zh_bert
 from .english_bert_mock import get_bert_feature as en_bert
 from .japanese_bert import get_bert_feature as ja_bert
 
 
-def cleaned_text_to_sequence(cleaned_text, tones, language, _symbol_to_id, language_tone_start_map, language_id_map):
+def cleaned_text_to_sequence(cleaned_text, tones, language, _symbol_to_id):
     """Converts a string of text to a sequence of IDs corresponding to the symbols in the text.
     Args:
       text: string to convert to a sequence

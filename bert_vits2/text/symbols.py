@@ -166,28 +166,27 @@ en_symbols = [
 ]
 num_en_tones = 4
 
+normal_symbols = sorted(set(zh_symbols + ja_symbols + en_symbols))
+symbols = [pad] + normal_symbols + pu_symbols
+sil_phonemes_ids = [symbols.index(i) for i in pu_symbols]
 
-def get_symbols(legacy=False):
-    local_ja_symbols = ja_symbols_legacy if legacy else ja_symbols
-    # combine all symbols
-    normal_symbols = sorted(set(zh_symbols + local_ja_symbols + en_symbols))
-    symbols = [pad] + normal_symbols + pu_symbols
-    sil_phonemes_ids = [symbols.index(i) for i in pu_symbols]
+# legacy
+normal_symbols_legacy = sorted(set(zh_symbols + ja_symbols_legacy + en_symbols))
+symbols_legacy = [pad] + normal_symbols_legacy + pu_symbols
+sil_phonemes_ids_legacy = [symbols_legacy.index(i) for i in pu_symbols]
 
-    # combine all tones
-    num_tones = num_zh_tones + num_ja_tones + num_en_tones
+# combine all tones
+num_tones = num_zh_tones + num_ja_tones + num_en_tones
 
-    # language maps
-    language_id_map = {"zh": 0, "ja": 1, "en": 2}
-    num_languages = len(language_id_map.keys())
+# language maps
+language_id_map = {"zh": 0, "ja": 1, "en": 2}
+num_languages = len(language_id_map.keys())
 
-    language_tone_start_map = {
-        "zh": 0,
-        "ja": num_zh_tones,
-        "en": num_zh_tones + num_ja_tones,
-    }
-    return symbols, num_tones, language_id_map, num_languages, language_tone_start_map
-
+language_tone_start_map = {
+    "zh": 0,
+    "ja": num_zh_tones,
+    "en": num_zh_tones + num_ja_tones,
+}
 
 if __name__ == "__main__":
     zh = set(zh_symbols)

@@ -5,9 +5,8 @@ import torch
 
 from bert_vits2 import utils, commons
 from bert_vits2.models import SynthesizerTrn
-from bert_vits2.text import symbols, cleaned_text_to_sequence, get_bert
+from bert_vits2.text import *
 from bert_vits2.text.cleaner import clean_text
-from bert_vits2.text.symbols import get_symbols
 from utils.sentence import sentence_split, cut
 
 
@@ -19,18 +18,15 @@ class Bert_VITS2:
                          sorted(list(getattr(self.hps_ms.data, 'spk2id', {'0': 0}).items()), key=lambda x: x[1])]
 
         self.legacy = getattr(self.hps_ms.data, 'legacy', False)
-        symbols, num_tones, self.language_id_map, num_languages, self.language_tone_start_map = get_symbols(
-            legacy=self.legacy)
-        self._symbol_to_id = {s: i for i, s in enumerate(symbols)}
+        self.symbols = symbols_legacy if self.legacy else symbols
+        self._symbol_to_id = {s: i for i, s in enumerate(self.symbols)}
 
         self.net_g = SynthesizerTrn(
-            len(symbols),
+            len(self.symbols),
             self.hps_ms.data.filter_length // 2 + 1,
             self.hps_ms.train.segment_size // self.hps_ms.data.hop_length,
             n_speakers=self.hps_ms.data.n_speakers,
-            symbols=symbols,
-            num_tones=num_tones,
-            num_languages=num_languages,
+            symbols=self.symbols,
             **self.hps_ms.model).to(device)
         _ = self.net_g.eval()
         self.device = device
@@ -44,8 +40,7 @@ class Bert_VITS2:
 
     def get_text(self, text, language_str, hps):
         norm_text, phone, tone, word2ph = clean_text(text, language_str)
-        phone, tone, language = cleaned_text_to_sequence(phone, tone, language_str, self._symbol_to_id,
-                                                         self.language_tone_start_map, self.language_id_map)
+        phone, tone, language = cleaned_text_to_sequence(phone, tone, language_str, self._symbol_to_id)
 
         if hps.data.add_blank:
             phone = commons.intersperse(phone, 0)
