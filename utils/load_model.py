@@ -3,7 +3,7 @@ import json
 import logging
 import config
 import numpy as np
-from utils import check_is_none
+from utils.data_utils import check_is_none
 from vits import VITS
 from voice import TTS
 from config import DEVICE as device
@@ -129,7 +129,7 @@ def load_model(model_list) -> TTS:
     # Handle HUBERT-VITS
     hubert_vits_objs, hubert_vits_speakers = [], []
     if len(categorized_models["hubert"]) != 0:
-        if getattr(config, "HUBERT_SOFT_MODEL", None) == None or check_is_none(config.HUBERT_SOFT_MODEL):
+        if getattr(config, "HUBERT_SOFT_MODEL", None) is None or check_is_none(config.HUBERT_SOFT_MODEL):
             raise ValueError(f"Please configure HUBERT_SOFT_MODEL path in config.py")
         try:
             from vits.hubert_model import hubert_soft
@@ -144,7 +144,7 @@ def load_model(model_list) -> TTS:
     w2v2_vits_objs, w2v2_vits_speakers = [], []
     w2v2_emotion_count = 0
     if len(categorized_models["w2v2"]) != 0:
-        if getattr(config, "DIMENSIONAL_EMOTION_NPY", None) == None or check_is_none(
+        if getattr(config, "DIMENSIONAL_EMOTION_NPY", None) is None or check_is_none(
                 config.DIMENSIONAL_EMOTION_NPY):
             raise ValueError(f"Please configure DIMENSIONAL_EMOTION_NPY path in config.py")
         try:

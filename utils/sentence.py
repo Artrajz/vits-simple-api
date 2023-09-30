@@ -1,7 +1,7 @@
 import regex as re
 
 from logger import logger
-from utils import check_is_none
+from utils.data_utils import check_is_none
 from utils.classify_language import classify_language
 
 

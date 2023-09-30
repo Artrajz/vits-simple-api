@@ -6,13 +6,13 @@ from bert_vits2 import utils as bert_vits2_utils
 from bert_vits2.models import SynthesizerTrn
 from bert_vits2.text import *
 from bert_vits2.text.cleaner import clean_text
-from utils import classify_language
+from utils import classify_language, get_hparams_from_file
 from utils.sentence import sentence_split_and_markup, cut
 
 
 class Bert_VITS2:
     def __init__(self, model, config, device=torch.device("cpu"), **kwargs):
-        self.hps_ms = bert_vits2_utils.get_hparams_from_file(config)
+        self.hps_ms = get_hparams_from_file(config)
         self.n_speakers = getattr(self.hps_ms.data, 'n_speakers', 0)
         self.speakers = [item[0] for item in
                          sorted(list(getattr(self.hps_ms.data, 'spk2id', {'0': 0}).items()), key=lambda x: x[1])]
