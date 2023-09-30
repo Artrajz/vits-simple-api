@@ -6,7 +6,7 @@ from flask import Flask, request, send_file, jsonify, make_response, render_temp
 from werkzeug.utils import secure_filename
 from flask_apscheduler import APScheduler
 from functools import wraps
-from utils.utils import clean_folder, check_is_none
+from utils import clean_folder, check_is_none
 from utils.load_model import load_model
 from io import BytesIO
 
@@ -404,8 +404,7 @@ def voice_bert_vits2_api():
             text = request.args.get("text", "")
             id = int(request.args.get("id", app.config.get("ID", 0)))
             format = request.args.get("format", app.config.get("FORMAT", "wav"))
-            lang = request.args.get("lang", "zh").lower()
-            # lang = "ZH"
+            lang = request.args.get("lang", "auto").lower()
             length = float(request.args.get("length", app.config.get("LENGTH", 1)))
             noise = float(request.args.get("noise", app.config.get("NOISE", 0.5)))
             noisew = float(request.args.get("noisew", app.config.get("NOISEW", 0.6)))
@@ -420,8 +419,7 @@ def voice_bert_vits2_api():
             text = data.get("text", "")
             id = int(data.get("id", app.config.get("ID", 0)))
             format = data.get("format", app.config.get("FORMAT", "wav"))
-            lang = data.get("lang", "zh").lower()
-            # lang = "ZH"
+            lang = data.get("lang", "auto").lower()
             length = float(data.get("length", app.config.get("LENGTH", 1)))
             noise = float(data.get("noise", app.config.get("NOISE", 0.667)))
             noisew = float(data.get("noisew", app.config.get("NOISEW", 0.8)))

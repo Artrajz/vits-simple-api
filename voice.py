@@ -8,7 +8,7 @@ import config
 import soundfile as sf
 from io import BytesIO
 from graiax import silkcoder
-from utils import utils
+import utils
 from logger import logger
 
 
@@ -16,7 +16,7 @@ from logger import logger
 
 
 class TTS:
-    def __init__(self, voice_obj, voice_speakers, w2v2_emotion_count=0, device=torch.device("cpu")):
+    def __init__(self, voice_obj, voice_speakers, **kwargs):
         self._voice_obj = voice_obj
         self._voice_speakers = voice_speakers
         self._strength_dict = {"x-weak": 0.25, "weak": 0.5, "Medium": 0.75, "Strong": 1, "x-strong": 1.25}
@@ -24,14 +24,14 @@ class TTS:
         self._vits_speakers_count = len(self._voice_speakers["VITS"])
         self._hubert_speakers_count = len(self._voice_speakers["HUBERT-VITS"])
         self._w2v2_speakers_count = len(self._voice_speakers["W2V2-VITS"])
-        self._w2v2_emotion_count = w2v2_emotion_count
+        self._w2v2_emotion_count = kwargs.get("w2v2_emotion_count", 0)
         self._bert_vits2_speakers_count = len(self._voice_speakers["BERT-VITS2"])
         self.dem = None
 
         # Initialization information
         self.logger = logger
         self.logger.info(f"torch:{torch.__version__} cuda_available:{torch.cuda.is_available()}")
-        self.logger.info(f'device:{device} device.type:{device.type}')
+        self.logger.info(f'device:{kwargs.get("device")} device.type:{kwargs.get("device").type}')
 
         if getattr(config, "DIMENSIONAL_EMOTION_MODEL", None) != None:
             try:
@@ -45,7 +45,8 @@ class TTS:
         if self._vits_speakers_count != 0: self.logger.info(f"[VITS] {self._vits_speakers_count} speakers")
         if self._hubert_speakers_count != 0: self.logger.info(f"[hubert] {self._hubert_speakers_count} speakers")
         if self._w2v2_speakers_count != 0: self.logger.info(f"[w2v2] {self._w2v2_speakers_count} speakers")
-        if self._bert_vits2_speakers_count != 0: self.logger.info(f"[Bert-VITS2] {self._bert_vits2_speakers_count} speakers")
+        if self._bert_vits2_speakers_count != 0: self.logger.info(
+            f"[Bert-VITS2] {self._bert_vits2_speakers_count} speakers")
         self.logger.info(f"{self._speakers_count} speakers in total.")
         if self._speakers_count == 0:
             self.logger.warning(f"No model was loaded.")
@@ -220,7 +221,8 @@ class TTS:
     def vits_infer(self, voice, fname):
         format = voice.get("format", "wav")
         voice_obj = self._voice_obj["VITS"][voice.get("id")][1]
-        voice["id"] = self._voice_obj["VITS"][voice.get("id")][0]
+        real_id = self._voice_obj["VITS"][voice.get("id")][0]
+        voice["id"] = real_id  # Change to real id
         sampling_rate = voice_obj.hps_ms.data.sampling_rate
         audio = voice_obj.get_audio(voice, auto_break=True)
         encoded_audio = self.encode(sampling_rate, audio, format)

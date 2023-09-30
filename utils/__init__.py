@@ -1,9 +1,10 @@
-import logging
 import os
+import logging
+import librosa
 from json import loads
 from torch import load, FloatTensor
 from numpy import float32
-import librosa
+from utils.classify_language import classify_language
 
 
 class HParams():
@@ -86,10 +87,11 @@ def clean_folder(folder_path):
             os.remove(file_path)
 
 
-# is none -> True, is not none -> False
-def check_is_none(s):
-    return s is None or (isinstance(s, str) and str(s).isspace()) or str(s) == ""
+def check_is_none(item) -> bool:
+    # none -> True, not none -> False
+    return item is None or (isinstance(item, str) and str(item).isspace()) or str(item) == ""
+
 
 def save_audio(audio, path):
-    with open(path,"wb") as f:
+    with open(path, "wb") as f:
         f.write(audio)

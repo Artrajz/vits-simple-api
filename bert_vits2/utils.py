@@ -42,7 +42,13 @@ def load_checkpoint(checkpoint_path, model, optimizer=None, skip_optimizer=False
             new_state_dict[k] = saved_state_dict[k]
             assert saved_state_dict[k].shape == v.shape, (saved_state_dict[k].shape, v.shape)
         except:
-            print("error, %s is not in the checkpoint" % k)
+            # For upgrading from the old version
+            if "ja_bert_proj" in k:
+                v = torch.zeros_like(v)
+                logger.warning(
+                    f"If you are using an older version of the model, you should add the parameter \"legacy\":true to the data of the model's config.json")
+            logger.error(f"{k} is not in the checkpoint")
+
             new_state_dict[k] = v
     if hasattr(model, 'module'):
         model.module.load_state_dict(new_state_dict, strict=False)

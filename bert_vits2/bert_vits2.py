@@ -1,18 +1,18 @@
-import re
-
 import numpy as np
 import torch
 
-from bert_vits2 import utils, commons
+from bert_vits2 import commons
+from bert_vits2 import utils as bert_vits2_utils
 from bert_vits2.models import SynthesizerTrn
 from bert_vits2.text import *
 from bert_vits2.text.cleaner import clean_text
-from utils.sentence import sentence_split, cut
+from utils import classify_language
+from utils.sentence import sentence_split_and_markup, cut
 
 
 class Bert_VITS2:
-    def __init__(self, model, config, device=torch.device("cpu")):
-        self.hps_ms = utils.get_hparams_from_file(config)
+    def __init__(self, model, config, device=torch.device("cpu"), **kwargs):
+        self.hps_ms = bert_vits2_utils.get_hparams_from_file(config)
         self.n_speakers = getattr(self.hps_ms.data, 'n_speakers', 0)
         self.speakers = [item[0] for item in
                          sorted(list(getattr(self.hps_ms.data, 'spk2id', {'0': 0}).items()), key=lambda x: x[1])]
@@ -33,7 +33,7 @@ class Bert_VITS2:
         self.load_model(model)
 
     def load_model(self, model):
-        utils.load_checkpoint(model, self.net_g, None, skip_optimizer=True)
+        bert_vits2_utils.load_checkpoint(model, self.net_g, None, skip_optimizer=True)
 
     def get_speakers(self):
         return self.speakers
@@ -89,14 +89,16 @@ class Bert_VITS2:
 
     def get_audio(self, voice, auto_break=False):
         text = voice.get("text", None)
-        lang = voice.get("lang", "zh")
+        lang = voice.get("lang", "auto")
         sdp_ratio = voice.get("sdp_ratio", 0.2)
         noise_scale = voice.get("noise", 0.5)
         noise_scale_w = voice.get("noisew", 0.6)
         length_scale = voice.get("length", 1)
         sid = voice.get("id", 0)
         max = voice.get("max", 50)
-        # sentence_list = sentence_split(text, max, "ZH", ["zh"])
+        # sentence_list = sentence_split_and_markup(text, max, "ZH", ["zh"])
+        if lang == "auto":
+            lang = classify_language(text)
         sentence_list = cut(text, max)
         audios = []
         for sentence in sentence_list:

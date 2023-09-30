@@ -446,7 +446,6 @@ _ALPHASYMBOL_YOMI = {
     "ω": "オメガ",
 }
 
-
 _NUMBER_WITH_SEPARATOR_RX = re.compile("[0-9]{1,3}(,[0-9]{3})+")
 _CURRENCY_MAP = {"$": "ドル", "¥": "円", "£": "ポンド", "€": "ユーロ"}
 _CURRENCY_RX = re.compile(r"([$¥£€])([0-9.]*[0-9])")
@@ -557,7 +556,7 @@ def g2p(norm_text):
         phonemes = kata2phoneme(text2kata("".join(group)))
         # phonemes = [i for i in phonemes if i in symbols]
         for i in phonemes:
-            assert i in symbols, (group, norm_text, tokenized)
+            assert i in symbols, (i, group, norm_text, tokenized)
         phone_len = len(phonemes)
         word_len = len(group)
 
@@ -572,7 +571,9 @@ def g2p(norm_text):
 
 
 if __name__ == "__main__":
-    tokenizer = AutoTokenizer.from_pretrained("./bert/bert-base-japanese-v3")
+    from config import ABS_PATH
+
+    tokenizer = AutoTokenizer.from_pretrained(ABS_PATH + "/bert_vits2/bert/bert-base-japanese-v3")
     text = "hello,こんにちは、世界！……"
     from bert_vits2.text.japanese_bert import get_bert_feature
 

@@ -5,6 +5,7 @@ import torch
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 from logger import logger
 from utils.download import download_and_verify
+from config import DEVICE as device
 
 URLS = [
     "https://huggingface.co/hfl/chinese-roberta-wwm-ext-large/resolve/main/pytorch_model.bin",
@@ -19,7 +20,7 @@ try:
     logger.info("Loading chinese-roberta-wwm-ext-large...")
     tokenizer = AutoTokenizer.from_pretrained(config.ABS_PATH + "/bert_vits2/bert/chinese-roberta-wwm-ext-large")
     model = AutoModelForMaskedLM.from_pretrained(config.ABS_PATH + "/bert_vits2/bert/chinese-roberta-wwm-ext-large").to(
-        config.DEVICE)
+        device)
     logger.info("Loading finished.")
 except Exception as e:
     logger.error(e)

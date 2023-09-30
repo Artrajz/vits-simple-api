@@ -1,18 +1,19 @@
 import librosa
-from vits import commons
 import re
 import numpy as np
 import torch
 from torch import no_grad, LongTensor, inference_mode, FloatTensor
-from utils.sentence import sentence_split
+import utils
+from utils.sentence import sentence_split_and_markup
+from vits import commons
 from vits.mel_processing import spectrogram_torch
 from vits.text import text_to_sequence
 from vits.models import SynthesizerTrn
-from utils import utils
+
 
 
 class VITS:
-    def __init__(self, model, config, model_=None, model_type=None, device=torch.device("cpu")):
+    def __init__(self, model, config, additional_model=None, model_type=None, device=torch.device("cpu"),**kwargs):
         self.model_type = model_type
         self.hps_ms = utils.get_hparams_from_file(config)
         self.n_speakers = getattr(self.hps_ms.data, 'n_speakers', 0)
@@ -38,15 +39,15 @@ class VITS:
         self.device = device
 
         # load model
-        self.load_model(model, model_)
+        self.load_model(model, additional_model)
 
-    def load_model(self, model, model_=None):
+    def load_model(self, model, additional_model=None):
         utils.load_checkpoint(model, self.net_g_ms)
         self.net_g_ms.to(self.device)
         if self.model_type == "hubert":
-            self.hubert = model_
+            self.hubert = additional_model
         elif self.model_type == "w2v2":
-            self.emotion_reference = model_
+            self.emotion_reference = additional_model
 
     def get_cleaned_text(self, text, hps, cleaned=False):
         if cleaned:
@@ -165,7 +166,7 @@ class VITS:
 
         tasks = []
         if self.model_type == "vits":
-            sentence_list = sentence_split(text, max, lang, speaker_lang)
+            sentence_list = sentence_split_and_markup(text, max, lang, speaker_lang)
             for sentence in sentence_list:
                 params = self.get_infer_param(text=sentence, speaker_id=speaker_id, length_scale=length,
                                               noise_scale=noise, noise_scale_w=noisew)
@@ -177,7 +178,7 @@ class VITS:
             tasks.append(params)
 
         elif self.model_type == "w2v2":
-            sentence_list = sentence_split(text, max, lang, speaker_lang)
+            sentence_list = sentence_split_and_markup(text, max, lang, speaker_lang)
             for sentence in sentence_list:
                 params = self.get_infer_param(text=sentence, speaker_id=speaker_id, length_scale=length,
                                               noise_scale=noise, noise_scale_w=noisew, emotion=emotion)

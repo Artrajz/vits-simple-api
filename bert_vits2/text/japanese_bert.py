@@ -6,6 +6,7 @@ from transformers import AutoTokenizer, AutoModelForMaskedLM
 import config
 from logger import logger
 from utils.download import download_and_verify
+from config import DEVICE as device
 
 URLS = [
     "https://huggingface.co/cl-tohoku/bert-base-japanese-v3/resolve/main/pytorch_model.bin",
@@ -20,7 +21,7 @@ try:
     logger.info("Loading bert-base-japanese-v3...")
     tokenizer = AutoTokenizer.from_pretrained(config.ABS_PATH + "/bert_vits2/bert/bert-base-japanese-v3")
     model = AutoModelForMaskedLM.from_pretrained(config.ABS_PATH + "/bert_vits2/bert/bert-base-japanese-v3").to(
-        config.DEVICE)
+        device)
     logger.info("Loading finished.")
 except Exception as e:
     logger.error(e)
