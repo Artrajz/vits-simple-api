@@ -420,7 +420,7 @@ def voice_bert_vits2_api():
         length = float(request_data.get("length", app.config.get("LENGTH", 1)))
         noise = float(request_data.get("noise", app.config.get("NOISE", 0.667)))
         noisew = float(request_data.get("noisew", app.config.get("NOISEW", 0.8)))
-        sdp_ratio = float(request_data.get("noisew", app.config.get("SDP_RATIO", 0.2)))
+        sdp_ratio = float(request_data.get("sdp_ratio", app.config.get("SDP_RATIO", 0.2)))
         max = int(request_data.get("max", app.config.get("MAX", 50)))
     except Exception as e:
         logger.error(f"[Bert-VITS2] {e}")

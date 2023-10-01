@@ -27,6 +27,8 @@ langid
 phonemizer==3.2.1
 transformers
 num2words
+mecab-python3
+unidic-lite
 
 # Machine Learning and Deep Learning
 torch
