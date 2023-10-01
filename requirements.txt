@@ -1,16 +1,19 @@
-numba
-librosa
+# Core scientific and computation libraries
 numpy==1.23.3
 scipy
-MarkupSafe==2.1.2
-torch
+
+# Audio processing
+librosa
+soundfile==0.12.1
+numba
+graiax-silkcoder[libsndfile]
+
+# Natural Language Processing and Text Conversion
 unidecode
-six==1.16.0
 pyopenjtalk==0.3.2
 jamo
 pypinyin
 jieba
-protobuf
 cn2an
 inflect
 eng_to_ipa
@@ -18,14 +21,27 @@ ko_pron
 indic_transliteration
 num_thai
 opencc
-audonnx
-flask==2.2.3
-soundfile==0.12.1
-graiax-silkcoder[libsndfile]
-flask_apscheduler
 fasttext
 fastlid
 langid
 phonemizer==3.2.1
 transformers
+num2words
+
+# Machine Learning and Deep Learning
+torch
+audonnx
+
+# Web and API services
+flask==2.2.3
+flask_apscheduler
 pydantic==2.3.0
+
+# Compression and Decompression
+py7zr
+
+# Other utilities and dependencies
+MarkupSafe==2.1.2
+six==1.16.0
+protobuf
+tqdm

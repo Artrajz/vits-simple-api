@@ -1,6 +1,8 @@
 import os
 import sys
 
+import torch
+
 JSON_AS_ASCII = False
 
 MAX_CONTENT_LENGTH = 5242880
@@ -78,6 +80,8 @@ DIMENSIONAL_EMOTION_NPY = ABS_PATH + "/Model/npy"
 
 # w2v2-vits: Need to have both `model.onnx` and `model.yaml` files in the same path.
 # DIMENSIONAL_EMOTION_MODEL = ABS_PATH + "/Model/model.yaml"
+
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 """
 Default parameter

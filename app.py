@@ -6,8 +6,8 @@ from flask import Flask, request, send_file, jsonify, make_response, render_temp
 from werkzeug.utils import secure_filename
 from flask_apscheduler import APScheduler
 from functools import wraps
-from utils.utils import clean_folder, check_is_none
-from utils.merge import merge_model
+from utils.data_utils import save_audio, clean_folder, check_is_none
+from utils.load_model import load_model
 from io import BytesIO
 
 app = Flask(__name__)
@@ -25,7 +25,7 @@ for path in (app.config['LOGS_PATH'], app.config['UPLOAD_FOLDER'], app.config['C
         logger.error(f"Unable to create directory {path}: {str(e)}")
 
 # load model
-tts = merge_model(app.config["MODEL_LIST"])
+tts = load_model(app.config["MODEL_LIST"])
 
 
 def require_api_key(func):
@@ -67,30 +67,23 @@ def voice_speakers_api():
 def voice_vits_api():
     try:
         if request.method == "GET":
-            text = request.args.get("text", "")
-            id = int(request.args.get("id", app.config.get("ID", 0)))
-            format = request.args.get("format", app.config.get("FORMAT", "wav"))
-            lang = request.args.get("lang", app.config.get("LANG", "auto"))
-            length = float(request.args.get("length", app.config.get("LENGTH", 1)))
-            noise = float(request.args.get("noise", app.config.get("NOISE", 0.667)))
-            noisew = float(request.args.get("noisew", app.config.get("NOISEW", 0.8)))
-            max = int(request.args.get("max", app.config.get("MAX", 50)))
-            use_streaming = request.args.get('streaming', False, type=bool)
+            request_data = request.args
         elif request.method == "POST":
             content_type = request.headers.get('Content-Type')
             if content_type == 'application/json':
-                data = request.get_json()
+                request_data = request.get_json()
             else:
-                data = request.form
-            text = data.get("text", "")
-            id = int(data.get("id", app.config.get("ID", 0)))
-            format = data.get("format", app.config.get("FORMAT", "wav"))
-            lang = data.get("lang", app.config.get("LANG", "auto"))
-            length = float(data.get("length", app.config.get("LENGTH", 1)))
-            noise = float(data.get("noise", app.config.get("NOISE", 0.667)))
-            noisew = float(data.get("noisew", app.config.get("NOISEW", 0.8)))
-            max = int(data.get("max", app.config.get("MAX", 50)))
-            use_streaming = request.form.get('streaming', False, type=bool)
+                request_data = request.form
+
+        text = request_data.get("text", "")
+        id = int(request_data.get("id", app.config.get("ID", 0)))
+        format = request_data.get("format", app.config.get("FORMAT", "wav"))
+        lang = request_data.get("lang", app.config.get("LANG", "auto")).lower()
+        length = float(request_data.get("length", app.config.get("LENGTH", 1)))
+        noise = float(request_data.get("noise", app.config.get("NOISE", 0.667)))
+        noisew = float(request_data.get("noisew", app.config.get("NOISEW", 0.8)))
+        max = int(request_data.get("max", app.config.get("MAX", 50)))
+        use_streaming = request_data.get('streaming', False, type=bool)
     except Exception as e:
         logger.error(f"[VITS] {e}")
         return make_response("parameter error", 400)
@@ -112,7 +105,7 @@ def voice_vits_api():
 
     # 校验模型是否支持输入的语言
     speaker_lang = tts.voice_speakers["VITS"][id].get('lang')
-    if lang.upper() != "AUTO" and lang.upper() != "MIX" and len(speaker_lang) != 1 and lang not in speaker_lang:
+    if lang not in ["auto", "mix"] and len(speaker_lang) != 1 and lang not in speaker_lang:
         logger.info(f"[VITS] lang \"{lang}\" is not in {speaker_lang}")
         return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}), 400)
 
@@ -136,20 +129,23 @@ def voice_vits_api():
             "lang": lang,
             "speaker_lang": speaker_lang}
 
-    if app.config.get("SAVE_AUDIO", False):
-        logger.debug(f"[VITS] {fname}")
-
     if use_streaming:
-        audio = tts.stream_vits_infer(task, fname)
+        audio = tts.stream_vits_infer(task)
         response = make_response(audio)
         response.headers['Content-Disposition'] = f'attachment; filename={fname}'
         response.headers['Content-Type'] = file_type
         return response
     else:
         t1 = time.time()
-        audio = tts.vits_infer(task, fname)
+        audio = tts.vits_infer(task)
         t2 = time.time()
         logger.info(f"[VITS] finish in {(t2 - t1):.2f}s")
+
+        if app.config.get("SAVE_AUDIO", False):
+            logger.debug(f"[VITS] {fname}")
+            path = os.path.join(app.config.get('CACHE_PATH'), fname)
+            save_audio(audio.getvalue(), path)
+
         return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
 
@@ -191,11 +187,15 @@ def voice_hubert_api():
             "audio_path": os.path.join(app.config['UPLOAD_FOLDER'], fname)}
 
     t1 = time.time()
-    audio = tts.hubert_vits_infer(task, fname)
+    audio = tts.hubert_vits_infer(task)
     t2 = time.time()
+    logger.info(f"[hubert] finish in {(t2 - t1):.2f}s")
+
     if app.config.get("SAVE_AUDIO", False):
         logger.debug(f"[hubert] {fname}")
-    logger.info(f"[hubert] finish in {(t2 - t1):.2f}s")
+        path = os.path.join(app.config.get('CACHE_PATH'), fname)
+        save_audio(audio.getvalue(), path)
+
     if use_streaming:
         audio = tts.generate_audio_chunks(audio)
         response = make_response(audio)
@@ -211,32 +211,24 @@ def voice_hubert_api():
 def voice_w2v2_api():
     try:
         if request.method == "GET":
-            text = request.args.get("text", "")
-            id = int(request.args.get("id", app.config.get("ID", 0)))
-            format = request.args.get("format", app.config.get("FORMAT", "wav"))
-            lang = request.args.get("lang", app.config.get("LANG", "auto"))
-            length = float(request.args.get("length", app.config.get("LENGTH", 1)))
-            noise = float(request.args.get("noise", app.config.get("NOISE", 0.667)))
-            noisew = float(request.args.get("noisew", app.config.get("NOISEW", 0.8)))
-            max = int(request.args.get("max", app.config.get("MAX", 50)))
-            emotion = int(request.args.get("emotion", app.config.get("EMOTION", 0)))
-            use_streaming = request.args.get('streaming', False, type=bool)
+            request_data = request.args
         elif request.method == "POST":
             content_type = request.headers.get('Content-Type')
             if content_type == 'application/json':
-                data = request.get_json()
+                request_data = request.get_json()
             else:
-                data = request.form
-            text = data.get("text", "")
-            id = int(data.get("id", app.config.get("ID", 0)))
-            format = data.get("format", app.config.get("FORMAT", "wav"))
-            lang = data.get("lang", app.config.get("LANG", "auto"))
-            length = float(data.get("length"))
-            noise = float(data.get("noise", app.config.get("NOISE", 0.667)))
-            noisew = float(data.get("noisew", app.config.get("NOISEW", 0.8)))
-            max = int(data.get("max", app.config.get("MAX", 50)))
-            emotion = int(data.get("emotion", app.config.get("EMOTION", 0)))
-            use_streaming = request.form.get('streaming', False, type=bool)
+                request_data = request.form
+
+        text = request_data.get("text", "")
+        id = int(request_data.get("id", app.config.get("ID", 0)))
+        format = request_data.get("format", app.config.get("FORMAT", "wav"))
+        lang = request_data.get("lang", app.config.get("LANG", "auto")).lower()
+        length = float(request_data.get("length", app.config.get("LENGTH", 1)))
+        noise = float(request_data.get("noise", app.config.get("NOISE", 0.667)))
+        noisew = float(request_data.get("noisew", app.config.get("NOISEW", 0.8)))
+        max = int(request_data.get("max", app.config.get("MAX", 50)))
+        emotion = int(request_data.get("emotion", app.config.get("EMOTION", 0)))
+        use_streaming = request_data.get('streaming', False, type=bool)
     except Exception as e:
         logger.error(f"[w2v2] {e}")
         return make_response(f"parameter error", 400)
@@ -259,7 +251,7 @@ def voice_w2v2_api():
 
     # 校验模型是否支持输入的语言
     speaker_lang = tts.voice_speakers["W2V2-VITS"][id].get('lang')
-    if lang.upper() != "AUTO" and lang.upper() != "MIX" and len(speaker_lang) != 1 and lang not in speaker_lang:
+    if lang not in ["auto", "mix"] and len(speaker_lang) != 1 and lang not in speaker_lang:
         logger.info(f"[w2v2] lang \"{lang}\" is not in {speaker_lang}")
         return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}), 400)
 
@@ -285,10 +277,15 @@ def voice_w2v2_api():
             "speaker_lang": speaker_lang}
 
     t1 = time.time()
-    audio = tts.w2v2_vits_infer(task, fname)
+    audio = tts.w2v2_vits_infer(task)
     t2 = time.time()
+    logger.info(f"[w2v2] finish in {(t2 - t1):.2f}s")
+
     if app.config.get("SAVE_AUDIO", False):
-        logger.debug(f"[W2V2] {fname}")
+        logger.debug(f"[w2v2] {fname}")
+        path = os.path.join(app.config.get('CACHE_PATH'), fname)
+        save_audio(audio.getvalue(), path)
+
     if use_streaming:
         audio = tts.generate_audio_chunks(audio)
         response = make_response(audio)
@@ -296,7 +293,6 @@ def voice_w2v2_api():
         response.headers['Content-Type'] = file_type
         return response
     else:
-        logger.info(f"[w2v2] finish in {(t2 - t1):.2f}s")
         return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
 
@@ -326,11 +322,15 @@ def vits_voice_conversion_api():
                 "format": format}
 
         t1 = time.time()
-        audio = tts.vits_voice_conversion(task, fname)
+        audio = tts.vits_voice_conversion(task)
         t2 = time.time()
+        logger.info(f"[Voice conversion] finish in {(t2 - t1):.2f}s")
+
         if app.config.get("SAVE_AUDIO", False):
             logger.debug(f"[Voice conversion] {fname}")
-        logger.info(f"[Voice conversion] finish in {(t2 - t1):.2f}s")
+            path = os.path.join(app.config.get('CACHE_PATH'), fname)
+            save_audio(audio.getvalue(), path)
+
         if use_streaming:
             audio = tts.generate_audio_chunks(audio)
             response = make_response(audio)
@@ -343,14 +343,15 @@ def vits_voice_conversion_api():
 
 @app.route('/voice/ssml', methods=["POST"])
 @require_api_key
-def ssml():
+def ssml_api():
     try:
         content_type = request.headers.get('Content-Type')
         if content_type == 'application/json':
-            data = request.get_json()
+            request_data = request.get_json()
         else:
-            data = request.form
-        ssml = data.get("ssml")
+            request_data = request.form
+
+        ssml = request_data.get("ssml")
     except Exception as e:
         logger.info(f"[ssml] {e}")
         return make_response(jsonify({"status": "error", "message": f"parameter error"}), 400)
@@ -361,11 +362,14 @@ def ssml():
     file_type = f"audio/{format}"
 
     t1 = time.time()
-    audio = tts.create_ssml_infer_task(voice_tasks, format, fname)
+    audio = tts.create_ssml_infer_task(voice_tasks, format)
     t2 = time.time()
+    logger.info(f"[ssml] finish in {(t2 - t1):.2f}s")
+
     if app.config.get("SAVE_AUDIO", False):
         logger.debug(f"[ssml] {fname}")
-    logger.info(f"[ssml] finish in {(t2 - t1):.2f}s")
+        path = os.path.join(app.config.get('CACHE_PATH'), fname)
+        save_audio(audio.getvalue(), path)
 
     return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
@@ -385,15 +389,15 @@ def dimensional_emotion():
 
     file_type = "application/octet-stream; charset=ascii"
     fname = os.path.splitext(audio.filename)[0] + ".npy"
-    audio = tts.get_dimensional_emotion_npy(content)
+    emotion_npy = tts.get_dimensional_emotion_npy(content)
     if use_streaming:
-        audio = tts.generate_audio_chunks(audio)
-        response = make_response(audio)
+        emotion_npy = tts.generate_audio_chunks(emotion_npy)
+        response = make_response(emotion_npy)
         response.headers['Content-Disposition'] = f'attachment; filename={fname}'
         response.headers['Content-Type'] = file_type
         return response
     else:
-        return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
+        return send_file(path_or_file=emotion_npy, mimetype=file_type, download_name=fname)
 
 
 @app.route('/voice/bert-vits2', methods=["GET", "POST"])
@@ -401,37 +405,29 @@ def dimensional_emotion():
 def voice_bert_vits2_api():
     try:
         if request.method == "GET":
-            text = request.args.get("text", "")
-            id = int(request.args.get("id", app.config.get("ID", 0)))
-            format = request.args.get("format", app.config.get("FORMAT", "wav"))
-            # lang = request.args.get("lang", app.config.get("LANG", "auto"))
-            lang = "ZH"
-            length = float(request.args.get("length", app.config.get("LENGTH", 1)))
-            noise = float(request.args.get("noise", app.config.get("NOISE", 0.5)))
-            noisew = float(request.args.get("noisew", app.config.get("NOISEW", 0.6)))
-            sdp_ratio = float(request.args.get("sdp_ratio", 0.2))
-            max = int(request.args.get("max", app.config.get("MAX", 50)))
+            request_data = request.args
         elif request.method == "POST":
             content_type = request.headers.get('Content-Type')
             if content_type == 'application/json':
-                data = request.get_json()
+                request_data = request.get_json()
             else:
-                data = request.form
-            text = data.get("text", "")
-            id = int(data.get("id", app.config.get("ID", 0)))
-            format = data.get("format", app.config.get("FORMAT", "wav"))
-            # lang = data.get("lang", app.config.get("LANG", "auto"))
-            lang = "ZH"
-            length = float(data.get("length", app.config.get("LENGTH", 1)))
-            noise = float(data.get("noise", app.config.get("NOISE", 0.667)))
-            noisew = float(data.get("noisew", app.config.get("NOISEW", 0.8)))
-            sdp_ratio = float(data.get("noisew", app.config.get("SDP_RATIO", 0.2)))
-            max = int(data.get("max", app.config.get("MAX", 50)))
+                request_data = request.form
+
+        text = request_data.get("text", "")
+        id = int(request_data.get("id", app.config.get("ID", 0)))
+        format = request_data.get("format", app.config.get("FORMAT", "wav"))
+        lang = request_data.get("lang", "auto").lower()
+        length = float(request_data.get("length", app.config.get("LENGTH", 1)))
+        noise = float(request_data.get("noise", app.config.get("NOISE", 0.667)))
+        noisew = float(request_data.get("noisew", app.config.get("NOISEW", 0.8)))
+        sdp_ratio = float(request_data.get("noisew", app.config.get("SDP_RATIO", 0.2)))
+        max = int(request_data.get("max", app.config.get("MAX", 50)))
     except Exception as e:
         logger.error(f"[Bert-VITS2] {e}")
         return make_response("parameter error", 400)
 
-    logger.info(f"[Bert-VITS2] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio}")
+    logger.info(
+        f"[Bert-VITS2] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio}")
     logger.info(f"[Bert-VITS2] len:{len(text)} text：{text}")
 
     if check_is_none(text):
@@ -448,7 +444,7 @@ def voice_bert_vits2_api():
 
     # 校验模型是否支持输入的语言
     speaker_lang = tts.voice_speakers["BERT-VITS2"][id].get('lang')
-    if lang.upper() != "AUTO" and lang.upper() != "MIX" and len(speaker_lang) != 1 and lang not in speaker_lang:
+    if lang not in ["auto", "mix"] and len(speaker_lang) != 1 and lang not in speaker_lang:
         logger.info(f"[Bert-VITS2] lang \"{lang}\" is not in {speaker_lang}")
         return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}), 400)
 
@@ -469,14 +465,16 @@ def voice_bert_vits2_api():
             "lang": lang,
             "speaker_lang": speaker_lang}
 
-    if app.config.get("SAVE_AUDIO", False):
-        logger.debug(f"[Bert-VITS2] {fname}")
-
-
     t1 = time.time()
-    audio = tts.bert_vits2_infer(task, fname)
+    audio = tts.bert_vits2_infer(task)
     t2 = time.time()
     logger.info(f"[Bert-VITS2] finish in {(t2 - t1):.2f}s")
+
+    if app.config.get("SAVE_AUDIO", False):
+        logger.debug(f"[Bert-VITS2] {fname}")
+        path = os.path.join(app.config.get('CACHE_PATH'), fname)
+        save_audio(audio.getvalue(), path)
+
     return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
 
@@ -484,16 +482,16 @@ def voice_bert_vits2_api():
 def check():
     try:
         if request.method == "GET":
-            model = request.args.get("model")
-            id = int(request.args.get("id"))
+            request_data = request.args
         elif request.method == "POST":
             content_type = request.headers.get('Content-Type')
             if content_type == 'application/json':
-                data = request.get_json()
+                request_data = request.get_json()
             else:
-                data = request.form
-            model = data.get("model")
-            id = int(data.get("id"))
+                request_data = request.form
+
+        model = request_data.get("model")
+        id = int(request_data.get("id"))
     except Exception as e:
         logger.info(f"[check] {e}")
         return make_response(jsonify({"status": "error", "message": "parameter error"}), 400)

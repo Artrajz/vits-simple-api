@@ -1,3 +1,4 @@
+""" from https://github.com/PlayVoice/vits_chinese """
 import pypinyin
 from pypinyin.contrib.neutral_tone import NeutralToneWith5Mixin
 from pypinyin.converter import DefaultConverter
@@ -41,12 +42,12 @@ class VITS_PinYin:
     def chinese_to_phonemes(self, text):
         # 考虑使用g2pw的chinese bert替换原始的pypinyin,目前测试下来运行速度太慢。
         # 将标准中文文本符号替换成 bert 符号库中的单符号,以保证bert的效果.
-        text = text.replace("——", "...")\
-            .replace("—", "...")\
-            .replace("……", "...")\
-            .replace("…", "...")\
-            .replace('“', '"')\
-            .replace('”', '"')\
+        text = text.replace("——", "...") \
+            .replace("—", "...") \
+            .replace("……", "...") \
+            .replace("…", "...") \
+            .replace('“', '"') \
+            .replace('”', '"') \
             .replace("\n", "")
         tokens = self.prosody.char_model.tokenizer.tokenize(text)
         text = ''.join(tokens)

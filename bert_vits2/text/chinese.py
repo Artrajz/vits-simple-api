@@ -12,6 +12,8 @@ pinyin_to_symbol_map = {line.split("\t")[0]: line.strip().split("\t")[1] for lin
                         open(os.path.join(current_file_path, 'opencpop-strict.txt')).readlines()}
 
 import jieba.posseg as psg
+from jieba import lcut
+lcut("预加载")
 
 rep_map = {
     '：': ',',

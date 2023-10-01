@@ -1,9 +1,5 @@
-import logging
 import os
-from json import loads
-from torch import load, FloatTensor
-from numpy import float32
-import librosa
+import logging
 
 
 class HParams():
@@ -39,6 +35,7 @@ class HParams():
 
 
 def load_checkpoint(checkpoint_path, model):
+    from torch import load
     checkpoint_dict = load(checkpoint_path, map_location='cpu')
     iteration = checkpoint_dict.get('iteration', None)
     saved_state_dict = checkpoint_dict['model']
@@ -65,6 +62,7 @@ def load_checkpoint(checkpoint_path, model):
 
 
 def get_hparams_from_file(config_path):
+    from json import loads
     with open(config_path, 'r', encoding='utf-8') as f:
         data = f.read()
     config = loads(data)
@@ -74,6 +72,9 @@ def get_hparams_from_file(config_path):
 
 
 def load_audio_to_torch(full_path, target_sampling_rate):
+    import librosa
+    from torch import FloatTensor
+    from numpy import float32
     audio, sampling_rate = librosa.load(full_path, sr=target_sampling_rate, mono=True)
     return FloatTensor(audio.astype(float32))
 
@@ -81,15 +82,16 @@ def load_audio_to_torch(full_path, target_sampling_rate):
 def clean_folder(folder_path):
     for filename in os.listdir(folder_path):
         file_path = os.path.join(folder_path, filename)
-        # 如果是文件，则删除文件
+        # 如果是文件，则删除文件。如果是文件夹则跳过。
         if os.path.isfile(file_path):
             os.remove(file_path)
 
 
-# is none -> True, is not none -> False
-def check_is_none(s):
-    return s is None or (isinstance(s, str) and str(s).isspace()) or str(s) == ""
+def check_is_none(item) -> bool:
+    # none -> True, not none -> False
+    return item is None or (isinstance(item, str) and str(item).isspace()) or str(item) == ""
+
 
 def save_audio(audio, path):
-    with open(path,"wb") as f:
+    with open(path, "wb") as f:
         f.write(audio)
