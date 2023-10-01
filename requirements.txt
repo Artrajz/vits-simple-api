@@ -36,6 +36,7 @@ audonnx
 flask==2.2.3
 flask_apscheduler
 pydantic==2.3.0
+werkzeug==2.3.6
 
 # Compression and Decompression
 py7zr
