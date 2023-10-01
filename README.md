@@ -5,13 +5,14 @@
     <br/>
     <p>
         <img src="https://img.shields.io/github/license/Artrajz/vits-simple-api">
-    	<img src="https://img.shields.io/badge/python-3.9%7C3.10-green">
+    	<img src="https://img.shields.io/badge/python-3.10-green">
         <a href="https://hub.docker.com/r/artrajz/vits-simple-api">
             <img src="https://img.shields.io/docker/pulls/artrajz/vits-simple-api"></a>
     </p>
     <a href="https://github.com/Artrajz/vits-simple-api/blob/main/README.md">English</a>|<a href="https://github.com/Artrajz/vits-simple-api/blob/main/README_zh.md">中文文档</a>
     <br/>
 </div>
+
 
 
 
@@ -46,7 +47,7 @@ https://user-images.githubusercontent.com/73542220/237995061-c1f25b4e-dd86-438a-
 
 # Deploy
 
-## Docker
+## Docker(Recommended for Linux)
 
 ### Docker image pull script
 
@@ -140,17 +141,15 @@ Run the docker image pull script again
 
 ###  Download python dependencies 
 
-A python virtual environment is recommended，use python >= 3.9
+A python virtual environment is recommended
 
 `pip install -r requirements.txt`
 
 Fasttext may not be installed on windows, you can install it with the following command,or download wheels [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext)
 
 ```
-#python3.10 win_amd64
+# python3.10 win_amd64
 pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp310-cp310-win_amd64.whl
-#python3.9 win_amd64
-pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp39-cp39-win_amd64.whl
 ```
 
 ### Download  VITS model 
@@ -228,10 +227,12 @@ nvidia-smi
 ```
 Taking CUDA 11.7 as an example, download it from the [official website](https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Windows&amp;target_arch=x86_64&amp;target_version=10&amp;target_type=exe_local)
 ### Install GPU version of PyTorch
+
+1.13.1+cu117 is recommended, other versions may have memory instability issues.
+
 ```
-pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu117
+pip install torch==1.13.1+cu117 --extra-index-url https://download.pytorch.org/whl/cu117
 ```
-You can find the corresponding command for the version you need on the [official website](https://pytorch.org/get-started/locally/)
 ## Linux
 The installation process is similar, but I don't have the environment to test it.
 
@@ -273,190 +274,7 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 
 ## POST
 
-- python
-
-```python
-import re
-import requests
-import os
-import random
-import string
-from requests_toolbelt.multipart.encoder import MultipartEncoder
-
-abs_path = os.path.dirname(__file__)
-base = "http://127.0.0.1:23456"
-
-
-# 映射表
-def voice_speakers():
-    url = f"{base}/voice/speakers"
-
-    res = requests.post(url=url)
-    json = res.json()
-    for i in json:
-        print(i)
-        for j in json[i]:
-            print(j)
-    return json
-
-
-# 语音合成 voice vits
-def voice_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, max=50):
-    fields = {
-        "text": text,
-        "id": str(id),
-        "format": format,
-        "lang": lang,
-        "length": str(length),
-        "noise": str(noise),
-        "noisew": str(noisew),
-        "max": str(max)
-    }
-    boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-
-    m = MultipartEncoder(fields=fields, boundary=boundary)
-    headers = {"Content-Type": m.content_type}
-    url = f"{base}/voice"
-
-    res = requests.post(url=url, data=m, headers=headers)
-    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
-    path = f"{abs_path}/{fname}"
-
-    with open(path, "wb") as f:
-        f.write(res.content)
-    print(path)
-    return path
-
-
-# 语音转换 hubert-vits
-def voice_hubert_vits(upload_path, id, format="wav", length=1, noise=0.667, noisew=0.8):
-    upload_name = os.path.basename(upload_path)
-    upload_type = f'audio/{upload_name.split(".")[1]}'  # wav,ogg
-
-    with open(upload_path, 'rb') as upload_file:
-        fields = {
-            "upload": (upload_name, upload_file, upload_type),
-            "id": str(id),
-            "format": format,
-            "length": str(length),
-            "noise": str(noise),
-            "noisew": str(noisew),
-        }
-        boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-
-        m = MultipartEncoder(fields=fields, boundary=boundary)
-        headers = {"Content-Type": m.content_type}
-        url = f"{base}/voice/hubert-vits"
-
-        res = requests.post(url=url, data=m, headers=headers)
-    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
-    path = f"{abs_path}/{fname}"
-
-    with open(path, "wb") as f:
-        f.write(res.content)
-    print(path)
-    return path
-
-
-# 维度情感模型 w2v2-vits
-def voice_w2v2_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, max=50, emotion=0):
-    fields = {
-        "text": text,
-        "id": str(id),
-        "format": format,
-        "lang": lang,
-        "length": str(length),
-        "noise": str(noise),
-        "noisew": str(noisew),
-        "max": str(max),
-        "emotion": str(emotion)
-    }
-    boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-
-    m = MultipartEncoder(fields=fields, boundary=boundary)
-    headers = {"Content-Type": m.content_type}
-    url = f"{base}/voice/w2v2-vits"
-
-    res = requests.post(url=url, data=m, headers=headers)
-    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
-    path = f"{abs_path}/{fname}"
-
-    with open(path, "wb") as f:
-        f.write(res.content)
-    print(path)
-    return path
-
-
-# 语音转换 同VITS模型内角色之间的音色转换
-def voice_conversion(upload_path, original_id, target_id):
-    upload_name = os.path.basename(upload_path)
-    upload_type = f'audio/{upload_name.split(".")[1]}'  # wav,ogg
-
-    with open(upload_path, 'rb') as upload_file:
-        fields = {
-            "upload": (upload_name, upload_file, upload_type),
-            "original_id": str(original_id),
-            "target_id": str(target_id),
-        }
-        boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-        m = MultipartEncoder(fields=fields, boundary=boundary)
-
-        headers = {"Content-Type": m.content_type}
-        url = f"{base}/voice/conversion"
-
-        res = requests.post(url=url, data=m, headers=headers)
-
-    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
-    path = f"{abs_path}/{fname}"
-
-    with open(path, "wb") as f:
-        f.write(res.content)
-    print(path)
-    return path
-
-
-def voice_ssml(ssml):
-    fields = {
-        "ssml": ssml,
-    }
-    boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-
-    m = MultipartEncoder(fields=fields, boundary=boundary)
-    headers = {"Content-Type": m.content_type}
-    url = f"{base}/voice/ssml"
-
-    res = requests.post(url=url, data=m, headers=headers)
-    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
-    path = f"{abs_path}/{fname}"
-
-    with open(path, "wb") as f:
-        f.write(res.content)
-    print(path)
-    return path
-
-def voice_dimensional_emotion(upload_path):
-    upload_name = os.path.basename(upload_path)
-    upload_type = f'audio/{upload_name.split(".")[1]}'  # wav,ogg
-
-    with open(upload_path, 'rb') as upload_file:
-        fields = {
-            "upload": (upload_name, upload_file, upload_type),
-        }
-        boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-
-        m = MultipartEncoder(fields=fields, boundary=boundary)
-        headers = {"Content-Type": m.content_type}
-        url = f"{base}/voice/dimension-emotion"
-
-        res = requests.post(url=url, data=m, headers=headers)
-    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
-    path = f"{abs_path}/{fname}"
-
-    with open(path, "wb") as f:
-        f.write(res.content)
-    print(path)
-    return path
-```
+- See `api_test.py`
 
 ## API KEY
 
@@ -614,4 +432,5 @@ Learning and communication,now there is only Chinese [QQ group](https://qm.qq.co
 - emotional-vits:https://github.com/innnky/emotional-vits
 - vits-uma-genshin-honkai:https://huggingface.co/spaces/zomehwh/vits-uma-genshin-honkai
 - vits_chinese:https://github.com/PlayVoice/vits_chinese
+- Bert_VITS2:https://github.com/fishaudio/Bert-VITS2
 
