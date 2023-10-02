@@ -47,7 +47,7 @@ API_KEY = "api-key"
 LOGGING_LEVEL = "DEBUG"
 
 # Language identification library. Optional fastlid, langid
-LANGUAGE_IDENTIFICATION_LIBRARY = "fastlid"
+LANGUAGE_IDENTIFICATION_LIBRARY = "langid"
 
 # To use the english_cleaner, you need to install espeak and provide the path of libespeak-ng.dll as input here.
 # If ESPEAK_LIBRARY is set to empty, it will be read from the environment variable.
