@@ -6,7 +6,7 @@ from bert_vits2 import utils as bert_vits2_utils
 from bert_vits2.models import SynthesizerTrn
 from bert_vits2.text import *
 from bert_vits2.text.cleaner import clean_text
-from utils import classify_language, get_hparams_from_file
+from utils import classify_language, get_hparams_from_file, lang_dict
 from utils.sentence import sentence_split_and_markup, cut
 
 
@@ -98,7 +98,7 @@ class Bert_VITS2:
         max = voice.get("max", 50)
         # sentence_list = sentence_split_and_markup(text, max, "ZH", ["zh"])
         if lang == "auto":
-            lang = classify_language(text)
+            lang = classify_language(text, target_languages=lang_dict["bert_vits2"])
         sentence_list = cut(text, max)
         audios = []
         for sentence in sentence_list:
