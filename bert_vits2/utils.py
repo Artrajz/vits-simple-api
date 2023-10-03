@@ -9,7 +9,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 logger = logging
 
 
-def load_checkpoint(checkpoint_path, model, optimizer=None, skip_optimizer=False):
+def load_checkpoint(checkpoint_path, model, optimizer=None, skip_optimizer=False, legacy=False):
     assert os.path.isfile(checkpoint_path)
     checkpoint_dict = torch.load(checkpoint_path, map_location='cpu')
     iteration = checkpoint_dict['iteration']
@@ -39,9 +39,13 @@ def load_checkpoint(checkpoint_path, model, optimizer=None, skip_optimizer=False
             # For upgrading from the old version
             if "ja_bert_proj" in k:
                 v = torch.zeros_like(v)
-                logger.warning(
-                    f"If you are using an older version of the model, you should add the parameter \"legacy\":true to the data of the model's config.json")
-            logger.error(f"{k} is not in the checkpoint")
+                if not legacy:
+                    logger.error(f"{k} is not in the checkpoint")
+                    logger.warning(
+                        f"If you are using an older version of the model, you should add the parameter \"legacy\" "
+                        f"to the parameter \"data\" of the model's config.json. For example: \"legacy\": \"1.0.1\"")
+            else:
+                logger.error(f"{k} is not in the checkpoint")
 
             new_state_dict[k] = v
     if hasattr(model, 'module'):

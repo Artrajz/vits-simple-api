@@ -12,12 +12,12 @@ from utils.sentence import sentence_split_and_markup, cut
 
 class Bert_VITS2:
     def __init__(self, model, config, device=torch.device("cpu"), **kwargs):
-        self.hps_ms = get_hparams_from_file(config)
+        self.hps_ms = get_hparams_from_file(config) if isinstance(config, str) else config
         self.n_speakers = getattr(self.hps_ms.data, 'n_speakers', 0)
         self.speakers = [item[0] for item in
                          sorted(list(getattr(self.hps_ms.data, 'spk2id', {'0': 0}).items()), key=lambda x: x[1])]
 
-        self.legacy = getattr(self.hps_ms.data, 'legacy', False)
+        self.legacy = kwargs.get('legacy', getattr(self.hps_ms.data, 'legacy', None))
         self.symbols = symbols_legacy if self.legacy else symbols
         self._symbol_to_id = {s: i for i, s in enumerate(self.symbols)}
 
@@ -33,7 +33,7 @@ class Bert_VITS2:
         self.load_model(model)
 
     def load_model(self, model):
-        bert_vits2_utils.load_checkpoint(model, self.net_g, None, skip_optimizer=True)
+        bert_vits2_utils.load_checkpoint(model, self.net_g, None, skip_optimizer=True, legacy=self.legacy)
 
     def get_speakers(self):
         return self.speakers

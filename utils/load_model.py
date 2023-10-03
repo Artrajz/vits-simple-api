@@ -3,20 +3,22 @@ import json
 import logging
 import config
 import numpy as np
-from utils.data_utils import check_is_none
+
+import utils
+from utils.data_utils import check_is_none, HParams
 from vits import VITS
 from voice import TTS
 from config import DEVICE as device
 from utils.lang_dict import lang_dict
 
 
+def recognition_model_type(hps: HParams) -> str:
+    # model_config = json.load(model_config_json)
+    symbols = getattr(hps, "symbols", None)
+    # symbols = model_config.get("symbols", None)
+    emotion_embedding = getattr(hps.data, "emotion_embedding", False)
 
-def recognition_model_type(model_config_json: json) -> str:
-    model_config = json.load(model_config_json)
-    symbols = model_config.get("symbols", None)
-    emotion_embedding = model_config.get("data").get("emotion_embedding", False)
-
-    if "use_spk_conditioned_encoder" in model_config.get("model"):
+    if "use_spk_conditioned_encoder" in hps.model:
         model_type = "bert_vits2"
         return model_type
 
@@ -80,12 +82,24 @@ def parse_models(model_list):
 
     for model_info in model_list:
         config_path = model_info[1]
-        with open(config_path, 'r', encoding='utf-8') as model_config:
-            model_type = recognition_model_type(model_config)
+        hps = utils.get_hparams_from_file(config_path)
+        model_info.append(hps)
+        model_type = recognition_model_type(hps)
+        # with open(config_path, 'r', encoding='utf-8') as model_config:
+        #     model_type = recognition_model_type(model_config)
         if model_type in categorized_models:
             categorized_models[model_type].append(model_info)
 
     return categorized_models
+
+
+def process_legacy_versions(hps):
+    legacy_versions = getattr(hps.data, "legacy", None)
+    if legacy_versions:
+        prefix = legacy_versions[0].lower()
+        if prefix == "v":
+            legacy_versions = legacy_versions[1:]
+    return legacy_versions
 
 
 def merge_models(model_list, model_class, model_type, additional_arg=None):
@@ -93,22 +107,25 @@ def merge_models(model_list, model_class, model_type, additional_arg=None):
     speakers = []
     new_id = 0
 
-    for obj_id, (model_path, config_path) in enumerate(model_list):
+    for obj_id, (model_path, config_path, hps) in enumerate(model_list):
         obj_args = {
             "model": model_path,
-            "config": config_path,
+            "config": hps,
             "model_type": model_type,
             "device": device
         }
+
+        if model_type == "bert_vits2":
+            legacy_versions = process_legacy_versions(hps)
+            obj_args.update({"legacy": legacy_versions})
+            key = f"{model_type}_v{legacy_versions}" if legacy_versions else model_type
+        else:
+            key = getattr(hps.data, "text_cleaners", ["none"])[0]
+
         if additional_arg:
             obj_args.update(additional_arg)
 
         obj = model_class(**obj_args)
-
-        if model_type == "bert_vits2":
-            key = model_type
-        else:
-            key = obj.get_cleaner()
 
         lang = lang_dict.get(key, ["unknown"])
 

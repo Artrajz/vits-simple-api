@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from torch import no_grad, LongTensor, inference_mode, FloatTensor
 import utils
+from utils import get_hparams_from_file
 from utils.sentence import sentence_split_and_markup
 from vits import commons
 from vits.mel_processing import spectrogram_torch
@@ -11,11 +12,10 @@ from vits.text import text_to_sequence
 from vits.models import SynthesizerTrn
 
 
-
 class VITS:
-    def __init__(self, model, config, additional_model=None, model_type=None, device=torch.device("cpu"),**kwargs):
+    def __init__(self, model, config, additional_model=None, model_type=None, device=torch.device("cpu"), **kwargs):
         self.model_type = model_type
-        self.hps_ms = utils.get_hparams_from_file(config)
+        self.hps_ms = get_hparams_from_file(config) if isinstance(config, str) else config
         self.n_speakers = getattr(self.hps_ms.data, 'n_speakers', 0)
         self.n_symbols = len(getattr(self.hps_ms, 'symbols', []))
         self.speakers = getattr(self.hps_ms, 'speakers', ['0'])
