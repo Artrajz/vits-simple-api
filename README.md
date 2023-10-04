@@ -23,7 +23,7 @@
 - [x] HuBert-soft VITS
 - [x] [vits_chinese](https://github.com/PlayVoice/vits_chinese)
 - [x] [Bert-VITS2](https://github.com/Stardust-minus/Bert-VITS2)
-- [x] W2V2 VITS / emotional-vits dimensional emotion model
+- [x] W2V2 VITS / [emotional-vits](https://github.com/innnky/emotional-vits) dimensional emotion model
 - [x] Support for loading multiple models
 - [x] Automatic language recognition and processing,set the scope of language type recognition according to model's cleaner,support for custom language type range
 - [x] Customize default parameters
@@ -343,7 +343,7 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 | Synthesized text       | text      | true    |                  | str   | Text needed for voice synthesis.                             |
 | Speaker ID             | id        | false   | From `config.py` | int   | The speaker ID.                                              |
 | Audio format           | format    | false   | From `config.py` | str   | Support for wav,ogg,silk,mp3,flac                            |
-| Text language          | lang      | false   | From `config.py` | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
+| Text language          | lang      | false   | From `config.py` | str   | "Auto" is a mode for automatic language detection and is also the default mode. However, it currently only supports detecting the language of an entire text passage and cannot distinguish languages on a per-sentence basis. The other available language options are "zh" and "ja". |
 | Audio length           | length    | false   | From `config.py` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
 | Noise                  | noise     | false   | From `config.py` | float | Sample noise, controlling the randomness of the synthesis.   |
 | SDP noise              | noisew    | false   | From `config.py` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |

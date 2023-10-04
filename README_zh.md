@@ -21,7 +21,7 @@
 
 - [x] VITS语音合成，语音转换
 - [x] HuBert-soft VITS模型
-- [x] W2V2 VITS / emotional-vits维度情感模型
+- [x] W2V2 VITS / [emotional-vits](https://github.com/innnky/emotional-vits)维度情感模型
 - [x] [vits_chinese](https://github.com/PlayVoice/vits_chinese)
 - [x] [Bert-VITS2](https://github.com/Stardust-minus/Bert-VITS2)
 - [x] 加载多模型
@@ -341,7 +341,7 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 | 合成文本      | text      | true    |                     | str   | 需要合成语音的文本。                                         |
 | 角色id        | id        | false   | 从`config.py`中获取 | int   | 即说话人id。                                                 |
 | 音频格式      | format    | false   | 从`config.py`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
-| 文本语言      | lang      | false   | 从`config.py`中获取 | str   | 目前只有中文。                                               |
+| 文本语言      | lang      | false   | 从`config.py`中获取 | str   | auto为自动识别语言模式，也是默认模式，但目前只支持识别整段文本的语言，无法细分到每个句子。其余可选语言zh和ja。 |
 | 语音长度/语速 | length    | false   | 从`config.py`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢。           |
 | 噪声          | noise     | false   | 从`config.py`中获取 | float | 样本噪声，控制合成的随机性。                                 |
 | sdp噪声       | noisew    | false   | 从`config.py`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
