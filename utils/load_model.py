@@ -5,6 +5,7 @@ import config
 import numpy as np
 
 import utils
+from bert_vits2.utils import process_legacy_versions
 from utils.data_utils import check_is_none, HParams
 from vits import VITS
 from voice import TTS
@@ -93,15 +94,6 @@ def parse_models(model_list):
     return categorized_models
 
 
-def process_legacy_versions(hps):
-    legacy_versions = getattr(hps.data, "legacy", None)
-    if legacy_versions:
-        prefix = legacy_versions[0].lower()
-        if prefix == "v":
-            legacy_versions = legacy_versions[1:]
-    return legacy_versions
-
-
 def merge_models(model_list, model_class, model_type, additional_arg=None):
     id_mapping_objs = []
     speakers = []
@@ -117,7 +109,6 @@ def merge_models(model_list, model_class, model_type, additional_arg=None):
 
         if model_type == "bert_vits2":
             legacy_versions = process_legacy_versions(hps)
-            obj_args.update({"legacy": legacy_versions})
             key = f"{model_type}_v{legacy_versions}" if legacy_versions else model_type
         else:
             key = getattr(hps.data, "text_cleaners", ["none"])[0]

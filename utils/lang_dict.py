@@ -19,5 +19,6 @@ lang_dict = {
                                  "YB"],
     "bert_chinese_cleaners": ["zh"],
     "bert_vits2": ["zh", "ja"],
+    "bert_vits2_v1.0": ["zh"],
     "bert_vits2_v1.0.1": ["zh"]
 }

@@ -6,6 +6,7 @@ from bert_vits2 import utils as bert_vits2_utils
 from bert_vits2.models import SynthesizerTrn
 from bert_vits2.text import *
 from bert_vits2.text.cleaner import clean_text
+from bert_vits2.utils import process_legacy_versions
 from utils import classify_language, get_hparams_from_file, lang_dict
 from utils.sentence import sentence_split_and_markup, cut
 
@@ -16,9 +17,18 @@ class Bert_VITS2:
         self.n_speakers = getattr(self.hps_ms.data, 'n_speakers', 0)
         self.speakers = [item[0] for item in
                          sorted(list(getattr(self.hps_ms.data, 'spk2id', {'0': 0}).items()), key=lambda x: x[1])]
+        self.symbols = symbols
 
-        self.legacy = kwargs.get('legacy', getattr(self.hps_ms.data, 'legacy', None))
-        self.symbols = symbols_legacy if self.legacy else symbols
+        # Compatible with legacy versions
+        self.version = process_legacy_versions(self.hps_ms)
+
+        if self.version in ["1.0", "1.0.1"]:
+            self.symbols = symbols_legacy
+            self.hps_ms.model.n_layers_trans_flow = 3
+            
+        if self.version in ["1.1"]:
+            self.hps_ms.model.n_layers_trans_flow = 6
+
         self._symbol_to_id = {s: i for i, s in enumerate(self.symbols)}
 
         self.net_g = SynthesizerTrn(
@@ -33,7 +43,7 @@ class Bert_VITS2:
         self.load_model(model)
 
     def load_model(self, model):
-        bert_vits2_utils.load_checkpoint(model, self.net_g, None, skip_optimizer=True, legacy=self.legacy)
+        bert_vits2_utils.load_checkpoint(model, self.net_g, None, skip_optimizer=True, legacy_version=self.version)
 
     def get_speakers(self):
         return self.speakers

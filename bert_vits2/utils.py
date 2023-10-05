@@ -9,7 +9,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 logger = logging
 
 
-def load_checkpoint(checkpoint_path, model, optimizer=None, skip_optimizer=False, legacy=False):
+def load_checkpoint(checkpoint_path, model, optimizer=None, skip_optimizer=False, legacy_version=None):
     assert os.path.isfile(checkpoint_path)
     checkpoint_dict = torch.load(checkpoint_path, map_location='cpu')
     iteration = checkpoint_dict['iteration']
@@ -39,11 +39,11 @@ def load_checkpoint(checkpoint_path, model, optimizer=None, skip_optimizer=False
             # For upgrading from the old version
             if "ja_bert_proj" in k:
                 v = torch.zeros_like(v)
-                if not legacy:
+                if legacy_version is None:
                     logger.error(f"{k} is not in the checkpoint")
                     logger.warning(
-                        f"If you are using an older version of the model, you should add the parameter \"legacy\" "
-                        f"to the parameter \"data\" of the model's config.json. For example: \"legacy\": \"1.0.1\"")
+                        f"If you are using an older version of the model, you should add the parameter \"legacy_version\" "
+                        f"to the parameter \"data\" of the model's config.json. For example: \"legacy_version\": \"1.0.1\"")
             else:
                 logger.error(f"{k} is not in the checkpoint")
 
@@ -56,3 +56,12 @@ def load_checkpoint(checkpoint_path, model, optimizer=None, skip_optimizer=False
     logger.info("Loaded checkpoint '{}' (iteration {})".format(
         checkpoint_path, iteration))
     return model, optimizer, learning_rate, iteration
+
+
+def process_legacy_versions(hps):
+    legacy_version = getattr(hps.data, "legacy", getattr(hps.data, "legacy_version", None))
+    if legacy_version:
+        prefix = legacy_version[0].lower()
+        if prefix == "v":
+            legacy_version = legacy_version[1:]
+    return legacy_version
