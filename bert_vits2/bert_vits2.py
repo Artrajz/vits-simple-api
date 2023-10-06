@@ -26,7 +26,10 @@ class Bert_VITS2:
             self.symbols = symbols_legacy
             self.hps_ms.model.n_layers_trans_flow = 3
 
-        if self.version in ["1.1", "1.1.0", "1.1.1"]:
+        elif self.version in ["1.1.0-transition"]:
+            self.hps_ms.model.n_layers_trans_flow = 3
+
+        elif self.version in ["1.1", "1.1.0", "1.1.1"]:
             self.hps_ms.model.n_layers_trans_flow = 6
 
         self._symbol_to_id = {s: i for i, s in enumerate(self.symbols)}
