@@ -20,5 +20,9 @@ lang_dict = {
     "bert_chinese_cleaners": ["zh"],
     "bert_vits2": ["zh", "ja"],
     "bert_vits2_v1.0": ["zh"],
-    "bert_vits2_v1.0.1": ["zh"]
+    "bert_vits2_v1.0.0": ["zh"],
+    "bert_vits2_v1.0.1": ["zh"],
+    "bert_vits2_v1.1": ["zh", "ja"],
+    "bert_vits2_v1.1.0": ["zh", "ja"],
+    "bert_vits2_v1.1.1": ["zh", "ja"],
 }
