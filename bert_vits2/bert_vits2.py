@@ -22,11 +22,11 @@ class Bert_VITS2:
         # Compatible with legacy versions
         self.version = process_legacy_versions(self.hps_ms)
 
-        if self.version in ["1.0", "1.0.1"]:
+        if self.version in ["1.0", "1.0.0", "1.0.1"]:
             self.symbols = symbols_legacy
             self.hps_ms.model.n_layers_trans_flow = 3
-            
-        if self.version in ["1.1"]:
+
+        if self.version in ["1.1", "1.1.0", "1.1.1"]:
             self.hps_ms.model.n_layers_trans_flow = 6
 
         self._symbol_to_id = {s: i for i, s in enumerate(self.symbols)}
