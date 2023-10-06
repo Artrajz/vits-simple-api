@@ -28,9 +28,9 @@ EN_MESSAGES=(
   ["DOWNLOAD_VITS_CHINESE"]="Do you want to download the bert model for vits_chinese? Enter 1 for yes, 2 for no."
   ["MUST_DOWNLOAD_VITS_CHINESE"]="Using vits_chinese requires downloading these models, which will take up about 410MB."
   ["DOWNLOAD_BERT_VITS2"]="Do you want to download chinese-roberta-wwm-ext-large? Enter 1 for yes or 2 for no"
-  ["MUST_DOWNLOAD_BERT_VITS2"]="To use Bert-VITS2, you must download these models, which will take up about 3.64GB."
+  ["MUST_DOWNLOAD_BERT_VITS2"]="To use Bert-VITS2, you must download these models, which will take up about 1.63GB."
   ["DOWNLOADED"]="File is downloaded correctly."
-  ["CORRUPTED"]="File is corrupted or incomplete."
+  ["CORRUPTED"]="The file may not have been downloaded, or the download might be incomplete, and it could also be corrupted."
   ["INSTALL_COMPLETE"]="The upgrade or installation has been completed."
   ["CONFIG_DIR"]="The configuration file directory is"
   ["IMPORT_NOTICE"]="If the vits model is not imported, it cannot be used. Import the model in the configuration file directory."
@@ -59,9 +59,9 @@ ZH_MESSAGES=(
   ["DOWNLOAD_VITS_CHINESE"]="是否要下载vits_chinese的bert模型？输入1表示是，2表示否。"
   ["MUST_DOWNLOAD_VITS_CHINESE"]="使用vits_chinese必须下载这些模型，将占用大约410MB。"
   ["DOWNLOAD_BERT_VITS2"]="是否要下载chinese-roberta-wwm-ext-large？输入1表示是，2表示否。"
-  ["MUST_DOWNLOAD_BERT_VITS2"]="使用Bert-VITS2必须下载这些模型，将占用大约3.64GB。"
+  ["MUST_DOWNLOAD_BERT_VITS2"]="使用Bert-VITS2必须下载这些模型，将占用大约1.63GB。"
   ["DOWNLOADED"]="文件已正确下载。"
-  ["CORRUPTED"]="文件已损坏或不完整。"
+  ["CORRUPTED"]="文件可能未下载，或下载不完整，也有可能已损坏。"
   ["INSTALL_COMPLETE"]="更新或安装已完成。"
   ["CONFIG_DIR"]="配置文件目录是"
   ["IMPORT_NOTICE"]="如果vits模型没有被导入，它是无法使用的。请在配置文件目录中导入模型。"
@@ -239,6 +239,21 @@ if [ "$choice_download_bert_vits2" -eq 1 ]; then
     echo ${MESSAGES["CORRUPTED"]}
     download_with_fallback bert_vits2/bert/chinese-roberta-wwm-ext-large/pytorch_model.bin \
       "https://huggingface.co/hfl/chinese-roberta-wwm-ext-large/resolve/main/pytorch_model.bin"
+  fi
+  
+  mkdir -p bert_vits2/bert/bert-base-japanese-v3
+
+  EXPECTED_MD5="6d0f8f3503dae04df0711b6175ef0c8e"
+  FILE_PATH="bert_vits2/bert/bert-base-japanese-v3/pytorch_model.bin"
+  echo -e "${MESSAGES["VERIFYING"]}$FILE_PATH"
+  ACTUAL_MD5=$(md5sum $FILE_PATH | awk '{print $1}')
+
+  if [ "$EXPECTED_MD5" == "$ACTUAL_MD5" ]; then
+    echo "${MESSAGES["DOWNLOADED"]}"
+  else
+    echo ${MESSAGES["CORRUPTED"]}
+    download_with_fallback bert_vits2/bert/bert-base-japanese-v3/pytorch_model.bin \
+      "https://huggingface.co/cl-tohoku/bert-base-japanese-v3/resolve/main/pytorch_model.bin"
   fi
 
 fi
