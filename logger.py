@@ -22,10 +22,8 @@ handler = TimedRotatingFileHandler(log_file, when="midnight", interval=1, backup
 handler.suffix = "%Y-%m-%d.log"
 formatter = logging.Formatter('%(levelname)s:%(name)s %(message)s')
 handler.setFormatter(formatter)
-logger.addHandler(handler)
 
-logging.getLogger("werkzeug").addHandler(handler)
-logging.getLogger("apscheduler.scheduler").addHandler(handler)
+logging.getLogger().addHandler(handler)
 
 
 # Custom function to handle uncaught exceptions
