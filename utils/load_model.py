@@ -5,7 +5,6 @@ import config
 import numpy as np
 
 import utils
-from bert_vits2.utils import process_legacy_versions
 from utils.data_utils import check_is_none, HParams
 from vits import VITS
 from voice import TTS
@@ -108,6 +107,7 @@ def merge_models(model_list, model_class, model_type, additional_arg=None):
         }
 
         if model_type == "bert_vits2":
+            from bert_vits2.utils import process_legacy_versions
             legacy_versions = process_legacy_versions(hps)
             key = f"{model_type}_v{legacy_versions}" if legacy_versions else model_type
         else:
