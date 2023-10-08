@@ -8,7 +8,7 @@ services:
       - 23456:23456
     environment:
       LANG: 'C.UTF-8'
-      #TZ: Asia/Shanghai #timezone
+      TZ: Asia/Shanghai #timezone
     volumes:
       - ./Model:/app/Model # 挂载模型文件夹
       - ./config.py:/app/config.py # 挂载配置文件
