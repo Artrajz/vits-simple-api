@@ -1,4 +1,4 @@
-FROM cnstark/pytorch:2.0.1-py3.10.11-cuda11.8.0-ubuntu22.04
+FROM artrajz/pytorch:1.13.1-cu117-py3.10.11-ubuntu22.04
 
 RUN mkdir -p /app
 WORKDIR /app
@@ -27,8 +27,7 @@ RUN wget https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5
 ENV LD_PRELOAD=/usr/local/lib/libjemalloc.so
 
 COPY requirements.txt /app/
-RUN pip install --upgrade pip && \
-    pip install pyopenjtalk==0.3.2 fasttext -i https://pypi.artrajz.cn/simple --no-cache-dir && \
+RUN pip install pyopenjtalk==0.3.2 -i https://pypi.artrajz.cn/simple --no-cache-dir && \
     pip install gunicorn --no-cache-dir && \
     pip install -r requirements.txt --no-cache-dir&& \
     rm -rf /root/.cache/pip/*
