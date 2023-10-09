@@ -1,10 +1,12 @@
-name: Docker build latest gpu
+name: Docker build GPU
 
 on:
   workflow_dispatch:
   push:
     branches:
       - 'main'
+  release:
+    types: [published]
 
 jobs:
   docker:
@@ -12,19 +14,29 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v3
-      -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: actions/checkout@v2
+
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
+
       -
         name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      -
+        name: Set tag
+        id: set_tag
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            echo "::set-output name=tag::${{ github.event.release.tag_name }}-gpu"
+          else
+            echo "::set-output name=tag::latest-gpu"
+          fi
+
       -
         name: Build and push
         uses: docker/build-push-action@v4
@@ -33,6 +45,6 @@ jobs:
           file: ./Dockerfile_GPU
           push: true
           platforms: 'linux/amd64'
-          tags: artrajz/vits-simple-api:latest-gpu
+          tags: artrajz/vits-simple-api:${{ steps.set_tag.outputs.tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
