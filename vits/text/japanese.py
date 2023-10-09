@@ -1,7 +1,23 @@
+import os
 import re
 from unidecode import unidecode
 import pyopenjtalk
 
+from config import ABS_PATH
+from utils.download import download_and_verify
+
+URLS = [
+    "https://github.com/r9y9/open_jtalk/releases/download/v1.11.1/open_jtalk_dic_utf_8-1.11.tar.gz",
+    "https://ghproxy.com/https://github.com/r9y9/open_jtalk/releases/download/v1.11.1/open_jtalk_dic_utf_8-1.11.tar.gz",
+]
+install_path = os.path.dirname(pyopenjtalk.__file__)
+dict_path = os.path.join(install_path, "open_jtalk_dic_utf_8-1.11", "char.bin")
+TARGET_PATH = os.path.join(ABS_PATH, "open_jtalk_dic_utf_8-1.11.tar.gz")
+EXTRACT_DESTINATION = os.path.join(install_path, "")
+EXPECTED_MD5 = None
+
+if not os.path.exists(dict_path):
+    success, message = download_and_verify(URLS, TARGET_PATH, EXPECTED_MD5, EXTRACT_DESTINATION)
 
 # Regular expression matching Japanese without punctuation marks:
 _japanese_characters = re.compile(
@@ -127,7 +143,7 @@ def get_real_hatsuon(text):
 def japanese_to_ipa(text):
     text = japanese_to_romaji_with_accent(text).replace('...', '…')
     text = re.sub(
-        r'([aiueo])\1+', lambda x: x.group(0)[0]+'ː'*(len(x.group(0))-1), text)
+        r'([aiueo])\1+', lambda x: x.group(0)[0] + 'ː' * (len(x.group(0)) - 1), text)
     text = get_real_sokuon(text)
     text = get_real_hatsuon(text)
     for regex, replacement in _romaji_to_ipa:
@@ -148,6 +164,6 @@ def japanese_to_ipa3(text):
     text = japanese_to_ipa2(text).replace('n^', 'ȵ').replace(
         'ʃ', 'ɕ').replace('*', '\u0325').replace('#', '\u031a')
     text = re.sub(
-        r'([aiɯeo])\1+', lambda x: x.group(0)[0]+'ː'*(len(x.group(0))-1), text)
+        r'([aiɯeo])\1+', lambda x: x.group(0)[0] + 'ː' * (len(x.group(0)) - 1), text)
     text = re.sub(r'((?:^|\s)(?:ts|tɕ|[kpt]))', r'\1ʰ', text)
     return text
