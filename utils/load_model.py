@@ -10,6 +10,7 @@ from vits import VITS
 from voice import TTS
 from config import DEVICE as device
 from utils.lang_dict import lang_dict
+from contants import ModelType
 
 
 def recognition_model_type(hps: HParams) -> str:
@@ -19,16 +20,16 @@ def recognition_model_type(hps: HParams) -> str:
     emotion_embedding = getattr(hps.data, "emotion_embedding", False)
 
     if "use_spk_conditioned_encoder" in hps.model:
-        model_type = "bert_vits2"
+        model_type = ModelType.BERT_VITS2
         return model_type
 
     if symbols != None:
         if not emotion_embedding:
-            mode_type = "vits"
+            mode_type = ModelType.VITS
         else:
-            mode_type = "w2v2"
+            mode_type = ModelType.W2V2_VITS
     else:
-        mode_type = "hubert"
+        mode_type = ModelType.HUBERT_VITS
 
     return mode_type
 
@@ -74,10 +75,10 @@ def load_npy(emotion_reference_npy):
 
 def parse_models(model_list):
     categorized_models = {
-        "vits": [],
-        "hubert": [],
-        "w2v2": [],
-        "bert_vits2": []
+        ModelType.VITS: [],
+        ModelType.HUBERT_VITS: [],
+        ModelType.W2V2_VITS: [],
+        ModelType.BERT_VITS2: []
     }
 
     for model_info in model_list:
@@ -106,10 +107,10 @@ def merge_models(model_list, model_class, model_type, additional_arg=None):
             "device": device
         }
 
-        if model_type == "bert_vits2":
+        if model_type == ModelType.BERT_VITS2:
             from bert_vits2.utils import process_legacy_versions
             legacy_versions = process_legacy_versions(hps)
-            key = f"{model_type}_v{legacy_versions}" if legacy_versions else model_type
+            key = f"{model_type.value}_v{legacy_versions}" if legacy_versions else model_type.value         
         else:
             key = getattr(hps.data, "text_cleaners", ["none"])[0]
 
@@ -132,11 +133,11 @@ def load_model(model_list) -> TTS:
     categorized_models = parse_models(model_list)
 
     # Handle VITS
-    vits_objs, vits_speakers = merge_models(categorized_models["vits"], VITS, "vits")
+    vits_objs, vits_speakers = merge_models(categorized_models[ModelType.VITS], VITS, ModelType.VITS)
 
     # Handle HUBERT-VITS
     hubert_vits_objs, hubert_vits_speakers = [], []
-    if len(categorized_models["hubert"]) != 0:
+    if len(categorized_models[ModelType.HUBERT_VITS]) != 0:
         if getattr(config, "HUBERT_SOFT_MODEL", None) is None or check_is_none(config.HUBERT_SOFT_MODEL):
             raise ValueError(f"Please configure HUBERT_SOFT_MODEL path in config.py")
         try:
@@ -145,13 +146,13 @@ def load_model(model_list) -> TTS:
         except Exception as e:
             raise ValueError(f"Load HUBERT_SOFT_MODEL failed {e}")
 
-        hubert_vits_objs, hubert_vits_speakers = merge_models(categorized_models["hubert"], VITS, "hubert",
+        hubert_vits_objs, hubert_vits_speakers = merge_models(categorized_models[ModelType.HUBERT_VITS], VITS, ModelType.HUBERT_VITS,
                                                               additional_arg={"additional_model": hubert})
 
     # Handle W2V2-VITS
     w2v2_vits_objs, w2v2_vits_speakers = [], []
     w2v2_emotion_count = 0
-    if len(categorized_models["w2v2"]) != 0:
+    if len(categorized_models[ModelType.W2V2_VITS]) != 0:
         if getattr(config, "DIMENSIONAL_EMOTION_NPY", None) is None or check_is_none(
                 config.DIMENSIONAL_EMOTION_NPY):
             raise ValueError(f"Please configure DIMENSIONAL_EMOTION_NPY path in config.py")
@@ -161,20 +162,24 @@ def load_model(model_list) -> TTS:
             emotion_reference = None
             raise ValueError(f"Load DIMENSIONAL_EMOTION_NPY failed {e}")
 
-        w2v2_vits_objs, w2v2_vits_speakers = merge_models(categorized_models["w2v2"], VITS, "w2v2",
+        w2v2_vits_objs, w2v2_vits_speakers = merge_models(categorized_models[ModelType.W2V2_VITS], VITS, ModelType.W2V2_VITS,
                                                           additional_arg={"additional_model": emotion_reference})
         w2v2_emotion_count = len(emotion_reference) if emotion_reference is not None else 0
 
     # Handle BERT-VITS2
     bert_vits2_objs, bert_vits2_speakers = [], []
-    if len(categorized_models["bert_vits2"]) != 0:
+    if len(categorized_models[ModelType.BERT_VITS2]) != 0:
         from bert_vits2 import Bert_VITS2
-        bert_vits2_objs, bert_vits2_speakers = merge_models(categorized_models["bert_vits2"], Bert_VITS2, "bert_vits2")
+        bert_vits2_objs, bert_vits2_speakers = merge_models(categorized_models[ModelType.BERT_VITS2], Bert_VITS2, ModelType.BERT_VITS2)
 
-    voice_obj = {"VITS": vits_objs, "HUBERT-VITS": hubert_vits_objs, "W2V2-VITS": w2v2_vits_objs,
-                 "BERT-VITS2": bert_vits2_objs}
-    voice_speakers = {"VITS": vits_speakers, "HUBERT-VITS": hubert_vits_speakers, "W2V2-VITS": w2v2_vits_speakers,
-                      "BERT-VITS2": bert_vits2_speakers}
+    voice_obj = {ModelType.VITS: vits_objs,
+                 ModelType.HUBERT_VITS: hubert_vits_objs,
+                 ModelType.W2V2_VITS: w2v2_vits_objs,
+                 ModelType.BERT_VITS2: bert_vits2_objs}
+    voice_speakers = {ModelType.VITS.value: vits_speakers,
+                      ModelType.HUBERT_VITS.value: hubert_vits_speakers,
+                      ModelType.W2V2_VITS.value: w2v2_vits_speakers,
+                      ModelType.BERT_VITS2.value: bert_vits2_speakers}
 
     tts = TTS(voice_obj, voice_speakers, device=device, w2v2_emotion_count=w2v2_emotion_count)
     return tts

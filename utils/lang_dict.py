@@ -1,3 +1,5 @@
+from contants import ModelType
+
 lang_dict = {
     "english_cleaners": ["en"],
     "english_cleaners2": ["en"],
@@ -18,12 +20,12 @@ lang_dict = {
                                  "ZR", "PH", "TX", "JS", "HN", "LP", "XS", "FY", "RA", "CX", "SM", "TT", "WZ", "SC",
                                  "YB"],
     "bert_chinese_cleaners": ["zh"],
-    "bert_vits2": ["zh", "ja"],
-    "bert_vits2_v1.0": ["zh"],
-    "bert_vits2_v1.0.0": ["zh"],
-    "bert_vits2_v1.0.1": ["zh"],
-    "bert_vits2_v1.1": ["zh", "ja"],
-    "bert_vits2_v1.1.0": ["zh", "ja"],
-    "bert_vits2_v1.1.0-transition": ["zh", "ja"],
-    "bert_vits2_v1.1.1": ["zh", "ja"],
+    ModelType.BERT_VITS2.value: ["zh", "ja"],
+    f"{ModelType.BERT_VITS2.value}_v1.0": ["zh"],
+    f"{ModelType.BERT_VITS2.value}_v1.0.0": ["zh"],
+    f"{ModelType.BERT_VITS2.value}_v1.0.1": ["zh"],
+    f"{ModelType.BERT_VITS2.value}_v1.1": ["zh", "ja"],
+    f"{ModelType.BERT_VITS2.value}_v1.1.0": ["zh", "ja"],
+    f"{ModelType.BERT_VITS2.value}_v1.1.0-transition": ["zh", "ja"],
+    f"{ModelType.BERT_VITS2.value}_v1.1.1": ["zh", "ja"],
 }

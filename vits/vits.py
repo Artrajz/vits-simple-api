@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from torch import no_grad, LongTensor, inference_mode, FloatTensor
 import utils
+from contants import ModelType
 from utils import get_hparams_from_file
 from utils.sentence import sentence_split_and_markup
 from vits import commons
@@ -44,9 +45,9 @@ class VITS:
     def load_model(self, model, additional_model=None):
         utils.load_checkpoint(model, self.net_g_ms)
         self.net_g_ms.to(self.device)
-        if self.model_type == "hubert":
+        if self.model_type == ModelType.HUBERT_VITS:
             self.hubert = additional_model
-        elif self.model_type == "w2v2":
+        elif self.model_type == ModelType.W2V2_VITS:
             self.emotion_reference = additional_model
 
     def get_cleaned_text(self, text, hps, cleaned=False):
@@ -70,6 +71,10 @@ class VITS:
 
     def get_speakers(self, escape=False):
         return self.speakers
+
+    @property
+    def sampling_rate(self):
+        return self.hps_ms.data.sampling_rate
 
     def infer(self, params):
         with no_grad():
@@ -97,14 +102,14 @@ class VITS:
                         emotion=None, cleaned=False, f0_scale=1):
         emo = None
         char_embeds = None
-        if self.model_type != "hubert":
+        if self.model_type != ModelType.HUBERT_VITS:
             if self.bert_embedding:
                 stn_tst, char_embeds = self.get_cleaned_text(text, self.hps_ms, cleaned=cleaned)
             else:
                 stn_tst = self.get_cleaned_text(text, self.hps_ms, cleaned=cleaned)
             sid = LongTensor([speaker_id])
 
-        if self.model_type == "w2v2":
+        if self.model_type == ModelType.W2V2_VITS:
             # if emotion_reference.endswith('.npy'):
             #     emotion = np.load(emotion_reference)
             #     emotion = FloatTensor(emotion).unsqueeze(0)
@@ -120,7 +125,7 @@ class VITS:
             emo = torch.FloatTensor(self.emotion_reference[emotion]).unsqueeze(0)
 
 
-        elif self.model_type == "hubert":
+        elif self.model_type == ModelType.HUBERT_VITS:
             if self.use_f0:
                 audio, sampling_rate = librosa.load(audio_path, sr=self.hps_ms.data.sampling_rate, mono=True)
                 audio16000 = librosa.resample(audio, orig_sr=sampling_rate, target_sr=16000)
@@ -164,24 +169,26 @@ class VITS:
         if text is not None: text = re.sub(r'\s+', ' ', text).strip()
 
         tasks = []
-        if self.model_type == "vits":
+        if self.model_type == ModelType.VITS:
             sentence_list = sentence_split_and_markup(text, max, lang, speaker_lang)
             for sentence in sentence_list:
                 params = self.get_infer_param(text=sentence, speaker_id=speaker_id, length_scale=length,
                                               noise_scale=noise, noise_scale_w=noisew)
                 tasks.append(params)
 
-        elif self.model_type == "hubert":
+        elif self.model_type == ModelType.HUBERT_VITS:
             params = self.get_infer_param(speaker_id=speaker_id, length_scale=length, noise_scale=noise,
                                           noise_scale_w=noisew, audio_path=audio_path)
             tasks.append(params)
 
-        elif self.model_type == "w2v2":
+        elif self.model_type == ModelType.W2V2_VITS:
             sentence_list = sentence_split_and_markup(text, max, lang, speaker_lang)
             for sentence in sentence_list:
                 params = self.get_infer_param(text=sentence, speaker_id=speaker_id, length_scale=length,
                                               noise_scale=noise, noise_scale_w=noisew, emotion=emotion)
                 tasks.append(params)
+        else:
+            raise ValueError(f"Unsupported model type: {self.model_type}")
 
         return tasks
 

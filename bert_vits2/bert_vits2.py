@@ -18,7 +18,7 @@ class Bert_VITS2:
         self.speakers = [item[0] for item in
                          sorted(list(getattr(self.hps_ms.data, 'spk2id', {'0': 0}).items()), key=lambda x: x[1])]
         self.symbols = symbols
-
+        
         # Compatible with legacy versions
         self.version = process_legacy_versions(self.hps_ms)
 
@@ -50,6 +50,10 @@ class Bert_VITS2:
 
     def get_speakers(self):
         return self.speakers
+
+    @property
+    def sampling_rate(self):
+        return self.hps_ms.data.sampling_rate
 
     def get_text(self, text, language_str, hps):
         norm_text, phone, tone, word2ph = clean_text(text, language_str)

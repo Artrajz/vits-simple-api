@@ -396,9 +396,9 @@ if __name__ == '__main__':
     ssml = """
     <speak lang="zh" format="mp3" length="1.2">
             <voice id="92" >这几天心里颇不宁静。</voice>
-            <voice id="125">今晚在院子里坐着乘凉，忽然想起日日走过的荷塘，在这满月的光里，总该另有一番样子吧。</voice>
+            <voice id="0" model_type="Bert-VITS2">今晚在院子里坐着乘凉，忽然想起日日走过的荷塘，在这满月的光里，总该另有一番样子吧。</voice>
             <voice id="142">月亮渐渐地升高了，墙外马路上孩子们的欢笑，已经听不见了；</voice>
-            <voice id="98">妻在屋里拍着闰儿，迷迷糊糊地哼着眠歌。</voice>
+            <voice id="0" model_type="Bert-VITS2">妻在屋里拍着闰儿，迷迷糊糊地哼着眠歌。</voice>
             <voice id="120">我悄悄地披了大衫，带上门出去。</voice><break time="2s"/>
             <voice id="121">沿着荷塘，是一条曲折的小煤屑路。</voice>
             <voice id="122">这是一条幽僻的路；白天也少人走，夜晚更加寂寞。</voice>
