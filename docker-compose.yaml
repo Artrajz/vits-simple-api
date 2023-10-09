@@ -14,5 +14,6 @@ services:
       - ./logs:/app/logs # logging logs
       - ./gunicorn_config.py:/app/gunicorn_config.py # gunicorn configuration
       - ./vits/bert:/app/vits/bert # vits_chinese
-      - ./bert_vits2/bert/chinese-roberta-wwm-ext-large:/app/bert_vits2/bert/chinese-roberta-wwm-ext-large # Bert-vits2
+      - ./bert_vits2/bert/chinese-roberta-wwm-ext-large:/app/bert_vits2/bert/chinese-roberta-wwm-ext-large # Bert-vits2 chinese
+      - ./bert_vits2/bert/bert-base-japanese-v3:/app/bert_vits2/bert/bert-base-japanese-v3 # Bert-vits2 japanese
       - ./pyopenjtalk/open_jtalk_dic_utf_8-1.11:/usr/local/lib/python3.10/site-packages/pyopenjtalk/open_jtalk_dic_utf_8-1.11 #pyopentjalk
