@@ -7,6 +7,7 @@ from bert_vits2.models import SynthesizerTrn
 from bert_vits2.text import *
 from bert_vits2.text.cleaner import clean_text
 from bert_vits2.utils import process_legacy_versions
+from contants import ModelType
 from utils import classify_language, get_hparams_from_file, lang_dict
 from utils.sentence import sentence_split_and_markup, cut
 
@@ -18,7 +19,7 @@ class Bert_VITS2:
         self.speakers = [item[0] for item in
                          sorted(list(getattr(self.hps_ms.data, 'spk2id', {'0': 0}).items()), key=lambda x: x[1])]
         self.symbols = symbols
-        
+
         # Compatible with legacy versions
         self.version = process_legacy_versions(self.hps_ms)
 
@@ -31,6 +32,9 @@ class Bert_VITS2:
 
         elif self.version in ["1.1", "1.1.0", "1.1.1"]:
             self.hps_ms.model.n_layers_trans_flow = 6
+
+        key = f"{ModelType.BERT_VITS2.value}_v{self.version}" if self.version else ModelType.BERT_VITS2.value
+        self.lang = lang_dict.get(key, ["unknown"])
 
         self._symbol_to_id = {s: i for i, s in enumerate(self.symbols)}
 
@@ -115,7 +119,8 @@ class Bert_VITS2:
         max = voice.get("max", 50)
         # sentence_list = sentence_split_and_markup(text, max, "ZH", ["zh"])
         if lang == "auto":
-            lang = classify_language(text, target_languages=lang_dict["bert_vits2"])
+            lang = classify_language(text, target_languages=self.lang)
+
         sentence_list = cut(text, max)
         audios = []
         for sentence in sentence_list:

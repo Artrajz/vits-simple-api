@@ -5,7 +5,7 @@ import torch
 from torch import no_grad, LongTensor, inference_mode, FloatTensor
 import utils
 from contants import ModelType
-from utils import get_hparams_from_file
+from utils import get_hparams_from_file, lang_dict
 from utils.sentence import sentence_split_and_markup
 from vits import commons
 from vits.mel_processing import spectrogram_torch
@@ -38,6 +38,9 @@ class VITS:
             **self.hps_ms.model)
         _ = self.net_g_ms.eval()
         self.device = device
+
+        key = getattr(self.hps_ms.data, "text_cleaners", ["none"])[0]
+        self.lang = lang_dict.get(key, ["unknown"])
 
         # load model
         self.load_model(model, additional_model)
