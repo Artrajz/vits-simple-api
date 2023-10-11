@@ -9,6 +9,7 @@ services:
     environment:
       LANG: 'C.UTF-8'
       TZ: Asia/Shanghai #timezone
+    command: ['python', 'app.py'] # 目前用不了gunicorn多进程
     volumes:
       - ./Model:/app/Model # 挂载模型文件夹
       - ./config.py:/app/config.py # 挂载配置文件
