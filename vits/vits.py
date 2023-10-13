@@ -198,11 +198,13 @@ class VITS:
     def get_audio(self, voice, auto_break=False):
         tasks = self.get_tasks(voice)
         # 停顿0.75s，避免语音分段合成再拼接后的连接突兀
-        brk = np.zeros(int(0.75 * 22050), dtype=np.int16)
+        brk = np.zeros(int(0.75 * self.sampling_rate), dtype=np.int16)
 
         audios = []
-        for task in tasks:
-            if auto_break:
+        num_tasks = len(tasks)
+
+        for i, task in enumerate(tasks):
+            if auto_break and i < num_tasks - 1:
                 chunk = np.concatenate((self.infer(task), brk), axis=0)
             else:
                 chunk = self.infer(task)
