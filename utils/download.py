@@ -1,3 +1,4 @@
+import logging
 import os
 import hashlib
 import tarfile
@@ -18,6 +19,7 @@ class TqdmUpTo(tqdm):
 
 
 def download_file(url, dest_path):
+    logging.info(f"Downloading: {url}")
     with TqdmUpTo(unit="B", unit_scale=True, unit_divisor=1024, miniters=1, desc=url.split('/')[-1]) as t:
         urllib.request.urlretrieve(url, dest_path, reporthook=t.update_to)
 
@@ -37,6 +39,8 @@ def extract_file(file_path, destination=None):
     if destination is None:
         destination = Path(file_path).parent
 
+    logging.info(f"Extracting to {destination}")
+
     if file_path.endswith('.zip'):
         with zipfile.ZipFile(file_path, 'r') as zip_ref:
             zip_ref.extractall(destination)
@@ -50,7 +54,7 @@ def extract_file(file_path, destination=None):
         with SevenZipFile(file_path, mode='r') as z:
             z.extractall(destination)
     else:
-        print(f"Unsupported compression format for file {file_path}")
+        logging.error(f"Unsupported compression format for file {file_path}")
 
 
 def download_and_verify(urls, target_path, expected_md5=None, extract_destination=None):
