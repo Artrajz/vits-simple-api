@@ -62,9 +62,9 @@ def load_checkpoint(checkpoint_path, model, optimizer=None, skip_optimizer=False
 
 
 def process_legacy_versions(hps):
-    legacy_version = getattr(hps.data, "legacy", getattr(hps.data, "legacy_version", None))
-    if legacy_version:
-        prefix = legacy_version[0].lower()
+    version = getattr(hps, "version", getattr(hps.data, "version", None))
+    if version:
+        prefix = version[0].lower()
         if prefix == "v":
-            legacy_version = legacy_version[1:]
-    return legacy_version
+            version = version[1:]
+    return version
