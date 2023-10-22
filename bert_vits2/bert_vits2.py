@@ -19,6 +19,7 @@ class Bert_VITS2:
         self.speakers = [item[0] for item in
                          sorted(list(getattr(self.hps_ms.data, 'spk2id', {'0': 0}).items()), key=lambda x: x[1])]
         self.symbols = symbols
+        
 
         # Compatible with legacy versions
         self.version = process_legacy_versions(self.hps_ms)
@@ -26,6 +27,7 @@ class Bert_VITS2:
         if self.version in ["1.0", "1.0.0", "1.0.1"]:
             self.symbols = symbols_legacy
             self.hps_ms.model.n_layers_trans_flow = 3
+            
 
         elif self.version in ["1.1.0-transition"]:
             self.hps_ms.model.n_layers_trans_flow = 3
@@ -35,6 +37,7 @@ class Bert_VITS2:
 
         key = f"{ModelType.BERT_VITS2.value}_v{self.version}" if self.version else ModelType.BERT_VITS2.value
         self.lang = lang_dict.get(key, ["unknown"])
+        self.bert_handler = BertHandler(self.lang)
 
         self._symbol_to_id = {s: i for i, s in enumerate(self.symbols)}
 
@@ -70,7 +73,7 @@ class Bert_VITS2:
             for i in range(len(word2ph)):
                 word2ph[i] = word2ph[i] * 2
             word2ph[0] += 1
-        bert = get_bert(norm_text, word2ph, language_str)
+        bert = self.bert_handler.get_bert(norm_text, word2ph, language_str)
         del word2ph
         assert bert.shape[-1] == len(phone), phone
 

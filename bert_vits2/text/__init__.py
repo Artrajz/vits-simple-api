@@ -1,7 +1,5 @@
 from bert_vits2.text.symbols import *
-from .chinese_bert import get_bert_feature as zh_bert
-from .english_bert_mock import get_bert_feature as en_bert
-from .japanese_bert import get_bert_feature as ja_bert
+from bert_vits2.text.bert_handler import BertHandler
 
 
 def cleaned_text_to_sequence(cleaned_text, tones, language, _symbol_to_id):
@@ -17,9 +15,3 @@ def cleaned_text_to_sequence(cleaned_text, tones, language, _symbol_to_id):
     lang_id = language_id_map[language]
     lang_ids = [lang_id for i in phones]
     return phones, tones, lang_ids
-
-
-def get_bert(norm_text, word2ph, language):
-    lang_bert_func_map = {"zh": zh_bert, "en": en_bert, "ja": ja_bert}
-    bert = lang_bert_func_map[language](norm_text, word2ph)
-    return bert
