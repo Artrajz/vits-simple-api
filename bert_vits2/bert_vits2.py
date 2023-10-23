@@ -53,7 +53,7 @@ class Bert_VITS2:
         self.load_model(model)
 
     def load_model(self, model):
-        bert_vits2_utils.load_checkpoint(model, self.net_g, None, skip_optimizer=True, legacy_version=self.version)
+        bert_vits2_utils.load_checkpoint(model, self.net_g, None, skip_optimizer=True, version=self.version)
 
     def get_speakers(self):
         return self.speakers
