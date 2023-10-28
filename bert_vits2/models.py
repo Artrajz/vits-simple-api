@@ -257,7 +257,8 @@ class TextEncoder(nn.Module):
                  kernel_size,
                  p_dropout,
                  gin_channels=0,
-                 symbols=None):
+                 symbols=None,
+                 ja_bert_dim=1024):
         super().__init__()
         self.n_vocab = n_vocab
         self.out_channels = out_channels
@@ -275,7 +276,8 @@ class TextEncoder(nn.Module):
         self.language_emb = nn.Embedding(num_languages, hidden_channels)
         nn.init.normal_(self.language_emb.weight, 0.0, hidden_channels ** -0.5)
         self.bert_proj = nn.Conv1d(1024, hidden_channels, 1)
-        self.ja_bert_proj = nn.Conv1d(768, hidden_channels, 1)
+        self.ja_bert_proj = nn.Conv1d(ja_bert_dim, hidden_channels, 1)
+        self.en_bert_proj = nn.Conv1d(1024, hidden_channels, 1)
 
         self.encoder = attentions.Encoder(
             hidden_channels,
@@ -287,10 +289,12 @@ class TextEncoder(nn.Module):
             gin_channels=self.gin_channels)
         self.proj = nn.Conv1d(hidden_channels, out_channels * 2, 1)
 
-    def forward(self, x, x_lengths, tone, language, bert, ja_bert, g=None):
-        bert_emb = self.bert_proj(bert).transpose(1, 2)
+    def forward(self, x, x_lengths, tone, language, zh_bert, ja_bert, en_bert, g=None):
+        zh_bert_emb = self.bert_proj(zh_bert).transpose(1, 2)
         ja_bert_emb = self.ja_bert_proj(ja_bert).transpose(1, 2)
-        x = (self.emb(x) + self.tone_emb(tone) + self.language_emb(language) + bert_emb + ja_bert_emb) * math.sqrt(
+        en_bert_emb = self.en_bert_proj(en_bert).transpose(1, 2)
+        x = (self.emb(x) + self.tone_emb(tone) + self.language_emb(
+            language) + zh_bert_emb + ja_bert_emb + en_bert_emb) * math.sqrt(
             self.hidden_channels)  # [b, t, h]
         x = torch.transpose(x, 1, -1)  # [b, h, t]
         x_mask = torch.unsqueeze(commons.sequence_mask(x_lengths, x.size(2)), 1).to(x.dtype)
@@ -595,6 +599,8 @@ class SynthesizerTrn(nn.Module):
                  n_layers_trans_flow=6,
                  flow_share_parameter=False,
                  use_transformer_flow=True,
+                 symbols=None,
+                 ja_bert_dim=1024,
                  **kwargs):
 
         super().__init__()
@@ -625,7 +631,6 @@ class SynthesizerTrn(nn.Module):
         self.current_mas_noise_scale = self.mas_noise_scale_initial
         if self.use_spk_conditioned_encoder and gin_channels > 0:
             self.enc_gin_channels = gin_channels
-        symbols = kwargs.get("symbols")
         self.enc_p = TextEncoder(n_vocab,
                                  inter_channels,
                                  hidden_channels,
@@ -636,6 +641,7 @@ class SynthesizerTrn(nn.Module):
                                  p_dropout,
                                  gin_channels=self.enc_gin_channels,
                                  symbols=symbols,
+                                 ja_bert_dim=ja_bert_dim
                                  )
         self.dec = Generator(inter_channels, resblock, resblock_kernel_sizes, resblock_dilation_sizes, upsample_rates,
                              upsample_initial_channel, upsample_kernel_sizes, gin_channels=gin_channels)
@@ -656,7 +662,7 @@ class SynthesizerTrn(nn.Module):
         else:
             self.ref_enc = ReferenceEncoder(spec_channels, gin_channels)
 
-    def infer(self, x, x_lengths, sid, tone, language, bert, ja_bert, noise_scale=.667, length_scale=1,
+    def infer(self, x, x_lengths, sid, tone, language, zh_bert, ja_bert, en_bert, noise_scale=.667, length_scale=1,
               noise_scale_w=0.8,
               max_len=None, sdp_ratio=0, y=None):
         # x, m_p, logs_p, x_mask = self.enc_p(x, x_lengths, tone, language, bert)
@@ -665,7 +671,7 @@ class SynthesizerTrn(nn.Module):
             g = self.emb_g(sid).unsqueeze(-1)  # [b, h, 1]
         else:
             g = self.ref_enc(y.transpose(1, 2)).unsqueeze(-1)
-        x, m_p, logs_p, x_mask = self.enc_p(x, x_lengths, tone, language, bert, ja_bert, g=g)
+        x, m_p, logs_p, x_mask = self.enc_p(x, x_lengths, tone, language, zh_bert, ja_bert, en_bert, g=g)
         logw = self.sdp(x, x_mask, g=g, reverse=True, noise_scale=noise_scale_w) * (sdp_ratio) + self.dp(x, x_mask,
                                                                                                          g=g) * (
                        1 - sdp_ratio)

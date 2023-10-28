@@ -25,25 +25,25 @@ class Bert_VITS2:
         self.lang = ["zh", "ja", "en"]
 
         self.bert_model_names = {"zh": "CHINESE_ROBERTA_WWM_EXT_LARGE"}
-        self.ja_bert_embedding_dim = 1024
+        self.ja_bert_dim = 1024
 
         if self.version in ["1.0", "1.0.0", "1.0.1"]:
             self.symbols = symbols_legacy
             self.hps_ms.model.n_layers_trans_flow = 3
             self.lang = ["zh"]
-            self.ja_bert_embedding_dim = 768
+            self.ja_bert_dim = 768
 
         elif self.version in ["1.1.0-transition"]:
             self.hps_ms.model.n_layers_trans_flow = 3
             self.lang = ["zh", "ja"]
             self.bert_model_names["ja"] = "BERT_BASE_JAPANESE_V3"
-            self.ja_bert_embedding_dim = 768
+            self.ja_bert_dim = 768
 
         elif self.version in ["1.1", "1.1.0", "1.1.1"]:
             self.hps_ms.model.n_layers_trans_flow = 6
             self.lang = ["zh", "ja"]
             self.bert_model_names["ja"] = "BERT_BASE_JAPANESE_V3"
-            self.ja_bert_embedding_dim = 768
+            self.ja_bert_dim = 768
 
         elif self.version in ["2.0", "2.0.0"]:
             self.bert_model_names = {"zh": "CHINESE_ROBERTA_WWM_EXT_LARGE",
@@ -64,6 +64,7 @@ class Bert_VITS2:
             self.hps_ms.train.segment_size // self.hps_ms.data.hop_length,
             n_speakers=self.hps_ms.data.n_speakers,
             symbols=self.symbols,
+            ja_bert_dim=self.ja_bert_dim,
             **self.hps_ms.model).to(self.device)
         _ = self.net_g.eval()
         bert_vits2_utils.load_checkpoint(self.model_path, self.net_g, None, skip_optimizer=True, version=self.version)
@@ -91,7 +92,7 @@ class Bert_VITS2:
 
         if language_str == "zh":
             zh_bert = bert
-            ja_bert = torch.zeros(self.ja_bert_embedding_dim, len(phone))
+            ja_bert = torch.zeros(self.ja_bert_dim, len(phone))
             en_bert = torch.zeros(1024, len(phone))
         elif language_str == "ja":
             zh_bert = torch.zeros(1024, len(phone))
@@ -103,7 +104,7 @@ class Bert_VITS2:
             en_bert = bert
         else:
             zh_bert = torch.zeros(1024, len(phone))
-            ja_bert = torch.zeros(self.ja_bert_embedding_dim, len(phone))
+            ja_bert = torch.zeros(self.ja_bert_dim, len(phone))
             en_bert = torch.zeros(1024, len(phone))
         assert bert.shape[-1] == len(
             phone
@@ -122,9 +123,10 @@ class Bert_VITS2:
             lang_ids = lang_ids.to(self.device).unsqueeze(0)
             zh_bert = zh_bert.to(self.device).unsqueeze(0)
             ja_bert = ja_bert.to(self.device).unsqueeze(0)
+            en_bert = en_bert.to(self.device).unsqueeze(0)
             x_tst_lengths = torch.LongTensor([phones.size(0)]).to(self.device)
             speakers = torch.LongTensor([int(id)]).to(self.device)
-            audio = self.net_g.infer(x_tst, x_tst_lengths, speakers, tones, lang_ids, zh_bert, ja_bert, sdp_ratio=sdp_ratio
+            audio = self.net_g.infer(x_tst, x_tst_lengths, speakers, tones, lang_ids, zh_bert, ja_bert,en_bert, sdp_ratio=sdp_ratio
                                      , noise_scale=noise, noise_scale_w=noisew, length_scale=length)[
                 0][0, 0].data.cpu().float().numpy()
 
