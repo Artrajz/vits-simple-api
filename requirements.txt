@@ -29,6 +29,7 @@ transformers
 num2words
 mecab-python3
 unidic-lite
+g2p_en
 
 # Machine Learning and Deep Learning
 torch

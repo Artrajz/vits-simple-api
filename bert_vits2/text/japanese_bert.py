@@ -8,27 +8,28 @@ from logger import logger
 from utils.download import download_and_verify
 from config import DEVICE as device
 
-URLS = [
-    "https://huggingface.co/cl-tohoku/bert-base-japanese-v3/resolve/main/pytorch_model.bin",
-]
-TARGET_PATH = os.path.join(config.ABS_PATH, "bert_vits2/bert/bert-base-japanese-v3/pytorch_model.bin")
-EXPECTED_MD5 = None
+# URLS = [
+#     "https://huggingface.co/cl-tohoku/bert-base-japanese-v3/resolve/main/pytorch_model.bin",
+#     "https://openi.pcl.ac.cn/Stardust_minus/Bert-VITS2/modelmanage/d77420a6-3438-412f-9199-69c6342ffb06/downloadsingle?parentDir=&fileName=pytorch_model.bin",
+# ]
+# TARGET_PATH = os.path.join(config.ABS_PATH, "bert_vits2/bert/bert-base-japanese-v3/pytorch_model.bin")
+# EXPECTED_MD5 = None
+# 
+# if not os.path.exists(TARGET_PATH):
+#     success, message = download_and_verify(URLS, TARGET_PATH, EXPECTED_MD5)
+# 
+# try:
+#     logger.info("Loading bert-base-japanese-v3...")
+#     tokenizer = AutoTokenizer.from_pretrained(config.ABS_PATH + "/bert_vits2/bert/bert-base-japanese-v3")
+#     model = AutoModelForMaskedLM.from_pretrained(config.ABS_PATH + "/bert_vits2/bert/bert-base-japanese-v3").to(
+#         device)
+#     logger.info("Loading finished.")
+# except Exception as e:
+#     logger.error(e)
+#     logger.error(f"Please download pytorch_model.bin from cl-tohoku/bert-base-japanese-v3.")
 
-if not os.path.exists(TARGET_PATH):
-    success, message = download_and_verify(URLS, TARGET_PATH, EXPECTED_MD5)
 
-try:
-    logger.info("Loading bert-base-japanese-v3...")
-    tokenizer = AutoTokenizer.from_pretrained(config.ABS_PATH + "/bert_vits2/bert/bert-base-japanese-v3")
-    model = AutoModelForMaskedLM.from_pretrained(config.ABS_PATH + "/bert_vits2/bert/bert-base-japanese-v3").to(
-        device)
-    logger.info("Loading finished.")
-except Exception as e:
-    logger.error(e)
-    logger.error(f"Please download pytorch_model.bin from cl-tohoku/bert-base-japanese-v3.")
-
-
-def get_bert_feature(text, word2ph, device=config.DEVICE):
+def get_bert_feature(text, word2ph, tokenizer, model, device=config.DEVICE):
     with torch.no_grad():
         inputs = tokenizer(text, return_tensors="pt")
         for i in inputs:
@@ -45,3 +46,4 @@ def get_bert_feature(text, word2ph, device=config.DEVICE):
     phone_level_feature = torch.cat(phone_level_feature, dim=0)
 
     return phone_level_feature.T
+

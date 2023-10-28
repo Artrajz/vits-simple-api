@@ -38,21 +38,21 @@ def cut(text: str, max: int) -> list:
     sentences = re.split(pattern, text)
     discarded_chars = re.findall(pattern, text)
 
-    sentence_list, count, p = [], 0, 0
+    sentences_list, count, p = [], 0, 0
 
     # 按被分割的符号遍历
     for i, discarded_chars in enumerate(discarded_chars):
         count += len(sentences[i]) + len(discarded_chars)
         if count >= max:
-            sentence_list.append(text[p:p + count].strip())
+            sentences_list.append(text[p:p + count].strip())
             p += count
             count = 0
 
     # 加入最后剩余的文本
     if p < len(text):
-        sentence_list.append(text[p:])
+        sentences_list.append(text[p:])
 
-    return sentence_list
+    return sentences_list
 
 
 def sentence_split_and_markup(text, max=50, lang="auto", speaker_lang=None):
@@ -63,25 +63,25 @@ def sentence_split_and_markup(text, max=50, lang="auto", speaker_lang=None):
                 f"lang \"{lang}\" is not in speaker_lang {speaker_lang},automatically set lang={speaker_lang[0]}")
         lang = speaker_lang[0]
 
-    sentence_list = []
+    sentences_list = []
     if lang.upper() != "MIX":
         if max <= 0:
-            sentence_list.append(
+            sentences_list.append(
                 markup_language_type(text,
                                      speaker_lang) if lang.upper() == "AUTO" else f"[{lang.upper()}]{text}[{lang.upper()}]")
         else:
             for i in cut(text, max):
                 if check_is_none(i): continue
-                sentence_list.append(
+                sentences_list.append(
                     markup_language_type(i,
                                          speaker_lang) if lang.upper() == "AUTO" else f"[{lang.upper()}]{i}[{lang.upper()}]")
     else:
-        sentence_list.append(text)
+        sentences_list.append(text)
 
-    for i in sentence_list:
+    for i in sentences_list:
         logger.debug(i)
 
-    return sentence_list
+    return sentences_list
 
 
 if __name__ == '__main__':

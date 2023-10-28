@@ -1,84 +1,58 @@
-import os
 import librosa
 import re
 import numpy as np
-import torch
 import xml.etree.ElementTree as ET
 import config
 import soundfile as sf
 from io import BytesIO
 from graiax import silkcoder
-from logger import logger
 from contants import ModelType
 from scipy.signal import resample_poly
 
+from logger import logger
+from observer import Observer
+from utils import classify_language
+from utils.sentence import sentence_split_and_markup, cut
 
-# torch.set_num_threads(1) # 设置torch线程为1
 
-
-class TTS:
-    def __init__(self, voice_obj, voice_speakers, **kwargs):
-        self._voice_obj = voice_obj
-        self._voice_speakers = voice_speakers
-        self._strength_dict = {"x-weak": 0.25, "weak": 0.5, "Medium": 0.75, "Strong": 1, "x-strong": 1.25}
-        self._speakers_count = sum([len(self._voice_speakers[i]) for i in self._voice_speakers])
-        self._vits_speakers_count = len(self._voice_speakers[ModelType.VITS.value])
-        self._hubert_speakers_count = len(self._voice_speakers[ModelType.HUBERT_VITS.value])
-        self._w2v2_speakers_count = len(self._voice_speakers[ModelType.W2V2_VITS.value])
-        self._w2v2_emotion_count = kwargs.get("w2v2_emotion_count", 0)
-        self._bert_vits2_speakers_count = len(self._voice_speakers[ModelType.BERT_VITS2.value])
-        self.dem = None
-
-        # Initialization information
+class TTSManager(Observer):
+    def __init__(self, model_manager, **kwargs):
+        self.model_manager = model_manager
+        self.strength_dict = {"x-weak": 0.25, "weak": 0.5, "Medium": 0.75, "Strong": 1, "x-strong": 1.25}
         self.logger = logger
-        self.logger.info(f"torch:{torch.__version__} cuda_available:{torch.cuda.is_available()}")
-        self.logger.info(f'device:{kwargs.get("device")} device.type:{kwargs.get("device").type}')
+        self.infer_map = {
+            ModelType.VITS: self.vits_infer,
+            ModelType.W2V2_VITS: self.w2v2_vits_infer,
+            ModelType.HUBERT_VITS: self.hubert_vits_infer,
+            ModelType.BERT_VITS2: self.bert_vits2_infer,
+        }
+        self.speaker_lang = None
+        if getattr(config, "LANGUAGE_AUTOMATIC_DETECT", []) != []:
+            self.speaker_lang = getattr(config, "LANGUAGE_AUTOMATIC_DETECT")
 
-        if getattr(config, "DIMENSIONAL_EMOTION_MODEL", None) != None:
-            try:
-                import audonnx
-                root = os.path.dirname(config.DIMENSIONAL_EMOTION_MODEL)
-                model_file = config.DIMENSIONAL_EMOTION_MODEL
-                self.dem = audonnx.load(root=root, model_file=model_file)
-            except Exception as e:
-                self.logger.warning(f"Load DIMENSIONAL_EMOTION_MODEL failed {e}")
-
-        if self._vits_speakers_count != 0: self.logger.info(f"[{ModelType.VITS.value}] {self._vits_speakers_count} speakers")
-        if self._hubert_speakers_count != 0: self.logger.info(f"[{ModelType.HUBERT_VITS.value}] {self._hubert_speakers_count} speakers")
-        if self._w2v2_speakers_count != 0: self.logger.info(f"[{ModelType.W2V2_VITS.value}] {self._w2v2_speakers_count} speakers")
-        if self._bert_vits2_speakers_count != 0: self.logger.info(
-            f"[{ModelType.BERT_VITS2.value}] {self._bert_vits2_speakers_count} speakers")
-        self.logger.info(f"{self._speakers_count} speakers in total.")
-        if self._speakers_count == 0:
-            self.logger.warning(f"No model was loaded.")
+    @property
+    def voice_objs(self):
+        return self.model_manager.voice_objs
 
     @property
     def voice_speakers(self):
-        return self._voice_speakers
+        return self.model_manager.voice_speakers
 
     @property
-    def speakers_count(self):
-        return self._speakers_count
+    def dimensional_emotion_model(self):
+        return self.model_manager.dimensional_emotion_model
 
-    @property
-    def vits_speakers_count(self):
-        return self._vits_speakers_count
+    def update(self, message, **kwargs):
+        if message == "model_loaded":
+            self._handle_model_loaded(kwargs['model_manager'])
+        elif message == "model_unloaded":
+            self._handle_model_unloaded(kwargs['model_manager'])
 
-    @property
-    def hubert_speakers_count(self):
-        return self._hubert_speakers_count
+    def _handle_model_loaded(self, model_manager):
+        self.model_manager = model_manager
 
-    @property
-    def w2v2_speakers_count(self):
-        return self._w2v2_speakers_count
-
-    @property
-    def w2v2_emotion_count(self):
-        return self._w2v2_emotion_count
-
-    @property
-    def bert_vits2_speakers_count(self):
-        return self._bert_vits2_speakers_count
+    # def _handle_model_unloaded(self, model):
+    # Logic to handle when a model is unloaded from ModelManager
 
     def encode(self, sampling_rate, audio, format):
         with BytesIO() as f:
@@ -133,6 +107,15 @@ class TTS:
         audio = resample_poly(audio, target_sr // gcd, orig_sr // gcd)
 
         return audio
+
+    def get_obj(self, model_type, id):
+        return self.voice_objs[model_type][id]["obj"]
+
+    def get_real_id(self, model_type, id):
+        return self.voice_objs[model_type][id]["real_id"]
+
+    def get_obj_id(self, model_type, id):
+        return self.voice_objs[model_type][id]["obj_id"]
 
     def parse_ssml(self, ssml):
         root = ET.fromstring(ssml)
@@ -191,7 +174,8 @@ class TTS:
                                             "max": max,
                                             "model_type": model_type,
                                             "emotion": emotion,
-                                            "sdp_ratio": sdp_ratio
+                                            "sdp_ratio": sdp_ratio,
+                                            "speaker_lang": self.speaker_lang
                                             })
 
                 # 分段末尾停顿0.75s
@@ -216,19 +200,18 @@ class TTS:
         last_sampling_rate = 22050
         for task in tasks:
             if task.get("break"):
-                audios.append(np.zeros(int(task.get("break") * 22050), dtype=np.int16))
+                audios.append(np.zeros(int(task.get("break") * last_sampling_rate), dtype=np.int16))
                 sampling_rates.append(last_sampling_rate)
             else:
                 model_type_str = task.get("model_type").upper()
                 if model_type_str not in [ModelType.VITS.value, ModelType.W2V2_VITS.value, ModelType.BERT_VITS2.value]:
                     raise ValueError(f"Unsupported model type: {task.get('model_type')}")
                 model_type = ModelType(model_type_str)
-                voice_obj = self._voice_obj[model_type][task.get("id")][1]
-                real_id = self._voice_obj[model_type][task.get("id")][0]
-                task["id"] = real_id
+                voice_obj = self.get_obj(model_type, task.get("id"))
+                task["id"] = self.get_real_id(model_type, task.get("id"))
                 sampling_rates.append(voice_obj.sampling_rate)
                 last_sampling_rate = voice_obj.sampling_rate
-                audio = voice_obj.get_audio(task)
+                audio = self.infer_map[model_type](task, encode=False)
                 audios.append(audio)
         # 得到最高的采样率
         target_sr = max(sampling_rates)
@@ -238,88 +221,137 @@ class TTS:
         encoded_audio = self.encode(target_sr, audio, format)
         return encoded_audio
 
-    def vits_infer(self, task):
-        format = task.get("format", "wav")
-        voice_obj = self._voice_obj[ModelType.VITS][task.get("id")][1]
-        real_id = self._voice_obj[ModelType.VITS][task.get("id")][0]
-        task["id"] = real_id  # Change to real id
+    def vits_infer(self, state, encode=True):
+        voice_obj = self.get_obj(ModelType.VITS, state["id"])
+        state["id"] = self.get_real_id(ModelType.VITS, state["id"])  # Change to real id
+        # 去除所有多余的空白字符
+        if state["text"] is not None:
+            state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
         sampling_rate = voice_obj.sampling_rate
-        audio = voice_obj.get_audio(task, auto_break=True)
-        encoded_audio = self.encode(sampling_rate, audio, format)
-        return encoded_audio
 
-    def stream_vits_infer(self, task, fname=None):
-        format = task.get("format", "wav")
-        voice_obj = self._voice_obj[ModelType.VITS][task.get("id")][1]
-        task["id"] = self._voice_obj[ModelType.VITS][task.get("id")][0]
+        sentences_list = sentence_split_and_markup(state["text"], state["max"], state["lang"], state["speaker_lang"])
+        # 停顿0.5s，避免语音分段合成再拼接后的连接突兀
+        brk = np.zeros(int(0.5 * sampling_rate), dtype=np.int16)
+
+        audios = []
+        sentences_num = len(sentences_list)
+
+        for i, sentence in enumerate(sentences_list):
+            sentence_audio = voice_obj.infer(sentence, state["id"], state["noise"], state["noisew"], state["length"])
+            audios.append(sentence_audio)
+            if i < sentences_num - 1:
+                audios.append(brk)
+
+        audio = np.concatenate(audios, axis=0)
+        return self.encode(sampling_rate, audio, state["format"]) if encode else audio
+
+    def stream_vits_infer(self, state, fname=None):
+        voice_obj = self.get_obj(ModelType.VITS, state["id"])
+        state["id"] = self.get_real_id(ModelType.VITS, state["id"])
+
+        # 去除所有多余的空白字符
+        if state["text"] is not None:
+            state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
         sampling_rate = voice_obj.sampling_rate
-        genertator = voice_obj.get_stream_audio(task, auto_break=True)
-        # audio = BytesIO()
-        for chunk in genertator:
-            encoded_audio = self.encode(sampling_rate, chunk, format)
-            for encoded_audio_chunk in self.generate_audio_chunks(encoded_audio):
-                yield encoded_audio_chunk
+
+        sentences_list = sentence_split_and_markup(state["text"], state["max"], state["lang"], state["speaker_lang"])
+        # 停顿0.5s，避免语音分段合成再拼接后的连接突兀
+        brk = np.zeros(int(0.5 * sampling_rate), dtype=np.int16)
+
+        audios = []
+        sentences_num = len(sentences_list)
+
+        for i, sentence in enumerate(sentences_list):
+            sentence_audio = voice_obj.infer(sentence, state["id"], state["noise"], state["noisew"], state["length"])
+            audios.append(sentence_audio)
+            if i < sentences_num - 1:
+                audios.append(brk)
+
+        audio = np.concatenate(audios, axis=0)
+        encoded_audio = self.encode(sampling_rate, audio, state["format"])
+
+        for encoded_audio_chunk in self.generate_audio_chunks(encoded_audio):
+            yield encoded_audio_chunk
         #     if getattr(config, "SAVE_AUDIO", False):
         #         audio.write(encoded_audio.getvalue())
         # if getattr(config, "SAVE_AUDIO", False):
         #     path = f"{config.CACHE_PATH}/{fname}"
         #     utils.save_audio(audio.getvalue(), path)
 
-    def hubert_vits_infer(self, task):
-        format = task.get("format", "wav")
-        voice_obj = self._voice_obj[ModelType.HUBERT_VITS][task.get("id")][1]
-        task["id"] = self._voice_obj[ModelType.HUBERT_VITS][task.get("id")][0]
+    def hubert_vits_infer(self, state, encode=True):
+        voice_obj = self.get_obj(ModelType.HUBERT_VITS, state["id"])
+        state["id"] = self.get_real_id(ModelType.HUBERT_VITS, state["id"])
         sampling_rate = voice_obj.sampling_rate
-        audio = voice_obj.get_audio(task)
-        encoded_audio = self.encode(sampling_rate, audio, format)
-        return encoded_audio
+        audio = voice_obj.infer(state["audio_path"], state["id"], state["noise"], state["noisew"], state["length"],
+                                f0_scale=1)
+        return self.encode(sampling_rate, audio, state["format"]) if encode else audio
 
-    def w2v2_vits_infer(self, task):
-        format = task.get("format", "wav")
-        voice_obj = self._voice_obj[ModelType.W2V2_VITS][task.get("id")][1]
-        task["id"] = self._voice_obj[ModelType.W2V2_VITS][task.get("id")][0]
+    def w2v2_vits_infer(self, state, encode=True):
+        voice_obj = self.get_obj(ModelType.W2V2_VITS, state["id"])
+        state["id"] = self.get_real_id(ModelType.W2V2_VITS, state["id"])
+        # 去除所有多余的空白字符
+        if state["text"] is not None:
+            state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
+        emotion = state["emotion_reference"] if state["emotion_reference"] is not None else state["emotion"]
+
         sampling_rate = voice_obj.sampling_rate
-        audio = voice_obj.get_audio(task, auto_break=True)
-        encoded_audio = self.encode(sampling_rate, audio, format)
-        return encoded_audio
 
-    def vits_voice_conversion(self, task):
-        original_id = task.get("original_id")
-        target_id = task.get("target_id")
-        format = task.get("format")
+        sentences_list = sentence_split_and_markup(state["text"], state["max"], state["lang"], state["speaker_lang"])
+        # 停顿0.5s，避免语音分段合成再拼接后的连接突兀
+        brk = np.zeros(int(0.5 * sampling_rate), dtype=np.int16)
 
-        original_id_obj = int(self._voice_obj[ModelType.VITS][original_id][2])
-        target_id_obj = int(self._voice_obj[ModelType.VITS][target_id][2])
+        audios = []
+        sentences_num = len(sentences_list)
+
+        for i, sentence in enumerate(sentences_list):
+            sentence_audio = voice_obj.infer(sentence, state["id"], state["noise"], state["noisew"], state["length"],
+                                             emotion)
+            audios.append(sentence_audio)
+            if i < sentences_num - 1:
+                audios.append(brk)
+
+        audio = np.concatenate(audios, axis=0)
+        return self.encode(sampling_rate, audio, state["format"]) if encode else audio
+
+    def vits_voice_conversion(self, state, encode=True):
+        original_id_obj = int(self.get_obj_id(ModelType.VITS, state["original_id"]))
+        target_id_obj = int(self.get_obj_id(ModelType.VITS, state["target_id"]))
 
         if original_id_obj != target_id_obj:
             raise ValueError(f"speakers are in diffrent VITS Model")
 
-        task["original_id"] = int(self._voice_obj[ModelType.VITS][original_id][0])
-        task["target_id"] = int(self._voice_obj[ModelType.VITS][target_id][0])
+        voice_obj = self.get_obj(ModelType.VITS, state["original_id"])
+        state["original_id"] = int(self.get_real_id(ModelType.VITS, state["original_id"]))
+        state["target_id"] = int(self.get_real_id(ModelType.VITS, state["target_id"]))
 
-        voice_obj = self._voice_obj[ModelType.VITS][original_id][1]
         sampling_rate = voice_obj.sampling_rate
 
-        audio = voice_obj.voice_conversion(task)
-        encoded_audio = self.encode(sampling_rate, audio, format)
-        return encoded_audio
+        audio = voice_obj.voice_conversion(state["audio_path"], state["original_id"], state["target_id"])
+        return self.encode(sampling_rate, audio, state["format"]) if encode else audio
 
     def get_dimensional_emotion_npy(self, audio):
-        if self.dem is None:
-            raise ValueError(f"Please configure DIMENSIONAL_EMOTION_MODEL path in config.py")
         audio16000, sampling_rate = librosa.load(audio, sr=16000, mono=True)
-        emotion = self.dem(audio16000, sampling_rate)['hidden_states']
+        emotion = self.dimensional_emotion_model(audio16000, sampling_rate)['hidden_states']
         emotion_npy = BytesIO()
         np.save(emotion_npy, emotion.squeeze(0))
         emotion_npy.seek(0)
 
         return emotion_npy
 
-    def bert_vits2_infer(self, task):
-        format = task.get("format", "wav")
-        voice_obj = self._voice_obj[ModelType.BERT_VITS2][task.get("id")][1]
-        task["id"] = self._voice_obj[ModelType.BERT_VITS2][task.get("id")][0]
+    def bert_vits2_infer(self, state, encode=True):
+        voice_obj = self.get_obj(model_type=ModelType.BERT_VITS2, id=state["id"])
+        state["id"] = self.get_real_id(model_type=ModelType.BERT_VITS2, id=state["id"])
         sampling_rate = voice_obj.sampling_rate
-        audio = voice_obj.get_audio(task, auto_break=True)
-        encoded_audio = self.encode(sampling_rate, audio, format)
-        return encoded_audio
+
+        if state["lang"] == "auto":
+            state["lang"] = classify_language(state["text"], target_languages=voice_obj.lang)
+
+        sentences_list = cut(state["text"], state["max"])
+        audios = []
+        for sentence in sentences_list:
+            audio = voice_obj.infer(sentence, state["id"], state["lang"], state["sdp_ratio"], state["noise"],
+                                    state["noise"], state["length"])
+            audios.append(audio)
+        audio = np.concatenate(audios)
+
+        return self.encode(sampling_rate, audio, state["format"]) if encode else audio

@@ -3,10 +3,9 @@
 import re
 import unicodedata
 
-from transformers import AutoTokenizer
-
 from bert_vits2.text.symbols import *
-from bert_vits2.text.japanese_bert import tokenizer
+
+# from bert_vits2.text.japanese_bert import tokenizer
 
 try:
     import MeCab
@@ -542,7 +541,7 @@ def distribute_phone(n_phone, n_word):
     return phones_per_word
 
 
-def g2p(norm_text):
+def g2p(norm_text, tokenizer):
     tokenized = tokenizer.tokenize(norm_text)
     phs = []
     ph_groups = []
@@ -572,6 +571,7 @@ def g2p(norm_text):
 
 if __name__ == "__main__":
     from config import ABS_PATH
+    from transformers import AutoTokenizer
 
     tokenizer = AutoTokenizer.from_pretrained(ABS_PATH + "/bert_vits2/bert/bert-base-japanese-v3")
     text = "hello,こんにちは、世界！……"

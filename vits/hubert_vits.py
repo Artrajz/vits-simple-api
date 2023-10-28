@@ -1,26 +1,24 @@
+import librosa
+import numpy as np
 import torch
-from torch import no_grad, LongTensor
+from torch import no_grad, LongTensor, inference_mode, FloatTensor
 import utils
 from utils import get_hparams_from_file, lang_dict
 from vits import commons
-from vits.mel_processing import spectrogram_torch
 from vits.text import text_to_sequence
 from vits.models import SynthesizerTrn
 
 
-class VITS:
-    def __init__(self, model_path, config, device="cpu", **kwargs):
+class HuBert_VITS:
+    def __init__(self, model_path, config, hubert, device=torch.device("cpu"), **kwargs):
         self.hps_ms = get_hparams_from_file(config) if isinstance(config, str) else config
         self.n_speakers = getattr(self.hps_ms.data, 'n_speakers', 0)
         self.n_symbols = len(getattr(self.hps_ms, 'symbols', []))
         self.speakers = getattr(self.hps_ms, 'speakers', ['0'])
         if not isinstance(self.speakers, list):
             self.speakers = [item[0] for item in sorted(list(self.speakers.items()), key=lambda x: x[1])]
-        self.bert_embedding = getattr(self.hps_ms.data, 'bert_embedding',
-                                      getattr(self.hps_ms.model, 'bert_embedding', False))
-        self.hps_ms.model.bert_embedding = self.bert_embedding
-        self.text_cleaners = getattr(self.hps_ms.data, 'text_cleaners', [None])[0]
-        self.sampling_rate = self.hps_ms.data.sampling_rate
+        self.use_f0 = getattr(self.hps_ms.data, 'use_f0', False)
+        self.hubert = hubert
         self.device = device
 
         self.net_g_ms = SynthesizerTrn(
@@ -34,7 +32,8 @@ class VITS:
         # load checkpoint
         self.load_checkpoint(model_path)
 
-        self.lang = lang_dict.get(self.text_cleaners, ["unknown"])
+        key = getattr(self.hps_ms.data, "text_cleaners", ["none"])[0]
+        self.lang = lang_dict.get(key, ["unknown"])
 
     def load_checkpoint(self, model):
         utils.load_checkpoint(model, self.net_g_ms)
@@ -56,19 +55,42 @@ class VITS:
         text_norm = LongTensor(text_norm)
         return text_norm
 
-    def infer(self, text, id, noise, noisew, length, cleaned=False, **kwargs):
-        char_embeds = None
-        if self.bert_embedding:
-            stn_tst, char_embeds = self.get_cleaned_text(text, self.hps_ms, cleaned=cleaned)
+    def get_cleaner(self):
+        return getattr(self.hps_ms.data, 'text_cleaners', [None])[0]
+
+    def get_speakers(self, escape=False):
+        return self.speakers
+
+    @property
+    def sampling_rate(self):
+        return self.hps_ms.data.sampling_rate
+
+    def infer(self, audio_path, id, noise, noisew, length, f0_scale=1, **kwargs):
+        if self.use_f0:
+            audio, sampling_rate = librosa.load(audio_path, sr=self.hps_ms.data.sampling_rate, mono=True)
+            audio16000 = librosa.resample(audio, orig_sr=sampling_rate, target_sr=16000)
         else:
-            stn_tst = self.get_cleaned_text(text, self.hps_ms, cleaned=cleaned)
+            audio16000, sampling_rate = librosa.load(audio_path, sr=16000, mono=True)
+
+        with inference_mode():
+            units = self.hubert.units(FloatTensor(audio16000).unsqueeze(0).unsqueeze(0)).squeeze(0).numpy()
+            if self.use_f0:
+                f0 = librosa.pyin(audio,
+                                  sr=sampling_rate,
+                                  fmin=librosa.note_to_hz('C0'),
+                                  fmax=librosa.note_to_hz('C7'),
+                                  frame_length=1780)[0]
+                target_length = len(units[:, 0])
+                f0 = np.nan_to_num(np.interp(np.arange(0, len(f0) * target_length, len(f0)) / target_length,
+                                             np.arange(0, len(f0)), f0)) * f0_scale
+                units[:, 0] = f0 / 10
+
+        stn_tst = FloatTensor(units)
         id = LongTensor([id])
 
         with no_grad():
             x_tst = stn_tst.unsqueeze(0).to(self.device)
             x_tst_lengths = LongTensor([stn_tst.size(0)]).to(self.device)
-            x_tst_prosody = torch.FloatTensor(char_embeds).unsqueeze(0).to(
-                self.device) if self.bert_embedding else None
             id = id.to(self.device)
 
             audio = self.net_g_ms.infer(x=x_tst,
@@ -76,33 +98,7 @@ class VITS:
                                         sid=id,
                                         noise_scale=noise,
                                         noise_scale_w=noisew,
-                                        length_scale=length,
-                                        bert=x_tst_prosody)[0][0, 0].data.float().cpu().numpy()
-
-        torch.cuda.empty_cache()
-
-        return audio
-
-    def voice_conversion(self, audio_path, original_id, target_id):
-
-        audio = utils.load_audio_to_torch(
-            audio_path, self.sampling_rate)
-
-        y = audio.unsqueeze(0)
-
-        spec = spectrogram_torch(y, self.hps_ms.data.filter_length,
-                                 self.sampling_rate, self.hps_ms.data.hop_length,
-                                 self.hps_ms.data.win_length,
-                                 center=False)
-        spec_lengths = LongTensor([spec.size(-1)])
-        sid_src = LongTensor([original_id])
-
-        with no_grad():
-            sid_tgt = LongTensor([target_id])
-            audio = self.net_g_ms.voice_conversion(spec.to(self.device),
-                                                   spec_lengths.to(self.device),
-                                                   sid_src=sid_src.to(self.device),
-                                                   sid_tgt=sid_tgt.to(self.device))[0][0, 0].data.cpu().float().numpy()
+                                        length_scale=length)[0][0, 0].data.float().cpu().numpy()
 
         torch.cuda.empty_cache()
 
