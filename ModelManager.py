@@ -3,7 +3,6 @@ import os
 
 import numpy as np
 import torch
-from transformers import AutoTokenizer, AutoModelForMaskedLM
 
 import config
 import utils
@@ -30,7 +29,7 @@ class ModelManager(Subject):
     def __init__(self):
         self.device = device
         self.logger = logger
-        
+
         self.model = []
         self.voice_objs = {
             ModelType.VITS: [],
@@ -58,8 +57,6 @@ class ModelManager(Subject):
         self.voice_objs_count = 0
 
         self._observers = []
-
-        
 
         self.model_class_map = {
             ModelType.VITS: VITS,

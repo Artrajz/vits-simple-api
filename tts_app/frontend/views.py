@@ -1,11 +1,11 @@
 from flask import Blueprint, render_template
 
-from tts_app.voice_api.views import model_manager
+from tts_app.model_manager import model_manager
 
-frontend_blueprint = Blueprint('frontend', __name__)
+frontend = Blueprint('frontend', __name__)
 
 
-@frontend_blueprint.route('/', methods=["GET", "POST"])
+@frontend.route('/', methods=["GET", "POST"])
 def index():
     kwargs = {
         "speakers": model_manager.voice_speakers,
