@@ -1,11 +1,7 @@
 import torch
-from transformers import DebertaV2Model, DebertaV2Tokenizer
+
 import config
 
-
-# tokenizer = DebertaV2Tokenizer.from_pretrained("./bert/deberta-v3-large")
-
-# models = dict()
 
 
 def get_bert_feature(text, word2ph, tokenizer, model, device=config.DEVICE):
