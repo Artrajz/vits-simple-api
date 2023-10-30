@@ -2,7 +2,7 @@ import librosa
 import re
 import numpy as np
 import xml.etree.ElementTree as ET
-import config
+from utils.config_manager import global_config as config
 import soundfile as sf
 from io import BytesIO
 from graiax import silkcoder

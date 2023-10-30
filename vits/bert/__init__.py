@@ -1,7 +1,7 @@
 """ from https://github.com/PlayVoice/vits_chinese """
 import os
 
-import config
+from utils.config_manager import global_config as config
 from utils.download import download_and_verify
 from .ProsodyModel import TTSProsody
 

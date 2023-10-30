@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 import logzero
-import config
+from utils.config_manager import global_config as config
 from logging.handlers import TimedRotatingFileHandler
 
 logzero.loglevel(logging.WARNING)

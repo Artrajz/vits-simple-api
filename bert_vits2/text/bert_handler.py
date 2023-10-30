@@ -3,7 +3,7 @@ import os
 
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 
-import config
+from utils.config_manager import global_config as config
 from logger import logger
 from utils.download import download_and_verify
 from .chinese_bert import get_bert_feature as zh_bert

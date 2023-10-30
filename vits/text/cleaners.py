@@ -1,5 +1,5 @@
 import re
-import config
+from utils.config_manager import global_config as config
 from unidecode import unidecode
 from phonemizer import phonemize
 from phonemizer.backend.espeak.wrapper import EspeakWrapper

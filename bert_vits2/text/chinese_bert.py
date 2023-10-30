@@ -1,6 +1,6 @@
 import torch
 
-import config
+from utils.config_manager import global_config as config
 
 
 def get_bert_feature(text, word2ph, tokenizer, model, device=config.DEVICE):

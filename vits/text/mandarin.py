@@ -1,4 +1,4 @@
-import config
+from utils.config_manager import global_config as config
 import re
 from pypinyin import lazy_pinyin, BOPOMOFO
 import jieba
@@ -357,7 +357,7 @@ def chinese_to_ipa2(text):
 
 def VITS_PinYin_model():
     import torch
-    import config
+    from utils.config_manager import global_config as config
     from vits.text.vits_pinyin import VITS_PinYin
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # pinyin

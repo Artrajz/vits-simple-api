@@ -4,7 +4,7 @@ import os
 import numpy as np
 import torch
 
-import config
+from utils.config_manager import global_config as config
 import utils
 from bert_vits2 import Bert_VITS2
 from bert_vits2.text import BertHandler
