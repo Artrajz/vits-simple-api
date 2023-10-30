@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 
 from logger import logger
 from contants import ModelType
-from tts_app.auth import require_api_key
+from tts_app.voice_api.auth import require_api_key
 from tts_app.model_manager import model_manager, tts_manager
 from tts_app.voice_api.utils import *
 from utils.data_utils import check_is_none

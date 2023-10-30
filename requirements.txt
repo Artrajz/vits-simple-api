@@ -40,6 +40,8 @@ flask==2.2.3
 flask_apscheduler
 pydantic==2.3.0
 werkzeug==2.3.6
+flask_login
+flask_wtf
 
 # Compression and Decompression
 py7zr
