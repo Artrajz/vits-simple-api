@@ -1,3 +1,4 @@
+import logging
 import os
 
 from transformers import AutoTokenizer, AutoModelForMaskedLM
@@ -53,6 +54,7 @@ class BertHandler:
             model_path = self.bert_model_path[bert_model_name]
             if not os.path.exists(os.path.join(model_path, "pytorch_model.bin")):
                 self._download_model(bert_model_name)
+            logging.info(f"Loading BERT model: {model_path}")
             tokenizer = AutoTokenizer.from_pretrained(model_path)
             model = AutoModelForMaskedLM.from_pretrained(model_path).to(self.device)
             self.bert_models[bert_model_name] = (tokenizer, model, 1)  # 初始化引用计数为1
