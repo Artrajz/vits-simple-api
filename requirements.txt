@@ -51,3 +51,4 @@ MarkupSafe==2.1.2
 six==1.16.0
 protobuf
 tqdm
+PyYAML

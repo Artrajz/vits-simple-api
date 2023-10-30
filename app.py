@@ -7,11 +7,13 @@ from flask_wtf import CSRFProtect
 
 from tts_app import frontend, voice_api, auth, admin
 from tts_app.auth.models import users
+from utils.config_manager import global_config
 
 app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), 'tts_app', 'templates'),
             static_folder=os.path.join(os.path.dirname(__file__), 'tts_app', 'static'))
 
 app.config.from_pyfile("config.py")
+app.config.update(global_config)
 
 login_manager = LoginManager()
 login_manager.init_app(app)

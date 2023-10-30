@@ -41,7 +41,10 @@ LANGUAGE_AUTOMATIC_DETECT = []
 API_KEY_ENABLED = False
 
 # API_KEY is required for authentication
-API_KEY = "api-key"
+API_KEY = ""
+
+# WTForms CSRF 保护
+SECRET_KEY = ""
 
 # logging_level:DEBUG/INFO/WARNING/ERROR/CRITICAL
 LOGGING_LEVEL = "DEBUG"
