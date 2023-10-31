@@ -11,6 +11,7 @@ from utils.data_utils import check_is_none
 
 YAML_CONFIG_FILE = os.path.join(default_config.ABS_PATH, 'config.yml')
 
+logging.getLogger().setLevel(logging.DEBUG)
 
 class Config(dict):
     def __init__(self, *args, **kwargs):
@@ -89,6 +90,7 @@ else:
             global_config["default_parameter"][key.lower()] = value
         else:
             global_config[key] = value
+    logging.info("config.yml not found. Generating a new config.yml based on config.py.")
     save_yaml_config(YAML_CONFIG_FILE, global_config)
 
 if check_is_none(global_config.SECRET_KEY):
