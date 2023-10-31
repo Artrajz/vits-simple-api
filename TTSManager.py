@@ -31,8 +31,8 @@ class TTSManager(Observer):
             self.speaker_lang = getattr(config, "LANGUAGE_AUTOMATIC_DETECT")
 
     @property
-    def voice_objs(self):
-        return self.model_manager.voice_objs
+    def id_mapping_obj(self):
+        return self.model_manager.id_mapping_obj
 
     @property
     def voice_speakers(self):
@@ -109,13 +109,13 @@ class TTSManager(Observer):
         return audio
 
     def get_obj(self, model_type, id):
-        return self.voice_objs[model_type][id]["obj"]
+        return self.id_mapping_obj[model_type][id]["obj"]
 
     def get_real_id(self, model_type, id):
-        return self.voice_objs[model_type][id]["real_id"]
+        return self.id_mapping_obj[model_type][id]["real_id"]
 
     def get_obj_id(self, model_type, id):
-        return self.voice_objs[model_type][id]["obj_id"]
+        return self.id_mapping_obj[model_type][id]["obj_id"]
 
     def parse_ssml(self, ssml):
         root = ET.fromstring(ssml)

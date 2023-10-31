@@ -54,11 +54,11 @@ def load_checkpoint(checkpoint_path, model):
         model.module.load_state_dict(new_state_dict)
     else:
         model.load_state_dict(new_state_dict)
-    if iteration:
-        logging.info(f"Loaded checkpoint '{checkpoint_path}' (iteration {iteration})")
-    else:
-        logging.info(f"Loaded checkpoint '{checkpoint_path}'")
-    return
+    # if iteration:
+    #     logging.info(f"Loaded checkpoint '{checkpoint_path}' (iteration {iteration})")
+    # else:
+    #     logging.info(f"Loaded checkpoint '{checkpoint_path}'")
+    return iteration
 
 
 def get_hparams_from_file(config_path):

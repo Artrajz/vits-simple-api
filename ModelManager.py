@@ -32,7 +32,7 @@ class ModelManager(Subject):
         self.logger = logger
 
         self.models = []  # (model_path, model_obj, n_speakers, model_type)
-        self.voice_objs = {
+        self.id_mapping_obj = {
             ModelType.VITS: [],
             ModelType.HUBERT_VITS: [],
             ModelType.W2V2_VITS: [],
@@ -52,8 +52,8 @@ class ModelManager(Subject):
         self.bert_models = {}
         self.bert_handler = BertHandler(self.device)
 
-        self.id_mapping_obj = []
-        self.name_mapping_id = []
+        # self.id_mapping_obj = []
+        # self.name_mapping_id = []
 
         self.voice_objs_count = 0
 
@@ -186,7 +186,11 @@ class ModelManager(Subject):
         id_mapping_obj = []
         speakers = []
         new_id = len(self.voice_speakers[model_type.value])
-        obj_id = self.voice_objs_count
+        obj_id = 0
+        for _, _, _, loaded_model_type in self.models:
+            if model_type == loaded_model_type:
+                obj_id += 1
+
         for real_id, name in enumerate(obj.speakers):
             id_mapping_obj.append({"real_id": real_id, "obj": obj, "obj_id": obj_id})
             speakers.append({"id": new_id, "name": name, "lang": obj.lang})
@@ -199,6 +203,8 @@ class ModelManager(Subject):
             "id_mapping_obj": id_mapping_obj,
             "speakers": speakers
         }
+        
+        logging.info(f"model_type:{model_type.value} model_id:{obj_id} n_speakers:{len(speakers)} model_path:{model_path}")
 
         return model_data
 
@@ -208,21 +214,25 @@ class ModelManager(Subject):
         model_type = model_data["type"]
         self.models.append((model_path, model_data["model"], len(model_data["speakers"]), model_type))
 
-        self.voice_objs[model_type].extend(id_mapping_obj)
+        self.id_mapping_obj[model_type].extend(id_mapping_obj)
         self.voice_speakers[model_type.value].extend(model_data["speakers"])
 
         self.notify("model_loaded", model_manager=self)
 
     def unload_model(self, index):
+        state = "failed"
         if 0 <= index < len(self.models):
-            model = self.models[index][1]  # Assuming (path, model) tuple structure
+            model = self.models[index][1]
             model_type = model.type
 
-            self.voice_objs[model_type].remove(model)
+            self.id_mapping_obj[model_type].remove(model)
             self.voice_speakers[model_type.value].remove(model.get_speaker_data())
 
             del self.models[index]
+            state = "success"
             self.notify("model_unloaded", model_manager=self)
+
+        return state
 
     def load_dimensional_emotion_model(self, model_path):
         try:
@@ -284,7 +294,7 @@ class ModelManager(Subject):
             info.append({"model_path": os.path.basename(os.path.dirname(path)) + "/" + os.path.basename(path),
                          "n_speakers": n_speakers,
                          "model_type": model_type.value})
-        
+
         return info
 
     def get_model_by_index(self, index):
