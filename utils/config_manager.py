@@ -19,12 +19,12 @@ logging.getLogger().setLevel(logging.DEBUG)
 
 class Config(dict):
     def __init__(self, *args, **kwargs):
-        super(Config, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def __getattr__(self, key):
         if key in self:
             return self[key]
-        # raise AttributeError(f"'Config' object has no attribute '{key}'")
+        raise AttributeError(f"'Config' object has no attribute '{key}'")
 
     def __setattr__(self, key, value):
         self[key] = value
@@ -111,14 +111,14 @@ def init_config():
     if os.path.exists(YAML_CONFIG_FILE):
         global_config.update(load_yaml_config(YAML_CONFIG_FILE))
     else:
-        global_config.setdefault("model_path", {})
+        global_config.setdefault("model_config", {})
         global_config.setdefault("default_parameter", {})
 
         for key, value in vars(default_config).items():
             if key.islower():
                 continue
             if key in model_path:
-                global_config["model_path"][key.lower()] = value
+                global_config["model_config"][key.lower()] = value
             elif key in default_parameter:
                 global_config["default_parameter"][key.lower()] = value
             else:
