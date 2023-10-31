@@ -31,7 +31,7 @@ class ModelManager(Subject):
         self.device = device
         self.logger = logger
 
-        self.model = []
+        self.models = []  # (model_path, model_obj, n_speakers, model_type)
         self.voice_objs = {
             ModelType.VITS: [],
             ModelType.HUBERT_VITS: [],
@@ -131,7 +131,8 @@ class ModelManager(Subject):
 
     def log_device_info(self):
         cuda_available = torch.cuda.is_available()
-        self.logger.info(f"PyTorch Version: {torch.__version__} Cuda available:{cuda_available} Device type:{self.device.type}")
+        self.logger.info(
+            f"PyTorch Version: {torch.__version__} Cuda available:{cuda_available} Device type:{self.device.type}")
         if self.device.type == 'cuda':
             if cuda_available:
                 device_name = torch.cuda.get_device_name(self.device.index)
@@ -205,6 +206,7 @@ class ModelManager(Subject):
         model_data = self._load_model_from_path(model_path, model_config)
         id_mapping_obj = model_data["id_mapping_obj"]
         model_type = model_data["type"]
+        self.models.append((model_path, model_data["model"], len(model_data["speakers"]), model_type))
 
         self.voice_objs[model_type].extend(id_mapping_obj)
         self.voice_speakers[model_type.value].extend(model_data["speakers"])
@@ -273,9 +275,17 @@ class ModelManager(Subject):
             del self.models[old_index]
             self.models.insert(new_index, model)
 
-    def get_models(self):
-        """返回所有模型的路径列表"""
-        return [path for path, _ in self.models]
+    def get_models_path(self):
+        return [path for path, _, _, _ in self.models]
+
+    def get_models_info(self):
+        info = []
+        for path, _, n_speakers, model_type in self.models:
+            info.append({"model_path": os.path.basename(os.path.dirname(path)) + "/" + os.path.basename(path),
+                         "n_speakers": n_speakers,
+                         "model_type": model_type.value})
+        
+        return info
 
     def get_model_by_index(self, index):
         """根据给定的索引返回模型"""
