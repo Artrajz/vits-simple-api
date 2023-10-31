@@ -1,7 +1,9 @@
 import logging
 import os
 
+import cpuinfo
 import numpy as np
+import psutil
 import torch
 
 from utils.config_manager import global_config as config
@@ -12,7 +14,6 @@ from contants import ModelType
 from logger import logger
 from observer import Subject
 from utils.data_utils import HParams
-from config import DEVICE as device
 from vits import VITS
 from vits.hubert_vits import HuBert_VITS
 from vits.text.vits_pinyin import VITS_PinYin
@@ -26,7 +27,7 @@ DEBERTA_V3_LARGE = os.path.join(config.ABS_PATH, "bert_vits2/bert/deberta-v3-lar
 
 
 class ModelManager(Subject):
-    def __init__(self):
+    def __init__(self, device=config.DEVICE):
         self.device = device
         self.logger = logger
 
@@ -73,9 +74,7 @@ class ModelManager(Subject):
             if self.dimensional_emotion_model is None:
                 self.dimensional_emotion_model = self.load_dimensional_emotion_model(config.DIMENSIONAL_EMOTION_MODEL)
 
-        # Initialization information
-        self.logger.info(f"torch:{torch.__version__} cuda_available:{torch.cuda.is_available()}")
-        self.logger.info(f'device:{self.device} device.type:{self.device.type}')
+        self.log_device_info()
 
         if self.vits_speakers_count != 0: self.logger.info(
             f"[{ModelType.VITS.value}] {self.vits_speakers_count} speakers")
@@ -129,6 +128,22 @@ class ModelManager(Subject):
     def notify(self, event_type, **kwargs):
         for observer in self._observers:
             observer.update(event_type, **kwargs)
+
+    def log_device_info(self):
+        cuda_available = torch.cuda.is_available()
+        self.logger.info(f"PyTorch Version: {torch.__version__} Cuda available:{cuda_available} Device type:{self.device.type}")
+        if self.device.type == 'cuda':
+            if cuda_available:
+                device_name = torch.cuda.get_device_name(self.device.index)
+                self.logger.info(f"Using GPU on {device_name}, GPU Device Index: {self.device.index}")
+            else:
+                self.logger.warning("GPU device specified, but CUDA is not available.")
+        else:
+            cpu_info = cpuinfo.get_cpu_info()
+            cpu_name = cpu_info['brand_raw']
+            cpu_count = psutil.cpu_count(logical=False)
+            thread_count = psutil.cpu_count(logical=True)
+            self.logger.info(f"Using CPU on {cpu_name} with {cpu_count} cores and {thread_count} threads.")
 
     def _load_model_from_path(self, model_path, model_config):
         hps = utils.get_hparams_from_file(model_config)
