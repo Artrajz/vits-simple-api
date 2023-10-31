@@ -16,4 +16,4 @@ class User:
     def get_id(self):
         return str(self.id)
 
-users = {'admin': User(1, 'admin', 'password')}
+# users = {'group': {'username': User(1, 'username', 'password')}}
