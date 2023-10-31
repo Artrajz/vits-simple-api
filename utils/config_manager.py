@@ -1,4 +1,5 @@
 import os
+import secrets
 import shutil
 import logging
 
@@ -6,34 +7,22 @@ import torch
 import yaml
 
 import config as default_config
+from utils.data_utils import check_is_none
 
 YAML_CONFIG_FILE = os.path.join(default_config.ABS_PATH, 'config.yml')
 
 
-class Config:
-    def __init__(self, **entries):
-        self.__dict__.update(entries)
+class Config(dict):
+    def __init__(self, *args, **kwargs):
+        super(Config, self).__init__(*args, **kwargs)
 
-    def __getitem__(self, key):
-        return self.__dict__[key]
+    def __getattr__(self, key):
+        if key in self:
+            return self[key]
+        raise AttributeError(f"'Config' object has no attribute '{key}'")
 
-    def __setitem__(self, key, value):
-        self.__dict__[key] = value
-
-    def __iter__(self):
-        return iter(self.__dict__)
-
-    def items(self):
-        return self.__dict__.items()
-
-    def keys(self):
-        return self.__dict__.keys()
-
-    def values(self):
-        return self.__dict__.values()
-
-    def update(self, data: dict):
-        self.__dict__.update(data)
+    def __setattr__(self, key, value):
+        self[key] = value
 
 
 global_config = Config()
@@ -59,22 +48,27 @@ def load_yaml_config(filename):
     global global_config
     global_config.update(yaml_config)
     logging.info(f"Loading yaml from {YAML_CONFIG_FILE}")
-    return yaml_config
+    return Config(yaml_config)
 
 
 def save_yaml_config(filename, data):
     temp_filename = filename + '.tmp'
     try:
+        dict_data = dict(data)
         with open(temp_filename, 'w') as f:
-            yaml.safe_dump(data, f)
+            yaml.safe_dump(dict_data, f, default_style="'")
         global global_config
-        global_config.update(data)
+        global_config.update(dict_data)
         shutil.move(temp_filename, filename)
         logging.info(f"Saving yaml to {YAML_CONFIG_FILE}")
     except Exception as e:
         logging.error(f"Error while saving yaml: {e}")
         if os.path.exists(temp_filename):
             os.remove(temp_filename)
+
+
+def generate_secret_key(length=32):
+    return secrets.token_hex(length)
 
 
 model_path = ["MODEL_LIST", "HUBERT_SOFT_MODEL", "DIMENSIONAL_EMOTION_NPY", "DIMENSIONAL_EMOTION_MODEL"]
@@ -95,4 +89,16 @@ else:
             global_config["default_parameter"][key.lower()] = value
         else:
             global_config[key] = value
+    save_yaml_config(YAML_CONFIG_FILE, global_config)
+
+if check_is_none(global_config.SECRET_KEY):
+    secret_key = generate_secret_key()
+    global_config["SECRET_KEY"] = secret_key
+    logging.info(f"SECRET_KEY is not found or is None. Generating a new SECRET_KEY:{secret_key}")
+    save_yaml_config(YAML_CONFIG_FILE, global_config)
+
+if check_is_none(global_config.API_KEY):
+    secret_key = generate_secret_key()
+    global_config["API_KEY"] = secret_key
+    logging.info(f"API_KEY is not found or is None. Generating a new API_KEY:{secret_key}")
     save_yaml_config(YAML_CONFIG_FILE, global_config)
