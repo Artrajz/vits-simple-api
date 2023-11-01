@@ -73,8 +73,8 @@ class ModelManager(Subject):
         }
 
     def model_init(self, model_list):
-        for model_path, model_config in model_list:
-            self.load_model(model_path, model_config)
+        for model_path, config_path in model_list:
+            self.load_model(model_path, config_path)
 
         if getattr(config, "DIMENSIONAL_EMOTION_MODEL", None) is not None:
             if self.dimensional_emotion_model is None:
@@ -152,13 +152,13 @@ class ModelManager(Subject):
             thread_count = psutil.cpu_count(logical=True)
             self.logger.info(f"Using CPU on {cpu_name} with {cpu_count} cores and {thread_count} threads.")
 
-    def _load_model_from_path(self, model_path, model_config):
-        hps = utils.get_hparams_from_file(model_config)
+    def _load_model_from_path(self, model_path, config_path):
+        hps = utils.get_hparams_from_file(config_path)
         model_type = self.recognition_model_type(hps)
 
         model_args = {
             "model_path": model_path,
-            "config_path": model_config,
+            "config_path": config_path,
             "config": hps,
             "device": self.device
         }
@@ -214,8 +214,8 @@ class ModelManager(Subject):
 
         return model_data
 
-    def load_model(self, model_path, model_config):
-        model_data = self._load_model_from_path(model_path, model_config)
+    def load_model(self, model_path, config_path):
+        model_data = self._load_model_from_path(model_path, config_path)
         model_id = model_data["model_id"]
         sid2model = model_data["sid2model"]
         model_type = model_data["model_type"]
@@ -225,6 +225,9 @@ class ModelManager(Subject):
         self.voice_speakers[model_type.value].extend(model_data["speakers"])
 
         self.notify("model_loaded", model_manager=self)
+        
+        state = "success"
+        return state
 
     def unload_model(self, model_type_value: str, model_id: str):
         state = "failed"
