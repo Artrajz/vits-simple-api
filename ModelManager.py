@@ -1,3 +1,4 @@
+import gc
 import logging
 import os
 
@@ -31,8 +32,13 @@ class ModelManager(Subject):
         self.device = device
         self.logger = logger
 
-        self.models = []  # (model_path, model_obj, n_speakers, model_type)
-        self.id_mapping_obj = {
+        self.models = {  # "model_id":(model_path, model, n_speakers)
+            ModelType.VITS: {},
+            ModelType.HUBERT_VITS: {},
+            ModelType.W2V2_VITS: {},
+            ModelType.BERT_VITS2: {}
+        }
+        self.sid2model = {  # [real_id, model, model_id]
             ModelType.VITS: [],
             ModelType.HUBERT_VITS: [],
             ModelType.W2V2_VITS: [],
@@ -52,7 +58,7 @@ class ModelManager(Subject):
         self.bert_models = {}
         self.bert_handler = BertHandler(self.device)
 
-        # self.id_mapping_obj = []
+        # self.sid2model = []
         # self.name_mapping_id = []
 
         self.voice_objs_count = 0
@@ -150,7 +156,7 @@ class ModelManager(Subject):
         hps = utils.get_hparams_from_file(model_config)
         model_type = self.recognition_model_type(hps)
 
-        obj_args = {
+        model_args = {
             "model_path": model_path,
             "config_path": model_config,
             "config": hps,
@@ -167,68 +173,81 @@ class ModelManager(Subject):
         if model_type == ModelType.W2V2_VITS:
             if self.emotion_reference is None:
                 self.emotion_reference = self.load_npy(config.DIMENSIONAL_EMOTION_NPY)
-            obj_args.update({"emotion_reference": self.emotion_reference,
-                             "dimensional_emotion_model": self.dimensional_emotion_model})
+            model_args.update({"emotion_reference": self.emotion_reference,
+                               "dimensional_emotion_model": self.dimensional_emotion_model})
 
         if model_type == ModelType.HUBERT_VITS:
             if self.hubert is None:
                 self.hubert = self.load_hubert_model(config.HUBERT_SOFT_MODEL)
-            obj_args.update({"hubert": self.hubert})
+            model_args.update({"hubert": self.hubert})
 
-        obj = model_class(**obj_args)
+        model = model_class(**model_args)
 
         if model_type == ModelType.BERT_VITS2:
-            bert_model_names = obj.bert_model_names
+            bert_model_names = model.bert_model_names
             for bert_model_name in bert_model_names.values():
                 self.bert_handler.load_bert(bert_model_name)
-            obj.load_model(self.bert_handler)
+            model.load_model(self.bert_handler)
 
-        id_mapping_obj = []
+        sid2model = []
         speakers = []
         new_id = len(self.voice_speakers[model_type.value])
-        obj_id = 0
-        for _, _, _, loaded_model_type in self.models:
-            if model_type == loaded_model_type:
-                obj_id += 1
+        model_id = max([-1] + list(self.models[model_type].keys())) + 1
 
-        for real_id, name in enumerate(obj.speakers):
-            id_mapping_obj.append({"real_id": real_id, "obj": obj, "obj_id": obj_id})
-            speakers.append({"id": new_id, "name": name, "lang": obj.lang})
+        for real_id, name in enumerate(model.speakers):
+            sid2model.append({"real_id": real_id, "model": model, "model_id": model_id})
+            speakers.append({"id": new_id, "name": name, "lang": model.lang})
             new_id += 1
 
         model_data = {
-            "model": obj,
-            "type": model_type,
+            "model": model,
+            "model_type": model_type,
+            "model_id": model_id,
+            "model_path": model_path,
             "config": hps,
-            "id_mapping_obj": id_mapping_obj,
+            "sid2model": sid2model,
             "speakers": speakers
         }
-        
-        logging.info(f"model_type:{model_type.value} model_id:{obj_id} n_speakers:{len(speakers)} model_path:{model_path}")
+
+        logging.info(
+            f"model_type:{model_type.value} model_id:{model_id} n_speakers:{len(speakers)} model_path:{model_path}")
 
         return model_data
 
     def load_model(self, model_path, model_config):
         model_data = self._load_model_from_path(model_path, model_config)
-        id_mapping_obj = model_data["id_mapping_obj"]
-        model_type = model_data["type"]
-        self.models.append((model_path, model_data["model"], len(model_data["speakers"]), model_type))
+        model_id = model_data["model_id"]
+        sid2model = model_data["sid2model"]
+        model_type = model_data["model_type"]
 
-        self.id_mapping_obj[model_type].extend(id_mapping_obj)
+        self.models[model_type][model_id] = (model_path, model_data["model"], len(model_data["speakers"]))
+        self.sid2model[model_type].extend(sid2model)
         self.voice_speakers[model_type.value].extend(model_data["speakers"])
 
         self.notify("model_loaded", model_manager=self)
 
-    def unload_model(self, index):
+    def unload_model(self, model_type_value: str, model_id: str):
         state = "failed"
-        if 0 <= index < len(self.models):
-            model = self.models[index][1]
-            model_type = model.type
+        model_type = ModelType(model_type_value)
+        model_id = int(model_id)
+        if model_id in self.models[model_type].keys():
+            model_path, model, n_speakers = self.models[model_type][model_id]
+            start = 0
+            for key, (_, _, ns) in self.models[model_type].items():
+                if key == model_id:
+                    break
+                start += ns
 
-            self.id_mapping_obj[model_type].remove(model)
-            self.voice_speakers[model_type.value].remove(model.get_speaker_data())
+            del self.sid2model[model_type][start:start + n_speakers]
+            del self.voice_speakers[model_type.value][start:start + n_speakers]
+            del self.models[model_type][model_id]
 
-            del self.models[index]
+            for new_id, speaker in enumerate(self.voice_speakers[model_type.value]):
+                speaker["id"] = new_id
+
+            gc.collect()
+            torch.cuda.empty_cache()
+
             state = "success"
             self.notify("model_unloaded", model_manager=self)
 
@@ -286,21 +305,39 @@ class ModelManager(Subject):
             self.models.insert(new_index, model)
 
     def get_models_path(self):
-        return [path for path, _, _, _ in self.models]
+        """按模型类型返回模型路径"""
+        info = {
+            ModelType.VITS: [],
+            ModelType.HUBERT_VITS: [],
+            ModelType.W2V2_VITS: [],
+            ModelType.BERT_VITS2: []
+        }
 
-    def get_models_info(self):
-        info = []
-        for path, _, n_speakers, model_type in self.models:
-            info.append({"model_path": os.path.basename(os.path.dirname(path)) + "/" + os.path.basename(path),
-                         "n_speakers": n_speakers,
-                         "model_type": model_type.value})
+        for model_type, model_data in self.models:
+            info[model_type].append(model_data[0])
 
         return info
 
-    def get_model_by_index(self, index):
+    def get_models_info(self):
+        """按模型类型返回模型文件夹名以及模型文件名，speakers数量"""
+        info = {
+            ModelType.VITS: [],
+            ModelType.HUBERT_VITS: [],
+            ModelType.W2V2_VITS: [],
+            ModelType.BERT_VITS2: []
+        }
+        for model_type, model_data in self.models:
+            for path, _, n_speakers, model_type in model_data:
+                info[model_type].append(
+                    {"model_path": os.path.basename(os.path.dirname(path)) + "/" + os.path.basename(path),
+                     "n_speakers": n_speakers})
+
+        return info
+
+    def get_model_by_index(self, model_type, model_id):
         """根据给定的索引返回模型"""
-        if 0 <= index < len(self.models):
-            _, model = self.models[index]
+        if 0 <= model_id < len(self.models):
+            _, model, _ = self.models[model_type][model_id]
             return model
         return None
 
