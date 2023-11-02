@@ -1,4 +1,5 @@
 import gc
+import glob
 import logging
 import os
 
@@ -73,6 +74,7 @@ class ModelManager(Subject):
         }
 
     def model_init(self, model_list):
+        if model_list is None: model_list = []
         for model_path, config_path in model_list:
             self.load_model(model_path, config_path)
 
@@ -225,7 +227,7 @@ class ModelManager(Subject):
         self.voice_speakers[model_type.value].extend(model_data["speakers"])
 
         self.notify("model_loaded", model_manager=self)
-        
+
         state = "success"
         return state
 
@@ -324,15 +326,16 @@ class ModelManager(Subject):
     def get_models_info(self):
         """按模型类型返回模型文件夹名以及模型文件名，speakers数量"""
         info = {
-            ModelType.VITS: [],
-            ModelType.HUBERT_VITS: [],
-            ModelType.W2V2_VITS: [],
-            ModelType.BERT_VITS2: []
+            ModelType.VITS.value: [],
+            ModelType.HUBERT_VITS.value: [],
+            ModelType.W2V2_VITS.value: [],
+            ModelType.BERT_VITS2.value: []
         }
-        for model_type, model_data in self.models:
-            for path, _, n_speakers, model_type in model_data:
-                info[model_type].append(
-                    {"model_path": os.path.basename(os.path.dirname(path)) + "/" + os.path.basename(path),
+        for model_type, model_data in self.models.items():
+            for model_id, (path, _, n_speakers) in model_data.items():
+                info[model_type.value].append(
+                    {"model_id": model_id,
+                     "model_path": os.path.basename(os.path.dirname(path)) + "/" + os.path.basename(path),
                      "n_speakers": n_speakers})
 
         return info
@@ -398,3 +401,20 @@ class ModelManager(Subject):
 
         logging.info(f"Loaded emotional dimention npy range: {len(emotion_reference)}")
         return emotion_reference
+
+    def scan_path(self):
+        folder_path = os.path.join(config.ABS_PATH, 'Model')
+        pth_files = glob.glob(folder_path + "/**/*.pth", recursive=True)
+        paths = []
+
+        for id, pth_file in enumerate(pth_files):
+            dir_name = os.path.dirname(pth_file)
+            json_file = glob.glob(dir_name + "/*.json", recursive=True)[0]
+            
+            paths.append({
+                'model_id': id,
+                'model_path': pth_file,
+                'config_path': json_file
+            })
+                    
+        return paths

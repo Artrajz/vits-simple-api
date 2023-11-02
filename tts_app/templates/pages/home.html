@@ -1,0 +1,32 @@
+{% extends 'layouts/admin_base.html' %}
+{% block extrastyle %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/home.css') }}">
+{% endblock extrastyle %}
+
+{% block title %}Home{% endblock title %}
+
+{% block content %}
+    <div class="home-content flex flex-grow-1">
+        <div class="model-manager flex-column flex-grow-1">
+            <div class="item">
+                <div class="model-load">
+                    <label for="load-model-btn">
+                        加载模型
+                    </label>
+                    <input type="checkbox" id="load-model-btn" style="display: none;">
+                    <div class="model-load-content" style="display: none;"></div>
+                </div>
+            </div>
+
+            <div class="item model-list flex-column">
+                <label for="">
+                    模型列表
+                </label>
+                <div class="flex flex-wrap" id="model-data"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+{% endblock %}

@@ -1,72 +1,27 @@
-.main-container {
-    position: relative;
-    width: 100%;
-    min-height: 300px;
+* {
+    padding: 0;
+    margin: 0;
 }
 
-.container {
-    width: 300px;
-    position: relative;
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
-
-/*tabs*/
-.tabs {
-    display: flex;
-    left: 0;
+ul, li {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 0;
 }
-
-.tab-button {
-    display: inline-block;
-    background-color: transparent;
-    padding: 5px 10px;
-    cursor: pointer;
-    margin-bottom: -2px;
-    border-top: 2px solid transparent;
-    border-left: 2px solid transparent;
-    border-right: 2px solid transparent;
-    border-bottom: 0px;
-    border-top-left-radius: 0.5rem;
-    border-top-right-radius: 0.5rem;
-    color: gray;
-}
-
-.tab-button.active {
-    background-color: white;
-    border-top: 2px solid #dee2e6;
-    border-left: 2px solid #dee2e6;
-    border-right: 2px solid #dee2e6;
-    color: black;
-}
-
-/*content*/
-
-.content {
-    border: gray;
-    border-left-width: 2px;
-}
-
-.content-pane {
-    display: none;
-    padding: 20px;
-}
-
-.content-pane.active {
-    display: flex;
-    -ms-flex-wrap: wrap;
-    flex-wrap: wrap;
-}
-
-*, :before, :after {
-    box-sizing: border-box;
-    border-width: 0;
-    border-style: solid;
-    border-color: #e5e7eb;
-}
-
 
 .flex {
     display: flex;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
 }
 
 .border-transparent {
@@ -81,4 +36,5 @@
     border-left: 2px solid #dee2e6;
     border-right: 2px solid #dee2e6;
 }
+
 

@@ -4,8 +4,9 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>vits-simple-api</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/plugins/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/index.css') }}">
 </head>
 <body>
 <main class="main-container">
@@ -17,7 +18,6 @@
             </h1>
         </div>
 
-
         <div class="tabs w-100 border-b-2" id="component-2">
             <button class="tab-button px-4 pb-2 pt-2 active " onclick="showContent(0)">VITS</button>
             <button class="tab-button px-4 pb-2 pt-2" onclick="showContent(1)">W2V2-VITS</button>
@@ -27,12 +27,12 @@
         <div class="content w-100 border-lr-2 border-b-2" id="component-3">
             <div class="content-pane active w-100 flex-wrap">
                 <form class="w-100">
-                    <div class="form-group">
+                    <div class="mb-3">
                         <label>text</label>
                         <textarea class="form-control" id="input_text1" rows="3"
                                   oninput="updateLink()">你好,こんにちは</textarea>
                     </div>
-                    <div class="form-group">
+                    <div class="mb-3">
                         <label>id</label>
                         <select class="form-control" id="input_id1" oninput="updateLink()">
                             {% for speaker in speakers["VITS"] %}
@@ -47,7 +47,7 @@
                 </form>
                 <form class="w-100">
                     <div class="row">
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="默认为wav">format</label>
                             <select class="form-control" id="input_format1" oninput="updateLink()">
@@ -59,13 +59,13 @@
                                 <option>flac</option>
                             </select>
                         </div>
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="自动识别语言auto：可识别的语言根据不同speaker而不同，方言无法自动识别。方言模型需要手动指定语言，比如粤语Cantonese要指定参数lang=gd">lang</label>
                             <input type="text" class="form-control" id="input_lang1" oninput="updateLink()" value=""
                                    placeholder="auto"/>
                         </div>
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="调节语音长度，相当于调节语速，该数值越大语速越慢。">length</label>
                             <input type="number" class="form-control" id="input_length1" oninput="updateLink()" value=""
@@ -73,19 +73,19 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="样本噪声，控制合成的随机性。">noise</label>
                             <input type="number" class="form-control" id="input_noise1" oninput="updateLink()" value=""
                                    placeholder="0.33" min="0" step="0.001"/>
                         </div>
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="随机时长预测器噪声，控制音素发音长度。">noisew</label>
                             <input type="number" class="form-control" id="input_noisew1" oninput="updateLink()" value=""
                                    placeholder="0.4" min="0" step="0.001"/>
                         </div>
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。">max</label>
                             <input type="number" class="form-control" id="input_max1" oninput="updateLink()" value=""
@@ -105,7 +105,7 @@
                         <source src="" type="audio/mp3"/>
                         Your browser does not support the audio element.
                     </audio>
-                    <div class="form-group form-check">
+                    <div class="mb-3 form-check">
                         <input type="checkbox" id="streaming1" onchange="updateLink()">
                         <label class="form-check-label" data-toggle="tooltip" data-placement="top"
                                title="按照max分段推理文本，推理好一段即输出，无需等待所有文本都推理完毕">流式响应</label>
@@ -114,12 +114,12 @@
             </div>
             <div class="content-pane w-100 flex-wrap">
                 <form class="w-100">
-                    <div class="form-group">
+                    <div class="mb-3">
                         <label>text</label>
                         <textarea class="form-control" id="input_text2" rows="3"
                                   oninput="updateLink()">你好,こんにちは</textarea>
                     </div>
-                    <div class="form-group">
+                    <div class="mb-3">
                         <label>id</label>
                         <select class="form-control" id="input_id2" oninput="updateLink()">
                             {% for speaker in speakers["W2V2-VITS"] %}
@@ -131,7 +131,7 @@
                             {% endif %}
                         </select>
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="mb-3 mb-3">
                         <label data-toggle="tooltip" data-placement="top"
                                title="情感嵌入，{% if w2v2_emotion_count > 0 %}
                                     可输入范围是0-{{ w2v2_emotion_count-1 }}
@@ -146,7 +146,7 @@
 
                 <form class="w-100">
                     <div class="row">
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="默认为wav">format</label>
                             <select class="form-control" id="input_format2" oninput="updateLink()">
@@ -158,13 +158,13 @@
                                 <option>flac</option>
                             </select>
                         </div>
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="自动识别语言auto：可识别的语言根据不同speaker而不同，方言无法自动识别。方言模型需要手动指定语言，比如粤语Cantonese要指定参数lang=gd">lang</label>
                             <input type="text" class="form-control" id="input_lang2" oninput="updateLink()" value=""
                                    placeholder="auto"/>
                         </div>
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="调节语音长度，相当于调节语速，该数值越大语速越慢。">length</label>
                             <input type="number" class="form-control" id="input_length2" oninput="updateLink()" value=""
@@ -172,19 +172,19 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="样本噪声，控制合成的随机性。">noise</label>
                             <input type="number" class="form-control" id="input_noise2" oninput="updateLink()" value=""
                                    placeholder="0.33" min="0" step="0.001"/>
                         </div>
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="随机时长预测器噪声，控制音素发音长度。">noisew</label>
                             <input type="number" class="form-control" id="input_noisew2" oninput="updateLink()" value=""
                                    placeholder="0.4" min="0" step="0.001"/>
                         </div>
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。">max</label>
                             <input type="number" class="form-control" id="input_max2" oninput="updateLink()" value=""
@@ -207,12 +207,12 @@
             </div>
             <div class="content-pane w-100 flex-wrap">
                 <form class="w-100">
-                    <div class="form-group">
+                    <div class="mb-3">
                         <label>text</label>
                         <textarea class="form-control" id="input_text3" rows="3"
                                   oninput="updateLink()">你好</textarea>
                     </div>
-                    <div class="form-group">
+                    <div class="mb-3">
                         <label>id</label>
                         <select class="form-control" id="input_id3" oninput="updateLink()">
                             {% for speaker in speakers["BERT-VITS2"] %}
@@ -227,7 +227,7 @@
                 </form>
                 <form class="w-100">
                     <div class="row">
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="默认为wav">format</label>
                             <select class="form-control" id="input_format3" oninput="updateLink()">
@@ -239,13 +239,13 @@
                                 <option>flac</option>
                             </select>
                         </div>
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="自动识别语言auto：可识别的语言根据不同speaker而不同，方言无法自动识别。方言模型需要手动指定语言，比如粤语Cantonese要指定参数lang=gd">lang</label>
                             <input type="text" class="form-control" id="input_lang3" oninput="updateLink()" value=""
                                    placeholder="auto"/>
                         </div>
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="调节语音长度，相当于调节语速，该数值越大语速越慢。">length</label>
                             <input type="number" class="form-control" id="input_length3" oninput="updateLink()" value=""
@@ -253,19 +253,19 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="样本噪声，控制合成的随机性。">noise</label>
                             <input type="number" class="form-control" id="input_noise3" oninput="updateLink()" value=""
                                    placeholder="0.5" min="0" step="0.001"/>
                         </div>
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="随机时长预测器噪声，控制音素发音长度。">noisew</label>
                             <input type="number" class="form-control" id="input_noisew3" oninput="updateLink()" value=""
                                    placeholder="0.6" min="0" step="0.001"/>
                         </div>
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。">max</label>
                             <input type="number" class="form-control" id="input_max3" oninput="updateLink()" value=""
@@ -274,7 +274,7 @@
 
                     </div>
                     <div class="row">
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="SDP/DP混合比：SDP在合成时的占比，理论上此比率越高，合成的语音语调方差越大。">sdp_radio</label>
                             <input type="number" class="form-control" id="input_sdp_ratio" oninput="updateLink()"
@@ -323,8 +323,8 @@
 
 </main>
 
-<script src="{{ url_for('static', filename='js/jquery.slim.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/plugins/jquery.slim.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/plugins/bootstrap.bundle.min.js') }}"></script>
 
 <script>
     $(function () {

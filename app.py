@@ -38,7 +38,7 @@ if app.config.get("CLEAN_INTERVAL_SECONDS", 3600) > 0:
 
 app.register_blueprint(frontend, url_prefix='/')
 app.register_blueprint(voice_api, url_prefix='/voice')
-app.register_blueprint(auth, url_prefix='/auth')
+app.register_blueprint(auth, url_prefix='/')
 app.register_blueprint(admin, url_prefix='/admin')
 
 if __name__ == '__main__':

@@ -15,4 +15,4 @@ def index():
         "w2v2_emotion_count": model_manager.w2v2_emotion_count,
         "bert_vits2_speakers_count": model_manager.bert_vits2_speakers_count
     }
-    return render_template("index.html", **kwargs)
+    return render_template("pages/index.html", **kwargs)

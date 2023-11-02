@@ -1,0 +1,24 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.left-entry {
+    display: flex;
+    justify-content: space-between;
+    align-content: center;
+}
+
+.left-entry-item {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+}
+
+.center-entry {
+    display: flex;
+}
+
+.right-entry {
+    display: flex;
+}

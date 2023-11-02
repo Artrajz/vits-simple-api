@@ -1,0 +1,69 @@
+.main-container {
+    position: relative;
+    width: 100%;
+    min-height: 300px;
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+.container {
+    width: 1140px;
+    position: relative;
+}
+
+/*tabs*/
+.tabs {
+    display: flex;
+    left: 0;
+}
+
+.tab-button {
+    display: inline-block;
+    background-color: transparent;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-bottom: -2px;
+    border-top: 2px solid transparent;
+    border-left: 2px solid transparent;
+    border-right: 2px solid transparent;
+    border-bottom: 0px;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+    color: gray;
+}
+
+.tab-button.active {
+    background-color: white;
+    border-top: 2px solid #dee2e6;
+    border-left: 2px solid #dee2e6;
+    border-right: 2px solid #dee2e6;
+    color: black;
+}
+
+/*content*/
+
+.content {
+    min-height: 550px;
+}
+
+.content-pane {
+    display: none;
+    padding: 20px;
+}
+
+.content-pane.active {
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+
+*, :before, :after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: #e5e7eb;
+}
+
+label {
+    margin-bottom: 0.5rem;
+}

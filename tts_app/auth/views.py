@@ -15,9 +15,9 @@ def login():
         if user and user.password == form.password.data:
             login_user(user)
             flash('Logged in successfully.')
-            return redirect(url_for('admin.setting'))
+            return redirect(url_for('admin.home'))
         flash('Wrong username or password.')
-    return render_template('login.html', form=form)
+    return render_template('pages/login.html', form=form)
 
 
 @auth.route('/logout')

@@ -1,0 +1,52 @@
+.home-content {
+    background-color: #e3f2fd;
+    border-radius: 8px;
+}
+
+.model-manager .item {
+    margin: 20px 20px;
+}
+
+#model-data {
+
+}
+
+#model-data .card {
+    width: 450px;
+    margin: 10px;
+    color: white;
+    border-color: transparent;
+    background-color: #542ca7;
+}
+
+#model-data .card .wrap {
+    margin: 10px 0 10px 20px;
+}
+
+#model-data .card .wrap * {
+    flex: 1;
+}
+
+#model-data .unload-model {
+    color: white;
+    background-color: transparent;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+#model-data .unload-model:hover {
+    background-color: #6b5da6;
+    /*transform: scale(1.5);*/
+}
+
+
+
