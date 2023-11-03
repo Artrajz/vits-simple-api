@@ -1,4 +1,6 @@
-from flask import Blueprint, request, render_template
+import logging
+
+from flask import Blueprint, request, render_template, make_response, jsonify
 from flask_login import login_required
 
 from tts_app.model_manager import model_manager
@@ -29,12 +31,16 @@ def load_model():
             request_data = request.get_json()
         else:
             request_data = request.form
-        print(content_type)
-    print(request_data)
+
     model_path = request_data.get("model_path")
     config_path = request_data.get("config_path")
+    logging.info(f"Loading model\n"
+                 f"model_path: {model_path}\n"
+                 f"config_path: {config_path}")
+    state = model_manager.load_model(model_path, config_path)
+    status = "success" if state else "failed"
 
-    return model_manager.load_model(model_path, config_path)
+    return make_response(jsonify({"status": status}), 200)
 
 
 @admin.route('/unload_model', methods=["GET", "POST"])
@@ -51,7 +57,12 @@ def unload_model():
     model_type = request_data.get("model_type")
     model_id = request_data.get("model_id")
 
-    return model_manager.unload_model(model_type, model_id)
+    logging.info(f"Unloading model. model_type: {model_type} model_id: {model_id}")
+
+    state = model_manager.unload_model(model_type, model_id)
+    status = "success" if state else "failed"
+
+    return make_response(jsonify({"status": status}), 200)
 
 
 @admin.route('/get_path', methods=["GET", "POST"])

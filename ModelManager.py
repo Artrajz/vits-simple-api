@@ -216,45 +216,52 @@ class ModelManager(Subject):
 
         return model_data
 
-    def load_model(self, model_path, config_path):
-        model_data = self._load_model_from_path(model_path, config_path)
-        model_id = model_data["model_id"]
-        sid2model = model_data["sid2model"]
-        model_type = model_data["model_type"]
+    def load_model(self, model_path: str, config_path: str):
+        try:
+            model_data = self._load_model_from_path(model_path, config_path)
+            model_id = model_data["model_id"]
+            sid2model = model_data["sid2model"]
+            model_type = model_data["model_type"]
 
-        self.models[model_type][model_id] = (model_path, model_data["model"], len(model_data["speakers"]))
-        self.sid2model[model_type].extend(sid2model)
-        self.voice_speakers[model_type.value].extend(model_data["speakers"])
+            self.models[model_type][model_id] = (model_path, model_data["model"], len(model_data["speakers"]))
+            self.sid2model[model_type].extend(sid2model)
+            self.voice_speakers[model_type.value].extend(model_data["speakers"])
 
-        self.notify("model_loaded", model_manager=self)
-
-        state = "success"
+            self.notify("model_loaded", model_manager=self)
+            state = True
+        except Exception as e:
+            self.logger.info(f"Loading failed. {e}")
+            state = False
         return state
 
     def unload_model(self, model_type_value: str, model_id: str):
-        state = "failed"
+        state = False
         model_type = ModelType(model_type_value)
         model_id = int(model_id)
-        if model_id in self.models[model_type].keys():
-            model_path, model, n_speakers = self.models[model_type][model_id]
-            start = 0
-            for key, (_, _, ns) in self.models[model_type].items():
-                if key == model_id:
-                    break
-                start += ns
+        try:
+            if model_id in self.models[model_type].keys():
+                model_path, model, n_speakers = self.models[model_type][model_id]
+                start = 0
+                for key, (_, _, ns) in self.models[model_type].items():
+                    if key == model_id:
+                        break
+                    start += ns
 
-            del self.sid2model[model_type][start:start + n_speakers]
-            del self.voice_speakers[model_type.value][start:start + n_speakers]
-            del self.models[model_type][model_id]
+                del self.sid2model[model_type][start:start + n_speakers]
+                del self.voice_speakers[model_type.value][start:start + n_speakers]
+                del self.models[model_type][model_id]
 
-            for new_id, speaker in enumerate(self.voice_speakers[model_type.value]):
-                speaker["id"] = new_id
+                for new_id, speaker in enumerate(self.voice_speakers[model_type.value]):
+                    speaker["id"] = new_id
 
-            gc.collect()
-            torch.cuda.empty_cache()
+                gc.collect()
+                torch.cuda.empty_cache()
 
-            state = "success"
-            self.notify("model_unloaded", model_manager=self)
+                state = True
+                self.notify("model_unloaded", model_manager=self)
+        except Exception as e:
+            self.logger.info(f"Unloading failed. {e}")
+            state = False
 
         return state
 
@@ -410,11 +417,11 @@ class ModelManager(Subject):
         for id, pth_file in enumerate(pth_files):
             dir_name = os.path.dirname(pth_file)
             json_file = glob.glob(dir_name + "/*.json", recursive=True)[0]
-            
+
             paths.append({
                 'model_id': id,
                 'model_path': pth_file,
                 'config_path': json_file
             })
-                    
+
         return paths

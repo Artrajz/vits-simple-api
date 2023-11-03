@@ -22,8 +22,10 @@
     {% block content %}{% endblock %}
 </div>
 
+{% include 'includes/scripts.html' %}
 {% block admincode %}
-<script src="{{ url_for('static', filename='js/admincode.js') }}"></script>{% endblock admincode %}
+    <script src="{{ url_for('static', filename='js/admincode.js') }}"></script>
+{% endblock admincode %}
 {% block extra_js %}{% endblock extra_js %}
 </body>
 </html>
