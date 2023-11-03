@@ -10,19 +10,23 @@
         <div class="model-manager flex-column flex-grow-1">
             <div class="item">
                 <div class="model-load">
-                    <label for="load-model-btn">
+                    <label for="" class="model-load-label">
                         加载模型
                     </label>
-                    <input type="checkbox" id="load-model-btn" style="display: none;">
-                    <div class="model-load-content" style="display: none;"></div>
+                    <div class="card model-load-content flex-column"></div>
                 </div>
             </div>
 
             <div class="item model-list flex-column">
-                <label for="">
+                <label for="" class="model-list-label">
                     模型列表
                 </label>
-                <div class="flex flex-wrap" id="model-data"></div>
+                <div class="flex-column flex-wrap" id="model-data">
+                    <div class="flex flex-wrap" id="VITS"></div>
+                    <div class="flex flex-wrap" id="HUBERT-VITS"></div>
+                    <div class="flex flex-wrap" id="W2V2-VITS"></div>
+                    <div class="flex flex-wrap" id="BERT-VITS2"></div>
+                </div>
             </div>
 
         </div>

@@ -1,8 +1,10 @@
 /*
 * 获取已加载模型信息
 * */
-$(document).ready(
-    get_models_info()
+$(document).ready(function () {
+        get_models_info();
+        get_model_to_load();
+    }
 );
 
 function get_models_info() {
@@ -19,13 +21,25 @@ function get_models_info() {
 }
 
 
-var modelData = $('#model-data');
+var modelTypes = {
+    'VITS': $('#VITS'),
+    'HUBERT-VITS': $('#HUBERT-VITS'),
+    'W2V2-VITS': $('#W2V2-VITS'),
+    'BERT-VITS2': $('#BERT-VITS2')
+};
+
 
 function show_model(model_list) {
+    for (var modelType in modelTypes) {
+        modelTypes[modelType].empty();
+        modelTypes[modelType].prev('label').remove();
+    }
+
     for (var model_type in model_list) {
         if (model_list[model_type].length > 0) {
             var model_datas = model_list[model_type];
             var label = $('<label></label>').text(model_type);
+            modelTypes[model_type].before(label);
 
             $.each(model_datas, function (key, model_data) {
                 renderModelCard(model_data, model_type);
@@ -39,67 +53,78 @@ function renderModelCard(model_data, model_type) {
     var model_path = String(model_data["model_path"]);
     var n_speakers = String(model_data["n_speakers"]);
 
-    var card = $('<div></div>').addClass("card " + model_type).attr({
+    var card = $('<div></div>').addClass("card model-card " + model_type).attr({
         "data-model-type": model_type,
         "data-model-id": id
     });
 
     var wrap = $('<div></div>').addClass("wrap");
 
-    $('<div></div>').text("id: " + id).appendTo(wrap);
-    $('<div></div>').text("path: " + model_path).appendTo(wrap);
-    $('<div></div>').text("n_speakers: " + n_speakers).appendTo(wrap);
+    // $('<div></div>').text("id: " + id).appendTo(wrap);
+    $('<div></div>').text(model_path).addClass("model-path").appendTo(wrap);
+    $('<div></div>').text("n_speakers: " + n_speakers).addClass("n-speakers").appendTo(wrap);
     $('<div></div>').text("x").addClass("unload-model").appendTo(wrap);
 
     card.append(wrap);
 
-    modelData.append(card);
+    modelTypes[model_type].append(card);
 }
 
 
 /*
 * 获取项目模型目录下的模型与配置文件路径
 * */
-var loadModelBtn = $('#load-model-btn');
 var modelLoadContent = $('.model-load-content');
+var isRequestInProgress = false;
 
-loadModelBtn.on('change', function () {
-    if (this.checked) {
-        $.get('/admin/get_path', function (response) {
-            var model_datas = response;
-            renderModelLoadCards(model_datas);
-        });
-    } else {
-        modelLoadContent.empty();
-    }
-});
+function get_model_to_load() {
+    $.get('/admin/get_path', function (response) {
+        var model_datas = response;
+        renderModelLoadCards(model_datas);
+    });
+}
 
 function renderModelLoadCards(data) {
     modelLoadContent.empty();
 
     $.each(data, function (index, model) {
-        var card = $('<div></div>').addClass('model-load-card');
+        var card = $('<div></div>').addClass('model-load-item flex');
         var model_id = model.model_id;
         var model_path = model.model_path;
         var config_path = model.config_path;
-        card.text(model_id + "|" + model_path + "|" + config_path);
+        var folder = model_path.split("/")[0];
+        var filename = model_path.split("/")[1];
+        var config = config_path.split("/")[1];
+
+        $('<div></div>').text(model_id.toString()).addClass("unload-model-id").appendTo(card);
+        $('<div></div>').text(folder).addClass("unload-model-folder").appendTo(card);
+        $('<div></div>').text(filename).addClass("unload-model-path").appendTo(card);
+        $('<div></div>').text(config).addClass("unload-model-config").appendTo(card);
+
+
+        // var formattedString = folder + " | " + filename + " | " + config_path;
+        // $('<div></div>').text(formattedString).addClass("unload-model-path").appendTo(card);
+        // card.text(formattedString);
         card.on('click', function () {
-            loadModel(model_path, config_path);
+            if (!isRequestInProgress) {
+                isRequestInProgress = true;
+                loadModel(card, model_path, config_path);
+            }
+
         });
 
         modelLoadContent.append(card);
     });
 
-    modelLoadContent.css('display', 'block');
 }
 
 
 /*
 * 加载模型
 * */
-function loadModel(modelPath, configPath) {
+function loadModel(card, modelPath, configPath) {
     var csrftoken = $('meta[name="csrf-token"]').attr('content');
-    
+
     $.ajax({
         url: '/admin/load_model',
         type: 'POST',
@@ -112,19 +137,17 @@ function loadModel(modelPath, configPath) {
             config_path: configPath
         }),
         success: function (response) {
-            modelData.empty();
+            card.fadeOut();
             get_models_info();
+            isRequestInProgress = false;
         },
         error: function (response) {
             alert("Unload model failed!");
+            isRequestInProgress = false;
         }
     });
 
-    // 关闭模型加载框
-    $('#load-model-btn').prop('checked', false);
-    $('.model-load-content').hide();
 }
-
 
 
 /*
@@ -150,7 +173,6 @@ $('#model-data').on('click', '.unload-model', function (event) {
             'X-CSRFToken': $('meta[name="csrf-token"]').attr('content')
         },
         success: function (response) {
-            modelData.empty();
             get_models_info();
         },
         error: function (response) {

@@ -78,9 +78,10 @@ class ModelManager(Subject):
         for model_path, config_path in model_list:
             self.load_model(model_path, config_path)
 
-        if getattr(config, "DIMENSIONAL_EMOTION_MODEL", None) is not None:
+        if config.model_config.get("dimensional_emotion_model", None) is not None:
             if self.dimensional_emotion_model is None:
-                self.dimensional_emotion_model = self.load_dimensional_emotion_model(config.DIMENSIONAL_EMOTION_MODEL)
+                self.dimensional_emotion_model = self.load_dimensional_emotion_model(
+                    config.model_list["dimensional_emotion_model"])
 
         self.log_device_info()
 
@@ -174,13 +175,13 @@ class ModelManager(Subject):
 
         if model_type == ModelType.W2V2_VITS:
             if self.emotion_reference is None:
-                self.emotion_reference = self.load_npy(config.DIMENSIONAL_EMOTION_NPY)
+                self.emotion_reference = self.load_npy(config["model_config"]["dimensional_emotion_model"])
             model_args.update({"emotion_reference": self.emotion_reference,
                                "dimensional_emotion_model": self.dimensional_emotion_model})
 
         if model_type == ModelType.HUBERT_VITS:
             if self.hubert is None:
-                self.hubert = self.load_hubert_model(config.HUBERT_SOFT_MODEL)
+                self.hubert = self.load_hubert_model(config["model_config"]["hubert_soft_model"])
             model_args.update({"hubert": self.hubert})
 
         model = model_class(**model_args)
@@ -218,6 +219,10 @@ class ModelManager(Subject):
 
     def load_model(self, model_path: str, config_path: str):
         try:
+            folder_path = os.path.join(config.ABS_PATH, 'Model')
+            model_path = model_path if os.path.isabs(model_path) else os.path.join(folder_path, model_path)
+            config_path = config_path if os.path.isabs(config_path) else os.path.join(folder_path, config_path)
+
             model_data = self._load_model_from_path(model_path, config_path)
             model_id = model_data["model_id"]
             sid2model = model_data["sid2model"]
@@ -317,16 +322,26 @@ class ModelManager(Subject):
             self.models.insert(new_index, model)
 
     def get_models_path(self):
+        """按返回模型路径列表"""
+        info = []
+
+        for models in self.models.values():
+            for values in models.values():
+                info.append(values[0])
+
+        return info
+
+    def get_models_path_by_type(self):
         """按模型类型返回模型路径"""
         info = {
-            ModelType.VITS: [],
-            ModelType.HUBERT_VITS: [],
-            ModelType.W2V2_VITS: [],
-            ModelType.BERT_VITS2: []
+            ModelType.VITS.value: [],
+            ModelType.HUBERT_VITS.value: [],
+            ModelType.W2V2_VITS.value: [],
+            ModelType.BERT_VITS2.value: []
         }
-
-        for model_type, model_data in self.models:
-            info[model_type].append(model_data[0])
+        for model_type, models in self.models.items():
+            for values in models.values():
+                info[model_type].append(values[0])
 
         return info
 
@@ -412,16 +427,36 @@ class ModelManager(Subject):
     def scan_path(self):
         folder_path = os.path.join(config.ABS_PATH, 'Model')
         pth_files = glob.glob(folder_path + "/**/*.pth", recursive=True)
-        paths = []
+        all_paths = []
+        unload_paths = []
+
+        loaded_paths = self.get_models_path()
 
         for id, pth_file in enumerate(pth_files):
             dir_name = os.path.dirname(pth_file)
             json_file = glob.glob(dir_name + "/*.json", recursive=True)[0]
-
-            paths.append({
+            relative_pth_path = os.path.relpath(pth_file, folder_path)
+            relative_pth_path = f"{os.path.dirname(relative_pth_path)}/{os.path.basename(relative_pth_path)}"
+            relative_json_path = os.path.relpath(json_file, folder_path)
+            relative_json_path = f"{os.path.dirname(relative_json_path)}/{os.path.basename(relative_json_path)}"
+            info = {
                 'model_id': id,
-                'model_path': pth_file,
-                'config_path': json_file
-            })
+                'model_path': relative_pth_path,
+                'config_path': relative_json_path
+            }
+            all_paths.append(info)
 
-        return paths
+            if not self.is_path_loaded(pth_file, loaded_paths):
+                unload_paths.append(info)
+
+        return unload_paths
+
+    def is_path_loaded(self, path, loaded_paths):
+        normalized_path = os.path.normpath(path)
+
+        for loaded_path in loaded_paths:
+            normalized_loaded_path = os.path.normpath(loaded_path)
+            if normalized_path == normalized_loaded_path:
+                return True
+
+        return False
