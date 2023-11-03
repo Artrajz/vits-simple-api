@@ -42,8 +42,7 @@ class BertHandler:
 
         }
         urls = DOWNLOAD_PATHS[bert_model_name]
-        target_path = os.path.join(self.bert_model_path[bert_model_name], "pytorch_model.bin"),
-
+        target_path = os.path.join(self.bert_model_path[bert_model_name], "pytorch_model.bin")
         if not os.path.exists(target_path):
             success, message = download_and_verify(urls, target_path, None)
             if not success:
