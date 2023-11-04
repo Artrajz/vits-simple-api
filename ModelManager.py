@@ -253,6 +253,10 @@ class ModelManager(Subject):
                     if key == model_id:
                         break
                     start += ns
+                    
+                if model_type == ModelType.BERT_VITS2:
+                    for bert_model_name in self.models[model_type][model_id][1].bert_model_names.values():
+                        self.bert_handler.release_bert(bert_model_name)
 
                 del self.sid2model[model_type][start:start + n_speakers]
                 del self.voice_speakers[model_type.value][start:start + n_speakers]
@@ -266,6 +270,7 @@ class ModelManager(Subject):
 
                 state = True
                 self.notify("model_unloaded", model_manager=self)
+                self.logger.info(f"Unloading success.")
         except Exception as e:
             self.logger.info(f"Unloading failed. {e}")
             state = False

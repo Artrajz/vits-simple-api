@@ -1,10 +1,11 @@
+import gc
 import logging
 import os
 
+import torch
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 
 from utils.config_manager import global_config as config
-from logger import logger
 from utils.download import download_file
 from .chinese_bert import get_bert_feature as zh_bert
 from .english_bert_mock import get_bert_feature as en_bert
@@ -53,7 +54,7 @@ class BertHandler:
                 "https://hf-mirror.com/microsoft/deberta-v3-large/resolve/main/spm.model",
             ],
         }
-        
+
         SHA256 = {
             "CHINESE_ROBERTA_WWM_EXT_LARGE": "4ac62d49144d770c5ca9a5d1d3039c4995665a080febe63198189857c6bd11cd",
             "BERT_BASE_JAPANESE_V3": "e172862e0674054d65e0ba40d67df2a4687982f589db44aa27091c386e5450a4",
@@ -70,9 +71,9 @@ class BertHandler:
         expected_sha256 = SHA256[bert_model_name]
         success, message = download_file(urls, target_path, expected_sha256=expected_sha256)
         if not success:
-            logger.error(f"Failed to download {bert_model_name}: {message}")
+            logging.error(f"Failed to download {bert_model_name}: {message}")
         else:
-            logger.info(f"{message}")
+            logging.info(f"{message}")
 
     def load_bert(self, bert_model_name, max_retries=3):
         if bert_model_name not in self.bert_models:
@@ -119,7 +120,9 @@ class BertHandler:
             if count == 0:
                 # 当引用计数为0时，删除模型并释放其资源
                 del self.bert_models[bert_model_name]
-                logger(f"Model {bert_model_name} has been released.")
+                gc.collect()
+                torch.cuda.empty_cache()
+                logging.info(f"BERT model {bert_model_name} has been released.")
             else:
                 tokenizer, model = self.bert_models[bert_model_name][:2]
                 self.bert_models[bert_model_name] = (tokenizer, model, count)

@@ -47,6 +47,12 @@ def load_checkpoint(checkpoint_path, model, optimizer=None, skip_optimizer=False
                 logger.error(f"{k} is not in the checkpoint")
                 logger.warning(
                     f"If you're using a transitional version, please add the \"version\": \"1.1.0-transition\" parameter within the \"data\" section of the model's config.json.")
+            elif "en_bert_proj" in k:
+                v = torch.zeros_like(v)
+                if version is None:
+                    logger.error(f"{k} is not in the checkpoint")
+                    logger.warning(
+                        f"If you're using an older version of the model, consider adding the \"version\" parameter to the model's config.json under the \"data\" section. For instance: \"legacy_version\": \"1.1.1\"")
             else:
                 logger.error(f"{k} is not in the checkpoint")
 
