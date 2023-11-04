@@ -30,6 +30,7 @@ num2words
 mecab-python3
 unidic-lite
 g2p_en
+sentencepiece==0.1.99
 
 # Machine Learning and Deep Learning
 torch
@@ -49,7 +50,7 @@ py7zr
 # Other utilities and dependencies
 MarkupSafe==2.1.2
 six==1.16.0
-protobuf
+protobuf==3.20.1
 tqdm
 PyYAML
 py-cpuinfo

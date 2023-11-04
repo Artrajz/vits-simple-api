@@ -4,7 +4,7 @@
 /cache/
 /upload/
 /vits/text/chinese_dialect_lexicons/
-/bert_vits2/bert/chinese-roberta-wwm-ext-large/pytorch_model.bin
-/bert_vits2/bert/bert-base-japanese-v3/pytorch_model.bin
 /vits/bert/prosody_model.pt
 config.yml
+**/pytorch_model.bin
+**/spm.model

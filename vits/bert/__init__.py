@@ -2,7 +2,7 @@
 import os
 
 from utils.config_manager import global_config as config
-from utils.download import download_and_verify
+from utils.download import download_file
 from .ProsodyModel import TTSProsody
 
 URLS = [
@@ -12,4 +12,4 @@ TARGET_PATH = os.path.join(config.ABS_PATH, "vits/bert/prosody_model.pt")
 EXPECTED_MD5 = None
 
 if not os.path.exists(TARGET_PATH):
-    success, message = download_and_verify(URLS, TARGET_PATH, EXPECTED_MD5)
+    success, message = download_file(URLS, TARGET_PATH, EXPECTED_MD5)

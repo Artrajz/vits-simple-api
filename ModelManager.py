@@ -2,6 +2,7 @@ import gc
 import glob
 import logging
 import os
+import traceback
 
 import cpuinfo
 import numpy as np
@@ -236,6 +237,7 @@ class ModelManager(Subject):
             state = True
         except Exception as e:
             self.logger.info(f"Loading failed. {e}")
+            self.logger.error(traceback.format_exc())
             state = False
         return state
 
