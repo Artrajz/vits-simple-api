@@ -32,9 +32,9 @@
 - [x] SSML语音合成标记语言（完善中...）
 
 
-## demo
+## 在线demo
 
-[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/Artrajz/vits-simple-api)
+[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/Artrajz/vits-simple-api) 感谢hugging face喵
 
 注意不同的id支持的语言可能有所不同。[speakers](https://artrajz-vits-simple-api.hf.space/voice/speakers)
 
@@ -49,161 +49,134 @@ https://user-images.githubusercontent.com/73542220/237995061-c1f25b4e-dd86-438a-
 
 # 部署
 
+有两种部署方式可供选择。不论你选择哪一种，完成部署后都需要导入模型才能使用。
+
 ## Docker部署（Linux推荐）
 
-### 镜像拉取脚本
+### 步骤1: 镜像拉取
 
-```
+运行以下命令以拉取 Docker 镜像，根据脚本中的提示选择需要下载的必要文件和拉取镜像：
+
+```bash
 bash -c "$(wget -O- https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/vits-simple-api-installer-latest.sh)"
 ```
 
-- 目前docker镜像支持的平台`linux/amd64,linux/arm64`（arm64仅有CPU版本）
-- 在拉取完成后，需要导入VITS模型才能使用，请根据以下步骤导入模型。
+项目配置文件以及模型文件夹的默认路径为`/usr/local/vits-simple-api/`
 
-### 下载VITS模型
+### 步骤2: 启动
 
-将模型放入`/usr/local/vits-simple-api/Model`
+运行以下命令启动容器：
 
-<details><summary>Folder structure</summary><pre><code>
-│  hubert-soft-0d54a1f4.pt
-│  model.onnx
-│  model.yaml
-├─g
-│      config.json
-│      G_953000.pth
-│
-├─louise
-│      360_epochs.pth
-│      config.json
-│
-├─Nene_Nanami_Rong_Tang
-│      1374_epochs.pth
-│      config.json
-│
-├─Zero_no_tsukaima
-│       1158_epochs.pth
-│       config.json
-│
-└─npy
-       25ecb3f6-f968-11ed-b094-e0d4e84af078.npy
-       all_emotions.npy
-</code></pre></details>
-
-
-
-### 修改模型路径
-
-Modify in  `/usr/local/vits-simple-api/config.py` 
-
-<details><summary>config.py</summary><pre><code>
-# 在此填写模型路径
-MODEL_LIST = [
-    # VITS
-    [ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/config.json"],
-    [ABS_PATH + "/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH + "/Model/Zero_no_tsukaima/config.json"],
-    [ABS_PATH + "/Model/g/G_953000.pth", ABS_PATH + "/Model/g/config.json"],
-    # HuBert-VITS (Need to configure HUBERT_SOFT_MODEL)
-    [ABS_PATH + "/Model/louise/360_epochs.pth", ABS_PATH + "/Model/louise/config.json"],
-    # W2V2-VITS (Need to configure DIMENSIONAL_EMOTION_NPY)
-    [ABS_PATH + "/Model/w2v2-vits/1026_epochs.pth", ABS_PATH + "/Model/w2v2-vits/config.json"],
-]
-# hubert-vits: hubert soft 编码器
-HUBERT_SOFT_MODEL = ABS_PATH + "/Model/hubert-soft-0d54a1f4.pt"
-# w2v2-vits: Dimensional emotion npy file
-# 加载单独的npy: ABS_PATH+"/all_emotions.npy
-# 加载多个npy: [ABS_PATH + "/emotions1.npy", ABS_PATH + "/emotions2.npy"]
-# 从文件夹里加载npy: ABS_PATH + "/Model/npy"
-DIMENSIONAL_EMOTION_NPY = ABS_PATH + "/Model/npy"
-# w2v2-vits: 需要在同一路径下有model.onnx和model.yaml
-DIMENSIONAL_EMOTION_MODEL = ABS_PATH + "/Model/model.yaml"
-</code></pre></details>
-
-
-
-### 启动
-
-`docker compose up -d`
-
-或者重新执行拉取脚本
+```bash
+docker-compose up -d
+```
 
 ### 镜像更新
 
-重新执行docker镜像拉取脚本即可
+运行以下命令更新镜像：
+
+```bash
+docker-compose pull
+```
+
+重新启动容器：
+
+```bash
+docker-compose up -d
+```
 
 ## 虚拟环境部署
 
-### Clone
+### 步骤1: 克隆项目
 
-`git clone https://github.com/Artrajz/vits-simple-api.git`
+使用以下命令克隆项目仓库：
 
-###  下载python依赖
-
-推荐使用python的虚拟环境
-
-`pip install -r requirements.txt`
-
-windows下可能安装不了fasttext,可以用以下命令安装，附[wheels下载地址](https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext)
-
-```
-# python3.10 win_amd64
-pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp310-cp310-win_amd64.whl
+```bash
+git clone https://github.com/Artrajz/vits-simple-api.git
 ```
 
-### 下载VITS模型
+### 步骤2: 下载 Python 依赖
 
-将模型放入 `/path/to/vits-simple-api/Model`
+推荐使用 Python 虚拟环境。运行以下命令安装项目所需的 Python 依赖：
 
-<details><summary>文件夹结构</summary><pre><code>
-├─g
-│      config.json
-│      G_953000.pth
-│
-├─louise
-│      360_epochs.pth
-│      config.json
-│      hubert-soft-0d54a1f4.pt
-│
-├─Nene_Nanami_Rong_Tang
-│      1374_epochs.pth
-│      config.json
-│
-└─Zero_no_tsukaima
-        1158_epochs.pth
-        config.json
-</code></pre></details>
+```bash
+pip install -r requirements.txt
+```
 
-### 修改模型路径
+### 步骤3: 启动
 
-在 `/path/to/vits-simple-api/config.py` 修改
+运行以下命令启动程序：
 
-<details><summary>config.py</summary><pre><code>
-# 在此填写模型路径
-MODEL_LIST = [
-    # VITS
-    [ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/config.json"],
-    [ABS_PATH + "/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH + "/Model/Zero_no_tsukaima/config.json"],
-    [ABS_PATH + "/Model/g/G_953000.pth", ABS_PATH + "/Model/g/config.json"],
-    # HuBert-VITS (Need to configure HUBERT_SOFT_MODEL)
-    [ABS_PATH + "/Model/louise/360_epochs.pth", ABS_PATH + "/Model/louise/config.json"],
-    # W2V2-VITS (Need to configure DIMENSIONAL_EMOTION_NPY)
-    [ABS_PATH + "/Model/w2v2-vits/1026_epochs.pth", ABS_PATH + "/Model/w2v2-vits/config.json"],
-]
-# hubert-vits: hubert soft 编码器
-HUBERT_SOFT_MODEL = ABS_PATH + "/Model/hubert-soft-0d54a1f4.pt"
-# w2v2-vits: Dimensional emotion npy file
-# 加载单独的npy: ABS_PATH+"/all_emotions.npy
-# 加载多个npy: [ABS_PATH + "/emotions1.npy", ABS_PATH + "/emotions2.npy"]
-# 从文件夹里加载npy: ABS_PATH + "/Model/npy"
-DIMENSIONAL_EMOTION_NPY = ABS_PATH + "/Model/npy"
-# w2v2-vits: 需要在同一路径下有model.onnx和model.yaml
-DIMENSIONAL_EMOTION_MODEL = ABS_PATH + "/Model/model.yaml"
-</code></pre></details>
+```bash
+python app.py
+```
 
+## Windows快速部署包
 
+### 步骤1：下载并解压部署包
 
-### 启动
+进入[releases页面](https://github.com/Artrajz/vits-simple-api/releases)下载并解压最新的部署包
 
-`python app.py`
+### 步骤2：启动
+
+运行start.bat启动程序
+
+## 模型加载
+
+### 步骤1: 下载 VITS 模型
+
+将 VITS 模型文件下载并放入 `Model` 目录。
+
+### 步骤2: 加载模型
+
+如果是首次启动，在 `config.py` 文件中修改默认模型路径的配置。（非必须）
+
+首次启动之后会生成一个config.yml配置文件，可以修改配置文件中的model_list或者在浏览器中进入管理员后台进行修改（暂未实现） 
+
+路径可填绝对路径或相对路径，相对路径则是从项目根目录中的Model文件夹开头。
+
+比如Model文件夹中如下文件有
+
+```
+├─model1
+│  │─G_1000.pth
+│  └─config.json
+└─model2
+   │─G_1000.pth
+   └─config.json
+```
+
+有多种可选的填法，按个人喜好选择
+
+填法1
+
+```yaml
+'model_config':
+  'model_list': 
+  - - model1/G_1000.pth
+    - model1/config.json
+  - - model2/G_1000.pth
+    - model2/config.json
+```
+
+填法2
+
+```yaml
+'model_config':
+  'model_list': 
+  - [model1/G_1000.pth, model1/config.json]
+  - [model2/G_1000.pth, model2/config.json]
+```
+
+填法3
+
+```yaml
+'model_config':
+  'model_list': [
+    [model1/G_1000.pth, model1/config.json],
+    [model2/G_1000.pth, model2/config.json],
+  ]
+```
 
 # GPU 加速
 
@@ -229,15 +202,55 @@ pip install torch==1.13.1+cu117 --extra-index-url https://download.pytorch.org/w
 
 ## Linux
 
-安装过程类似，但我没有相应的环境所以没办法测试
+安装过程类似，可以查阅网上的安装资料。也可以直接使用docker部署脚本中的gpu版本。
 
-# 依赖安装问题
+# 关闭管理员后台
+
+由于管理员后台可以对模型进行加载和卸载操作，虽然有登录验证的保障，为了绝对安全，当对公网开放时，可以在`config.yml`中关闭管理员后台：
+
+```yaml
+'IS_ADMIN_ENABLED': !!bool 'false'
+```
+
+# 常见问题
+## fasttext依赖安装问题
+
+windows下可能安装不了fasttext,可以用以下命令安装，附[wheels下载地址](https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext)
+
+```
+# python3.10 win_amd64
+pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp310-cp310-win_amd64.whl
+```
+
+或者
+
+```
+pip install fasttext -i https://pypi.artrajz.cn/simple
+```
+
+## pyopenjtalk依赖安装问题
 
 由于pypi.org没有pyopenjtalk的whl文件，通常需要从源代码来安装，这一过程对于一些人来说可能比较麻烦，所以你也可以使用我构建的whl来安装。
 
 ```
 pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 ```
+
+## Bert-VITS2版本兼容
+
+修改Bert-VITS2模型的config.json，加入版本号参数`"version": "x.x.x"`，比如模型版本为1.0.1时，配置文件应该写成：
+
+```
+{
+  "version": "1.0.1",
+  "train": {
+    "log_interval": 10,
+    "eval_interval": 100,
+    "seed": 52,
+    ...
+```
+
+
 
 # API
 
@@ -431,3 +444,7 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 - vits_chinese:https://github.com/PlayVoice/vits_chinese
 - Bert_VITS2:https://github.com/fishaudio/Bert-VITS2
 
+# 感谢所有的贡献者
+
+<a href="https://github.com/artrajz/vits-simple-ap/graphs/contributors" target="_blank">
+  <img src="https://contrib.rocks/image?repo=artrajz/vits-simple-api"/></a>

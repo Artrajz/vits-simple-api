@@ -32,9 +32,9 @@
 - [x] SSML (Speech Synthesis Markup Language) work in progress...
 
 
-## demo
+## Online Demo
 
-[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/Artrajz/vits-simple-api)
+[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/Artrajz/vits-simple-api) Thanks to Hugging Face!
 
 Please note that different IDs may support different languages.[speakers](https://artrajz-vits-simple-api.hf.space/voice/speakers)
 
@@ -45,177 +45,135 @@ Please note that different IDs may support different languages.[speakers](https:
 
 https://user-images.githubusercontent.com/73542220/237995061-c1f25b4e-dd86-438a-9363-4bb1fe65b425.mov
 
-# Deploy
+# Deployment
 
-## Docker(Recommended for Linux)
+There are two deployment options to choose from. Regardless of the option you select, you'll need to import the model after deployment to use the application.
 
-### Docker image pull script
+## Docker Deployment (Recommended for Linux)
 
-```
+### Step 1: Pull the Docker Image
+
+Run the following command to pull the Docker image. Follow the prompts in the script to choose the necessary files to download and pull the image:
+
+```bash
 bash -c "$(wget -O- https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/vits-simple-api-installer-latest.sh)"
 ```
 
-- The platforms currently supported by Docker images are `linux/amd64` and `linux/arm64`.(arm64 only has a CPU version)
-- After a successful pull, the vits model needs to be imported before use. Please follow the steps below to import the model.
+The default paths for project configuration files and model folders are `/usr/local/vits-simple-api/`.
 
-### Download  VITS model
+### Step 2: Start
 
-Put the model into `/usr/local/vits-simple-api/Model`
+Run the following command to start the container:
 
-<details><summary>Folder structure</summary><pre><code>
-│  hubert-soft-0d54a1f4.pt
-│  model.onnx
-│  model.yaml
-│
-├─g
-│      config.json
-│      G_953000.pth
-│
-├─louise
-│      360_epochs.pth
-│      config.json
-│
-├─Nene_Nanami_Rong_Tang
-│      1374_epochs.pth
-│      config.json
-│
-├─Zero_no_tsukaima
-│       1158_epochs.pth
-│       config.json
-│
-└─npy
-       25ecb3f6-f968-11ed-b094-e0d4e84af078.npy
-       all_emotions.npy
-</code></pre></details>
-
-
-
-
-
-### Modify model path
-
-Modify in  `/usr/local/vits-simple-api/config.py` 
-
-<details><summary>config.py</summary><pre><code>
-# Fill in the model path here
-MODEL_LIST = [
-    # VITS
-    [ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/config.json"],
-    [ABS_PATH + "/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH + "/Model/Zero_no_tsukaima/config.json"],
-    [ABS_PATH + "/Model/g/G_953000.pth", ABS_PATH + "/Model/g/config.json"],
-    # HuBert-VITS (Need to configure HUBERT_SOFT_MODEL)
-    [ABS_PATH + "/Model/louise/360_epochs.pth", ABS_PATH + "/Model/louise/config.json"],
-    # W2V2-VITS (Need to configure DIMENSIONAL_EMOTION_NPY)
-    [ABS_PATH + "/Model/w2v2-vits/1026_epochs.pth", ABS_PATH + "/Model/w2v2-vits/config.json"],
-]
-# hubert-vits: hubert soft model
-HUBERT_SOFT_MODEL = ABS_PATH + "/Model/hubert-soft-0d54a1f4.pt"
-# w2v2-vits: Dimensional emotion npy file
-# load single npy: ABS_PATH+"/all_emotions.npy
-# load mutiple npy: [ABS_PATH + "/emotions1.npy", ABS_PATH + "/emotions2.npy"]
-# load mutiple npy from folder: ABS_PATH + "/Model/npy"
-DIMENSIONAL_EMOTION_NPY = ABS_PATH + "/Model/npy"
-# w2v2-vits: Need to have both `model.onnx` and `model.yaml` files in the same path.
-DIMENSIONAL_EMOTION_MODEL = ABS_PATH + "/Model/model.yaml"
-</code></pre></details>
-
-
-
-
-
-### Startup
-
-`docker compose up -d`
-
-Or execute the pull script again
-
-### Image update 
-
-Run the docker image pull script again 
-
-## Virtual environment deployment
-
-### Clone
-
-`git clone https://github.com/Artrajz/vits-simple-api.git`
-
-###  Download python dependencies 
-
-A python virtual environment is recommended
-
-`pip install -r requirements.txt`
-
-Fasttext may not be installed on windows, you can install it with the following command,or download wheels [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext)
-
-```
-# python3.10 win_amd64
-pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp310-cp310-win_amd64.whl
+```bash
+docker-compose up -d
 ```
 
-### Download  VITS model 
+### Image Update
 
-Put the model into `/path/to/vits-simple-api/Model`
+To update the image, run the following commands:
 
-<details><summary>Folder structure</summary><pre><code>
-│  hubert-soft-0d54a1f4.pt
-│  model.onnx
-│  model.yaml
-│
-├─g
-│      config.json
-│      G_953000.pth
-│
-├─louise
-│      360_epochs.pth
-│      config.json
-│
-├─Nene_Nanami_Rong_Tang
-│      1374_epochs.pth
-│      config.json
-│
-├─Zero_no_tsukaima
-│       1158_epochs.pth
-│       config.json
-│
-└─npy
-       25ecb3f6-f968-11ed-b094-e0d4e84af078.npy
-       all_emotions.npy
-</code></pre></details>
+```bash
+docker-compose pull
+```
 
+Then, restart the container:
 
+```bash
+docker-compose up -d
+```
 
-### Modify model path
+## Virtual Environment Deployment
 
-Modify in  `/path/to/vits-simple-api/config.py` 
+### Step 1: Clone the Project
 
-<details><summary>config.py</summary><pre><code>
-# Fill in the model path here
-MODEL_LIST = [
-    # VITS
-    [ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/config.json"],
-    [ABS_PATH + "/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH + "/Model/Zero_no_tsukaima/config.json"],
-    [ABS_PATH + "/Model/g/G_953000.pth", ABS_PATH + "/Model/g/config.json"],
-    # HuBert-VITS (Need to configure HUBERT_SOFT_MODEL)
-    [ABS_PATH + "/Model/louise/360_epochs.pth", ABS_PATH + "/Model/louise/config.json"],
-    # W2V2-VITS (Need to configure DIMENSIONAL_EMOTION_NPY)
-    [ABS_PATH + "/Model/w2v2-vits/1026_epochs.pth", ABS_PATH + "/Model/w2v2-vits/config.json"],
-]
-# hubert-vits: hubert soft model
-HUBERT_SOFT_MODEL = ABS_PATH + "/Model/hubert-soft-0d54a1f4.pt"
-# w2v2-vits: Dimensional emotion npy file
-# load single npy: ABS_PATH+"/all_emotions.npy
-# load mutiple npy: [ABS_PATH + "/emotions1.npy", ABS_PATH + "/emotions2.npy"]
-# load mutiple npy from folder: ABS_PATH + "/Model/npy"
-DIMENSIONAL_EMOTION_NPY = ABS_PATH + "/Model/npy"
-# w2v2-vits: Need to have both `model.onnx` and `model.yaml` files in the same path.
-DIMENSIONAL_EMOTION_MODEL = ABS_PATH + "/Model/model.yaml"
-</code></pre></details>
+Clone the project repository using the following command:
 
+```bash
+git clone https://github.com/Artrajz/vits-simple-api.git
+```
 
+### Step 2: Install Python Dependencies
 
-### Startup
+It's recommended to use a Python virtual environment. Run the following command to install the required Python dependencies:
 
-`python app.py`
+```bash
+pip install -r requirements.txt
+```
+
+### Step 3: Start
+
+Run the following command to start the program:
+
+```bash
+python app.py
+```
+
+## Windows Quick Deployment Package
+
+### Step 1: Download and Extract the Deployment Package
+
+Go to the [releases page](https://github.com/Artrajz/vits-simple-api/releases) and download the latest deployment package. Extract the downloaded files.
+
+### Step 2: Start
+
+Run `start.bat` to launch the program.
+
+## Model Loading
+
+### Step 1: Download VITS Models
+Download the VITS model files and place them in the Model directory.
+
+### Step 2: Loading Models
+
+If you are starting for the first time, modify the default model path configuration in the config.py file (optional).
+
+After the first startup, a config.yml configuration file will be generated. You can either modify the model_list in the configuration file or make changes through the admin backend in the browser (not yet implemented).
+
+You can specify the model paths using either absolute or relative paths, where relative paths are considered from the Model folder in the project's root directory.
+
+For example, if the Model folder contains the following files:
+
+```
+├─model1
+│  │─G_1000.pth
+│  └─config.json
+└─model2
+   │─G_1000.pth
+   └─config.json
+```
+
+You have multiple options for specifying the paths based on your preference.
+
+Option 1:
+
+```
+'model_config':
+  'model_list': 
+  - - model1/G_1000.pth
+    - model1/config.json
+  - - model2/G_1000.pth
+    - model2/config.json
+```
+
+Option 2:
+
+```
+'model_config':
+  'model_list': 
+  - [model1/G_1000.pth, model1/config.json]
+  - [model2/G_1000.pth, model2/config.json]
+```
+
+Option 3:
+
+```
+'model_config':
+  'model_list': [
+    [model1/G_1000.pth, model1/config.json],
+    [model2/G_1000.pth, model2/config.json],
+  ]
+```
 
 # GPU accelerated
 
@@ -236,13 +194,58 @@ pip install torch==1.13.1+cu117 --extra-index-url https://download.pytorch.org/w
 ## Linux
 The installation process is similar, but I don't have the environment to test it.
 
-# Dependency Installation Issues
+# Disable the Admin Backend
 
-Since pypi.org does not have the `pyopenjtalk` whl file, it usually needs to be installed from the source code. This process might be troublesome for some people. Therefore, you can also use the whl I built for installation.
+The admin backend allows loading and unloading models, and while it has login authentication, for added security, you can disable the admin backend in the `config.yml`:
 
+```yaml
+'IS_ADMIN_ENABLED': !!bool 'false'
 ```
+
+This extra measure helps ensure absolute security when making the admin backend inaccessible to the public network.
+
+# Frequently Asked Questions
+
+## Installation Issues with fastText Dependency
+
+Fasttext may not be installed on windows, you can install it with the following command,or download wheels [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext)
+
+```bash
+# For Python 3.10 on win_amd64
+pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp310-cp310-win_amd64.whl
+```
+
+or
+
+```bash
+pip install fasttext -i https://pypi.artrajz.cn/simple
+```
+
+## Installation Issues with pyopenjtalk Dependency
+
+Since pypi.org does not provide a wheel file for pyopenjtalk, you often need to install it from the source code. This process might be cumbersome for some users, so you can also install it using a pre-built wheel as follows:
+
+```bash
 pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 ```
+
+
+
+## Bert-VITS2 Version Compatibility
+
+To ensure compatibility with the Bert-VITS2 model, modify the config.json file by adding a version parameter "version": "x.x.x". For instance, if the model version is 1.0.1, the configuration file should be written as:
+
+```json
+{
+  "version": "1.0.1",
+  "train": {
+    "log_interval": 10,
+    "eval_interval": 100,
+    "seed": 52,
+    ...
+```
+
+​    
 
 # API
 
@@ -434,3 +437,7 @@ Learning and communication,now there is only Chinese [QQ group](https://qm.qq.co
 - vits_chinese:https://github.com/PlayVoice/vits_chinese
 - Bert_VITS2:https://github.com/fishaudio/Bert-VITS2
 
+# Thank You to All Contributors
+
+<a href="https://github.com/artrajz/vits-simple-ap/graphs/contributors" target="_blank">
+  <img src="https://contrib.rocks/image?repo=artrajz/vits-simple-api"/></a>
