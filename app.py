@@ -14,20 +14,21 @@ app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), 't
 app.config.from_pyfile("config.py")
 app.config.update(global_config)
 
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'auth.login'
-
-csrf = CSRFProtect(app)
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    users = app.config["users"]["admin"]
-    for user in users.values():
-        if user.get_id() == user_id:
-            return user
-    return None
+if app.config.get("IS_ADMIN_ENABLED", False):
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'
+    
+    csrf = CSRFProtect(app)
+    
+    
+    @login_manager.user_loader
+    def load_user(user_id):
+        users = app.config["users"]["admin"]
+        for user in users.values():
+            if user.get_id() == user_id:
+                return user
+        return None
 
 
 # Initialize scheduler
@@ -38,8 +39,10 @@ if app.config.get("CLEAN_INTERVAL_SECONDS", 3600) > 0:
 
 app.register_blueprint(frontend, url_prefix='/')
 app.register_blueprint(voice_api, url_prefix='/voice')
-app.register_blueprint(auth, url_prefix='/')
-app.register_blueprint(admin, url_prefix='/admin')
+if app.config.get("IS_ADMIN_ENABLED", False):
+    app.register_blueprint(auth, url_prefix=app.config.get("ADMIN_ROUTE", "/admin"))
+    app.register_blueprint(admin, url_prefix=app.config.get("ADMIN_ROUTE", "/admin"))
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=app.config.get("PORT", 23456), debug=app.config.get("DEBUG", False))

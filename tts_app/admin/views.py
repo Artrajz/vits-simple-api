@@ -13,6 +13,11 @@ admin = Blueprint('admin', __name__)
 def home():
     return render_template('pages/home.html')
 
+@admin.route('/setting')
+@login_required
+def setting():
+    return render_template('pages/setting.html')
+
 
 @admin.route('/get_models_info', methods=["GET", "POST"])
 @login_required

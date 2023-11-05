@@ -8,19 +8,24 @@
 
     <ul class="flex-column sidebar-nav">
         <li class="item">
-            <a href="/admin" class="link">
+            <a href="{{ url_for('admin.home') }}" class="link">
                 模型管理
             </a>
         </li>
         <li class="item">
-            <a href="/dashboard" class="link">
-                仪表盘
+            <a href="{{ url_for('admin.setting') }}" class="link">
+                配置设置
             </a>
         </li>
+{#        <li class="item">#}
+{#            <a href="{{ url_for('admin.dashboard') }}" class="link">#}
+{#                仪表盘#}
+{#            </a>#}
+{#        </li>#}
     </ul>
     
     <div class="sidebar-logout">
-        <a href="/logout" class="logout link">
+        <a href="{{ url_for('auth.logout') }}" class="logout link">
             Logout
         </a>
     </div>
