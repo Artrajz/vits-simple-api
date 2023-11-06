@@ -27,12 +27,14 @@ class Bert_VITS2:
         self.bert_model_names = {"zh": "CHINESE_ROBERTA_WWM_EXT_LARGE"}
         self.ja_bert_dim = 1024
         self.ja_extra_str = ""
+        self.num_tones = num_tones
 
         if self.version in ["1.0", "1.0.0", "1.0.1"]:
             self.symbols = symbols_legacy
             self.hps_ms.model.n_layers_trans_flow = 3
             self.lang = ["zh"]
             self.ja_bert_dim = 768
+            self.num_tones = num_tones_v111
 
         elif self.version in ["1.1.0-transition"]:
             self.hps_ms.model.n_layers_trans_flow = 3
@@ -40,6 +42,7 @@ class Bert_VITS2:
             self.bert_model_names["ja"] = "BERT_BASE_JAPANESE_V3"
             self.ja_bert_dim = 768
             self.ja_extra_str = "_v111"
+            self.num_tones = num_tones_v111
 
         elif self.version in ["1.1", "1.1.0", "1.1.1"]:
             self.hps_ms.model.n_layers_trans_flow = 6
@@ -47,12 +50,15 @@ class Bert_VITS2:
             self.bert_model_names["ja"] = "BERT_BASE_JAPANESE_V3"
             self.ja_bert_dim = 768
             self.ja_extra_str = "_v111"
+            self.num_tones = num_tones_v111
 
         elif self.version in ["2.0", "2.0.0"]:
             self.hps_ms.model.n_layers_trans_flow = 4
             self.bert_model_names = {"zh": "CHINESE_ROBERTA_WWM_EXT_LARGE",
                                      "ja": "DEBERTA_V2_LARGE_JAPANESE",
                                      "en": "DEBERTA_V3_LARGE"}
+            self.num_tones = num_tones
+            
 
         # self.bert_handler = BertHandler(self.lang)
 
@@ -69,6 +75,7 @@ class Bert_VITS2:
             n_speakers=self.hps_ms.data.n_speakers,
             symbols=self.symbols,
             ja_bert_dim=self.ja_bert_dim,
+            num_tones=self.num_tones,
             **self.hps_ms.model).to(self.device)
         _ = self.net_g.eval()
         bert_vits2_utils.load_checkpoint(self.model_path, self.net_g, None, skip_optimizer=True, version=self.version)

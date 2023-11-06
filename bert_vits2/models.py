@@ -11,7 +11,7 @@ from torch.nn import Conv1d, ConvTranspose1d, AvgPool1d, Conv2d
 from torch.nn.utils import weight_norm, remove_weight_norm, spectral_norm
 
 from bert_vits2.commons import init_weights, get_padding
-from bert_vits2.text import num_tones, num_languages
+from bert_vits2.text import num_languages
 
 
 class DurationDiscriminator(nn.Module):  # vits2
@@ -258,7 +258,8 @@ class TextEncoder(nn.Module):
                  p_dropout,
                  gin_channels=0,
                  symbols=None,
-                 ja_bert_dim=1024):
+                 ja_bert_dim=1024,
+                 num_tones=None):
         super().__init__()
         self.n_vocab = n_vocab
         self.out_channels = out_channels
@@ -601,6 +602,7 @@ class SynthesizerTrn(nn.Module):
                  use_transformer_flow=True,
                  symbols=None,
                  ja_bert_dim=1024,
+                 num_tones=None,
                  **kwargs):
 
         super().__init__()
@@ -641,7 +643,8 @@ class SynthesizerTrn(nn.Module):
                                  p_dropout,
                                  gin_channels=self.enc_gin_channels,
                                  symbols=symbols,
-                                 ja_bert_dim=ja_bert_dim
+                                 ja_bert_dim=ja_bert_dim,
+                                 num_tones=num_tones
                                  )
         self.dec = Generator(inter_channels, resblock, resblock_kernel_sizes, resblock_dilation_sizes, upsample_rates,
                              upsample_initial_channel, upsample_kernel_sizes, gin_channels=gin_channels)

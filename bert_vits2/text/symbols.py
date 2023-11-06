@@ -120,7 +120,8 @@ ja_symbols = [
     "z",
     "zy",
 ]
-num_ja_tones = 1
+num_ja_tones_v111 = 1
+num_ja_tones = 2
 
 # English
 en_symbols = [
@@ -176,11 +177,18 @@ symbols_legacy = [pad] + normal_symbols_legacy + pu_symbols
 sil_phonemes_ids_legacy = [symbols_legacy.index(i) for i in pu_symbols]
 
 # combine all tones
+num_tones_v111 = num_zh_tones + num_ja_tones_v111 + num_en_tones
 num_tones = num_zh_tones + num_ja_tones + num_en_tones
 
 # language maps
 language_id_map = {"zh": 0, "ja": 1, "en": 2}
 num_languages = len(language_id_map.keys())
+
+language_tone_start_map_v111 = {
+    "zh": 0,
+    "ja": num_zh_tones,
+    "en": num_zh_tones + num_ja_tones_v111,
+}
 
 language_tone_start_map = {
     "zh": 0,
