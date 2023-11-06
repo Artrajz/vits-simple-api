@@ -1,9 +1,18 @@
 {% extends 'layouts/admin_base.html' %}
 {% block extrastyle %}
-{#    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/home.css') }}">#}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/setting.css') }}">
 {% endblock extrastyle %}
 
 {% block title %}Setting{% endblock title %}
 
 {% block content %}
+    <div class="setting-content flex-column flex-grow-1">
+        <div class="configuration flex-column flex-grow-1"></div>
+        <div class="config-save">save</div>
+
+    </div>
 {% endblock %}
+
+{% block extra_js %}
+    <script src="{{ url_for('static', filename='js/settingcode.js') }}"></script>
+{% endblock extra_js %}

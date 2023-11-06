@@ -1,9 +1,12 @@
 import logging
+from copy import deepcopy
 
 from flask import Blueprint, request, render_template, make_response, jsonify
 from flask_login import login_required
 
+from tts_app.auth.models import user2str
 from tts_app.model_manager import model_manager
+from utils.config_manager import global_config
 
 admin = Blueprint('admin', __name__)
 
@@ -12,6 +15,7 @@ admin = Blueprint('admin', __name__)
 @login_required
 def home():
     return render_template('pages/home.html')
+
 
 @admin.route('/setting')
 @login_required
@@ -74,3 +78,14 @@ def unload_model():
 @login_required
 def get_path():
     return model_manager.scan_path()
+
+
+@admin.route('/get_config', methods=["GET", "POST"])
+@login_required
+def get_config():
+    dict_data = deepcopy(dict(global_config))
+    dict_data["DEVICE"] = str(dict_data["DEVICE"])
+
+    dict_data = user2str(dict_data)
+
+    return jsonify(dict_data)

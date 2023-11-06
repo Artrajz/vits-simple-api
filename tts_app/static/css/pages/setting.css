@@ -1,0 +1,82 @@
+.setting-content {
+    background-color: #e3fde3;
+    border-radius: 8px;
+    overflow-y: auto;
+
+}
+
+.configuration {
+    margin: 20px;
+}
+
+.config-save {
+    width: min-content;
+    margin: 20px;
+    padding: 4px;
+    border-radius: 5px;
+    color: white;
+    background-color: #673ab7;
+    cursor: pointer;
+}
+
+.config-save:hover {
+    background-color: gainsboro;
+}
+
+.config-item1 {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.config-item1 * {
+    margin-bottom: 10px;
+}
+
+.config-item2 {
+    display: flex;
+    /*flex-direction: column;*/
+    margin-bottom: 5px;
+}
+
+.config-item2 * {
+    margin-bottom: 5px;
+}
+
+.model-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.model-data .model-label {
+    width: 50px;
+}
+
+.config-item2 {
+    margin-left: 10px;
+}
+
+.config-item3 {
+    margin-left: 20px;
+}
+
+.config-item4 {
+    margin-left: 30px;
+}
+
+.config-item2 .config-value {
+    width: 500px;
+}
+
+.model-data .model {
+    width: 500px;
+}
+
+.model-data .config {
+    width: 500px;
+}
+
+.config-item4 .config-key {
+    width: 100px;
+}
+
