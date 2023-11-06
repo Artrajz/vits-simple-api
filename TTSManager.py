@@ -343,15 +343,21 @@ class TTSManager(Observer):
         state["id"] = self.get_real_id(model_type=ModelType.BERT_VITS2, id=state["id"])
         sampling_rate = model.sampling_rate
 
-        if state["lang"] == "auto":
-            state["lang"] = classify_language(state["text"], target_languages=model.lang)
+        # if state["lang"] == "auto":
+        # state["lang"] = classify_language(state["text"], target_languages=model.lang)
 
-        sentences_list = cut(state["text"], state["max"])
+        sentences_list = sentence_split_and_markup(state["text"], state["max"], state["lang"], state["speaker_lang"])
         audios = []
-        for sentence in sentences_list:
-            audio = model.infer(sentence, state["id"], state["lang"], state["sdp_ratio"], state["noise"],
-                                state["noise"], state["length"])
-            audios.append(audio)
-        audio = np.concatenate(audios)
 
-        return self.encode(sampling_rate, audio, state["format"]) if encode else audio
+        pattern = r'\[(ZH|JA|EN)\](.*?)\[(ZH|JA|EN)\]'
+        for sentence in sentences_list:
+            matches = re.findall(pattern, sentence)
+            for match in matches:
+                language = match[0].lower()
+                text = match[1]
+                audio = model.infer(text, state["id"], language, state["sdp_ratio"], state["noise"],
+                                    state["noise"], state["length"])
+                audios.append(audio)
+            audio = np.concatenate(audios)
+
+            return self.encode(sampling_rate, audio, state["format"]) if encode else audio
