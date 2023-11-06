@@ -1,9 +1,10 @@
-from bert_vits2.text import chinese, japanese, english, cleaned_text_to_sequence
+from bert_vits2.text import chinese, japanese, english, cleaned_text_to_sequence, japanese_v111
 
 language_module_map = {
     'zh': chinese,
     'ja': japanese,
-    'en': english
+    'en': english,
+    'ja_v111': japanese_v111
 }
 
 

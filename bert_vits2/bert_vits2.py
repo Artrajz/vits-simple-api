@@ -26,6 +26,7 @@ class Bert_VITS2:
 
         self.bert_model_names = {"zh": "CHINESE_ROBERTA_WWM_EXT_LARGE"}
         self.ja_bert_dim = 1024
+        self.ja_extra_str = ""
 
         if self.version in ["1.0", "1.0.0", "1.0.1"]:
             self.symbols = symbols_legacy
@@ -38,14 +39,17 @@ class Bert_VITS2:
             self.lang = ["zh", "ja"]
             self.bert_model_names["ja"] = "BERT_BASE_JAPANESE_V3"
             self.ja_bert_dim = 768
+            self.ja_extra_str = "_v111"
 
         elif self.version in ["1.1", "1.1.0", "1.1.1"]:
             self.hps_ms.model.n_layers_trans_flow = 6
             self.lang = ["zh", "ja"]
             self.bert_model_names["ja"] = "BERT_BASE_JAPANESE_V3"
             self.ja_bert_dim = 768
+            self.ja_extra_str = "_v111"
 
         elif self.version in ["2.0", "2.0.0"]:
+            self.hps_ms.model.n_layers_trans_flow = 4
             self.bert_model_names = {"zh": "CHINESE_ROBERTA_WWM_EXT_LARGE",
                                      "ja": "DEBERTA_V2_LARGE_JAPANESE",
                                      "en": "DEBERTA_V3_LARGE"}
@@ -74,7 +78,10 @@ class Bert_VITS2:
 
     def get_text(self, text, language_str, hps):
         tokenizer, _ = self.bert_handler.get_bert_model(self.bert_model_names[language_str])
-        norm_text, phone, tone, word2ph = clean_text(text, language_str, tokenizer)
+        clean_bert_lang_str = language_str
+        if language_str == 'ja':
+            clean_bert_lang_str += self.ja_extra_str
+        norm_text, phone, tone, word2ph = clean_text(text, clean_bert_lang_str, tokenizer)
 
         phone, tone, language = cleaned_text_to_sequence(phone, tone, language_str, self._symbol_to_id)
 
@@ -86,7 +93,8 @@ class Bert_VITS2:
                 word2ph[i] = word2ph[i] * 2
             word2ph[0] += 1
 
-        bert = self.bert_handler.get_bert_feature(norm_text, word2ph, language_str, self.bert_model_names[language_str])
+        bert = self.bert_handler.get_bert_feature(norm_text, word2ph, clean_bert_lang_str,
+                                                  self.bert_model_names[language_str])
         del word2ph
         assert bert.shape[-1] == len(phone), phone
 
@@ -100,7 +108,7 @@ class Bert_VITS2:
             en_bert = torch.zeros(1024, len(phone))
         elif language_str == "en":
             zh_bert = torch.zeros(1024, len(phone))
-            ja_bert = torch.zeros(1024, len(phone))
+            ja_bert = torch.zeros(self.ja_bert_dim, len(phone))
             en_bert = bert
         else:
             zh_bert = torch.zeros(1024, len(phone))
@@ -113,7 +121,6 @@ class Bert_VITS2:
         tone = torch.LongTensor(tone)
         language = torch.LongTensor(language)
         return zh_bert, ja_bert, en_bert, phone, tone, language
-    
 
     def infer(self, text, id, lang, sdp_ratio, noise, noisew, length, **kwargs):
         zh_bert, ja_bert, en_bert, phones, tones, lang_ids = self.get_text(text, lang, self.hps_ms)
@@ -126,7 +133,8 @@ class Bert_VITS2:
             en_bert = en_bert.to(self.device).unsqueeze(0)
             x_tst_lengths = torch.LongTensor([phones.size(0)]).to(self.device)
             speakers = torch.LongTensor([int(id)]).to(self.device)
-            audio = self.net_g.infer(x_tst, x_tst_lengths, speakers, tones, lang_ids, zh_bert, ja_bert,en_bert, sdp_ratio=sdp_ratio
+            audio = self.net_g.infer(x_tst, x_tst_lengths, speakers, tones, lang_ids, zh_bert, ja_bert, en_bert,
+                                     sdp_ratio=sdp_ratio
                                      , noise_scale=noise, noise_scale_w=noisew, length_scale=length)[
                 0][0, 0].data.cpu().float().numpy()
 

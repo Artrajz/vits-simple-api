@@ -31,6 +31,7 @@ mecab-python3
 unidic-lite
 g2p_en
 sentencepiece==0.1.99
+jaconv
 
 # Machine Learning and Deep Learning
 torch

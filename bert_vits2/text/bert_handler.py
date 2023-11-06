@@ -10,6 +10,7 @@ from utils.download import download_file
 from .chinese_bert import get_bert_feature as zh_bert
 from .english_bert_mock import get_bert_feature as en_bert
 from .japanese_bert import get_bert_feature as ja_bert
+from .japanese_bert_v111 import get_bert_feature as ja_bert_v111
 
 
 class BertHandler:
@@ -22,7 +23,7 @@ class BertHandler:
             "DEBERTA_V2_LARGE_JAPANESE": os.path.join(config.ABS_PATH, "bert_vits2/bert/deberta-v2-large-japanese"),
             "DEBERTA_V3_LARGE": os.path.join(config.ABS_PATH, "bert_vits2/bert/deberta-v3-large")
         }
-        self.lang_bert_func_map = {"zh": zh_bert, "en": en_bert, "ja": ja_bert}
+        self.lang_bert_func_map = {"zh": zh_bert, "en": en_bert, "ja": ja_bert, "ja_v111": ja_bert_v111}
 
         self.bert_models = {}  # Value: (tokenizer, model, reference_count)
         self.device = device
