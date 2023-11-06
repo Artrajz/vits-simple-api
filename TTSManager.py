@@ -11,8 +11,7 @@ from scipy.signal import resample_poly
 
 from logger import logger
 from observer import Observer
-from utils import classify_language
-from utils.sentence import sentence_split_and_markup, cut
+from utils.sentence import sentence_split_and_markup, split_by_language, sentence_split
 
 
 class TTSManager(Observer):
@@ -346,18 +345,15 @@ class TTSManager(Observer):
         # if state["lang"] == "auto":
         # state["lang"] = classify_language(state["text"], target_languages=model.lang)
 
-        sentences_list = sentence_split_and_markup(state["text"], state["max"], state["lang"], state["speaker_lang"])
+        sentences_list = split_by_language(state["text"], state["speaker_lang"])
         audios = []
 
-        pattern = r'\[(ZH|JA|EN)\](.*?)\[(ZH|JA|EN)\]'
-        for sentence in sentences_list:
-            matches = re.findall(pattern, sentence)
-            for match in matches:
-                language = match[0].lower()
-                text = match[1]
-                audio = model.infer(text, state["id"], language, state["sdp_ratio"], state["noise"],
+        for (text, lang) in sentences_list:
+            sentences = sentence_split(text, state["max"])
+            for sentence in sentences:
+                audio = model.infer(sentence, state["id"], lang, state["sdp_ratio"], state["noise"],
                                     state["noise"], state["length"])
                 audios.append(audio)
-            audio = np.concatenate(audios)
+        audio = np.concatenate(audios)
 
-            return self.encode(sampling_rate, audio, state["format"]) if encode else audio
+        return self.encode(sampling_rate, audio, state["format"]) if encode else audio
