@@ -7,9 +7,127 @@
 
 {% block content %}
     <div class="setting-content flex-column flex-grow-1">
-        <div class="configuration flex-column flex-grow-1"></div>
-        <div class="config-save">save</div>
+        <div class="configuration flex-column flex-grow-1">
+            <label for="" class="form-label">默认参数配置</label>
+            <div class="flex" id="default-parameter">
+                <div class="input-group mb-3 item">
+                    <span class="input-group-text">format</span>
+                    <input type="text" class="form-control" id="format">
+                </div>
+                <div class="input-group mb-3 item">
+                    <span class="input-group-text">id</span>
+                    <input type="text" class="form-control" id="id">
+                </div>
+                <div class="input-group mb-3 item">
+                    <span class="input-group-text">lang</span>
+                    <input type="text" class="form-control" id="lang">
+                </div>
+                <div class="input-group mb-3 item">
+                    <span class="input-group-text">length</span>
+                    <input type="text" class="form-control" id="length">
+                </div>
+                <div class="input-group mb-3 item">
+                    <span class="input-group-text">max</span>
+                    <input type="text" class="form-control" id="max">
+                </div>
+                <div class="input-group mb-3 item">
+                    <span class="input-group-text">noise</span>
+                    <input type="text" class="form-control" id="noise">
+                </div>
+                <div class="input-group mb-3 item">
+                    <span class="input-group-text">noisew</span>
+                    <input type="text" class="form-control" id="noisew">
+                </div>
+                <div class="input-group mb-3 item">
+                    <span class="input-group-text">sdp_ratio</span>
+                    <input type="text" class="form-control" id="sdp_ratio">
+                </div>
+            </div>
 
+            <label for="" class="form-label">默认模型配置</label>
+            <div class="model-config flex-column">
+                <div class="input-group mb-3 item">
+                    <span class="input-group-text">dimensional_emotion_npy</span>
+                    <input type="text" class="form-control" id="dimensional_emotion_npy">
+                </div>
+                <div class="input-group mb-3 item">
+                    <span class="input-group-text">hubert_soft_model</span>
+                    <input type="text" class="form-control" id="hubert_soft_model">
+                </div>
+                <label for="" class="form-label">默认模型列表</label>
+                <div id="addModelRow">添加默认模型</div>
+                <div class="model-list">
+                </div>
+            </div>
+
+            <label for="" class="form-label">日志配置</label>
+            <div class="" id="others">
+                <div class="input-group mb-3 item">
+                    <span class="input-group-text">日志级别</span>
+                    <input type="text" class="form-control" id="logging-level">
+                </div>
+                <div class="input-group mb-3 item">
+                    <span class="input-group-text">保存日志数量</span>
+                    <input type="text" class="form-control" id="log-backupcount">
+                </div>
+                <div class="input-group mb-3 item">
+                    <span class="input-group-text">日志路径</span>
+                    <input type="text" class="form-control" id="logs-path">
+                </div>
+
+            </div>
+
+            <label for="" class="form-label">语种识别</label>
+            <div class="" id="others">
+                <div class="input-group mb-3 item">
+                    <span class="input-group-text">语种识别库</span>
+                    <input type="text" class="form-control" id="lang-lib">
+                </div>
+                <div class="input-group mb-3 item">
+                    <span class="input-group-text">espeak-ng路径（选填）</span>
+                    <input type="text" class="form-control" id="espeak-ng">
+                </div>
+                <div class="input-group mb-3 item">
+                    <span class="input-group-text">语种识别范围（示例['zh','ja','en']）</span>
+                    <input type="text" class="form-control" id="detect">
+                </div>
+            </div>
+
+{#            <label for="" class="form-label">其他配置</label>#}
+{#            <div class="" id="others">#}
+{#                #}
+{##}
+{#            </div>#}
+
+            <label for="">安全</label>
+            <div id="security">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+                    <label class="form-check-label" for="flexSwitchCheckDefault">是否开启api-key验证</label>
+                </div>
+                <div class="input-group mb-3 item">
+                    <span class="input-group-text">api-key</span>
+                    <input type="text" class="form-control" type="text" id="api-key">
+                </div>
+                <label for="">管理员后台账号密码</label>
+                <div id="admin">
+                    <div class="input-group mb-3 item">
+                        <span class="input-group-text">username</span>
+                        <input type="text" class="form-control" type="text" id="username">
+                    </div>
+                    <div class="input-group mb-3 item">
+                        <span class="input-group-text">password</span>
+                        <input type="text" class="form-control" type="password" id="password">
+                    </div>
+
+                </div>
+
+
+                </input>
+
+            </div>
+            <div class="config-save">全部保存</div>
+        </div>
     </div>
 {% endblock %}
 

@@ -1,11 +1,14 @@
+import json
 import logging
 from copy import deepcopy
 
+import torch
 from flask import Blueprint, request, render_template, make_response, jsonify
 from flask_login import login_required
 
-from tts_app.auth.models import user2str
+from tts_app.auth.models import user2str, str2user
 from tts_app.model_manager import model_manager
+from utils import config_manager
 from utils.config_manager import global_config
 
 admin = Blueprint('admin', __name__)
@@ -89,3 +92,27 @@ def get_config():
     dict_data = user2str(dict_data)
 
     return jsonify(dict_data)
+
+
+@admin.route('/set_config', methods=["GET", "POST"])
+@login_required
+def set_config():
+    if request.method == "POST":
+        content_type = request.headers.get('Content-Type')
+        if content_type == 'application/json':
+            request_data = request.get_json()
+        else:
+            request_data = request.form
+
+    print(type(request_data))
+    dict_data = dict(request_data)
+    print(dict_data)
+    # dict_data["DEVICE"] = torch.device(dict_data["DEVICE"])
+    if dict_data.get("users", None) is not None:
+        dict_data = str2user(dict_data)
+    print(global_config)
+    global_config.update(dict_data)
+    config_manager.save_yaml_config(global_config)
+
+    status = "success"
+    return make_response(jsonify({"status": status}), 200)

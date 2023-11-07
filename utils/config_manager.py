@@ -72,7 +72,7 @@ def load_yaml_config(filename):
     return Config(yaml_config)
 
 
-def save_yaml_config(filename, data):
+def save_yaml_config(data, filename=YAML_CONFIG_FILE):
     temp_filename = filename + '.tmp'
     try:
         dict_data = dict(data)
@@ -124,19 +124,19 @@ def init_config():
             else:
                 global_config[key] = value
         logging.info("config.yml not found. Generating a new config.yml based on config.py.")
-        save_yaml_config(YAML_CONFIG_FILE, global_config)
+        save_yaml_config(global_config, YAML_CONFIG_FILE)
 
     if check_is_none(global_config.SECRET_KEY):
         secret_key = generate_secret_key()
         global_config["SECRET_KEY"] = secret_key
         logging.info(f"SECRET_KEY is not found or is None. Generating a new SECRET_KEY:{secret_key}")
-        save_yaml_config(YAML_CONFIG_FILE, global_config)
+        save_yaml_config(global_config, YAML_CONFIG_FILE)
 
     if check_is_none(global_config.API_KEY):
         secret_key = generate_secret_key()
         global_config["API_KEY"] = secret_key
         logging.info(f"API_KEY is not found or is None. Generating a new API_KEY:{secret_key}")
-        save_yaml_config(YAML_CONFIG_FILE, global_config)
+        save_yaml_config(global_config, YAML_CONFIG_FILE)
 
     if getattr(global_config, "users") is None:
         random_username = generate_random_username()
@@ -150,7 +150,7 @@ def init_config():
             f"Please do not share this information.")
         global_config["users"] = {}
         global_config["users"]["admin"] = {f"{random_username}": User(1, random_username, random_password)}
-        save_yaml_config(YAML_CONFIG_FILE, global_config)
+        save_yaml_config(global_config, YAML_CONFIG_FILE)
 
     return global_config
 
