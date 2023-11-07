@@ -149,7 +149,7 @@ def init_config():
             f"{'-' * 40}\n"
             f"Please do not share this information.")
         global_config["users"] = {}
-        global_config["users"]["admin"] = {f"{random_username}": User(1, random_username, random_password)}
+        global_config["users"]["admin"] = {f"admin": User(1, random_username, random_password)}
         save_yaml_config(global_config, YAML_CONFIG_FILE)
 
     return global_config
