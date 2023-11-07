@@ -387,6 +387,7 @@ def voice_bert_vits2_api():
         noisew = float(request_data.get("noisew", current_app.config.get("NOISEW", 0.8)))
         sdp_ratio = float(request_data.get("sdp_ratio", current_app.config.get("SDP_RATIO", 0.2)))
         max = int(request_data.get("max", current_app.config.get("MAX", 50)))
+        use_streaming = request_data.get('streaming', False, type=bool)
     except Exception as e:
         logger.error(f"[{ModelType.BERT_VITS2.value}] {e}")
         return make_response("parameter error", 400)
@@ -418,9 +419,13 @@ def voice_bert_vits2_api():
     if current_app.config.get("LANGUAGE_AUTOMATIC_DETECT", []) != []:
         speaker_lang = current_app.config.get("LANGUAGE_AUTOMATIC_DETECT")
 
+    if use_streaming and format.upper() != "MP3":
+        format = "mp3"
+        logger.warning("Streaming response only supports MP3 format.")
+
     fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
-    task = {"text": text,
+    state = {"text": text,
             "id": id,
             "format": format,
             "length": length,
@@ -430,11 +435,20 @@ def voice_bert_vits2_api():
             "max": max,
             "lang": lang,
             "speaker_lang": speaker_lang}
+    
+    if use_streaming:
+        audio = tts_manager.stream_bert_vits2_infer(state)
+        response = make_response(audio)
+        response.headers['Content-Disposition'] = f'attachment; filename={fname}'
+        response.headers['Content-Type'] = file_type
+        return response
+    else:
+        t1 = time.time()
+        audio = tts_manager.bert_vits2_infer(state)
+        t2 = time.time()
+        logger.info(f"[{ModelType.BERT_VITS2.value}] finish in {(t2 - t1):.2f}s")
 
-    t1 = time.time()
-    audio = tts_manager.bert_vits2_infer(task)
-    t2 = time.time()
-    logger.info(f"[{ModelType.BERT_VITS2.value}] finish in {(t2 - t1):.2f}s")
+    
 
     if current_app.config.get("SAVE_AUDIO", False):
         logger.debug(f"[{ModelType.BERT_VITS2.value}] {fname}")

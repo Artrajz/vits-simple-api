@@ -295,6 +295,11 @@
                         <source src="" type="audio/mp3"/>
                         Your browser does not support the audio element.
                     </audio>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" id="streaming3" onchange="updateLink()">
+                        <label class="form-check-label" data-toggle="tooltip" data-placement="top"
+                               title="按照max分段推理文本，推理好一段即输出，无需等待所有文本都推理完毕">流式响应</label>
+                    </div>
                 </div>
             </div>
         </div>
@@ -392,6 +397,7 @@
         } else if (model_type == 3) {
             var sdp_ratio = document.getElementById("input_sdp_ratio").value;
             var url = baseUrl + "/voice/bert-vits2?text=" + text + "&id=" + id;
+            var streaming = document.getElementById('streaming3');
         }
         if (format != "") {
             url += "&format=" + format;
@@ -411,7 +417,7 @@
         if (max != "") {
             url += "&max=" + max;
         }
-        if (model_type == 1 && streaming.checked) {
+        if ((model_type == 1 || model_type == 3) && streaming.checked) {
             url += '&streaming=true';
         }
         if (model_type == 3 && sdp_ratio != "") {

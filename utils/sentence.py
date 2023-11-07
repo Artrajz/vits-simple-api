@@ -93,8 +93,8 @@ def sentence_split(text: str, max: int) -> list:
     if p < len(text):
         sentences_list.append(text[p:])
 
-    for i in sentences_list:
-        logging.debug(i)
+    # for i in sentences_list:
+    #     logging.debug(i)
 
     return sentences_list
 
