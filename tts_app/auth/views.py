@@ -11,8 +11,8 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         users = current_app.config["users"]["admin"]
-        user = users.get(form.username.data)
-        if user and user.password == form.password.data:
+        user = users.get("admin")
+        if user.username == form.username.data and user.password == form.password.data:
             login_user(user)
             flash('Logged in successfully.')
             return redirect(url_for('admin.home'))
