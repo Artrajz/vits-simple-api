@@ -18,16 +18,46 @@ class TqdmUpTo(tqdm):
         self.update(b * bsize - self.n)
 
 
-def download_file(url, dest_path):
+def _download_file(url, dest_path):
     logging.info(f"Downloading: {url}")
-    with TqdmUpTo(unit="B", unit_scale=True, unit_divisor=1024, miniters=1, desc=url.split('/')[-1]) as t:
-        urllib.request.urlretrieve(url, dest_path, reporthook=t.update_to)
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+    }
+
+    if os.path.exists(dest_path):
+        file_size = os.path.getsize(dest_path)
+        headers['Range'] = f'bytes={file_size}-'
+
+    request = urllib.request.Request(url, headers=headers)
+
+    response = urllib.request.urlopen(request)
+    if response.geturl() != url:
+        return _download_file(response.geturl(), dest_path)
+
+    total_size = int(response.headers['Content-Length'])
+
+    with open(dest_path, 'ab') as file, tqdm(total=total_size, unit='B', unit_scale=True, unit_divisor=1024, miniters=1,
+                                             desc=url.split('/')[-1]) as t:
+        chunk_size = 1024 * 1024  # 1MB
+        while True:
+            chunk = response.read(chunk_size)
+            if not chunk:
+                break
+            file.write(chunk)
+            t.update(len(chunk))
 
 
 def verify_md5(file_path, expected_md5):
     md5 = hashlib.md5(file_path.read_bytes()).hexdigest()
     if md5 != expected_md5:
         return False, f"MD5 mismatch: {md5} != {expected_md5}"
+    return True, ""
+
+
+def verify_sha256(file_path, expected_sha256):
+    sha256 = hashlib.sha256(file_path.read_bytes()).hexdigest()
+    if sha256 != expected_sha256:
+        return False, f"SHA256 mismatch: {sha256} != {expected_sha256}"
     return True, ""
 
 
@@ -57,10 +87,30 @@ def extract_file(file_path, destination=None):
         logging.error(f"Unsupported compression format for file {file_path}")
 
 
-def download_and_verify(urls, target_path, expected_md5=None, extract_destination=None):
+def download_file(urls, target_path, extract_destination=None, expected_md5=None, expected_sha256=None):
+    if os.path.exists(target_path):
+        if expected_md5 is not None:
+            success, message = verify_md5(Path(target_path), expected_md5)
+            if not success:
+                os.remove(target_path)
+                return False, message
+
+        if expected_sha256 is not None:
+            success, message = verify_sha256(Path(target_path), expected_sha256)
+            if not success:
+                os.remove(target_path)
+                return False, message
+
+        # If it's a compressed file and the target_path already exists, skip the download
+        if extract_destination and target_path.endswith(('.zip', '.tar.gz', '.tar.bz2', '.7z')):
+            extract_file(target_path, extract_destination)
+            os.remove(target_path)
+
+        return True, "File already exists and verified successfully!"
+    
     for url in urls:
         try:
-            download_file(url, target_path)
+            _download_file(url, target_path)
             break
         except Exception as error:
             logger.error(f"downloading from URL {url}: {error}")
@@ -70,6 +120,12 @@ def download_and_verify(urls, target_path, expected_md5=None, extract_destinatio
 
     if expected_md5 is not None:
         success, message = verify_md5(Path(target_path), expected_md5)
+        if not success:
+            os.remove(target_path)
+            return False, message
+        
+    if expected_sha256 is not None:
+        success, message = verify_sha256(Path(target_path), expected_sha256)
         if not success:
             os.remove(target_path)
             return False, message

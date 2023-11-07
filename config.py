@@ -41,7 +41,16 @@ LANGUAGE_AUTOMATIC_DETECT = []
 API_KEY_ENABLED = False
 
 # API_KEY is required for authentication
-API_KEY = "api-key"
+API_KEY = ""
+
+# WTForms CSRF 保护
+SECRET_KEY = ""
+
+# Control whether to enable the admin backend functionality
+IS_ADMIN_ENABLED = True  # Set to True to enable the admin backend, set to False to disable it
+
+# Define the route for the admin backend
+ADMIN_ROUTE = '/admin' # You can change this to your desired route
 
 # logging_level:DEBUG/INFO/WARNING/ERROR/CRITICAL
 LOGGING_LEVEL = "DEBUG"

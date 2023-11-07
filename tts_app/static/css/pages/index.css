@@ -2,13 +2,14 @@
     position: relative;
     width: 100%;
     min-height: 300px;
+    font-size: 1rem;
+    font-weight: 400;
 }
 
 .container {
-    width: 300px;
+    width: 1140px;
     position: relative;
 }
-
 
 /*tabs*/
 .tabs {
@@ -42,8 +43,7 @@
 /*content*/
 
 .content {
-    border: gray;
-    border-left-width: 2px;
+    min-height: 550px;
 }
 
 .content-pane {
@@ -64,21 +64,6 @@
     border-color: #e5e7eb;
 }
 
-
-.flex {
-    display: flex;
+label {
+    margin-bottom: 0.5rem;
 }
-
-.border-transparent {
-    border-color: transparent;
-}
-
-.border-b-2 {
-    border-bottom: 2px solid #dee2e6;
-}
-
-.border-lr-2 {
-    border-left: 2px solid #dee2e6;
-    border-right: 2px solid #dee2e6;
-}
-

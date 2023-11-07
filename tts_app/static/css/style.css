@@ -1,0 +1,41 @@
+* {
+    padding: 0;
+    margin: 0;
+    
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+ul, li {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 0;
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.border-transparent {
+    border-color: transparent;
+}
+
+.border-b-2 {
+    border-bottom: 2px solid #dee2e6;
+}
+
+.border-lr-2 {
+    border-left: 2px solid #dee2e6;
+    border-right: 2px solid #dee2e6;
+}
+
+

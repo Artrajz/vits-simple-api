@@ -1,38 +1,38 @@
-import os
+import sys
 
 import torch
-from transformers import AutoTokenizer, AutoModelForMaskedLM
+from transformers import AutoModelForMaskedLM, AutoTokenizer
 
-import config
-from logger import logger
-from utils.download import download_and_verify
-from config import DEVICE as device
+from utils.config_manager import global_config as config
+from bert_vits2.text.japanese import text2sep_kata
 
-URLS = [
-    "https://huggingface.co/cl-tohoku/bert-base-japanese-v3/resolve/main/pytorch_model.bin",
-]
-TARGET_PATH = os.path.join(config.ABS_PATH, "bert_vits2/bert/bert-base-japanese-v3/pytorch_model.bin")
-EXPECTED_MD5 = None
-
-if not os.path.exists(TARGET_PATH):
-    success, message = download_and_verify(URLS, TARGET_PATH, EXPECTED_MD5)
-
-try:
-    logger.info("Loading bert-base-japanese-v3...")
-    tokenizer = AutoTokenizer.from_pretrained(config.ABS_PATH + "/bert_vits2/bert/bert-base-japanese-v3")
-    model = AutoModelForMaskedLM.from_pretrained(config.ABS_PATH + "/bert_vits2/bert/bert-base-japanese-v3").to(
-        device)
-    logger.info("Loading finished.")
-except Exception as e:
-    logger.error(e)
-    logger.error(f"Please download pytorch_model.bin from cl-tohoku/bert-base-japanese-v3.")
+LOCAL_PATH = "./bert/deberta-v2-large-japanese"
 
 
-def get_bert_feature(text, word2ph, device=config.DEVICE):
+models = dict()
+
+
+def get_bert_feature(text, word2ph, tokenizer, model, device=config.DEVICE):
+    sep_text, _, _ = text2sep_kata(text)
+    sep_tokens = [tokenizer.tokenize(t) for t in sep_text]
+    sep_ids = [tokenizer.convert_tokens_to_ids(t) for t in sep_tokens]
+    sep_ids = [2] + [item for sublist in sep_ids for item in sublist] + [3]
+    return get_bert_feature_with_token(sep_ids, word2ph, tokenizer, model, device)
+
+
+def get_bert_feature_with_token(tokens, word2ph, tokenizer, model, device=config.DEVICE):
     with torch.no_grad():
-        inputs = tokenizer(text, return_tensors="pt")
-        for i in inputs:
-            inputs[i] = inputs[i].to(device)
+        inputs = torch.tensor(tokens).to(device).unsqueeze(0)
+        token_type_ids = torch.zeros_like(inputs).to(device)
+        attention_mask = torch.ones_like(inputs).to(device)
+        inputs = {
+            "input_ids": inputs,
+            "token_type_ids": token_type_ids,
+            "attention_mask": attention_mask,
+        }
+
+        # for i in inputs:
+        #     inputs[i] = inputs[i].to(device)
         res = model(**inputs, output_hidden_states=True)
         res = torch.cat(res["hidden_states"][-3:-2], -1)[0].cpu()
     assert inputs["input_ids"].shape[-1] == len(word2ph)

@@ -1,33 +1,9 @@
-import os
-
-import config
 import torch
-from transformers import AutoTokenizer, AutoModelForMaskedLM
-from logger import logger
-from utils.download import download_and_verify
-from config import DEVICE as device
 
-URLS = [
-    "https://huggingface.co/hfl/chinese-roberta-wwm-ext-large/resolve/main/pytorch_model.bin",
-]
-TARGET_PATH = os.path.join(config.ABS_PATH, "bert_vits2/bert/chinese-roberta-wwm-ext-large/pytorch_model.bin")
-EXPECTED_MD5 = None
-
-if not os.path.exists(TARGET_PATH):
-    success, message = download_and_verify(URLS, TARGET_PATH, EXPECTED_MD5)
-
-try:
-    logger.info("Loading chinese-roberta-wwm-ext-large...")
-    tokenizer = AutoTokenizer.from_pretrained(config.ABS_PATH + "/bert_vits2/bert/chinese-roberta-wwm-ext-large")
-    model = AutoModelForMaskedLM.from_pretrained(config.ABS_PATH + "/bert_vits2/bert/chinese-roberta-wwm-ext-large").to(
-        device)
-    logger.info("Loading finished.")
-except Exception as e:
-    logger.error(e)
-    logger.error(f"Please download pytorch_model.bin from hfl/chinese-roberta-wwm-ext-large.")
+from utils.config_manager import global_config as config
 
 
-def get_bert_feature(text, word2ph, device=config.DEVICE):
+def get_bert_feature(text, word2ph, tokenizer, model, device=config.DEVICE):
     with torch.no_grad():
         inputs = tokenizer(text, return_tensors='pt')
         for i in inputs:
@@ -48,7 +24,6 @@ def get_bert_feature(text, word2ph, device=config.DEVICE):
 
 
 if __name__ == '__main__':
-    import torch
 
     word_level_feature = torch.rand(38, 1024)  # 12个词,每个词1024维特征
     word2phone = [1, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 2, 2, 2, 1, 1, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1, 2,

@@ -1,0 +1,187 @@
+.home-content {
+    background-color: #e3f2fd;
+    border-radius: 8px;
+}
+
+.model-manager {
+    overflow-y: auto;
+}
+
+.model-manager::-webkit-scrollbar {
+    height: 20px;
+    width: 10px;
+}
+
+.model-manager::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+    background: rgba(83, 83, 83, 0.5);
+}
+
+.model-manager .item {
+    margin: 20px 20px;
+}
+
+/*
+model load
+ */
+.model-load-label {
+    font-size: 24px;
+}
+
+.model-load-content {
+    height: 200px;
+    margin: 10px;
+    overflow-y: auto;
+}
+
+.model-load-content::-webkit-scrollbar {
+    height: 20px;
+    width: 10px;
+}
+
+.model-load-content:hover::-webkit-scrollbar {
+    height: 20px;
+    width: 10px;
+
+}
+
+.model-load-content:hover::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 0px rgba(0, 0, 0, 0.2);
+    background: rgba(83, 83, 83, 0.5);
+}
+
+.model-load-item {
+    padding: 10px;
+    border-bottom: gray;
+    border-width: 2px;
+    cursor: pointer;
+}
+
+.model-load-item:hover {
+    background-color: rgba(194, 182, 208, 0.13);
+}
+
+.unload-model-id {
+    min-width: 20px;
+    margin-right: 5px;
+}
+
+.unload-model-folder {
+    min-width: 200px;
+    margin-right: 5px;
+}
+
+.unload-model-path {
+    min-width: 250px;
+    margin-right: 5px;
+}
+
+.unload-model-config {
+    min-width: 100px;
+    margin-right: 5px;
+}
+
+/*
+model list
+ */
+.model-list label {
+    font-size: 24px;
+}
+
+#model-data {
+
+}
+
+
+#model-data .card {
+    /*width: 300px;*/
+    min-width: min-content;
+    min-height: 100px;
+    max-width: 500px;
+    margin: 10px;
+    color: white;
+    border-color: transparent;
+    background-color: #542ca7;
+    cursor: pointer;
+}
+
+#model-data .card .wrap {
+    margin: 10px;
+}
+
+#model-data .card .wrap * {
+    flex: 1;
+}
+
+.model-path {
+    font-size: 24px;
+}
+
+.n-speakers {
+
+}
+
+#VITS .card {
+    background-color: #ffe338;
+}
+
+#VITS .card:hover {
+    background-color: #f6d790;
+    transition: 0.15s;
+}
+
+#HUBERT-VITS .card {
+    background-color: #3CBEA9;
+}
+
+#HUBERT-VITS .card:hover {
+    background-color: #54f586;
+    transition: 0.15s;
+}
+
+#W2V2-VITS .card {
+    background-color: #EAB2FF;
+}
+
+#W2V2-VITS .card:hover {
+    background-color: #f894d4;
+    transition: 0.15s;
+}
+
+#BERT-VITS2 .card {
+    background-color: #542ca7;
+}
+
+#BERT-VITS2 .card:hover {
+    background-color: #6437bd;
+    transition: 0.15s;
+}
+
+/*
+model unload
+ */
+
+#model-data .unload-model {
+    color: rgba(255, 255, 255, 0.5);
+    background-color: transparent;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+#model-data .unload-model:hover {
+    color: rgba(255, 255, 255, 1);
+    background-color: rgba(234, 92, 96, 0.53);
+    /*transform: scale(1.5);*/
+}
+

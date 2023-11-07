@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}{% endblock title %} | vits-simple-api</title>
+    {% include 'includes/styles.html' %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layouts/navigation.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layouts/sidebar.css') }}">
+    {% block extrastyle %}{% endblock extrastyle %}
+</head>
+<body>
+{% block navigation %}
+    {% include 'includes/navigation.html' %}
+{% endblock navigation %}
+
+<div class="flex h-100 flex-grow-1">
+    {% block sidebar %}
+        {% include 'includes/sidebar.html' %}
+    {% endblock sidebar %}
+
+    {% block content %}{% endblock %}
+</div>
+
+{% include 'includes/scripts.html' %}
+{% block extra_js %}{% endblock extra_js %}
+</body>
+</html>

@@ -4,7 +4,7 @@ from unidecode import unidecode
 import pyopenjtalk
 
 from config import ABS_PATH
-from utils.download import download_and_verify
+from utils.download import download_file
 
 URLS = [
     "https://github.com/r9y9/open_jtalk/releases/download/v1.11.1/open_jtalk_dic_utf_8-1.11.tar.gz",
@@ -17,7 +17,7 @@ EXTRACT_DESTINATION = os.path.join(install_path, "")
 EXPECTED_MD5 = None
 
 if not os.path.exists(dict_path):
-    success, message = download_and_verify(URLS, TARGET_PATH, EXPECTED_MD5, EXTRACT_DESTINATION)
+    success, message = download_file(URLS, TARGET_PATH, EXPECTED_MD5, EXTRACT_DESTINATION)
 
 # Regular expression matching Japanese without punctuation marks:
 _japanese_characters = re.compile(

@@ -1,0 +1,53 @@
+.setting-content {
+    background-color: #e3fde3;
+    border-radius: 8px;
+    overflow-y: auto;
+
+}
+
+.configuration {
+    margin: 20px;
+}
+
+.item .input-group-text {
+
+}
+
+
+#default-parameter {
+    flex-wrap: wrap;
+    flex-grow: 1;
+}
+
+#default-parameter .item {
+    width: 300px;
+}
+
+#addModelRow {
+    width: max-content;
+    padding: 8px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    color: white;
+    background-color: #b9d1f5;
+    cursor: pointer;
+}
+
+#addModelRow:hover {
+    background-color: gainsboro;
+}
+
+.config-save {
+    width: max-content;
+    padding: 8px;
+    border-radius: 5px;
+    color: white;
+    background-color: #673ab7;
+    cursor: pointer;
+}
+
+.config-save:hover {
+    background-color: gainsboro;
+}
+
+

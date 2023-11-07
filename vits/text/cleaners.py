@@ -1,5 +1,5 @@
 import re
-import config
+from utils.config_manager import global_config as config
 from unidecode import unidecode
 from phonemizer import phonemize
 from phonemizer.backend.espeak.wrapper import EspeakWrapper
@@ -271,8 +271,6 @@ def bert_chinese_cleaners(text):
     if text[-1] not in [".", "。", ",", "，"]: text += "."
     text = mandarin.symbols_to_chinese(text)
     text = mandarin.number_transform_to_chinese(text)
-    if not hasattr(bert_chinese_cleaners, "tts_front"):
-        bert_chinese_cleaners.tts_front = mandarin.VITS_PinYin_model()
-    tts_front = bert_chinese_cleaners.tts_front
-    cleaned_text, char_embeds = tts_front.chinese_to_phonemes(text)
+    from tts_app.model_manager import model_manager
+    cleaned_text, char_embeds = model_manager.tts_front.chinese_to_phonemes(text)
     return cleaned_text, char_embeds

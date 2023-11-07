@@ -13,6 +13,7 @@ pinyin_to_symbol_map = {line.split("\t")[0]: line.strip().split("\t")[1] for lin
 
 import jieba.posseg as psg
 from jieba import lcut
+
 lcut("预加载")
 
 rep_map = {
@@ -63,7 +64,7 @@ def replace_punctuation(text):
     return replaced_text
 
 
-def g2p(text):
+def g2p(text, **kwargs):
     pattern = r'(?<=[{0}])\s*'.format(''.join(punctuation))
     sentences = [i for i in re.split(pattern, text) if i.strip() != '']
     phones, tones, word2ph = _g2p(sentences)
@@ -181,15 +182,15 @@ def get_bert_feature(text, word2ph):
 
 
 if __name__ == '__main__':
-    from bert_vits2.text import get_bert_feature
-
-    text = "啊！但是《原神》是由,米哈\游自主，  [研发]的一款全.新开放世界.冒险游戏"
+    text = "啊！但是《原神》是由,米哈\游自主，  [研发]的一款全.新开放世界.冒险游戏。"
     text = text_normalize(text)
     print(text)
     phones, tones, word2ph = g2p(text)
+
+    print(phones, tones, word2ph)
     bert = get_bert_feature(text, word2ph)
 
-    print(phones, tones, word2ph, bert.shape)
+    print(bert.shape)
 
 # # 示例用法
 # text = "这是一个示例文本：,你好！这是一个测试...."

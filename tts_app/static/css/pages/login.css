@@ -1,0 +1,53 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 50px;
+    background-color: #d4e7f9;
+}
+
+.container {
+    max-width: 480px;
+    max-height: 700px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 0px solid #ccc;
+    border-radius: 8px;
+}
+
+.auth-main {
+    background-color: #ffffff;
+}
+
+.card {
+    min-height: 70vh;
+    border: 0px solid #ccc;
+}
+
+.card-body {
+    margin: 10px;
+}
+
+label, input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+
+label {
+    font-size: 14px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #673ab7;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #58319c;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}

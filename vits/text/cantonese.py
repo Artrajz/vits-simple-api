@@ -2,8 +2,8 @@ import os.path
 import re
 import cn2an
 import opencc
-import config
-from utils.download import download_and_verify
+from utils.config_manager import global_config as config
+from utils.download import download_file
 
 URLS = [
     "https://github.com/CjangCjengh/chinese-dialect-lexicons/releases/download/v1.0.3/chinese_dialects.7z",
@@ -15,7 +15,7 @@ EXPECTED_MD5 = None
 OPENCC_FILE_PATH = os.path.join(config.ABS_PATH, "vits/text/chinese_dialect_lexicons/jyutjyu.json")
 
 if not os.path.exists(OPENCC_FILE_PATH):
-    success, message = download_and_verify(URLS, TARGET_PATH, EXPECTED_MD5, EXTRACT_DESTINATION)
+    success, message = download_file(URLS, TARGET_PATH, EXPECTED_MD5, EXTRACT_DESTINATION)
     
 converter = opencc.OpenCC(OPENCC_FILE_PATH)
 
