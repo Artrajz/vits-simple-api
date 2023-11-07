@@ -3,7 +3,7 @@ import logging
 import regex as re
 
 from utils.data_utils import check_is_none
-from utils.classify_language import classify_language
+from utils.classify_language import classify_language, split_alpha_nonalpha
 
 
 def markup_language(text: str, target_languages: list = None) -> str:
@@ -14,6 +14,13 @@ def markup_language(text: str, target_languages: list = None) -> str:
 
     pre_lang = ""
     p = 0
+
+    sorted_target_languages = sorted(target_languages)
+    if sorted_target_languages in [['en', 'zh'], ['en', 'ja'], ['en', 'ja', 'zh']]:
+        new_sentences = []
+        for sentence in sentences:
+            new_sentences.extend(split_alpha_nonalpha(sentence))
+        sentences = new_sentences
 
     for sentence in sentences:
         if check_is_none(sentence): continue
@@ -43,6 +50,13 @@ def split_by_language(text: str, target_languages: list = None) -> list:
     start = 0
     end = 0
     sentences_list = []
+    
+    sorted_target_languages = sorted(target_languages)
+    if sorted_target_languages in [['en', 'zh'], ['en', 'ja'], ['en', 'ja', 'zh']]:
+        new_sentences = []
+        for sentence in sentences:
+            new_sentences.extend(split_alpha_nonalpha(sentence))
+        sentences = new_sentences
 
     for sentence in sentences:
         if check_is_none(sentence): continue
@@ -78,7 +92,7 @@ def sentence_split(text: str, max: int) -> list:
     # 加入最后剩余的文本
     if p < len(text):
         sentences_list.append(text[p:])
-        
+
     for i in sentences_list:
         logging.debug(i)
 
@@ -119,5 +133,5 @@ if __name__ == '__main__':
     print(markup_language(text, target_languages=None))
     print(sentence_split(text, max=50))
     print(sentence_split_and_markup(text, max=50, lang="auto", speaker_lang=None))
-    text = "你好，这是一段用来测试自动标注的文本。こんにちは,これは自動ラベリングのテスト用テキストです.Hello, this is a piece of text to test autotagging."
+    text = "你好hello，这是一段用来测试vits自动标注的文本。こんにちは,これは自動ラベリングのテスト用テキストです.Hello, this is a piece of text to test autotagging."
     print(split_by_language(text, ["zh", "ja", "en"]))
