@@ -296,17 +296,17 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 
 ## VITS语音合成
 
-| Name          | Parameter | Is must | Default             | Type  | Instruction                                                  |
-| ------------- | --------- | ------- | ------------------- | ----- | ------------------------------------------------------------ |
-| 合成文本      | text      | true    |                     | str   | 需要合成语音的文本。                                         |
-| 角色id        | id        | false   | 从`config.py`中获取 | int   | 即说话人id。                                                 |
-| 音频格式      | format    | false   | 从`config.py`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
-| 文本语言      | lang      | false   | 从`config.py`中获取 | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹。方言无法自动识别。 |
-| 语音长度/语速 | length    | false   | 从`config.py`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢。           |
-| 噪声          | noise     | false   | 从`config.py`中获取 | float | 样本噪声，控制合成的随机性。                                 |
-| sdp噪声       | noisew    | false   | 从`config.py`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
-| 分段阈值      | max       | false   | 从`config.py`中获取 | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
-| 流式响应      | streaming | false   | false               | bool  | 流式合成语音，更快的首包响应。                               |
+| Name          | Parameter | Is must | Default              | Type  | Instruction                                                  |
+| ------------- | --------- | ------- | -------------------- | ----- | ------------------------------------------------------------ |
+| 合成文本      | text      | true    |                      | str   | 需要合成语音的文本。                                         |
+| 角色id        | id        | false   | 从`config.yml`中获取 | int   | 即说话人id。                                                 |
+| 音频格式      | format    | false   | 从`config.yml`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
+| 文本语言      | lang      | false   | 从`config.yml`中获取 | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹。方言无法自动识别。 |
+| 语音长度/语速 | length    | false   | 从`config.yml`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢。           |
+| 噪声          | noise     | false   | 从`config.yml`中获取 | float | 样本噪声，控制合成的随机性。                                 |
+| sdp噪声       | noisew    | false   | 从`config.yml`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
+| 分段阈值      | max       | false   | 从`config.yml`中获取 | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
+| 流式响应      | streaming | false   | false                | bool  | 流式合成语音，更快的首包响应。                               |
 
 ## VITS 语音转换
 
@@ -329,17 +329,17 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 
 ## W2V2-VITS
 
-| Name          | Parameter | Is must | Default             | Type  | Instruction                                                  |
-| ------------- | --------- | ------- | ------------------- | ----- | ------------------------------------------------------------ |
-| 合成文本      | text      | true    |                     | str   | 需要合成语音的文本。                                         |
-| 角色id        | id        | false   | 从`config.py`中获取 | int   | 即说话人id。                                                 |
-| 音频格式      | format    | false   | 从`config.py`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
-| 文本语言      | lang      | false   | 从`config.py`中获取 | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹。方言无法自动识别。 |
-| 语音长度/语速 | length    | false   | 从`config.py`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢             |
-| 噪声          | noise     | false   | 从`config.py`中获取 | float | 样本噪声，控制合成的随机性。                                 |
-| sdp噪声       | noisew    | false   | 从`config.py`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
-| 分段阈值      | max       | false   | 从`config.py`中获取 | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
-| 维度情感      | emotion   | false   | 0                   | int   | 范围取决于npy情感参考文件，如[innnky](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)的all_emotions.npy模型范围是0-5457 |
+| Name          | Parameter | Is must | Default              | Type  | Instruction                                                  |
+| ------------- | --------- | ------- | -------------------- | ----- | ------------------------------------------------------------ |
+| 合成文本      | text      | true    |                      | str   | 需要合成语音的文本。                                         |
+| 角色id        | id        | false   | 从`config.yml`中获取 | int   | 即说话人id。                                                 |
+| 音频格式      | format    | false   | 从`config.yml`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
+| 文本语言      | lang      | false   | 从`config.yml`中获取 | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹。方言无法自动识别。 |
+| 语音长度/语速 | length    | false   | 从`config.yml`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢             |
+| 噪声          | noise     | false   | 从`config.yml`中获取 | float | 样本噪声，控制合成的随机性。                                 |
+| sdp噪声       | noisew    | false   | 从`config.yml`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
+| 分段阈值      | max       | false   | 从`config.yml`中获取 | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
+| 维度情感      | emotion   | false   | 0                    | int   | 范围取决于npy情感参考文件，如[innnky](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)的all_emotions.npy模型范围是0-5457 |
 
 ## Dimensional emotion
 
@@ -349,48 +349,50 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 
 ## Bert-VITS2语音合成
 
-| Name          | Parameter | Is must | Default             | Type  | Instruction                                                  |
-| ------------- | --------- | ------- | ------------------- | ----- | ------------------------------------------------------------ |
-| 合成文本      | text      | true    |                     | str   | 需要合成语音的文本。                                         |
-| 角色id        | id        | false   | 从`config.py`中获取 | int   | 即说话人id。                                                 |
-| 音频格式      | format    | false   | 从`config.py`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
-| 文本语言      | lang      | false   | 从`config.py`中获取 | str   | auto为自动识别语言模式，也是默认模式，但目前只支持识别整段文本的语言，无法细分到每个句子。其余可选语言zh和ja。 |
-| 语音长度/语速 | length    | false   | 从`config.py`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢。           |
-| 噪声          | noise     | false   | 从`config.py`中获取 | float | 样本噪声，控制合成的随机性。                                 |
-| sdp噪声       | noisew    | false   | 从`config.py`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
-| 分段阈值      | max       | false   | 从`config.py`中获取 | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
-| SDP/DP混合比  | sdp_ratio | false   | 从`config.py`中获取 | int   | SDP在合成时的占比，理论上此比率越高，合成的语音语调方差越大。 |
+| Name          | Parameter | Is must | Default              | Type  | Instruction                                                  |
+| ------------- | --------- | ------- | -------------------- | ----- | ------------------------------------------------------------ |
+| 合成文本      | text      | true    |                      | str   | 需要合成语音的文本。                                         |
+| 角色id        | id        | false   | 从`config.yml`中获取 | int   | 即说话人id。                                                 |
+| 音频格式      | format    | false   | 从`config.yml`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
+| 文本语言      | lang      | false   | 从`config.yml`中获取 | str   | auto为自动识别语言模式，也是默认模式，但目前只支持识别整段文本的语言，无法细分到每个句子。其余可选语言zh和ja。 |
+| 语音长度/语速 | length    | false   | 从`config.yml`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢。           |
+| 噪声          | noise     | false   | 从`config.yml`中获取 | float | 样本噪声，控制合成的随机性。                                 |
+| sdp噪声       | noisew    | false   | 从`config.yml`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
+| 分段阈值      | max       | false   | 从`config.yml`中获取 | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
+| SDP/DP混合比  | sdp_ratio | false   | 从`config.yml`中获取 | int   | SDP在合成时的占比，理论上此比率越高，合成的语音语调方差越大。 |
 
 ## SSML语音合成标记语言
 目前支持的元素与属性
 
 `speak`元素
 
-| Attribute | Description                                                  | Is must |
-| --------- | ------------------------------------------------------------ | ------- |
-| id        | 默认值从`config.py`中读取                                    | false   |
-| lang      | 默认值从`config.py`中读取                                    | false   |
-| length    | 默认值从`config.py`中读取                                    | false   |
-| noise     | 默认值从`config.py`中读取                                    | false   |
-| noisew    | 默认值从`config.py`中读取                                    | false   |
-| max       | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段，这里默认为0。 | false   |
-| model     | 默认为vits，可选`w2v2-vits`，`emotion-vits`                  | false   |
-| emotion   | 只有用`w2v2-vits`或`emotion-vits`时`emotion`才生效，范围取决于npy情感参考文件 | false   |
+| Attribute  | Description                                                  | Is must |
+| ---------- | ------------------------------------------------------------ | ------- |
+| id         | 默认值从`config.yml`中读取                                   | false   |
+| lang       | 默认值从`config.yml`中读取                                   | false   |
+| length     | 默认值从`config.yml`中读取                                   | false   |
+| noise      | 默认值从`config.yml`中读取                                   | false   |
+| noisew     | 默认值从`config.yml`中读取                                   | false   |
+| max        | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段，这里默认为0。 | false   |
+| model_type | 默认为VITS，可选W2V2-VITS，BERT-VITS2                        | false   |
+| emotion    | 只有用W2V2-VITS时`emotion`才会生效，范围取决于npy情感参考文件 | false   |
+| sdp_ratio  | 只有用BERT-VITS2时`sdp_ratio`才会生效                        | false   |
 
 `voice`元素
 
 优先级大于`speak`
 
-| Attribute | Description                                                  | Is must |
-| --------- | ------------------------------------------------------------ | ------- |
-| id        | 默认值从`config.py`中读取                                    | false   |
-| lang      | 默认值从`config.py`中读取                                    | false   |
-| length    | 默认值从`config.py`中读取                                    | false   |
-| noise     | 默认值从`config.py`中读取                                    | false   |
-| noisew    | 默认值从`config.py`中读取                                    | false   |
-| max       | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段，这里默认为0。 | false   |
-| model     | 默认为vits，可选`w2v2-vits`，`emotion-vits`                  | false   |
-| emotion   | 只有用`w2v2-vits`或`emotion-vits`时`emotion`才会生效         | false   |
+| Attribute  | Description                                                  | Is must |
+| ---------- | ------------------------------------------------------------ | ------- |
+| id         | 默认值从`config.yml`中读取                                   | false   |
+| lang       | 默认值从`config.yml`中读取                                   | false   |
+| length     | 默认值从`config.yml`中读取                                   | false   |
+| noise      | 默认值从`config.yml`中读取                                   | false   |
+| noisew     | 默认值从`config.yml`中读取                                   | false   |
+| max        | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段，这里默认为0。 | false   |
+| model_type | 默认为VITS，可选W2V2-VITS，BERT-VITS2                        | false   |
+| emotion    | 只有用W2V2-VITS时`emotion`才会生效，范围取决于npy情感参考文件 | false   |
+| sdp_ratio  | 只有用BERT-VITS2时`sdp_ratio`才会生效                        | false   |
 
 `break`元素
 
@@ -409,27 +411,7 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 
 示例
 
-```xml
-<speak lang="zh" format="mp3" length="1.2">
-    <voice id="92" >这几天心里颇不宁静。</voice>
-    <voice id="125">今晚在院子里坐着乘凉，忽然想起日日走过的荷塘，在这满月的光里，总该另有一番样子吧。</voice>
-    <voice id="142">月亮渐渐地升高了，墙外马路上孩子们的欢笑，已经听不见了；</voice>
-    <voice id="98">妻在屋里拍着闰儿，迷迷糊糊地哼着眠歌。</voice>
-    <voice id="120">我悄悄地披了大衫，带上门出去。</voice><break time="2s"/>
-    <voice id="121">沿着荷塘，是一条曲折的小煤屑路。</voice>
-    <voice id="122">这是一条幽僻的路；白天也少人走，夜晚更加寂寞。</voice>
-    <voice id="123">荷塘四面，长着许多树，蓊蓊郁郁的。</voice>
-    <voice id="124">路的一旁，是些杨柳，和一些不知道名字的树。</voice>
-    <voice id="125">没有月光的晚上，这路上阴森森的，有些怕人。</voice>
-    <voice id="126">今晚却很好，虽然月光也还是淡淡的。</voice><break time="2s"/>
-    <voice id="127">路上只我一个人，背着手踱着。</voice>
-    <voice id="128">这一片天地好像是我的；我也像超出了平常的自己，到了另一个世界里。</voice>
-    <voice id="129">我爱热闹，也爱冷静；<break strength="x-weak"/>爱群居，也爱独处。</voice>
-    <voice id="130">像今晚上，一个人在这苍茫的月下，什么都可以想，什么都可以不想，便觉是个自由的人。</voice>
-    <voice id="131">白天里一定要做的事，一定要说的话，现在都可不理。</voice>
-    <voice id="132">这是独处的妙处，我且受用这无边的荷香月色好了。</voice>
-</speak>
-```
+见`api_test.py`
 
 # 交流平台
 
