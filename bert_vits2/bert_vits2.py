@@ -4,7 +4,6 @@ from bert_vits2 import commons
 from bert_vits2 import utils as bert_vits2_utils
 from bert_vits2.models import SynthesizerTrn
 from bert_vits2.text import *
-from bert_vits2.text.cleaner import clean_text
 from bert_vits2.utils import process_legacy_versions
 from utils import get_hparams_from_file
 
@@ -56,7 +55,8 @@ class Bert_VITS2:
             self.hps_ms.model.n_layers_trans_flow = 4
             self.bert_model_names = {"zh": "CHINESE_ROBERTA_WWM_EXT_LARGE",
                                      "ja": "DEBERTA_V2_LARGE_JAPANESE",
-                                     "en": "DEBERTA_V3_LARGE"}
+                                     "en": "DEBERTA_V3_LARGE"
+                                     }
             self.num_tones = num_tones
             
 
@@ -84,6 +84,7 @@ class Bert_VITS2:
         return self.speakers
 
     def get_text(self, text, language_str, hps):
+        from bert_vits2.text.cleaner import clean_text
         tokenizer, _ = self.bert_handler.get_bert_model(self.bert_model_names[language_str])
         clean_bert_lang_str = language_str
         if language_str == 'ja':
