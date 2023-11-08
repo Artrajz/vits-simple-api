@@ -27,7 +27,11 @@ EN_MESSAGES=(
   ["MUST_DOWNLOAD_JP"]="Japanese model must be downloaded."
   ["DOWNLOAD_VITS_CHINESE"]="Do you want to download the bert model for vits_chinese? Enter 1 for yes, 2 for no."
   ["MUST_DOWNLOAD_VITS_CHINESE"]="Using vits_chinese requires downloading these models, which will take up about 410MB."
-  ["DOWNLOAD_BERT_VITS2"]="Do you want to download chinese-roberta-wwm-ext-large? Enter 1 for yes or 2 for no"
+  ["DOWNLOAD_BERT_VITS2_1"]: "Do you want to download chinese-roberta-wwm-ext-large? This model is a Chinese BERT model used for the full version. It will occupy approximately 1.21GB. Enter 1 for yes, and 2 for no."
+  ["DOWNLOAD_BERT_VITS2_2"]: "Do you want to download bert-base-japanese-v3? This model is a Japanese BERT model used before version 2.0. It will occupy approximately 426MB. Enter 1 for yes, and 2 for no."
+  ["DOWNLOAD_BERT_VITS2_3"]: "Do you want to download bert-large-japanese-v2? Enter 1 for yes, and 2 for no."
+  ["DOWNLOAD_BERT_VITS2_4"]: "Do you want to download deberta-v2-large-japanese? This model is a Japanese BERT model used after version 2.0. It will occupy approximately 1.38GB. Enter 1 for yes, and 2 for no."
+  ["DOWNLOAD_BERT_VITS2_5"]: "Do you want to download deberta-v3-large? This model is an English BERT model used after version 2.0. It will occupy approximately 835MB. Enter 1 for yes, and 2 for no."
   ["MUST_DOWNLOAD_BERT_VITS2"]="To use Bert-VITS2, you must download these models, which will take up about 1.63GB."
   ["DOWNLOADED"]="File is downloaded correctly."
   ["CORRUPTED"]="The file may not have been downloaded, or the download might be incomplete, and it could also be corrupted."
@@ -58,7 +62,11 @@ ZH_MESSAGES=(
   ["MUST_DOWNLOAD_JP"]="使用日语模型必须下载该词典文件，将占用大约102MB。"
   ["DOWNLOAD_VITS_CHINESE"]="是否要下载vits_chinese的bert模型？输入1表示是，2表示否。"
   ["MUST_DOWNLOAD_VITS_CHINESE"]="使用vits_chinese必须下载这些模型，将占用大约410MB。"
-  ["DOWNLOAD_BERT_VITS2"]="是否要下载chinese-roberta-wwm-ext-large？输入1表示是，2表示否。"
+  ["DOWNLOAD_BERT_VITS2_1"]="是否要下载chinese-roberta-wwm-ext-large？该模型为全版本使用的中文bert模型。将占用大约1.21GB。输入1表示是，2表示否。"
+  ["DOWNLOAD_BERT_VITS2_2"]="是否要下载bert-base-japanese-v3？该模型为2.0之前使用的日文bert模型。将占用大约426MB。输入1表示是，2表示否。"
+  ["DOWNLOAD_BERT_VITS2_3"]="是否要下载bert-large-japanese-v2？输入1表示是，2表示否。"
+  ["DOWNLOAD_BERT_VITS2_4"]="是否要下载deberta-v2-large-japanese？该模型为2.0以后使用的的日文bert模型。将占用大约1.38GB。输入1表示是，2表示否。"
+  ["DOWNLOAD_BERT_VITS2_5"]="是否要下载deberta-v3-large？该模型为2.0以后使用的的英文文bert模型。将占用大约835MB。输入1表示是，2表示否。"
   ["MUST_DOWNLOAD_BERT_VITS2"]="使用Bert-VITS2必须下载这些模型，将占用大约1.63GB。"
   ["DOWNLOADED"]="文件已正确下载。"
   ["CORRUPTED"]="文件可能未下载，或下载不完整，也有可能已损坏。"
@@ -88,6 +96,10 @@ fi
 
 mkdir -p $INSTALL_DIR
 cd $INSTALL_DIR
+
+if [ ! -f config.yml ]; then
+  touch "config.yml"
+fi
 
 download_with_fallback() {
   local filename=$1
@@ -221,11 +233,10 @@ if [ "$choice_download_vits_chinese" -eq 1 ]; then
 
 fi
 
-echo -e "${GREEN}${MESSAGES["DOWNLOAD_BERT_VITS2"]}${PLAIN}"
-echo -e "${GREEN}${MESSAGES["MUST_DOWNLOAD_BERT_VITS2"]}${PLAIN}"
-read -p "${MESSAGES["ENTER_CHOICE"]}" choice_download_bert_vits2
+echo -e "${GREEN}${MESSAGES["DOWNLOAD_BERT_VITS2_1"]}${PLAIN}"
+read -p "${MESSAGES["ENTER_CHOICE"]}" choice_download_bert_vits2_1
 
-if [ "$choice_download_bert_vits2" -eq 1 ]; then
+if [ "$choice_download_bert_vits2_1" -eq 1 ]; then
   mkdir -p bert_vits2/bert/chinese-roberta-wwm-ext-large
 
   EXPECTED_MD5="15d7435868fef1bd4222ff7820149a2a"
@@ -240,7 +251,12 @@ if [ "$choice_download_bert_vits2" -eq 1 ]; then
     download_with_fallback bert_vits2/bert/chinese-roberta-wwm-ext-large/pytorch_model.bin \
       "https://huggingface.co/hfl/chinese-roberta-wwm-ext-large/resolve/main/pytorch_model.bin"
   fi
+fi
+
+echo -e "${GREEN}${MESSAGES["DOWNLOAD_BERT_VITS2_2"]}${PLAIN}"
+read -p "${MESSAGES["ENTER_CHOICE"]}" choice_download_bert_vits2_2
   
+if [ "$choice_download_bert_vits2_2" -eq 1 ]; then
   mkdir -p bert_vits2/bert/bert-base-japanese-v3
 
   EXPECTED_MD5="6d0f8f3503dae04df0711b6175ef0c8e"
@@ -254,6 +270,61 @@ if [ "$choice_download_bert_vits2" -eq 1 ]; then
     echo ${MESSAGES["CORRUPTED"]}
     download_with_fallback bert_vits2/bert/bert-base-japanese-v3/pytorch_model.bin \
       "https://huggingface.co/cl-tohoku/bert-base-japanese-v3/resolve/main/pytorch_model.bin"
+  fi
+
+fi
+
+echo -e "${GREEN}${MESSAGES["DOWNLOAD_BERT_VITS2_4"]}${PLAIN}"
+read -p "${MESSAGES["ENTER_CHOICE"]}" choice_download_bert_vits2_4
+  
+if [ "$choice_download_bert_vits2_4" -eq 1 ]; then
+  mkdir -p bert_vits2/bert/deberta-v2-large-japanese
+
+  EXPECTED_MD5="1AAB4BC5DA8B5354315378439AC5BFA7"
+  FILE_PATH="bert_vits2/bert/deberta-v2-large-japanese/pytorch_model.bin"
+  echo -e "${MESSAGES["VERIFYING"]}$FILE_PATH"
+  ACTUAL_MD5=$(md5sum $FILE_PATH | awk '{print $1}')
+
+  if [ "$EXPECTED_MD5" == "$ACTUAL_MD5" ]; then
+    echo "${MESSAGES["DOWNLOADED"]}"
+  else
+    echo ${MESSAGES["CORRUPTED"]}
+    download_with_fallback bert_vits2/bert/deberta-v2-large-japanese/pytorch_model.bin \
+      "https://huggingface.co/ku-nlp/deberta-v2-large-japanese/resolve/main/pytorch_model.bin"
+  fi
+
+fi
+
+echo -e "${GREEN}${MESSAGES["DOWNLOAD_BERT_VITS2_5"]}${PLAIN}"
+read -p "${MESSAGES["ENTER_CHOICE"]}" choice_download_bert_vits2_5
+  
+if [ "$choice_download_bert_vits2_5" -eq 1 ]; then
+  mkdir -p bert_vits2/bert/deberta-v3-large
+
+  EXPECTED_MD5="917265658911F15661869FC4C06BB23C"
+  FILE_PATH="bert_vits2/bert/deberta-v3-large/pytorch_model.bin"
+  echo -e "${MESSAGES["VERIFYING"]}$FILE_PATH"
+  ACTUAL_MD5=$(md5sum $FILE_PATH | awk '{print $1}')
+
+  if [ "$EXPECTED_MD5" == "$ACTUAL_MD5" ]; then
+    echo "${MESSAGES["DOWNLOADED"]}"
+  else
+    echo ${MESSAGES["CORRUPTED"]}
+    download_with_fallback bert_vits2/bert/deberta-v3-large/pytorch_model.bin \
+      "https://huggingface.co/microsoft/deberta-v3-large/resolve/main/pytorch_model.bin"
+  fi
+  
+  EXPECTED_MD5="1613FCBF3B82999C187B09C9DB79B568"
+  FILE_PATH="bert_vits2/bert/deberta-v3-large/spm.model"
+  echo -e "${MESSAGES["VERIFYING"]}$FILE_PATH"
+  ACTUAL_MD5=$(md5sum $FILE_PATH | awk '{print $1}')
+
+  if [ "$EXPECTED_MD5" == "$ACTUAL_MD5" ]; then
+    echo "${MESSAGES["DOWNLOADED"]}"
+  else
+    echo ${MESSAGES["CORRUPTED"]}
+    download_with_fallback bert_vits2/bert/deberta-v3-large/spm.model \
+      "https://huggingface.co/microsoft/deberta-v3-large/resolve/main/spm.model"
   fi
 
 fi
