@@ -18,7 +18,7 @@ jobs:
     - name: Download and Install Miniconda
       run: |
         curl -o miniconda-installer.exe https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
-        start /wait "" miniconda-installer.exe /S /D=D:\a\vits-simple-api\vits-simple-api
+        start /wait "" miniconda-installer.exe /S /D=D:\a\vits-simple-api\vits-simple-api\Miniconda
         del miniconda-installer.exe
       shell: cmd
 
