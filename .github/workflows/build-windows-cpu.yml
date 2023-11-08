@@ -1,10 +1,11 @@
-name: Build and Package (GPU)
+name: Build and Package (CPU)
 
 on:
   release:
     types:
       - published
       - prereleased
+      - edited
 
 jobs:
   build:
@@ -29,7 +30,7 @@ jobs:
     - name: Activate Conda environment and Install Dependencies
       run: |
         call Miniconda\Scripts\activate Miniconda\envs\py310
-        pip install --no-cache-dir torch==1.13.1+cu117 --extra-index-url https://download.pytorch.org/whl/cu117
+        pip install --no-cache-dir torch==1.13.1 --extra-index-url https://download.pytorch.org/whl/cpu
         pip install --extra-index-url https://pypi.artrajz.cn/simple -r requirements.txt
       shell: cmd
 
