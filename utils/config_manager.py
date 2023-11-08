@@ -108,7 +108,7 @@ def init_config():
     model_path = ["MODEL_LIST", "HUBERT_SOFT_MODEL", "DIMENSIONAL_EMOTION_NPY", "DIMENSIONAL_EMOTION_MODEL"]
     default_parameter = ["ID", "FORMAT", "LANG", "LENGTH", "NOISE", "NOISEW", "MAX", "SDP_RATIO"]
 
-    if os.path.exists(YAML_CONFIG_FILE):
+    if os.path.exists(YAML_CONFIG_FILE) and os.path.isfile(YAML_CONFIG_FILE):
         global_config.update(load_yaml_config(YAML_CONFIG_FILE))
     else:
         global_config.setdefault("model_config", {})
