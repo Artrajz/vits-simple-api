@@ -21,9 +21,9 @@ jobs:
       shell: cmd
       
     - name: Copy project files to 'build' directory
-        run: |
-          robocopy .. . /E /XD build
-        shell: cmd
+      run: |
+        robocopy .. . /E /XD build
+      shell: cmd
 
     - name: Download and Install Miniconda
       run: |
