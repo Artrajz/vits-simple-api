@@ -5,7 +5,6 @@ on:
     types:
       - published
       - prereleased
-      - edited
 
 jobs:
   build:
@@ -43,7 +42,7 @@ jobs:
         run: |
           echo @echo off >> start.bat
           echo set PYTHON=py310\python.exe >> start.bat
-          echo %PYTHON% app.py >> start.bat
+          echo ^%PYTHON^% app.py >> start.bat
           echo pause >> start.bat
         shell: cmd
 
