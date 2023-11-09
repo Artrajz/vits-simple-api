@@ -18,27 +18,33 @@ jobs:
       - name: Download and Install Miniconda
         run: |
           curl -o miniconda-installer.exe https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
-          start /wait "" miniconda-installer.exe /S /D=D:\a\vits-simple-api\vits-simple-api\Miniconda
+          start /wait "" miniconda-installer.exe /S /D=C:\programs\miniconda3
           del miniconda-installer.exe
         shell: cmd
 
       - name: Set up Conda environment
         run: |
-          Miniconda\Scripts\conda create -n py310 python=3.10.11 --yes
+          C:\programs\miniconda3\Scripts\conda create -n py310 python=3.10.11 --yes
         shell: cmd
 
       - name: Activate Conda environment and Install Dependencies
         run: |
-          call Miniconda\Scripts\activate Miniconda\envs\py310
+          call C:\programs\miniconda3\Scripts\activate C:\programs\miniconda3\envs\py310
           pip install --no-cache-dir torch==1.13.1+cu117 --extra-index-url https://download.pytorch.org/whl/cu117
           pip install --extra-index-url https://pypi.artrajz.cn/simple -r requirements.txt
+        shell: cmd
+        
+      - name: Copy python environment
+        run: |
+          XCOPY C:\programs\miniconda3\envs\py310 py310\ /E /Y /F
         shell: cmd
 
       - name: Create 'start.bat'
         run: |
-          echo "call Miniconda\Scripts\activate Miniconda\envs\py310" >> start.bat
-          echo "python app.py" >> start.bat
-          echo "pause" >> start.bat
+          echo @echo off >> start.bat
+          echo set PYTHON=py310\python.exe >> start.bat
+          echo %PYTHON% app.py >> start.bat
+          echo pause >> start.bat
         shell: cmd
 
       - name: Create 7z Archive
