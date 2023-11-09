@@ -18,47 +18,49 @@ class Bert_VITS2:
         self.symbols = symbols
         self.sampling_rate = self.hps_ms.data.sampling_rate
 
-        # Compatible with legacy versions
-        self.version = process_legacy_versions(self.hps_ms)
-
-        self.lang = ["zh", "ja", "en"]
-
-        self.bert_model_names = {"zh": "CHINESE_ROBERTA_WWM_EXT_LARGE"}
+        self.bert_model_names = {}
         self.ja_bert_dim = 1024
         self.ja_extra_str = ""
         self.num_tones = num_tones
 
+        # Compatible with legacy versions
+        self.version = process_legacy_versions(self.hps_ms)
         if self.version in ["1.0", "1.0.0", "1.0.1"]:
             self.symbols = symbols_legacy
             self.hps_ms.model.n_layers_trans_flow = 3
-            self.lang = ["zh"]
+            self.lang = getattr(self.hps_ms.data, "lang", ["zh"])
             self.ja_bert_dim = 768
             self.num_tones = num_tones_v111
 
         elif self.version in ["1.1.0-transition"]:
             self.hps_ms.model.n_layers_trans_flow = 3
-            self.lang = ["zh", "ja"]
-            self.bert_model_names["ja"] = "BERT_BASE_JAPANESE_V3"
+            self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja"])
+            if "ja" in self.lang:
+                self.bert_model_names.update({"ja": "BERT_BASE_JAPANESE_V3"})
             self.ja_bert_dim = 768
             self.ja_extra_str = "_v111"
             self.num_tones = num_tones_v111
 
         elif self.version in ["1.1", "1.1.0", "1.1.1"]:
             self.hps_ms.model.n_layers_trans_flow = 6
-            self.lang = ["zh", "ja"]
-            self.bert_model_names["ja"] = "BERT_BASE_JAPANESE_V3"
+            self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja"])
+            if "ja" in self.lang:
+                self.bert_model_names.update({"ja": "BERT_BASE_JAPANESE_V3"})
             self.ja_bert_dim = 768
             self.ja_extra_str = "_v111"
             self.num_tones = num_tones_v111
 
         elif self.version in ["2.0", "2.0.0"]:
             self.hps_ms.model.n_layers_trans_flow = 4
-            self.bert_model_names = {"zh": "CHINESE_ROBERTA_WWM_EXT_LARGE",
-                                     "ja": "DEBERTA_V2_LARGE_JAPANESE",
-                                     "en": "DEBERTA_V3_LARGE"
-                                     }
+            self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja", "en"])
+            if "ja" in self.lang:
+                self.bert_model_names.update({"ja": "DEBERTA_V2_LARGE_JAPANESE"})
+            if "en" in self.lang:
+                self.bert_model_names.update({"en": "DEBERTA_V3_LARGE"})
             self.num_tones = num_tones
-            
+
+        if "zh" in self.lang:
+            self.bert_model_names.update({"zh": "CHINESE_ROBERTA_WWM_EXT_LARGE"})
 
         # self.bert_handler = BertHandler(self.lang)
 
@@ -148,24 +150,3 @@ class Bert_VITS2:
 
         torch.cuda.empty_cache()
         return audio
-
-    # def get_audio(self, voice, auto_break=False):
-    #     text = voice.get("text", None)
-    #     lang = voice.get("lang", "auto")
-    #     sdp_ratio = voice.get("sdp_ratio", 0.2)
-    #     noise_scale = voice.get("noise", 0.5)
-    #     noise_scale_w = voice.get("noisew", 0.6)
-    #     length_scale = voice.get("length", 1)
-    #     sid = voice.get("id", 0)
-    #     max = voice.get("max", 50)
-    #     # sentence_list = sentence_split_and_markup(text, max, "ZH", ["zh"])
-    #     if lang == "auto":
-    #         lang = classify_language(text, target_languages=self.lang)
-    # 
-    #     sentence_list = cut(text, max)
-    #     audios = []
-    #     for sentence in sentence_list:
-    #         audio = self.infer(sentence, lang, sdp_ratio, noise_scale, noise_scale_w, length_scale, sid)
-    #         audios.append(audio)
-    #     audio = np.concatenate(audios)
-    #     return audio

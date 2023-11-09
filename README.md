@@ -194,7 +194,9 @@ pip install torch==1.13.1+cu117 --extra-index-url https://download.pytorch.org/w
 ## Linux
 The installation process is similar, but I don't have the environment to test it.
 
-# Disable the Admin Backend
+# Function Options Explanation
+
+## Disable the Admin Backend
 
 The admin backend allows loading and unloading models, and while it has login authentication, for added security, you can disable the admin backend in the `config.yml`:
 
@@ -203,6 +205,21 @@ The admin backend allows loading and unloading models, and while it has login au
 ```
 
 This extra measure helps ensure absolute security when making the admin backend inaccessible to the public network.
+
+## Bert-VITS2 Configuration and Language/Bert Model Usage
+
+Starting from Bert-VITS2 v2.0, a model requires loading three different language Bert models. If you only need to use one or two languages, you can add the `lang` parameter in the `config.json` file of the model's data section. The value `['zh']` indicates that the model only uses Chinese and will load Chinese Bert models. The value `['zh', 'ja']` indicates the usage of both Chinese and Japanese bilingual models, and only Chinese and Japanese Bert models will be loaded. Similarly, this pattern continues for other language combinations.
+
+Example:
+
+```json
+"data": {
+  "lang": ["zh", "ja"],
+  "training_files": "filelists/train.list",
+  "validation_files": "filelists/val.list",
+  "max_wav_value": 32768.0,
+  ...
+```
 
 # Frequently Asked Questions
 

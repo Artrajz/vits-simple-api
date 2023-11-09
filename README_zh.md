@@ -204,7 +204,9 @@ pip install torch==1.13.1+cu117 --extra-index-url https://download.pytorch.org/w
 
 安装过程类似，可以查阅网上的安装资料。也可以直接使用docker部署脚本中的gpu版本。
 
-# 关闭管理员后台
+# 功能选项说明
+
+## 关闭管理员后台
 
 由于管理员后台可以对模型进行加载和卸载操作，虽然有登录验证的保障，为了绝对安全，当对公网开放时，可以在`config.yml`中关闭管理员后台：
 
@@ -212,7 +214,23 @@ pip install torch==1.13.1+cu117 --extra-index-url https://download.pytorch.org/w
 'IS_ADMIN_ENABLED': !!bool 'false'
 ```
 
+## Bert-VITS2配置使用语言/Bert模型
+
+在Bert-VITS2 v2.0以后，一个模型需要加载三个不同语言的Bert模型。如果只需要使用其中一或两种语言，可以在模型的config.json的data中，添加`lang`参数，值为`['zh']`，表示该模型只使用中文，同时也只会加载中文的Bert模型。值为`['zh','ja']`表示只使用中日双语，同时也只会加载中文和日文的Bert模型。以此类推。
+
+示例：
+
+```json
+"data": {
+  "lang": ["zh","ja"],
+  "training_files": "filelists/train.list",
+  "validation_files": "filelists/val.list",
+  "max_wav_value": 32768.0,
+  ...
+```
+
 # 常见问题
+
 ## fasttext依赖安装问题
 
 windows下可能安装不了fasttext,可以用以下命令安装，附[wheels下载地址](https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext)
