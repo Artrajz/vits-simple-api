@@ -52,4 +52,4 @@ jobs:
         with:
           files: |
             vits-simple-api-windows-gpu-${{ github.event.release.tag_name }}.7z
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_TOKEN }}
