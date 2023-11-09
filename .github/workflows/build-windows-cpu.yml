@@ -47,9 +47,9 @@ jobs:
         shell: cmd
 
       - name: Upload Release Artifact
-          if: startsWith(github.ref, 'refs/tags/')
-          uses: softprops/action-gh-release@v1
-          with:
-            files: |
-              vits-simple-api-windows-cpu-${{ github.event.release.tag_name }}.7z
-            token: ${{ secrets.RELEASE_TOKEN }}
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            vits-simple-api-windows-cpu-${{ github.event.release.tag_name }}.7z
+          token: ${{ secrets.RELEASE_TOKEN }}
