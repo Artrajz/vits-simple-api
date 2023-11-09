@@ -12,44 +12,44 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Download and Install Miniconda
-      run: |
-        curl -o miniconda-installer.exe https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
-        start /wait "" miniconda-installer.exe /S /D=D:\a\vits-simple-api\vits-simple-api\Miniconda
-        del miniconda-installer.exe
-      shell: cmd
+      - name: Download and Install Miniconda
+        run: |
+          curl -o miniconda-installer.exe https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
+          start /wait "" miniconda-installer.exe /S /D=D:\a\vits-simple-api\vits-simple-api\Miniconda
+          del miniconda-installer.exe
+        shell: cmd
 
-    - name: Set up Conda environment
-      run: |
-        Miniconda\Scripts\conda create -n py310 python=3.10.11 --yes
-      shell: cmd
+      - name: Set up Conda environment
+        run: |
+          Miniconda\Scripts\conda create -n py310 python=3.10.11 --yes
+        shell: cmd
 
-    - name: Activate Conda environment and Install Dependencies
-      run: |
-        call Miniconda\Scripts\activate Miniconda\envs\py310
-        pip install --no-cache-dir torch==1.13.1+cu117 --extra-index-url https://download.pytorch.org/whl/cu117
-        pip install --extra-index-url https://pypi.artrajz.cn/simple -r requirements.txt
-      shell: cmd
+      - name: Activate Conda environment and Install Dependencies
+        run: |
+          call Miniconda\Scripts\activate Miniconda\envs\py310
+          pip install --no-cache-dir torch==1.13.1+cu117 --extra-index-url https://download.pytorch.org/whl/cu117
+          pip install --extra-index-url https://pypi.artrajz.cn/simple -r requirements.txt
+        shell: cmd
 
-    - name: Create 'start.bat'
-      run: |
-        echo "call Miniconda\Scripts\activate Miniconda\envs\py310" >> start.bat
-        echo "python app.py" >> start.bat
-        echo "pause" >> start.bat
-      shell: cmd
+      - name: Create 'start.bat'
+        run: |
+          echo "call Miniconda\Scripts\activate Miniconda\envs\py310" >> start.bat
+          echo "python app.py" >> start.bat
+          echo "pause" >> start.bat
+        shell: cmd
 
-    - name: Create 7z Archive
-      run: |
-        7z a -t7z "vits-simple-api-windows-release-${{ github.event.release.tag_name }}.7z" .
-      shell: cmd
+      - name: Create 7z Archive
+        run: |
+          7z a -t7z "vits-simple-api-windows-gpu-${{ github.event.release.tag_name }}.7z" .
+        shell: cmd
 
-    - name: Upload Release Artifact
-      uses: actions/upload-release-asset@v1
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: "./vits-simple-api-windows-release-${{ github.event.release.tag_name }}.7z"
-        asset_name: "vits-simple-api-windows-release-${{ github.event.release.tag_name }}.7z"
-        asset_content_type: application/x-7z-compressed
+      - name: Upload Release Artifacts
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            vits-simple-api-windows-gpu-${{ github.event.release.tag_name }}.7z
+          token: ${{ secrets.GITHUB_TOKEN }}
