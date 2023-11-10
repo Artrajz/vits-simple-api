@@ -48,7 +48,7 @@ jobs:
 
       - name: Create 7z Archive
         run: |
-          7z a -t7z "vits-simple-api-windows-gpu-${{ github.event.release.tag_name }}.7z" .
+          7z a -t7z -m0=LZMA "vits-simple-api-windows-gpu-${{ github.event.release.tag_name }}.7z" .
         shell: cmd
 
       - name: Upload Release Artifacts
