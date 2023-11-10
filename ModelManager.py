@@ -12,7 +12,7 @@ import torch
 from utils.config_manager import global_config as config
 import utils
 from bert_vits2 import Bert_VITS2
-from bert_vits2.text import BertHandler
+from bert_vits2.text.bert_handler import BertHandler
 from contants import ModelType
 from logger import logger
 from observer import Subject
