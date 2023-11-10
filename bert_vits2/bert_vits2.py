@@ -50,7 +50,16 @@ class Bert_VITS2:
             self.ja_extra_str = "_v111"
             self.num_tones = num_tones_v111
 
-        elif self.version in ["2.0", "2.0.0"]:
+        elif self.version in ["2.0", "2.0.0", "2.0.1", "2.0.2"]:
+            self.hps_ms.model.n_layers_trans_flow = 4
+            self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja", "en"])
+            if "ja" in self.lang:
+                self.bert_model_names.update({"ja": "DEBERTA_V2_LARGE_JAPANESE"})
+            if "en" in self.lang:
+                self.bert_model_names.update({"en": "DEBERTA_V3_LARGE"})
+            self.num_tones = num_tones
+
+        else:
             self.hps_ms.model.n_layers_trans_flow = 4
             self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja", "en"])
             if "ja" in self.lang:
