@@ -1,5 +1,4 @@
 from bert_vits2.text.symbols import *
-from bert_vits2.text.bert_handler import BertHandler
 
 
 def cleaned_text_to_sequence_v111(cleaned_text, tones, language, _symbol_to_id):
