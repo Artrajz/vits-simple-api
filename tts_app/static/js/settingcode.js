@@ -69,6 +69,7 @@ function show_config(configData) {
     $('#logs-path').val(configData.LOGS_PATH);
 
     $('#api-key').val(configData.API_KEY);
+    $('#api-key-enable').prop('checked', configData.API_KEY_ENABLED);
     $.each(configData.users.admin, function (key, value) {
         if (key == "admin") {
             $('#username').val(value.username);
@@ -84,6 +85,7 @@ function show_config(configData) {
 function set_config() {
     var configData = {
         API_KEY: $('#api-key').val(),
+        API_KEY_ENABLED: $('#api-key-enable').prop('checked').toString(),
         defaultParameter: {
             format: $('#format').val(),
             id: $('#id').val(),

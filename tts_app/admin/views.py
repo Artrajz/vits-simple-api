@@ -104,7 +104,6 @@ def set_config():
         else:
             request_data = request.form
 
-    print(type(request_data))
     dict_data = dict(request_data)
     print(dict_data)
     # dict_data["DEVICE"] = torch.device(dict_data["DEVICE"])
