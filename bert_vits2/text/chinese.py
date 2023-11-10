@@ -172,8 +172,8 @@ def text_normalize(text):
     # numbers = re.findall(r'\d+(?:\.?\d+)?', text)
     # for number in numbers:
     #     text = text.replace(number, cn2an.an2cn(number), 1)
-    # text = replace_punctuation(text)
     text = cn2an.transform(text, "an2cn")
+    text = replace_punctuation(text)
     return text
 
 
