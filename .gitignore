@@ -8,3 +8,4 @@
 config.yml
 **/pytorch_model.bin
 **/spm.model
+phrases_dict.txt

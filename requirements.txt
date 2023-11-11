@@ -13,6 +13,7 @@ unidecode
 pyopenjtalk==0.3.2
 jamo
 pypinyin
+pypinyin-dict
 jieba
 cn2an
 inflect
