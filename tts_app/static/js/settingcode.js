@@ -34,7 +34,6 @@ $(document).ready(function () {
 );
 
 function show_config(configData) {
-    console.log(configData);
     $.each(configData.default_parameter, function (key, value) {
         $('#' + key).val(value);
     })
@@ -43,7 +42,6 @@ function show_config(configData) {
         if (key != 'model_list') {
             $('#' + key).val(value);
         } else {
-            console.log(value[0])
             $.each(value, function (index, element) {
                 var newRow = $('<div class="input-group mb-3 item"></div>');
                 var inputGroupText1 = $('<span class="input-group-text"></span>').text("模型路径");
@@ -85,7 +83,7 @@ function show_config(configData) {
 function set_config() {
     var configData = {
         API_KEY: $('#api-key').val(),
-        API_KEY_ENABLED: $('#api-key-enable').prop('checked').toString(),
+        API_KEY_ENABLED: $('#api-key-enable').prop('checked'),
         defaultParameter: {
             format: $('#format').val(),
             id: $('#id').val(),
