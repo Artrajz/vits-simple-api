@@ -1,5 +1,7 @@
 import ast
 import logging
+
+import jieba
 import pypinyin
 from pypinyin_dict.pinyin_data import kmandarin_8105
 
@@ -25,4 +27,6 @@ def phrases_dict_init():
     kmandarin_8105.load()
     additional_phrases_file = config.ABS_PATH + "/phrases_dict.txt"
     load_phrases_from_file(additional_phrases_file)
+    for word in phrases_dict.keys():
+        jieba.add_word(word)
     pypinyin.load_phrases_dict(phrases_dict)
