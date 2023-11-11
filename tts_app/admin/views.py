@@ -114,3 +114,22 @@ def set_config():
 
     status = "success"
     return make_response(jsonify({"status": status}), 200)
+
+
+@admin.route('/save_current_model', methods=["GET", "POST"])
+@login_required
+def save_current_model():
+    try:
+        models_path = model_manager.get_models_path()
+
+        dict_data = {"model_config": {"model_list": models_path}}
+        global_config.update(dict_data)
+        config_manager.save_yaml_config(global_config)
+
+        status = "success"
+        code = 200
+    except Exception as e:
+        status = "error"
+        code = 500
+        logging.info(e)
+    return make_response(jsonify({"status": status}), code)

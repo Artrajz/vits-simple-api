@@ -4,6 +4,9 @@
 $(document).ready(function () {
         get_models_info();
         get_model_to_load();
+        $("#save-current-model").click(function () {
+            save_current_model();
+        });
     }
 );
 
@@ -181,4 +184,18 @@ $('#model-data').on('click', '.unload-model', function (event) {
     });
 });
 
-
+function save_current_model() {
+    $.ajax({
+        url: '/admin/save_current_model',
+        type: 'POST',
+        headers: {
+            'X-CSRFToken': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function (response) {
+            alert("当前已加载的模型已保存，下次启动将自动加载。");
+        },
+        error: function (response) {
+            alert("保存失败！");
+        }
+    });
+}

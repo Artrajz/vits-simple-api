@@ -34,7 +34,7 @@ class ModelManager(Subject):
         self.device = device
         self.logger = logger
 
-        self.models = {  # "model_id":(model_path, model, n_speakers)
+        self.models = {  # "model_id":([model_path, config_path], model, n_speakers)
             ModelType.VITS: {},
             ModelType.HUBERT_VITS: {},
             ModelType.W2V2_VITS: {},
@@ -229,7 +229,8 @@ class ModelManager(Subject):
             sid2model = model_data["sid2model"]
             model_type = model_data["model_type"]
 
-            self.models[model_type][model_id] = (model_path, model_data["model"], len(model_data["speakers"]))
+            self.models[model_type][model_id] = (
+            [model_path, config_path], model_data["model"], len(model_data["speakers"]))
             self.sid2model[model_type].extend(sid2model)
             self.voice_speakers[model_type.value].extend(model_data["speakers"])
 
@@ -253,7 +254,7 @@ class ModelManager(Subject):
                     if key == model_id:
                         break
                     start += ns
-                    
+
                 if model_type == ModelType.BERT_VITS2:
                     for bert_model_name in self.models[model_type][model_id][1].bert_model_names.values():
                         self.bert_handler.release_bert(bert_model_name)
@@ -329,7 +330,7 @@ class ModelManager(Subject):
             self.models.insert(new_index, model)
 
     def get_models_path(self):
-        """按返回模型路径列表"""
+        """按返回模型路径列表，列表每一项为[model_path, config_path]"""
         info = []
 
         for models in self.models.values():
@@ -364,7 +365,8 @@ class ModelManager(Subject):
             for model_id, (path, _, n_speakers) in model_data.items():
                 info[model_type.value].append(
                     {"model_id": model_id,
-                     "model_path": os.path.basename(os.path.dirname(path)) + "/" + os.path.basename(path),
+                     "model_path": os.path.basename(os.path.dirname(path[0])) + "/" + os.path.basename(path[0]),
+                     "config_path": os.path.basename(os.path.dirname(path[1])) + "/" + os.path.basename(path[1]),
                      "n_speakers": n_speakers})
 
         return info
@@ -437,7 +439,10 @@ class ModelManager(Subject):
         all_paths = []
         unload_paths = []
 
-        loaded_paths = self.get_models_path()
+        loaded_paths = []
+        for path in self.get_models_path():
+            # 只取已加载的模型路径
+            loaded_paths.append(path[0])
 
         for id, pth_file in enumerate(pth_files):
             dir_name = os.path.dirname(pth_file)

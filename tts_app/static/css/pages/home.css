@@ -185,3 +185,18 @@ model unload
     /*transform: scale(1.5);*/
 }
 
+#save-current-model {
+    margin-left: 50px;
+    padding: 2px;
+    cursor: pointer;
+    border: 4px solid #9EFFD6;
+    border-radius: 5px;
+    background-color: #9EFFD6;
+    color: gray;
+}
+
+#save-current-model:hover {
+    background-color: aliceblue;
+    border: 4px solid aliceblue;
+}
+
