@@ -84,7 +84,7 @@ function set_config() {
     var configData = {
         API_KEY: $('#api-key').val(),
         API_KEY_ENABLED: $('#api-key-enable').prop('checked'),
-        defaultParameter: {
+        default_parameter: {
             format: $('#format').val(),
             id: $('#id').val(),
             lang: $('#lang').val(),

@@ -105,11 +105,10 @@ def set_config():
             request_data = request.form
 
     dict_data = dict(request_data)
-    print(dict_data)
     # dict_data["DEVICE"] = torch.device(dict_data["DEVICE"])
     if dict_data.get("users", None) is not None:
         dict_data = str2user(dict_data)
-    print(global_config)
+    dict_data = config_manager.validate_and_convert_data(dict_data)
     global_config.update(dict_data)
     config_manager.save_yaml_config(global_config)
 

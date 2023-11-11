@@ -72,9 +72,25 @@ def load_yaml_config(filename):
     return Config(yaml_config)
 
 
+def validate_and_convert_data(data):
+    for key, value in data.items():
+        if key in ["LOGS_BACKUPCOUNT", "PORT"] and not isinstance(value, int):
+            data[key] = int(value)
+        if key in ["LANGUAGE_AUTOMATIC_DETECT"] and not isinstance(value, list):
+            data[key] = []
+
+    for key, value in data["default_parameter"].items():
+        if key in ["id", "length", "max"] and not isinstance(value, int):
+            data["default_parameter"][key] = int(value)
+        if key in ["noise", "noisew", "sdp_ratio"] and not isinstance(value, float):
+            data["default_parameter"][key] = float(value)
+    return data
+
+
 def save_yaml_config(data, filename=YAML_CONFIG_FILE):
     temp_filename = filename + '.tmp'
     try:
+        data = validate_and_convert_data(data)
         dict_data = dict(data)
         with open(temp_filename, 'w') as f:
             yaml.safe_dump(dict_data, f, default_style="'")
