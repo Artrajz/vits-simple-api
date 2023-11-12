@@ -12,14 +12,12 @@ import torch
 from utils.config_manager import global_config as config
 import utils
 from bert_vits2 import Bert_VITS2
-from bert_vits2.text.bert_handler import BertHandler
 from contants import ModelType
 from logger import logger
 from observer import Subject
 from utils.data_utils import HParams
 from vits import VITS
 from vits.hubert_vits import HuBert_VITS
-from vits.text.vits_pinyin import VITS_PinYin
 from vits.w2v2_vits import W2V2_VITS
 
 CHINESE_ROBERTA_WWM_EXT_LARGE = os.path.join(config.ABS_PATH, "bert_vits2/bert/chinese-roberta-wwm-ext-large")
@@ -58,7 +56,7 @@ class ModelManager(Subject):
         self.dimensional_emotion_model = None
         self.tts_front = None
         self.bert_models = {}
-        self.bert_handler = BertHandler(self.device)
+        self.bert_handler = None
 
         # self.sid2model = []
         # self.name_mapping_id = []
@@ -190,6 +188,9 @@ class ModelManager(Subject):
         if model_type == ModelType.BERT_VITS2:
             bert_model_names = model.bert_model_names
             for bert_model_name in bert_model_names.values():
+                if self.bert_handler is None:
+                    from bert_vits2.text.bert_handler import BertHandler
+                    self.bert_handler = BertHandler(self.device)
                 self.bert_handler.load_bert(bert_model_name)
             model.load_model(self.bert_handler)
 
@@ -230,7 +231,7 @@ class ModelManager(Subject):
             model_type = model_data["model_type"]
 
             self.models[model_type][model_id] = (
-            [model_path, config_path], model_data["model"], len(model_data["speakers"]))
+                [model_path, config_path], model_data["model"], len(model_data["speakers"]))
             self.sid2model[model_type].extend(sid2model)
             self.voice_speakers[model_type.value].extend(model_data["speakers"])
 
@@ -319,6 +320,7 @@ class ModelManager(Subject):
 
     def load_VITS_PinYin_model(self, bert_path):
         """"vits_chinese"""
+        from vits.text.vits_pinyin import VITS_PinYin
         if self.tts_front is None:
             self.tts_front = VITS_PinYin(bert_path, self.device)
 
