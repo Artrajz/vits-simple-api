@@ -4,11 +4,14 @@ import logging
 import jieba
 import pypinyin
 from pypinyin_dict.phrase_pinyin_data import large_pinyin
-from pypinyin_dict.pinyin_data import kmandarin_8105
+from pypinyin_dict.pinyin_data import cc_cedict
 
 import config
 
-phrases_dict = {u"一骑当千": [[u"yí"], [u"jì"], [u"dāng"], [u"qiān"]], }
+phrases_dict = {
+    "一骑当千": [["yí"], ["jì"], ["dāng"], ["qiān"]],
+    "桔子": [["jú"], ["zǐ"]],
+}
 
 
 def load_phrases_from_file(file_path):
@@ -25,8 +28,8 @@ def load_phrases_from_file(file_path):
 
 def phrases_dict_init():
     logging.info("Loading phrases_dict")
-    kmandarin_8105.load()
     large_pinyin.load()
+    cc_cedict.load()
     additional_phrases_file = config.ABS_PATH + "/phrases_dict.txt"
     load_phrases_from_file(additional_phrases_file)
     for word in phrases_dict.keys():
