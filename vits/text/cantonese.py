@@ -2,7 +2,7 @@ import os.path
 import re
 import cn2an
 import opencc
-from utils.config_manager import global_config as config
+import config
 from utils.download import download_file
 
 URLS = [

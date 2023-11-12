@@ -148,5 +148,5 @@ if __name__ == "__main__":
     EXPECTED_MD5 = ""
     EXTRACT_DESTINATION = ""
 
-    success, message = download_and_verify(URLS, TARGET_PATH, EXPECTED_MD5, EXTRACT_DESTINATION)
+    success, message = download_file(URLS, TARGET_PATH, EXPECTED_MD5, EXTRACT_DESTINATION)
     print(message)
