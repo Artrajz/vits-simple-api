@@ -14,12 +14,11 @@ services:
       - ./config.yml:/app/config.yml # 挂载配置文件
       - ./logs:/app/logs # logging logs
       - ./gunicorn_config.py:/app/gunicorn_config.py # gunicorn configuration
-      - ./vits/bert/prosody_model.pt:/app/vits/bert/prosody_model.pt # vits_chinese
-      - ./bert_vits2/bert/bert-base-japanese-v3/pytorch_model.bin:/app/bert_vits2/bert/bert-base-japanese-v3/pytorch_model.bin
-      - ./bert_vits2/bert/bert-large-japanese-v2/pytorch_model.bin:/app/bert_vits2/bert/bert-large-japanese-v2/pytorch_model.bin
-      - ./bert_vits2/bert/chinese-roberta-wwm-ext-large/pytorch_model.bin:/app/bert_vits2/bert/chinese-roberta-wwm-ext-large/pytorch_model.bin
-      - ./bert_vits2/bert/deberta-v2-large-japanese/pytorch_model.bin:/app/bert_vits2/bert/deberta-v2-large-japanese/pytorch_model.bin
-      - ./bert_vits2/bert/deberta-v3-large/pytorch_model.bin:/app/bert_vits2/bert/deberta-v3-large/pytorch_model.bin
-      - ./bert_vits2/bert/deberta-v3-large/spm.model:/app/bert_vits2/bert/deberta-v3-large/spm.model
+      - ./vits/bert:/app/vits/bert # vits_chinese
+      - ./bert_vits2/bert/bert-base-japanese-v3:/app/bert_vits2/bert/bert-base-japanese-v3
+      - ./bert_vits2/bert/bert-large-japanese-v2:/app/bert_vits2/bert/bert-large-japanese-v2
+      - ./bert_vits2/bert/chinese-roberta-wwm-ext-large:/app/bert_vits2/bert/chinese-roberta-wwm-ext-large
+      - ./bert_vits2/bert/deberta-v2-large-japanese:/app/bert_vits2/bert/deberta-v2-large-japanese
+      - ./bert_vits2/bert/deberta-v3-large:/app/bert_vits2/bert/deberta-v3-large
       - ./pyopenjtalk/open_jtalk_dic_utf_8-1.11:/usr/local/lib/python3.10/site-packages/pyopenjtalk/open_jtalk_dic_utf_8-1.11 #pyopentjalk
       - ./nltk_data:/usr/local/share/nltk_data
