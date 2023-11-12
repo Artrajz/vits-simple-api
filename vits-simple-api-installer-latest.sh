@@ -41,6 +41,7 @@ EN_MESSAGES=(
   ["RESTART_NOTICE"]="After modifying the configuration file, restart the docker container for the modification to take effect."
   ["ISSUE_NOTICE"]="If you have any questions, please put them in the issues."
   ["GITHUB_LINK"]="https://github.com/Artrajz/vits-simple-api"
+  ["CONTAINERS_STARTING"]="Container is starting"
 )
 
 ZH_MESSAGES=(
@@ -76,6 +77,7 @@ ZH_MESSAGES=(
   ["RESTART_NOTICE"]="修改配置文件后，请重启docker容器以使修改生效。"
   ["ISSUE_NOTICE"]="如果你有任何问题，请在issues中提出，或者加入q群提问。"
   ["GITHUB_LINK"]="https://github.com/Artrajz/vits-simple-api"
+  ["CONTAINERS_STARTING"]="容器正在启动"
 )
 
 echo -e "${PLAIN}${GREEN}Choose a language/选择语言: ${PLAIN}"
@@ -171,7 +173,6 @@ read -p "${MESSAGES["ENTER_CHOICE"]}" choice_pull
 
 if [ "$choice_pull" -eq 1 ]; then
   docker compose pull
-  docker compose up -d
 fi
 
 echo -e "${YELLOW}${MESSAGES["DOWNLOAD_CONFIG"]}${PLAIN}"
@@ -334,6 +335,11 @@ if [ "$choice_gpu" -eq 2 ]; then
     echo -e "${RED}Your Docker does not seem to support GPU or NVIDIA Docker is not installed properly.${PLAIN}"
     exit 1
   fi
+fi
+
+if [ "$choice_pull" -eq 1 ]; then
+  echo ${MESSAGES["CONTAINERS_STARTING"]}
+  docker compose up -d
 fi
 
 echo -e "\n${MESSAGES["INSTALL_COMPLETE"]}"
