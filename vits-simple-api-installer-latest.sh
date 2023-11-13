@@ -16,22 +16,24 @@ EN_MESSAGES=(
   ["DOWNLOADING"]="Downloading..."
   ["VERIFYING"]="Verifying..."
   ["UNZIPPING"]="Unzipping..."
+  ["CREATE_PLACEHOLDER_FILE"]="Created placeholder file"
   ["CHOOSE_VERSION"]="Which version of docker-compose.yaml do you want to download?"
   ["DOCKER_CPU"]="docker-compose.yaml (CPU version)"
   ["DOCKER_GPU"]="docker-compose-gpu.yaml (GPU version)"
-  ["ENTER_CHOICE"]="Enter your choice (1 or 2): "
-  ["INVALID_CHOICE"]="Invalid choice. Please enter 1 or 2."
+  ["NO_DOWNLOAD"]="The YAML file already exists, no download needed"
+  ["ENTER_CHOICE"]="Please enter your choice: "
+  ["INVALID_CHOICE"]="Invalid choice. Please enter 1, 2, or 3."
   ["DOWNLOAD_CONFIG"]="Downloading configuration file shortly..."
   ["PULL_IMAGE"]="Do you want to start pulling the image? Enter 1 for yes or 2 for no"
   ["DOWNLOAD_DICT"]="Do you want to download the pyopenjtalk dictionary file? Enter 1 for yes or 2 for no"
   ["MUST_DOWNLOAD_JP"]="Japanese model must be downloaded."
   ["DOWNLOAD_VITS_CHINESE"]="Do you want to download the bert model for vits_chinese? Enter 1 for yes, 2 for no."
   ["MUST_DOWNLOAD_VITS_CHINESE"]="Using vits_chinese requires downloading these models, which will take up about 410MB."
-  ["DOWNLOAD_BERT_VITS2_1"]: "Do you want to download chinese-roberta-wwm-ext-large? This model is a Chinese BERT model used for the full version. It will occupy approximately 1.21GB. Enter 1 for yes, and 2 for no."
-  ["DOWNLOAD_BERT_VITS2_2"]: "Do you want to download bert-base-japanese-v3? This model is a Japanese BERT model used before version 2.0. It will occupy approximately 426MB. Enter 1 for yes, and 2 for no."
-  ["DOWNLOAD_BERT_VITS2_3"]: "Do you want to download bert-large-japanese-v2? Enter 1 for yes, and 2 for no."
-  ["DOWNLOAD_BERT_VITS2_4"]: "Do you want to download deberta-v2-large-japanese? This model is a Japanese BERT model used after version 2.0. It will occupy approximately 1.38GB. Enter 1 for yes, and 2 for no."
-  ["DOWNLOAD_BERT_VITS2_5"]: "Do you want to download deberta-v3-large? This model is an English BERT model used after version 2.0. It will occupy approximately 835MB. Enter 1 for yes, and 2 for no."
+  ["DOWNLOAD_BERT_VITS2_1"]="Do you want to download chinese-roberta-wwm-ext-large? This model is a Chinese BERT model used for the full version. It will occupy approximately 1.21GB. Enter 1 for yes, and 2 for no."
+  ["DOWNLOAD_BERT_VITS2_2"]="Do you want to download bert-base-japanese-v3? This model is a Japanese BERT model used before version 2.0. It will occupy approximately 426MB. Enter 1 for yes, and 2 for no."
+  ["DOWNLOAD_BERT_VITS2_3"]="Do you want to download bert-large-japanese-v2? Enter 1 for yes, and 2 for no."
+  ["DOWNLOAD_BERT_VITS2_4"]="Do you want to download deberta-v2-large-japanese? This model is a Japanese BERT model used after version 2.0. It will occupy approximately 1.38GB. Enter 1 for yes, and 2 for no."
+  ["DOWNLOAD_BERT_VITS2_5"]="Do you want to download deberta-v3-large? This model is an English BERT model used after version 2.0. It will occupy approximately 835MB. Enter 1 for yes, and 2 for no."
   ["MUST_DOWNLOAD_BERT_VITS2"]="To use Bert-VITS2, you must download these models, which will take up about 1.63GB."
   ["DOWNLOADED"]="File is downloaded correctly."
   ["CORRUPTED"]="The file may not have been downloaded, or the download might be incomplete, and it could also be corrupted."
@@ -52,11 +54,13 @@ ZH_MESSAGES=(
   ["DOWNLOADING"]="正在下载..."
   ["VERIFYING"]="正在校验"
   ["UNZIPPING"]="正在解压..."
+  ["CREATE_PLACEHOLDER_FILE"]="创建占位文件"
   ["CHOOSE_VERSION"]="你想下载哪个版本的docker-compose.yaml？"
   ["DOCKER_CPU"]="docker-compose.yaml (CPU版本)"
   ["DOCKER_GPU"]="docker-compose-gpu.yaml (GPU版本)"
-  ["ENTER_CHOICE"]="请输入您的选择 (1 或 2): "
-  ["INVALID_CHOICE"]="无效选择。 请重新输入 1 或 2。"
+  ["NO_DOWNLOAD"]="已有yaml文件，不下载"
+  ["ENTER_CHOICE"]="请输入您的选择: "
+  ["INVALID_CHOICE"]="无效的选择，请输入1、2或3。"
   ["DOWNLOAD_CONFIG"]="即将下载配置文件..."
   ["PULL_IMAGE"]="是否要开始拉取镜像？输入1表示是，2表示否。"
   ["DOWNLOAD_DICT"]="是否要下载pyopenjtalk的词典文件？输入1表示是，2表示否。"
@@ -99,10 +103,6 @@ fi
 mkdir -p $INSTALL_DIR
 cd $INSTALL_DIR
 
-if [ ! -f config.yml ]; then
-  touch "config.yml"
-fi
-
 download_with_fallback() {
   local filename=$1
   shift # Shift arguments to the left to handle URLs
@@ -127,10 +127,34 @@ version_gt() {
   test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1"
 }
 
+create_placeholder_files() {
+  for file_path in "$@"; do
+    directory=$(dirname "$file_path")
+    mkdir -p "$directory"
+    if [ -d "$file_path" ]; then
+      rm -rf "$file_path"
+    fi
+    if [ ! -f "$file_path" ]; then
+      touch "$file_path"
+      echo "${MESSAGES["CREATE_PLACEHOLDER_FILE"]}: $file_path"
+    fi
+  done
+}
+
+create_placeholder_files "config.yml" \
+  "bert_vits2/bert/bert-base-japanese-v3/pytorch_model.bin" \
+  "bert_vits2/bert/bert-large-japanese-v2/pytorch_model.bin" \
+  "bert_vits2/bert/chinese-roberta-wwm-ext-large/pytorch_model.bin" \
+  "bert_vits2/bert/deberta-v2-large-japanese/pytorch_model.bin" \
+  "bert_vits2/bert/deberta-v3-large/pytorch_model.bin" \
+  "bert_vits2/bert/deberta-v3-large/spm.model" \
+  "vits/bert/prosody_model.pt"
+
 while true; do
   echo -e "${GREEN}${MESSAGES["CHOOSE_VERSION"]}${PLAIN}"
   echo -e "1. ${MESSAGES["DOCKER_CPU"]}"
   echo -e "2. ${MESSAGES["DOCKER_GPU"]}"
+  echo -e "3. ${MESSAGES["NO_DOWNLOAD"]}"
   read -p "${MESSAGES["ENTER_CHOICE"]}" choice_gpu
   case $choice_gpu in
   1)
@@ -145,6 +169,9 @@ while true; do
     download_with_fallback docker-compose.yaml \
       "https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/docker-compose-gpu.yaml" \
       "https://ghproxy.com/https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/docker-compose-gpu.yaml"
+    break
+    ;;
+  3)
     break
     ;;
   *)
@@ -177,25 +204,21 @@ fi
 
 echo -e "${YELLOW}${MESSAGES["DOWNLOAD_CONFIG"]}${PLAIN}"
 
-if [ ! -f config.py ]; then
-  download_with_fallback config.py \
-    "https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/config.py" \
-    "https://ghproxy.com/https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/config.py"
-fi
-
-if [ ! -f gunicorn_config.py ]; then
-  download_with_fallback gunicorn_config.py \
-    "https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/gunicorn_config.py" \
-    "https://ghproxy.com/https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/gunicorn_config.py"
-fi
-
 download_with_fallback config.example.py \
   "https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/config.py" \
   "https://ghproxy.com/https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/config.py"
 
+if [ ! -f config.py ]; then
+  cp config.example.py config.py
+fi
+
 download_with_fallback gunicorn_config.example.py \
   "https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/gunicorn_config.py" \
   "https://ghproxy.com/https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/gunicorn_config.py"
+
+if [ ! -f gunicorn_config.py ]; then
+  cp gunicorn_config.example.py gunicorn_config.py
+fi
 
 echo -e "${GREEN}${MESSAGES["DOWNLOAD_DICT"]}${PLAIN}"
 echo -e "${GREEN}${MESSAGES["MUST_DOWNLOAD_JP"]}${PLAIN}"
@@ -229,7 +252,8 @@ if [ "$choice_download_vits_chinese" -eq 1 ]; then
   else
     echo "${MESSAGES["CORRUPTED"]}"
     download_with_fallback vits/bert/prosody_model.pt \
-      "https://huggingface.co/spaces/maxmax20160403/vits_chinese/resolve/main/bert/prosody_model.pt"
+      "https://huggingface.co/spaces/maxmax20160403/vits_chinese/resolve/main/bert/prosody_model.pt" \
+      "https://hf-mirror.com/spaces/maxmax20160403/vits_chinese/resolve/main/bert/prosody_model.pt"
   fi
 
 fi
@@ -250,13 +274,14 @@ if [ "$choice_download_bert_vits2_1" -eq 1 ]; then
   else
     echo ${MESSAGES["CORRUPTED"]}
     download_with_fallback bert_vits2/bert/chinese-roberta-wwm-ext-large/pytorch_model.bin \
-      "https://huggingface.co/hfl/chinese-roberta-wwm-ext-large/resolve/main/pytorch_model.bin"
+      "https://huggingface.co/hfl/chinese-roberta-wwm-ext-large/resolve/main/pytorch_model.bin" \
+      "https://hf-mirror.com/hfl/chinese-roberta-wwm-ext-large/resolve/main/pytorch_model.bin"
   fi
 fi
 
 echo -e "${GREEN}${MESSAGES["DOWNLOAD_BERT_VITS2_2"]}${PLAIN}"
 read -p "${MESSAGES["ENTER_CHOICE"]}" choice_download_bert_vits2_2
-  
+
 if [ "$choice_download_bert_vits2_2" -eq 1 ]; then
   mkdir -p bert_vits2/bert/bert-base-japanese-v3
 
@@ -270,14 +295,15 @@ if [ "$choice_download_bert_vits2_2" -eq 1 ]; then
   else
     echo ${MESSAGES["CORRUPTED"]}
     download_with_fallback bert_vits2/bert/bert-base-japanese-v3/pytorch_model.bin \
-      "https://huggingface.co/cl-tohoku/bert-base-japanese-v3/resolve/main/pytorch_model.bin"
+      "https://huggingface.co/cl-tohoku/bert-base-japanese-v3/resolve/main/pytorch_model.bin" \
+      "https://hf-mirror.com/cl-tohoku/bert-base-japanese-v3/resolve/main/pytorch_model.bin"
   fi
 
 fi
 
 echo -e "${GREEN}${MESSAGES["DOWNLOAD_BERT_VITS2_4"]}${PLAIN}"
 read -p "${MESSAGES["ENTER_CHOICE"]}" choice_download_bert_vits2_4
-  
+
 if [ "$choice_download_bert_vits2_4" -eq 1 ]; then
   mkdir -p bert_vits2/bert/deberta-v2-large-japanese
 
@@ -291,14 +317,15 @@ if [ "$choice_download_bert_vits2_4" -eq 1 ]; then
   else
     echo ${MESSAGES["CORRUPTED"]}
     download_with_fallback bert_vits2/bert/deberta-v2-large-japanese/pytorch_model.bin \
-      "https://huggingface.co/ku-nlp/deberta-v2-large-japanese/resolve/main/pytorch_model.bin"
+      "https://huggingface.co/ku-nlp/deberta-v2-large-japanese/resolve/main/pytorch_model.bin" \
+      "https://hf-mirror.com/ku-nlp/deberta-v2-large-japanese/resolve/main/pytorch_model.bin"
   fi
 
 fi
 
 echo -e "${GREEN}${MESSAGES["DOWNLOAD_BERT_VITS2_5"]}${PLAIN}"
 read -p "${MESSAGES["ENTER_CHOICE"]}" choice_download_bert_vits2_5
-  
+
 if [ "$choice_download_bert_vits2_5" -eq 1 ]; then
   mkdir -p bert_vits2/bert/deberta-v3-large
 
@@ -312,9 +339,10 @@ if [ "$choice_download_bert_vits2_5" -eq 1 ]; then
   else
     echo ${MESSAGES["CORRUPTED"]}
     download_with_fallback bert_vits2/bert/deberta-v3-large/pytorch_model.bin \
-      "https://huggingface.co/microsoft/deberta-v3-large/resolve/main/pytorch_model.bin"
+      "https://huggingface.co/microsoft/deberta-v3-large/resolve/main/pytorch_model.bin" \
+      "https://hf-mirror.com/microsoft/deberta-v3-large/resolve/main/pytorch_model.bin"
   fi
-  
+
   EXPECTED_MD5="1613FCBF3B82999C187B09C9DB79B568"
   FILE_PATH="bert_vits2/bert/deberta-v3-large/spm.model"
   echo -e "${MESSAGES["VERIFYING"]}$FILE_PATH"
@@ -325,7 +353,8 @@ if [ "$choice_download_bert_vits2_5" -eq 1 ]; then
   else
     echo ${MESSAGES["CORRUPTED"]}
     download_with_fallback bert_vits2/bert/deberta-v3-large/spm.model \
-      "https://huggingface.co/microsoft/deberta-v3-large/resolve/main/spm.model"
+      "https://huggingface.co/microsoft/deberta-v3-large/resolve/main/spm.model" \
+      "https://hf-mirror.com/microsoft/deberta-v3-large/resolve/main/spm.model"
   fi
 
 fi
