@@ -364,15 +364,19 @@
         if (vits_status) {
             $('#vits-button').addClass("active");
             $('#vits-page').addClass("active");
+            model_type =  1;
         } else if (w2v2_status) {
             $('#w2v2-vits-button').addClass("active");
             $('#w2v2-vits-page').addClass("active");
+            model_type =  2;
         } else if (bert_vits2_status) {
             $('#bert-vits2-button').addClass("active");
             $('#bert-vits2-page').addClass("active");
+            model_type =  3;
         } else {
             $('#vits-button').addClass("active");
             $('#vits-page').addClass("active");
+            model_type =  1;
         }
         setBaseUrl();
     });
