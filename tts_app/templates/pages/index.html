@@ -19,13 +19,14 @@
         </div>
 
         <div class="tabs w-100 border-b-2" id="component-2">
-            <button class="tab-button px-4 pb-2 pt-2 active " onclick="showContent(0)">VITS</button>
-            <button class="tab-button px-4 pb-2 pt-2" onclick="showContent(1)">W2V2-VITS</button>
-            <button class="tab-button px-4 pb-2 pt-2" onclick="showContent(2)">Bert-VITS2</button>
+            <button class="tab-button px-4 pb-2 pt-2" onclick="showContent(0)" id="vits-button">VITS</button>
+            <button class="tab-button px-4 pb-2 pt-2" onclick="showContent(1)" id="w2v2-vits-button">W2V2-VITS</button>
+            <button class="tab-button px-4 pb-2 pt-2" onclick="showContent(2)" id="bert-vits2-button">Bert-VITS2
+            </button>
         </div>
 
         <div class="content w-100 border-lr-2 border-b-2" id="component-3">
-            <div class="content-pane active w-100 flex-wrap">
+            <div class="content-pane w-100 flex-wrap" id="vits-page">
                 <form class="w-100">
                     <div class="mb-3">
                         <label>text</label>
@@ -112,7 +113,7 @@
                     </div>
                 </div>
             </div>
-            <div class="content-pane w-100 flex-wrap">
+            <div class="content-pane w-100 flex-wrap" id="w2v2-vits-page">
                 <form class="w-100">
                     <div class="mb-3">
                         <label>text</label>
@@ -205,7 +206,7 @@
                     </audio>
                 </div>
             </div>
-            <div class="content-pane w-100 flex-wrap">
+            <div class="content-pane w-100 flex-wrap" id="bert-vits2-page">
                 <form class="w-100">
                     <div class="mb-3">
                         <label>text</label>
@@ -359,7 +360,23 @@
         bert_vits2_status = true;
     {% endif %}
 
-    setBaseUrl();
+    $(document).ready(function () {
+        if (vits_status) {
+            $('#vits-button').addClass("active");
+            $('#vits-page').addClass("active");
+        } else if (w2v2_status) {
+            $('#w2v2-vits-button').addClass("active");
+            $('#w2v2-vits-page').addClass("active");
+        } else if (bert_vits2_status) {
+            $('#bert-vits2-button').addClass("active");
+            $('#bert-vits2-page').addClass("active");
+        } else {
+            $('#vits-button').addClass("active");
+            $('#vits-page').addClass("active");
+        }
+        setBaseUrl();
+    });
+
 
     function setBaseUrl() {
         var text = document.getElementById("input_text" + model_type).value;
