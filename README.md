@@ -305,17 +305,17 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 
 ## VITS
 
-| Name                   | Parameter | Is must | Default           | Type  | Instruction                                                  |
-| ---------------------- | --------- | ------- | ----------------- | ----- | ------------------------------------------------------------ |
-| Synthesized text       | text      | true    |                   | str   | Text needed for voice synthesis.                             |
-| Speaker ID             | id        | false   | From `config.yml` | int   | The speaker ID.                                              |
-| Audio format           | format    | false   | From `config.yml` | str   | Support for wav,ogg,silk,mp3,flac                            |
-| Text language          | lang      | false   | From `config.yml` | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
-| Audio length           | length    | false   | From `config.yml` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
-| Noise                  | noise     | false   | From `config.yml` | float | Sample noise, controlling the randomness of the synthesis.   |
-| SDP noise              | noisew    | false   | From `config.yml` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
-| Segmentation threshold | max       | false   | From `config.yml` | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
-| Streaming response     | streaming | false   | false             | bool  | Streamed synthesized speech with faster initial response.    |
+| Name               | Parameter    | Is must | Default           | Type  | Instruction                                                  |
+| ------------------ | ------------ | ------- | ----------------- | ----- | ------------------------------------------------------------ |
+| Synthesized text   | text         | true    |                   | str   | Text needed for voice synthesis.                             |
+| Speaker ID         | id           | false   | From `config.yml` | int   | The speaker ID.                                              |
+| Audio format       | format       | false   | From `config.yml` | str   | Support for wav,ogg,silk,mp3,flac                            |
+| Text language      | lang         | false   | From `config.yml` | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
+| Audio length       | length       | false   | From `config.yml` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise              | noise        | false   | From `config.yml` | float | Sample noise, controlling the randomness of the synthesis.   |
+| SDP noise          | noisew       | false   | From `config.yml` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
+| Segment Size       | segment_size | false   | From `config.yml` | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds segment_size. If segment_size<=0, the text will not be divided into paragraphs. |
+| Streaming response | streaming    | false   | false             | bool  | Streamed synthesized speech with faster initial response.    |
 
 ## VITS voice conversion
 
@@ -338,17 +338,17 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 
 ## W2V2-VITS
 
-| Name                   | Parameter | Is must | Default           | Type  | Instruction                                                  |
-| ---------------------- | --------- | ------- | ----------------- | ----- | ------------------------------------------------------------ |
-| Synthesized text       | text      | true    |                   | str   | Text needed for voice synthesis.                             |
-| Speaker ID             | id        | false   | From `config.yml` | int   | The speaker ID.                                              |
-| Audio format           | format    | false   | From `config.yml` | str   | Support for wav,ogg,silk,mp3,flac                            |
-| Text language          | lang      | false   | From `config.yml` | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
-| Audio length           | length    | false   | From `config.yml` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
-| Noise                  | noise     | false   | From `config.yml` | float | Sample noise, controlling the randomness of the synthesis.   |
-| SDP noise              | noisew    | false   | From `config.yml` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
-| Segmentation threshold | max       | false   | From `config.yml` | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
-| Dimensional emotion    | emotion   | false   | 0                 | int   | The range depends on the emotion reference file in npy format, such as the  range of the [innnky](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)'s model all_emotions.npy, which is 0-5457. |
+| Name                | Parameter    | Is must | Default           | Type  | Instruction                                                  |
+| ------------------- | ------------ | ------- | ----------------- | ----- | ------------------------------------------------------------ |
+| Synthesized text    | text         | true    |                   | str   | Text needed for voice synthesis.                             |
+| Speaker ID          | id           | false   | From `config.yml` | int   | The speaker ID.                                              |
+| Audio format        | format       | false   | From `config.yml` | str   | Support for wav,ogg,silk,mp3,flac                            |
+| Text language       | lang         | false   | From `config.yml` | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
+| Audio length        | length       | false   | From `config.yml` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise               | noise        | false   | From `config.yml` | float | Sample noise, controlling the randomness of the synthesis.   |
+| SDP noise           | noisew       | false   | From `config.yml` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
+| Segment Size        | segment_size | false   | From `config.yml` | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds segment_size. If segment_size<=0, the text will not be divided into paragraphs. |
+| Dimensional emotion | emotion      | false   | 0                 | int   | The range depends on the emotion reference file in npy format, such as the  range of the [innnky](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)'s model all_emotions.npy, which is 0-5457. |
 
 ## Dimensional emotion
 
@@ -358,17 +358,17 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 
 ## Bert-VITS2
 
-| Name                   | Parameter | Is must | Default           | Type  | Instruction                                                  |
-| ---------------------- | --------- | ------- | ----------------- | ----- | ------------------------------------------------------------ |
-| Synthesized text       | text      | true    |                   | str   | Text needed for voice synthesis.                             |
-| Speaker ID             | id        | false   | From `config.yml` | int   | The speaker ID.                                              |
-| Audio format           | format    | false   | From `config.yml` | str   | Support for wav,ogg,silk,mp3,flac                            |
-| Text language          | lang      | false   | From `config.yml` | str   | "Auto" is a mode for automatic language detection and is also the default mode. However, it currently only supports detecting the language of an entire text passage and cannot distinguish languages on a per-sentence basis. The other available language options are "zh" and "ja". |
-| Audio length           | length    | false   | From `config.yml` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
-| Noise                  | noise     | false   | From `config.yml` | float | Sample noise, controlling the randomness of the synthesis.   |
-| SDP noise              | noisew    | false   | From `config.yml` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
-| Segmentation threshold | max       | false   | From `config.yml` | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
-| SDP/DP mix ratio       | sdp_ratio | false   | From `config.yml` | int   | The theoretical proportion of SDP during synthesis, the higher the ratio, the larger the variance in synthesized voice tone. |
+| Name             | Parameter    | Is must | Default           | Type  | Instruction                                                  |
+| ---------------- | ------------ | ------- | ----------------- | ----- | ------------------------------------------------------------ |
+| Synthesized text | text         | true    |                   | str   | Text needed for voice synthesis.                             |
+| Speaker ID       | id           | false   | From `config.yml` | int   | The speaker ID.                                              |
+| Audio format     | format       | false   | From `config.yml` | str   | Support for wav,ogg,silk,mp3,flac                            |
+| Text language    | lang         | false   | From `config.yml` | str   | "Auto" is a mode for automatic language detection and is also the default mode. However, it currently only supports detecting the language of an entire text passage and cannot distinguish languages on a per-sentence basis. The other available language options are "zh" and "ja". |
+| Audio length     | length       | false   | From `config.yml` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise            | noise        | false   | From `config.yml` | float | Sample noise, controlling the randomness of the synthesis.   |
+| SDP noise        | noisew       | false   | From `config.yml` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
+| Segment Size     | segment_size | false   | From `config.yml` | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds segment_size. If segment_size<=0, the text will not be divided into paragraphs. |
+| SDP/DP mix ratio | sdp_ratio    | false   | From `config.yml` | int   | The theoretical proportion of SDP during synthesis, the higher the ratio, the larger the variance in synthesized voice tone. |
 
 ## SSML (Speech Synthesis Markup Language)
 
@@ -376,33 +376,33 @@ Supported Elements and Attributes
 
 `speak` Element
 
-| Attribute  | Instruction                                                  | Is must |
-| ---------- | ------------------------------------------------------------ | ------- |
-| id         | Default value is retrieved From `config.yml`                 | false   |
-| lang       | Default value is retrieved From `config.yml`                 | false   |
-| length     | Default value is retrieved From `config.yml`                 | false   |
-| noise      | Default value is retrieved From `config.yml`                 | false   |
-| noisew     | Default value is retrieved From `config.yml`                 | false   |
-| max        | Splits text into segments based on punctuation marks. When the sum of segment lengths exceeds `max`, it is treated as one segment. `max<=0` means no segmentation. The default value is 0. | false   |
-| model_type | Default is VITS. Options: W2V2-VITS, BERT-VITS2              | false   |
-| emotion    | Only effective when using W2V2-VITS . The range depends on the npy emotion reference file. | false   |
-| sdp_ratio  | Only effective when using BERT-VITS2 .                       | false   |
+| Attribute    | Instruction                                                  | Is must |
+| ------------ | ------------------------------------------------------------ | ------- |
+| id           | Default value is retrieved From `config.yml`                 | false   |
+| lang         | Default value is retrieved From `config.yml`                 | false   |
+| length       | Default value is retrieved From `config.yml`                 | false   |
+| noise        | Default value is retrieved From `config.yml`                 | false   |
+| noisew       | Default value is retrieved From `config.yml`                 | false   |
+| segment_size | Splits text into segments based on punctuation marks. When the sum of segment lengths exceeds `segment_size`, it is treated as one segment. `segment_size<=0` means no segmentation. The default value is 0. | false   |
+| model_type   | Default is VITS. Options: W2V2-VITS, BERT-VITS2              | false   |
+| emotion      | Only effective when using W2V2-VITS . The range depends on the npy emotion reference file. | false   |
+| sdp_ratio    | Only effective when using BERT-VITS2 .                       | false   |
 
 `voice` Element
 
 Higher priority than `speak`.
 
-| Attribute  | Instruction                                                  | Is must |
-| ---------- | ------------------------------------------------------------ | ------- |
-| id         | Default value is retrieved From `config.yml`                 | false   |
-| lang       | Default value is retrieved From `config.yml`                 | false   |
-| length     | Default value is retrieved From `config.yml`                 | false   |
-| noise      | Default value is retrieved From `config.yml`                 | false   |
-| noisew     | Default value is retrieved From `config.yml`                 | false   |
-| max        | Splits text into segments based on punctuation marks. When the sum of segment lengths exceeds `max`, it is treated as one segment. `max<=0` means no segmentation. The default value is 0. | false   |
-| model_type | Default is VITS. Options: W2V2-VITS, BERT-VITS2              | false   |
-| emotion    | Only effective when using W2V2-VITS . The range depends on the npy emotion reference file. | false   |
-| sdp_ratio  | Only effective when using BERT-VITS2 .                       | false   |
+| Attribute    | Instruction                                                  | Is must |
+| ------------ | ------------------------------------------------------------ | ------- |
+| id           | Default value is retrieved From `config.yml`                 | false   |
+| lang         | Default value is retrieved From `config.yml`                 | false   |
+| length       | Default value is retrieved From `config.yml`                 | false   |
+| noise        | Default value is retrieved From `config.yml`                 | false   |
+| noisew       | Default value is retrieved From `config.yml`                 | false   |
+| segment_size | Splits text into segments based on punctuation marks. When the sum of segment lengths exceeds `segment_size`, it is treated as one segment. `segment_size<=0` means no segmentation. The default value is 0. | false   |
+| model_type   | Default is VITS. Options: W2V2-VITS, BERT-VITS2              | false   |
+| emotion      | Only effective when using W2V2-VITS . The range depends on the npy emotion reference file. | false   |
+| sdp_ratio    | Only effective when using BERT-VITS2 .                       | false   |
 
 `break` Element
 

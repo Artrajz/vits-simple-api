@@ -25,7 +25,7 @@ def voice_speakers():
 
 
 # 语音合成 voice vits
-def voice_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, max=50, save_audio=True,
+def voice_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, segment_size=50, save_audio=True,
                save_path=None):
     fields = {
         "text": text,
@@ -35,7 +35,7 @@ def voice_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noi
         "length": str(length),
         "noise": str(noise),
         "noisew": str(noisew),
-        "max": str(max)
+        "segment_size": str(segment_size)
     }
     boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
 
@@ -57,7 +57,7 @@ def voice_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noi
     return None
 
 
-def voice_vits_streaming(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, max=50,
+def voice_vits_streaming(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, segment_size=50,
                          save_audio=True, save_path=None):
     fields = {
         "text": text,
@@ -67,7 +67,7 @@ def voice_vits_streaming(text, id=0, format="wav", lang="auto", length=1, noise=
         "length": str(length),
         "noise": str(noise),
         "noisew": str(noisew),
-        "max": str(max),
+        "segment_size": str(segment_size),
         "streaming": 'True'
     }
     boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
@@ -90,7 +90,7 @@ def voice_vits_streaming(text, id=0, format="wav", lang="auto", length=1, noise=
     return None
 
 
-def voice_vits_streaming(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, max=50,
+def voice_vits_streaming(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, segment_size=50,
                          save_path=None):
     fields = {
         "text": text,
@@ -100,7 +100,7 @@ def voice_vits_streaming(text, id=0, format="wav", lang="auto", length=1, noise=
         "length": str(length),
         "noise": str(noise),
         "noisew": str(noisew),
-        "max": str(max),
+        "segment_size": str(segment_size),
         "streaming": 'True'
     }
     boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
@@ -192,7 +192,7 @@ def voice_hubert_vits(upload_path, id, format="wav", length=1, noise=0.667, nois
 
 
 # 维度情感模型 w2v2-vits
-def voice_w2v2_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, max=50, emotion=0,
+def voice_w2v2_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, segment_size=50, emotion=0,
                     save_audio=True, save_path=None):
     fields = {
         "text": text,
@@ -202,7 +202,7 @@ def voice_w2v2_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667
         "length": str(length),
         "noise": str(noise),
         "noisew": str(noisew),
-        "max": str(max),
+        "segment_size": str(segment_size),
         "emotion": str(emotion)
     }
     boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
@@ -312,7 +312,7 @@ def voice_dimensional_emotion(upload_path, save_audio=True,
     return None
 
 
-def vits_json(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, max=50,
+def vits_json(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, segment_size=50,
               save_path=None):
     fields = {
         "text": text,
@@ -322,7 +322,7 @@ def vits_json(text, id=0, format="wav", lang="auto", length=1, noise=0.667, nois
         "length": str(length),
         "noise": str(noise),
         "noisew": str(noisew),
-        "max": str(max)
+        "segment_size": str(segment_size)
     }
     f = json.dumps(fields)
     url = f"{base_url}/voice"
@@ -342,7 +342,7 @@ def vits_json(text, id=0, format="wav", lang="auto", length=1, noise=0.667, nois
 
 
 # Bert_vits2
-def voice_bert_vits2(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, max=50, sdp_ratio=0.2,
+def voice_bert_vits2(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, segment_size=50, sdp_ratio=0.2,
                      save_audio=True, save_path=None):
     fields = {
         "text": text,
@@ -352,7 +352,7 @@ def voice_bert_vits2(text, id=0, format="wav", lang="auto", length=1, noise=0.66
         "length": str(length),
         "noise": str(noise),
         "noisew": str(noisew),
-        "max": str(max),
+        "segment_size": str(segment_size),
         "sdp_ratio": str(sdp_ratio)
     }
     boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))

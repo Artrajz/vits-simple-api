@@ -76,7 +76,7 @@ def split_by_language(text: str, target_languages: list = None) -> list:
     return sentences_list
 
 
-def sentence_split(text: str, max: int) -> list:
+def sentence_split(text: str, segment_size: int) -> list:
     pattern = r'[!(),—+\-.:;?？。，、；：]+'
     sentences = re.split(pattern, text)
     discarded_chars = re.findall(pattern, text)
@@ -86,7 +86,7 @@ def sentence_split(text: str, max: int) -> list:
     # 按被分割的符号遍历
     for i, discarded_chars in enumerate(discarded_chars):
         count += len(sentences[i]) + len(discarded_chars)
-        if count >= max:
+        if count >= segment_size:
             sentences_list.append(text[p:p + count].strip())
             p += count
             count = 0
@@ -101,7 +101,7 @@ def sentence_split(text: str, max: int) -> list:
     return sentences_list
 
 
-def sentence_split_and_markup(text, max=50, lang="auto", speaker_lang=None):
+def sentence_split_and_markup(text, segment_size=50, lang="auto", speaker_lang=None):
     # 如果该speaker只支持一种语言
     if speaker_lang is not None and len(speaker_lang) == 1:
         if lang.upper() not in ["AUTO", "MIX"] and lang.lower() != speaker_lang[0]:
@@ -111,12 +111,12 @@ def sentence_split_and_markup(text, max=50, lang="auto", speaker_lang=None):
 
     sentences_list = []
     if lang.upper() != "MIX":
-        if max <= 0:
+        if segment_size <= 0:
             sentences_list.append(
                 markup_language(text,
                                 speaker_lang) if lang.upper() == "AUTO" else f"[{lang.upper()}]{text}[{lang.upper()}]")
         else:
-            for i in sentence_split(text, max):
+            for i in sentence_split(text, segment_size):
                 if check_is_none(i): continue
                 sentences_list.append(
                     markup_language(i,
@@ -133,7 +133,7 @@ def sentence_split_and_markup(text, max=50, lang="auto", speaker_lang=None):
 if __name__ == '__main__':
     text = "这几天心里颇不宁静。今晚在院子里坐着乘凉，忽然想起日日走过的荷塘，在这满月的光里，总该另有一番样子吧。月亮渐渐地升高了，墙外马路上孩子们的欢笑，已经听不见了；妻在屋里拍着闰儿，迷迷糊糊地哼着眠歌。我悄悄地披了大衫，带上门出去。"
     print(markup_language(text, target_languages=None))
-    print(sentence_split(text, max=50))
-    print(sentence_split_and_markup(text, max=50, lang="auto", speaker_lang=None))
+    print(sentence_split(text, segment_size=50))
+    print(sentence_split_and_markup(text, segment_size=50, lang="auto", speaker_lang=None))
     text = "你好hello，这是一段用来测试vits自动标注的文本。こんにちは,これは自動ラベリングのテスト用テキストです.Hello, this is a piece of text to test autotagging."
     print(split_by_language(text, ["zh", "ja", "en"]))
