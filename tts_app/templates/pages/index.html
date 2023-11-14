@@ -96,27 +96,26 @@
                 </form>
 
 
-                <div class="flex flex-wrap  w-100"
-                     style="justify-content: center; align-items: center; height: 80px; margin-top: 20px; margin-bottom: 20px; border: 1px solid rgba(0,0,0,.125); border-radius: 0.25rem;">
-
-
+                <div class="player flex flex-wrap  w-100">
+                    <audio id="audioPlayer1" controls>
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+                <div class="play-button">
                     <button type="button" class="btn btn-outline-secondary" onclick="setAudioSourceByPost()"
                             style="margin-right: 10px">
                         播放器生成
                     </button>
-                    <audio id="audioPlayer1" controls>
-                        <source src="" type="audio/mp3"/>
-                        Your browser does not support the audio element.
-                    </audio>
                     <button type="button" class="btn btn-outline-secondary" onclick="downloadAudio()"
-                            style="margin-right: 10px">
+                            id="downloadButton1" disabled>
                         下载音频
                     </button>
-                    <div class="mb-3 form-check">
+                    <div class="form-check">
                         <input type="checkbox" id="streaming1" onchange="updateLink()">
                         <label class="form-check-label" data-toggle="tooltip" data-placement="top"
                                title="按照max分段推理文本，推理好一段即输出，无需等待所有文本都推理完毕">流式响应</label>
                     </div>
+
                 </div>
             </div>
             <div class="content-pane w-100 flex-wrap" id="w2v2-vits-page">
@@ -200,19 +199,18 @@
                     </div>
                 </form>
 
-                <div class="flex flex-wrap  w-100"
-                     style="justify-content: center; align-items: center; height: 80px; margin-top: 20px; margin-bottom: 20px; border: 1px solid rgba(0,0,0,.125); border-radius: 0.25rem;">
-
+                <div class="player flex flex-wrap w-100">
                     <audio id="audioPlayer2" controls>
-                        <source src="" type="audio/mp3"/>
                         Your browser does not support the audio element.
                     </audio>
+                </div>
+                <div class="play-button">
                     <button type="button" class="btn btn-outline-secondary" onclick="setAudioSourceByPost()"
                             style="margin-right: 10px">
                         播放器生成
                     </button>
                     <button type="button" class="btn btn-outline-secondary" onclick="downloadAudio()"
-                            style="margin-right: 10px">
+                            id="downloadButton2" disabled>
                         下载音频
                     </button>
                 </div>
@@ -297,26 +295,28 @@
                 </form>
 
 
-                <div class="flex flex-wrap  w-100"
-                     style="justify-content: center; align-items: center; height: 80px; margin-top: 20px; margin-bottom: 20px; border: 1px solid rgba(0,0,0,.125); border-radius: 0.25rem;">
+                <div class="player flex flex-wrap  w-100">
+                    <audio id="audioPlayer3" controls>
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+
+                <div class="play-button">
                     <button type="button" class="btn btn-outline-secondary" onclick="setAudioSourceByPost()"
                             style="margin-right: 10px">
                         播放器生成
                     </button>
-                    <audio id="audioPlayer3" controls>
-                        <source src="" type="audio/mp3"/>
-                        Your browser does not support the audio element.
-                    </audio>
                     <button type="button" class="btn btn-outline-secondary" onclick="downloadAudio()"
-                            style="margin-right: 10px">
+                            id="downloadButton3" disabled>
                         下载音频
                     </button>
-                    <div class="mb-3 form-check">
+                    <div class="form-check">
                         <input type="checkbox" id="streaming3" onchange="updateLink()">
                         <label class="form-check-label" data-toggle="tooltip" data-placement="top"
                                title="按照max分段推理文本，推理好一段即输出，无需等待所有文本都推理完毕">流式响应</label>
                     </div>
                 </div>
+
             </div>
         </div>
 

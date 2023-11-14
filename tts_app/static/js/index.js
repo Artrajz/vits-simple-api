@@ -199,7 +199,9 @@ function setAudioSourceByPost() {
 
         data.sdp_ratio = sdp_ratio;
     }
-
+    
+    let downloadButton = document.getElementById("downloadButton" + currentModelPage);
+    
     $.ajax({
         url: url,
         method: 'POST',
@@ -218,10 +220,13 @@ function setAudioSourceByPost() {
             audioPlayer.src = URL.createObjectURL(blob);
             audioPlayer.load();
             audioPlayer.play();
+            
+            downloadButton.disabled = false;
         },
         error: function (error) {
             console.error('Error:', error);
             alert("无法获取音频数据");
+            downloadButton.disabled = true;
         }
     });
 

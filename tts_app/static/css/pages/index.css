@@ -26,7 +26,7 @@
     border-top: 2px solid transparent;
     border-left: 2px solid transparent;
     border-right: 2px solid transparent;
-    border-bottom: 0px;
+    border-bottom: 0;
     border-top-left-radius: 0.5rem;
     border-top-right-radius: 0.5rem;
     color: gray;
@@ -72,3 +72,35 @@ button {
     margin-left: 10px;
     margin-right: 10px;
 }
+
+.player {
+    justify-content: center;
+    align-items: center;
+    height: 80px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(0, 0, 0, .125);
+    border-radius: 0.25rem;
+    /*background-color: rgba(238, 238, 238, 0.2);*/
+}
+
+.player audio {
+    width: 600px;
+}
+
+.play-button {
+    display: flex;
+
+}
+
+
+.play-button .form-check input, .play-button .form-check label {
+    display: inline-block;
+    vertical-align: middle
+}
+
+.play-button .form-check label{
+    margin-top:8px;
+}
+
+
