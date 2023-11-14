@@ -130,7 +130,7 @@ class TTSManager(Observer):
                 length = float(element.attrib.get("length", root.attrib.get("length", config.LENGTH)))
                 noise = float(element.attrib.get("noise", root.attrib.get("noise", config.NOISE)))
                 noisew = float(element.attrib.get("noisew", root.attrib.get("noisew", config.NOISEW)))
-                max = int(element.attrib.get("max", root.attrib.get("max", "0")))
+                segment_size = int(element.attrib.get("segment_size", root.attrib.get("segment_size", "0")))
                 # 不填写默认就是vits
                 model_type = element.attrib.get("model_type", root.attrib.get("model_type", "vits"))
                 # w2v2-vits/emotion-vits才有emotion
@@ -170,7 +170,7 @@ class TTSManager(Observer):
                                             "length": length,
                                             "noise": noise,
                                             "noisew": noisew,
-                                            "max": max,
+                                            "segment_size": segment_size,
                                             "model_type": model_type,
                                             "emotion": emotion,
                                             "sdp_ratio": sdp_ratio,
@@ -228,7 +228,7 @@ class TTSManager(Observer):
             state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
         sampling_rate = model.sampling_rate
 
-        sentences_list = sentence_split_and_markup(state["text"], state["max"], state["lang"], state["speaker_lang"])
+        sentences_list = sentence_split_and_markup(state["text"], state["segment_size"], state["lang"], state["speaker_lang"])
         # 停顿0.5s，避免语音分段合成再拼接后的连接突兀
         brk = np.zeros(int(0.5 * sampling_rate), dtype=np.int16)
 
@@ -265,7 +265,7 @@ class TTSManager(Observer):
             state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
         sampling_rate = model.sampling_rate
 
-        sentences_list = sentence_split_and_markup(state["text"], state["max"], state["lang"], state["speaker_lang"])
+        sentences_list = sentence_split_and_markup(state["text"], state["segment_size"], state["lang"], state["speaker_lang"])
         # 停顿0.5s，避免语音分段合成再拼接后的连接突兀
         brk = np.zeros(int(0.5 * sampling_rate), dtype=np.int16)
 
@@ -307,7 +307,7 @@ class TTSManager(Observer):
 
         sampling_rate = model.sampling_rate
 
-        sentences_list = sentence_split_and_markup(state["text"], state["max"], state["lang"], state["speaker_lang"])
+        sentences_list = sentence_split_and_markup(state["text"], state["segment_size"], state["lang"], state["speaker_lang"])
         # 停顿0.5s，避免语音分段合成再拼接后的连接突兀
         brk = np.zeros(int(0.5 * sampling_rate), dtype=np.int16)
 
@@ -361,7 +361,7 @@ class TTSManager(Observer):
         audios = []
 
         for (text, lang) in sentences_list:
-            sentences = sentence_split(text, state["max"])
+            sentences = sentence_split(text, state["segment_size"])
             for sentence in sentences:
                 audio = model.infer(sentence, state["id"], lang, state["sdp_ratio"], state["noise"],
                                     state["noise"], state["length"])
@@ -384,7 +384,7 @@ class TTSManager(Observer):
         # audios = []
 
         for (text, lang) in sentences_list:
-            sentences = sentence_split(text, state["max"])
+            sentences = sentence_split(text, state["segment_size"])
             for sentence in sentences:
                 audio = model.infer(sentence, state["id"], lang, state["sdp_ratio"], state["noise"],
                                     state["noise"], state["length"])

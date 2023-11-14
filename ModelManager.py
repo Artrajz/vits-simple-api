@@ -174,7 +174,7 @@ class ModelManager(Subject):
 
         if model_type == ModelType.W2V2_VITS:
             if self.emotion_reference is None:
-                self.emotion_reference = self.load_npy(config["model_config"]["dimensional_emotion_model"])
+                self.emotion_reference = self.load_npy(config["model_config"]["dimensional_emotion_npy"])
             model_args.update({"emotion_reference": self.emotion_reference,
                                "dimensional_emotion_model": self.dimensional_emotion_model})
 

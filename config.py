@@ -109,8 +109,8 @@ NOISE = 0.33
 NOISEW = 0.4
 
 # 长文本分段阈值，max<=0表示不分段.
-# Batch processing threshold. Text will not be processed in batches if max<=0
-MAX = 50
+# Batch processing threshold. Text will not be processed in batches if segment<=0
+SEGMENT = 50
 
 # Bert_VITS2
 SDP_RATIO = 0.2

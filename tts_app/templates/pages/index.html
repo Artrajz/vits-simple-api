@@ -98,7 +98,9 @@
 
                 <div class="flex flex-wrap  w-100"
                      style="justify-content: center; align-items: center; height: 80px; margin-top: 20px; margin-bottom: 20px; border: 1px solid rgba(0,0,0,.125); border-radius: 0.25rem;">
-                    <button type="button" class="btn btn-outline-secondary" onclick="setAudioSource()"
+
+
+                    <button type="button" class="btn btn-outline-secondary" onclick="setAudioSourceByPost()"
                             style="margin-right: 10px">
                         播放器生成
                     </button>
@@ -106,6 +108,10 @@
                         <source src="" type="audio/mp3"/>
                         Your browser does not support the audio element.
                     </audio>
+                    <button type="button" class="btn btn-outline-secondary" onclick="downloadAudio()"
+                            style="margin-right: 10px">
+                        下载音频
+                    </button>
                     <div class="mb-3 form-check">
                         <input type="checkbox" id="streaming1" onchange="updateLink()">
                         <label class="form-check-label" data-toggle="tooltip" data-placement="top"
@@ -196,14 +202,19 @@
 
                 <div class="flex flex-wrap  w-100"
                      style="justify-content: center; align-items: center; height: 80px; margin-top: 20px; margin-bottom: 20px; border: 1px solid rgba(0,0,0,.125); border-radius: 0.25rem;">
-                    <button type="button" class="btn btn-outline-secondary" onclick="setAudioSource()"
-                            style="margin-right: 10px">
-                        播放器生成
-                    </button>
+
                     <audio id="audioPlayer2" controls>
                         <source src="" type="audio/mp3"/>
                         Your browser does not support the audio element.
                     </audio>
+                    <button type="button" class="btn btn-outline-secondary" onclick="setAudioSourceByPost()"
+                            style="margin-right: 10px">
+                        播放器生成
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="downloadAudio()"
+                            style="margin-right: 10px">
+                        下载音频
+                    </button>
                 </div>
             </div>
             <div class="content-pane w-100 flex-wrap" id="bert-vits2-page">
@@ -288,7 +299,7 @@
 
                 <div class="flex flex-wrap  w-100"
                      style="justify-content: center; align-items: center; height: 80px; margin-top: 20px; margin-bottom: 20px; border: 1px solid rgba(0,0,0,.125); border-radius: 0.25rem;">
-                    <button type="button" class="btn btn-outline-secondary" onclick="setAudioSource()"
+                    <button type="button" class="btn btn-outline-secondary" onclick="setAudioSourceByPost()"
                             style="margin-right: 10px">
                         播放器生成
                     </button>
@@ -296,6 +307,10 @@
                         <source src="" type="audio/mp3"/>
                         Your browser does not support the audio element.
                     </audio>
+                    <button type="button" class="btn btn-outline-secondary" onclick="downloadAudio()"
+                            style="margin-right: 10px">
+                        下载音频
+                    </button>
                     <div class="mb-3 form-check">
                         <input type="checkbox" id="streaming3" onchange="updateLink()">
                         <label class="form-check-label" data-toggle="tooltip" data-placement="top"
@@ -331,185 +346,6 @@
 
 {% include 'includes/scripts.html' %}
 
-<script>
-    $(function () {
-        $('[data-toggle="tooltip"]').tooltip()
-    })
-
-    function getProtocol() {
-        return 'https:' == location.protocol ? "https://" : "http://";
-    }
-
-    function getUrl() {
-        var url = window.location.host;
-        return url;
-    }
-
-    var baseUrl = getProtocol() + getUrl();
-    var model_type = 1;
-    var vits_status = false;
-    var w2v2_status = false;
-    var bert_vits2_status = false;
-    {% if vits_speakers_count > 0 %}
-        vits_status = true;
-    {% endif %}
-    {% if w2v2_speakers_count > 0 %}
-        w2v2_status = true;
-    {% endif %}
-    {% if bert_vits2_speakers_count > 0 %}
-        bert_vits2_status = true;
-    {% endif %}
-
-    $(document).ready(function () {
-        if (vits_status) {
-            $('#vits-button').addClass("active");
-            $('#vits-page').addClass("active");
-            model_type =  1;
-        } else if (w2v2_status) {
-            $('#w2v2-vits-button').addClass("active");
-            $('#w2v2-vits-page').addClass("active");
-            model_type =  2;
-        } else if (bert_vits2_status) {
-            $('#bert-vits2-button').addClass("active");
-            $('#bert-vits2-page').addClass("active");
-            model_type =  3;
-        } else {
-            $('#vits-button').addClass("active");
-            $('#vits-page').addClass("active");
-            model_type =  1;
-        }
-        setBaseUrl();
-    });
-
-
-    function setBaseUrl() {
-        var text = document.getElementById("input_text" + model_type).value;
-        var id = document.getElementById("input_id" + model_type).value;
-
-        var vits_link = document.getElementById("vits_link");
-        var speakers_link = document.getElementById("speakers_link");
-
-        var vits_url = baseUrl + "/voice/vits?text=" + text + "&id=" + id;
-        var speakers_url = baseUrl + "/voice/speakers";
-
-        vits_link.href = vits_url;
-        vits_link.textContent = vits_url;
-
-        speakers_link.href = speakers_url;
-        speakers_link.textContent = speakers_url;
-    }
-
-    function getLink() {
-        var text = document.getElementById("input_text" + model_type).value;
-        var id = document.getElementById("input_id" + model_type).value;
-        var format = document.getElementById("input_format" + model_type).value;
-        var lang = document.getElementById("input_lang" + model_type).value;
-        var length = document.getElementById("input_length" + model_type).value;
-        var noise = document.getElementById("input_noise" + model_type).value;
-        var noisew = document.getElementById("input_noisew" + model_type).value;
-        var max = document.getElementById("input_max" + model_type).value;
-
-        if (model_type == 1) {
-            var url = baseUrl + "/voice/vits?text=" + text + "&id=" + id;
-            var streaming = document.getElementById('streaming' + model_type);
-        } else if (model_type == 2) {
-            var emotion = document.getElementById('emotion').value;
-            var url = baseUrl + "/voice/w2v2-vits?text=" + text + "&id=" + id + "&emotion=" + emotion;
-        } else if (model_type == 3) {
-            var sdp_ratio = document.getElementById("input_sdp_ratio").value;
-            var url = baseUrl + "/voice/bert-vits2?text=" + text + "&id=" + id;
-            var streaming = document.getElementById('streaming3');
-        }
-        if (format != "") {
-            url += "&format=" + format;
-        }
-        if (lang != "") {
-            url += "&lang=" + lang;
-        }
-        if (length != "") {
-            url += "&length=" + length;
-        }
-        if (noise != "") {
-            url += "&noise=" + noise;
-        }
-        if (noisew != "") {
-            url += "&noisew=" + noisew;
-        }
-        if (max != "") {
-            url += "&max=" + max;
-        }
-        if ((model_type == 1 || model_type == 3) && streaming.checked) {
-            url += '&streaming=true';
-        }
-        if (model_type == 3 && sdp_ratio != "") {
-            url += "&sdp_ratio=" + sdp_ratio;
-        }
-
-        return url;
-    }
-
-    function updateLink() {
-        var url = getLink();
-        var link = document.getElementById("vits_link");
-        link.href = url;
-        link.textContent = url;
-    }
-
-    function setAudioSource() {
-        if (model_type == 1 && !vits_status) {
-            alert("未加载VITS模型");
-            return;
-        }
-        if (model_type == 2 && !w2v2_status) {
-            alert("未加载W2V2-VITS模型");
-            return;
-        }
-        if (model_type == 3 && !bert_vits2_status) {
-            alert("未加载Bert-VITS2模型");
-            return;
-        }
-        var url = getLink();
-
-        // Add a timestamp parameter to prevent browser caching
-        var timestamp = new Date().getTime();
-        url += '&t=' + timestamp;
-
-        var audioPlayer = document.getElementById("audioPlayer" + model_type);
-        audioPlayer.src = url;
-        audioPlayer.play();
-    }
-
-    function showContent(index) {
-        const panes = document.querySelectorAll(".content-pane");
-        const buttons = document.querySelectorAll(".tab-button");
-        model_type = index + 1;
-
-        for (let i = 0; i < panes.length; i++) {
-            if (i === index) {
-                panes[i].classList.add("active");
-                buttons[i].classList.add("active");
-
-            } else {
-                panes[i].classList.remove("active");
-                buttons[i].classList.remove("active");
-            }
-        }
-        updateLink();
-    }
-
-    document.querySelectorAll('.slider-group').forEach(function (group) {
-        group.addEventListener("input", function (event) {
-            if (event.target.matches('.slider')) {
-                let value = event.target.value;
-                group.querySelector('.slider-input').value = value;
-                group.querySelector('.slider-value').textContent = value;
-            } else if (event.target.matches('.slider-input')) {
-                let value = event.target.value;
-                group.querySelector('.slider').value = value;
-                group.querySelector('.slider-value').textContent = value;
-            }
-        });
-    });
-</script>
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
 </body>
 </html>

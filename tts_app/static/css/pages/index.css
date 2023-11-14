@@ -67,3 +67,8 @@
 label {
     margin-bottom: 0.5rem;
 }
+
+button {
+    margin-left: 10px;
+    margin-right: 10px;
+}
