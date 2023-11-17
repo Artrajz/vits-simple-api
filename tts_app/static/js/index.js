@@ -60,7 +60,7 @@ function getLink() {
     let length = document.getElementById("input_length" + currentModelPage).value;
     let noise = document.getElementById("input_noise" + currentModelPage).value;
     let noisew = document.getElementById("input_noisew" + currentModelPage).value;
-    let max = document.getElementById("input_max" + currentModelPage).value;
+    let segment_size = document.getElementById("input_segment_size" + currentModelPage).value;
 
     let url = baseUrl
     let streaming = null;
@@ -95,8 +95,8 @@ function getLink() {
     if (noisew != "") {
         url += "&noisew=" + noisew;
     }
-    if (max != "") {
-        url += "&max=" + max;
+    if (segment_size != "") {
+        url += "&segment_size=" + segment_size;
     }
 
     if (currentModelPage == 1) {
@@ -163,7 +163,7 @@ function setAudioSourceByPost() {
     let length = $("#input_length" + currentModelPage).val();
     let noise = $("#input_noise" + currentModelPage).val();
     let noisew = $("#input_noisew" + currentModelPage).val();
-    let max = $("#input_max" + currentModelPage).val();
+    let segment_size = $("#input_segment_size" + currentModelPage).val();
 
     let url = "";
     let streaming = null;
@@ -189,7 +189,7 @@ function setAudioSourceByPost() {
         length: length,
         noise: noise,
         noisew: noisew,
-        max: max
+        segment_size: segment_size
     };
 
     if ((currentModelPage == 1 || currentModelPage == 3) && streaming.checked) {

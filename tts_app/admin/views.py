@@ -90,7 +90,7 @@ def get_config():
     dict_data["DEVICE"] = str(dict_data["DEVICE"])
 
     dict_data = user2str(dict_data)
-
+    
     return jsonify(dict_data)
 
 

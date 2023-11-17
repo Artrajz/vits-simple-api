@@ -88,8 +88,8 @@
                         </div>
                         <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
-                                   title="按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。">max</label>
-                            <input type="number" class="form-control" id="input_max1" oninput="updateLink()" value=""
+                                   title="按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段。">segment_size</label>
+                            <input type="number" class="form-control" id="input_segment_size1" oninput="updateLink()" value=""
                                    placeholder="50" step="1"/>
                         </div>
                     </div>
@@ -113,7 +113,7 @@
                     <div class="form-check">
                         <input type="checkbox" id="streaming1" onchange="updateLink()">
                         <label class="form-check-label" data-toggle="tooltip" data-placement="top"
-                               title="按照max分段推理文本，推理好一段即输出，无需等待所有文本都推理完毕">流式响应</label>
+                               title="按照segment_size分段推理文本，推理好一段即输出，无需等待所有文本都推理完毕">流式响应</label>
                     </div>
 
                 </div>
@@ -192,8 +192,8 @@
                         </div>
                         <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
-                                   title="按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。">max</label>
-                            <input type="number" class="form-control" id="input_max2" oninput="updateLink()" value=""
+                                   title="按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段。">segment_size</label>
+                            <input type="number" class="form-control" id="input_segment_size2" oninput="updateLink()" value=""
                                    placeholder="50" step="1"/>
                         </div>
                     </div>
@@ -277,8 +277,8 @@
                         </div>
                         <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
-                                   title="按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。">max</label>
-                            <input type="number" class="form-control" id="input_max3" oninput="updateLink()" value=""
+                                   title="按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段。">segment_size</label>
+                            <input type="number" class="form-control" id="input_segment_size3" oninput="updateLink()" value=""
                                    placeholder="50" step="1"/>
                         </div>
 
@@ -313,7 +313,7 @@
                     <div class="form-check">
                         <input type="checkbox" id="streaming3" onchange="updateLink()">
                         <label class="form-check-label" data-toggle="tooltip" data-placement="top"
-                               title="按照max分段推理文本，推理好一段即输出，无需等待所有文本都推理完毕">流式响应</label>
+                               title="按照segment_size分段推理文本，推理好一段即输出，无需等待所有文本都推理完毕">流式响应</label>
                     </div>
                 </div>
 

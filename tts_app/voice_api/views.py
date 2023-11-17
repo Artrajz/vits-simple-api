@@ -69,7 +69,7 @@ def voice_vits_api():
         return make_response("parameter error", 400)
 
     logger.info(
-        f"[{ModelType.VITS.value}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew}")
+        f"[{ModelType.VITS.value}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} segment_size:{segment_size}")
     logger.info(f"[{ModelType.VITS.value}] len:{len(text)} text：{text}")
 
     if check_is_none(text):
@@ -218,7 +218,7 @@ def voice_w2v2_api():
         return make_response(f"parameter error", 400)
 
     logger.info(f"[{ModelType.W2V2_VITS.value}] id:{id} format:{format} lang:{lang} "
-                f"length:{length} noise:{noise} noisew:{noisew} emotion:{emotion}")
+                f"length:{length} noise:{noise} noisew:{noisew} emotion:{emotion} segment_size:{segment_size}")
     logger.info(f"[{ModelType.W2V2_VITS.value}] len:{len(text)} text：{text}")
 
     if check_is_none(text):
@@ -406,7 +406,7 @@ def voice_bert_vits2_api():
         return make_response("parameter error", 400)
 
     logger.info(
-        f"[{ModelType.BERT_VITS2.value}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio}")
+        f"[{ModelType.BERT_VITS2.value}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size}")
     logger.info(f"[{ModelType.BERT_VITS2.value}] len:{len(text)} text：{text}")
 
     if check_is_none(text):
