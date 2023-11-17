@@ -221,9 +221,17 @@ class ModelManager(Subject):
 
     def load_model(self, model_path: str, config_path: str):
         try:
-            folder_path = os.path.join(config.ABS_PATH, 'Model')
-            model_path = model_path if os.path.isabs(model_path) else os.path.join(folder_path, model_path)
-            config_path = config_path if os.path.isabs(config_path) else os.path.join(folder_path, config_path)
+            model_path = os.path.normpath(model_path)
+            if model_path.startswith('Model'):
+                model_path = os.path.join(config.ABS_PATH, model_path)
+            else:
+                model_path = os.path.join(config.ABS_PATH, 'Model', model_path)
+
+            config_path = os.path.normpath(config_path)
+            if config_path.startswith('Model'):
+                config_path = os.path.join(config.ABS_PATH, config_path)
+            else:
+                config_path = os.path.join(config.ABS_PATH, 'Model', config_path)
 
             model_data = self._load_model_from_path(model_path, config_path)
             model_id = model_data["model_id"]

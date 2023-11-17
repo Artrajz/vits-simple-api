@@ -8,6 +8,7 @@ import torch
 import yaml
 from flask import current_app
 
+import config
 import config as default_config
 from tts_app.auth.models import User
 from utils.data_utils import check_is_none
@@ -76,14 +77,18 @@ def validate_and_convert_data(data):
     for key, value in data.items():
         if key in ["LOGS_BACKUPCOUNT", "PORT"] and not isinstance(value, int):
             data[key] = int(value)
-        if key in ["LANGUAGE_AUTOMATIC_DETECT"] and not isinstance(value, list):
+        elif key in ["LANGUAGE_AUTOMATIC_DETECT"] and not isinstance(value, list):
             data[key] = []
 
     for key, value in data["default_parameter"].items():
-        if key in ["id", "length", "max"] and not isinstance(value, int):
+        if value == "":
+            value = getattr(config, key.upper())
             data["default_parameter"][key] = int(value)
-        if key in ["noise", "noisew", "sdp_ratio"] and not isinstance(value, float):
+        elif key in ["id", "length", "segment_size"] and not isinstance(value, int):
+            data["default_parameter"][key] = int(value)
+        elif key in ["noise", "noisew", "sdp_ratio"] and not isinstance(value, float):
             data["default_parameter"][key] = float(value)
+
     return data
 
 
@@ -122,7 +127,7 @@ def generate_random_password(length=16):
 def init_config():
     global global_config
     model_path = ["MODEL_LIST", "HUBERT_SOFT_MODEL", "DIMENSIONAL_EMOTION_NPY", "DIMENSIONAL_EMOTION_MODEL"]
-    default_parameter = ["ID", "FORMAT", "LANG", "LENGTH", "NOISE", "NOISEW", "MAX", "SDP_RATIO"]
+    default_parameter = ["ID", "FORMAT", "LANG", "LENGTH", "NOISE", "NOISEW", "SEGMENT_SIZE", "SDP_RATIO"]
 
     try:
         global_config.update(load_yaml_config(YAML_CONFIG_FILE))

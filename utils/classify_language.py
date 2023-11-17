@@ -1,8 +1,6 @@
 import re
 
-from config import LANGUAGE_IDENTIFICATION_LIBRARY
-
-module = LANGUAGE_IDENTIFICATION_LIBRARY.lower()
+from utils.config_manager import global_config
 
 langid_languages = ["af", "am", "an", "ar", "as", "az", "be", "bg", "bn", "br", "bs", "ca", "cs", "cy", "da", "de",
                     "dz", "el",
@@ -18,6 +16,7 @@ langid_languages = ["af", "am", "an", "ar", "as", "az", "be", "bg", "bn", "br", 
 
 
 def classify_language(text: str, target_languages: list = None) -> str:
+    module = global_config["LANGUAGE_IDENTIFICATION_LIBRARY"].lower()
     if module == "fastlid" or module == "fasttext":
         from fastlid import fastlid, supported_langs
         classifier = fastlid

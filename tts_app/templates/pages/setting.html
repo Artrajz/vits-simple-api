@@ -54,10 +54,10 @@
                     <span class="input-group-text">hubert_soft_model</span>
                     <input type="text" class="form-control" id="hubert_soft_model">
                 </div>
-                <label for="" class="form-label">默认模型列表</label>
-                <div id="addModelRow">添加默认模型</div>
-                <div class="model-list">
-                </div>
+                {#                <label for="" class="form-label">默认模型列表</label>#}
+                {#                <div id="addModelRow">添加默认模型</div>#}
+                {#                <div class="model-list">#}
+                {#                </div>#}
             </div>
 
             <label for="" class="form-label">日志配置</label>
@@ -81,7 +81,10 @@
             <div class="" id="others">
                 <div class="input-group mb-3 item">
                     <span class="input-group-text">语种识别库</span>
-                    <input type="text" class="form-control" id="lang-lib">
+                    <select class="form-select" id="lang-lib">
+                        <option value="langid">langid</option>
+                        <option value="fastlid">fastlid</option>
+                    </select>
                 </div>
                 <div class="input-group mb-3 item">
                     <span class="input-group-text">espeak-ng路径（选填）</span>
@@ -93,11 +96,11 @@
                 </div>
             </div>
 
-{#            <label for="" class="form-label">其他配置</label>#}
-{#            <div class="" id="others">#}
-{#                #}
-{##}
-{#            </div>#}
+            {#            <label for="" class="form-label">其他配置</label>#}
+            {#            <div class="" id="others">#}
+            {#                #}
+            {##}
+            {#            </div>#}
 
             <label for="">安全</label>
             <div id="security">
