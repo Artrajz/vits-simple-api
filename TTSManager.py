@@ -228,7 +228,8 @@ class TTSManager(Observer):
             state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
         sampling_rate = model.sampling_rate
 
-        sentences_list = sentence_split_and_markup(state["text"], state["segment_size"], state["lang"], state["speaker_lang"])
+        sentences_list = sentence_split_and_markup(state["text"], state["segment_size"], state["lang"],
+                                                   state["speaker_lang"])
         # 停顿0.5s，避免语音分段合成再拼接后的连接突兀
         brk = np.zeros(int(0.5 * sampling_rate), dtype=np.int16)
 
@@ -265,7 +266,8 @@ class TTSManager(Observer):
             state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
         sampling_rate = model.sampling_rate
 
-        sentences_list = sentence_split_and_markup(state["text"], state["segment_size"], state["lang"], state["speaker_lang"])
+        sentences_list = sentence_split_and_markup(state["text"], state["segment_size"], state["lang"],
+                                                   state["speaker_lang"])
         # 停顿0.5s，避免语音分段合成再拼接后的连接突兀
         brk = np.zeros(int(0.5 * sampling_rate), dtype=np.int16)
 
@@ -307,7 +309,8 @@ class TTSManager(Observer):
 
         sampling_rate = model.sampling_rate
 
-        sentences_list = sentence_split_and_markup(state["text"], state["segment_size"], state["lang"], state["speaker_lang"])
+        sentences_list = sentence_split_and_markup(state["text"], state["segment_size"], state["lang"],
+                                                   state["speaker_lang"])
         # 停顿0.5s，避免语音分段合成再拼接后的连接突兀
         brk = np.zeros(int(0.5 * sampling_rate), dtype=np.int16)
 
@@ -356,8 +359,10 @@ class TTSManager(Observer):
 
         # if state["lang"] == "auto":
         # state["lang"] = classify_language(state["text"], target_languages=model.lang)
-
-        sentences_list = split_by_language(state["text"], state["speaker_lang"])
+        if state["lang"] == "auto":
+            sentences_list = split_by_language(state["text"], state["speaker_lang"])
+        else:
+            sentences_list = [(state["text"], state["lang"])]
         audios = []
 
         for (text, lang) in sentences_list:
