@@ -119,6 +119,7 @@ def set_config():
     if dict_data.get("users", None) is not None:
         dict_data = str2user(dict_data)
     dict_data = config_manager.validate_and_convert_data(dict_data)
+    dict_data["model_config"]["model_list"] = global_config["model_config"]["model_list"]
     global_config.update(dict_data)
     config_manager.save_yaml_config(global_config)
 
