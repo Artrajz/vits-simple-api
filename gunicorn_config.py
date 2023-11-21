@@ -5,6 +5,7 @@ bind = "0.0.0.0:23456"
 # workers = multiprocessing.cpu_count()
 workers = 1
 preload_app = True
+timeout = 120
 
 # disable GC in master as early as possible
 gc.disable()
