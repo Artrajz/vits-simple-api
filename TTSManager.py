@@ -222,6 +222,8 @@ class TTSManager(Observer):
 
     def vits_infer(self, state, encode=True):
         model = self.get_model(ModelType.VITS, state["id"])
+        if config["DYNAMIC_LOADING"]:
+            model.load_model()
         state["id"] = self.get_real_id(ModelType.VITS, state["id"])  # Change to real id
         # 去除所有多余的空白字符
         if state["text"] is not None:
@@ -243,19 +245,9 @@ class TTSManager(Observer):
                 audios.append(brk)
 
         audio = np.concatenate(audios, axis=0)
+        if config["DYNAMIC_LOADING"]:
+            model.release_model()
         return self.encode(sampling_rate, audio, state["format"]) if encode else audio
-
-    def stream_vits_infer(self, task, fname=None):
-        format = task.get("format", "wav")
-        voice_obj = self._voice_obj[ModelType.VITS][task.get("id")][1]
-        task["id"] = self._voice_obj[ModelType.VITS][task.get("id")][0]
-        sampling_rate = voice_obj.sampling_rate
-        genertator = voice_obj.get_stream_audio(task, auto_break=True)
-        # audio = BytesIO()
-        for chunk in genertator:
-            encoded_audio = self.encode(sampling_rate, chunk, format)
-            for encoded_audio_chunk in self.generate_audio_chunks(encoded_audio):
-                yield encoded_audio_chunk
 
     def stream_vits_infer(self, state, fname=None):
         model = self.get_model(ModelType.VITS, state["id"])

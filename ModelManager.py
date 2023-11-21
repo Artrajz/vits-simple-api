@@ -166,11 +166,14 @@ class ModelManager(Subject):
         }
 
         model_class = self.model_class_map[model_type]
+        model = model_class(**model_args)
 
         if model_type == ModelType.VITS:
             bert_embedding = getattr(hps.data, 'bert_embedding', getattr(hps.model, 'bert_embedding', False))
             if bert_embedding and self.tts_front is None:
                 self.load_VITS_PinYin_model(os.path.join(config.ABS_PATH, "vits/bert"))
+            if not config["DYNAMIC_LOADING"]:
+                model.load_model()
 
         if model_type == ModelType.W2V2_VITS:
             if self.emotion_reference is None:
@@ -182,8 +185,6 @@ class ModelManager(Subject):
             if self.hubert is None:
                 self.hubert = self.load_hubert_model(config["model_config"]["hubert_soft_model"])
             model_args.update({"hubert": self.hubert})
-
-        model = model_class(**model_args)
 
         if model_type == ModelType.BERT_VITS2:
             bert_model_names = model.bert_model_names

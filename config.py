@@ -92,6 +92,9 @@ DIMENSIONAL_EMOTION_NPY = ABS_PATH + "/Model/npy"
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+# VITS
+DYNAMIC_LOADING = False
+
 """
 Default parameter
 """

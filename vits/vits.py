@@ -22,7 +22,14 @@ class VITS:
         self.text_cleaners = getattr(self.hps_ms.data, 'text_cleaners', [None])[0]
         self.sampling_rate = self.hps_ms.data.sampling_rate
         self.device = device
+        self.model_path = model_path
 
+        # load checkpoint
+        # self.load_model()
+
+        self.lang = lang_dict.get(self.text_cleaners, ["unknown"])
+
+    def load_model(self):
         self.net_g_ms = SynthesizerTrn(
             self.n_symbols,
             self.hps_ms.data.filter_length // 2 + 1,
@@ -30,15 +37,12 @@ class VITS:
             n_speakers=self.n_speakers,
             **self.hps_ms.model)
         _ = self.net_g_ms.eval()
-
-        # load checkpoint
-        self.load_checkpoint(model_path)
-
-        self.lang = lang_dict.get(self.text_cleaners, ["unknown"])
-
-    def load_checkpoint(self, model):
-        utils.load_checkpoint(model, self.net_g_ms)
+        utils.load_checkpoint(self.model_path, self.net_g_ms)
         self.net_g_ms.to(self.device)
+    
+    def release_model(self):
+        del self.net_g_ms
+        
 
     def get_cleaned_text(self, text, hps, cleaned=False):
         if cleaned:
