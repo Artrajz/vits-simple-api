@@ -84,7 +84,8 @@ def validate_and_convert_data(data):
         if value == "":
             value = getattr(config, key.upper())
             data["default_parameter"][key] = int(value)
-        elif key in ["id", "length", "segment_size"] and not isinstance(value, int):
+        elif key in ["id", "length", "segment_size", "length_zh", "length_ja", "length_en"] and not isinstance(value,
+                                                                                                               int):
             data["default_parameter"][key] = int(value)
         elif key in ["noise", "noisew", "sdp_ratio"] and not isinstance(value, float):
             data["default_parameter"][key] = float(value)
@@ -127,7 +128,8 @@ def generate_random_password(length=16):
 def init_config():
     global global_config
     model_path = ["MODEL_LIST", "HUBERT_SOFT_MODEL", "DIMENSIONAL_EMOTION_NPY", "DIMENSIONAL_EMOTION_MODEL"]
-    default_parameter = ["ID", "FORMAT", "LANG", "LENGTH", "NOISE", "NOISEW", "SEGMENT_SIZE", "SDP_RATIO"]
+    default_parameter = ["ID", "FORMAT", "LANG", "LENGTH", "NOISE", "NOISEW", "SEGMENT_SIZE", "SDP_RATIO", "LENGTH_ZH",
+                         "LENGTH_JA", "LENGTH_EN"]
 
     try:
         global_config.update(load_yaml_config(YAML_CONFIG_FILE))

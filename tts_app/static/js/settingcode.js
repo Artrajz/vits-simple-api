@@ -92,7 +92,10 @@ function set_config() {
             segment_size: $('#segment_size').val(),
             noise: $('#noise').val(),
             noisew: $('#noisew').val(),
-            sdp_ratio: $('#sdp_ratio').val()
+            sdp_ratio: $('#sdp_ratio').val(),
+            length_zh: $('#length_zh').val(),
+            length_ja: $('#length_ja').val(),
+            length_en: $('#length_en').val()
         },
         model_config: {
             dimensional_emotion_npy: $('#dimensional_emotion_npy').val(),

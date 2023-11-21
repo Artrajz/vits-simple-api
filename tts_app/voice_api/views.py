@@ -23,7 +23,7 @@ def get_param(request_data, key, default, data_type=None):
         return get_param(request_data, "max", default, data_type)
 
     value = request_data.get(key, "")
-    
+
     if data_type:
         try:
             value = data_type(value)
@@ -396,6 +396,9 @@ def voice_bert_vits2_api():
         format = get_param(request_data, "format", current_app.config.get("FORMAT", "wav"), str)
         lang = get_param(request_data, "lang", current_app.config.get("LANG", "auto"), str).lower()
         length = get_param(request_data, "length", current_app.config.get("LENGTH", 1), float)
+        length_zh = get_param(request_data, "length_zh", current_app.config.get("LENGTH_ZH", 0), float)
+        length_ja = get_param(request_data, "length_ja", current_app.config.get("LENGTH_JA", 0), float)
+        length_en = get_param(request_data, "length_en", current_app.config.get("LENGTH_EN", 0), float)
         noise = get_param(request_data, "noise", current_app.config.get("NOISE", 0.667), float)
         noisew = get_param(request_data, "noisew", current_app.config.get("NOISEW", 0.8), float)
         sdp_ratio = get_param(request_data, "sdp_ratio", current_app.config.get("SDP_RATIO", 0.2), float)
@@ -406,7 +409,8 @@ def voice_bert_vits2_api():
         return make_response("parameter error", 400)
 
     logger.info(
-        f"[{ModelType.BERT_VITS2.value}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size}")
+        f"[{ModelType.BERT_VITS2.value}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size}"
+        f" length_zh:{length_zh} length_ja:{length_ja} length_en:{length_en}")
     logger.info(f"[{ModelType.BERT_VITS2.value}] len:{len(text)} text：{text}")
 
     if check_is_none(text):
@@ -442,6 +446,9 @@ def voice_bert_vits2_api():
              "id": id,
              "format": format,
              "length": length,
+             "length_zh": length_zh,
+             "length_ja": length_ja,
+             "length_en": length_en,
              "noise": noise,
              "noisew": noisew,
              "sdp_ratio": sdp_ratio,

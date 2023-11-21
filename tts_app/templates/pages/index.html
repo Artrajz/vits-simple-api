@@ -89,7 +89,8 @@
                         <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段。">segment_size</label>
-                            <input type="number" class="form-control" id="input_segment_size1" oninput="updateLink()" value=""
+                            <input type="number" class="form-control" id="input_segment_size1" oninput="updateLink()"
+                                   value=""
                                    placeholder="50" step="1"/>
                         </div>
                     </div>
@@ -193,7 +194,8 @@
                         <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段。">segment_size</label>
-                            <input type="number" class="form-control" id="input_segment_size2" oninput="updateLink()" value=""
+                            <input type="number" class="form-control" id="input_segment_size2" oninput="updateLink()"
+                                   value=""
                                    placeholder="50" step="1"/>
                         </div>
                     </div>
@@ -265,6 +267,26 @@
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
+                                   title="调节语音长度，相当于调节语速，该数值越大语速越慢。">length_zh</label>
+                            <input type="number" class="form-control" id="input_length_zh3" oninput="updateLink()" value=""
+                                   placeholder="1" min="0" step="0.001"/>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="调节语音长度，相当于调节语速，该数值越大语速越慢。">length_ja</label>
+                            <input type="number" class="form-control" id="input_length_ja3" oninput="updateLink()" value=""
+                                   placeholder="1" min="0" step="0.001"/>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="调节语音长度，相当于调节语速，该数值越大语速越慢。">length_en</label>
+                            <input type="number" class="form-control" id="input_length_en3" oninput="updateLink()" value=""
+                                   placeholder="1" min="0" step="0.001"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label data-toggle="tooltip" data-placement="top"
                                    title="样本噪声，控制合成的随机性。">noise</label>
                             <input type="number" class="form-control" id="input_noise3" oninput="updateLink()" value=""
                                    placeholder="0.5" min="0" step="0.001"/>
@@ -278,7 +300,8 @@
                         <div class="col-md-4 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段。">segment_size</label>
-                            <input type="number" class="form-control" id="input_segment_size3" oninput="updateLink()" value=""
+                            <input type="number" class="form-control" id="input_segment_size3" oninput="updateLink()"
+                                   value=""
                                    placeholder="50" step="1"/>
                         </div>
 
