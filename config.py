@@ -103,7 +103,7 @@ ID = 0
 
 FORMAT = "wav"
 
-LANG = "AUTO"
+LANG = "auto"
 
 LENGTH = 1
 

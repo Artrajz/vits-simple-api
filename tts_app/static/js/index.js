@@ -222,7 +222,7 @@ function setAudioSourceByPost() {
     if (currentModelPage == 3 && length_en != "") {
         data.length_en = length_en;
     }
-    
+
 
     let downloadButton = document.getElementById("downloadButton" + currentModelPage);
 
@@ -307,8 +307,26 @@ function showModelContentBasedOnStatus() {
     }
 }
 
+function setDefaultParameter() {
+    $.ajax({
+        url: "/voice/default_parameter",
+        method: 'POST',
+        responseType: 'json',
+        success: function (response) {
+            default_parameter = response;
+            for (var key in default_parameter) {
+                if (default_parameter.hasOwnProperty(key)) {
+                    $(".input_" + key).attr("placeholder", default_parameter[key]);
+                }
+            }
+        },
+        error: function (error) {
+        }
+    });
+}
+
 $(document).ready(function () {
     speakersInit();
-
+    setDefaultParameter();
     setBaseUrl();
 });

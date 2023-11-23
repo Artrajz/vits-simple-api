@@ -36,6 +36,11 @@ def get_param(request_data, key, default, data_type=None):
     return value
 
 
+@voice_api.route('/default_parameter', methods=["GET", "POST"])
+def default_parameter():
+    return jsonify(current_app.config.get("default_parameter"))
+
+
 @voice_api.route('/speakers', methods=["GET", "POST"])
 def voice_speakers_api():
     return jsonify(model_manager.voice_speakers)
