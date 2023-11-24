@@ -347,6 +347,10 @@ class TTSManager(Observer):
     def bert_vits2_infer(self, state, encode=True):
         model = self.get_model(model_type=ModelType.BERT_VITS2, id=state["id"])
         state["id"] = self.get_real_id(model_type=ModelType.BERT_VITS2, id=state["id"])
+        
+        # 去除所有多余的空白字符
+        if state["text"] is not None:
+            state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
         sampling_rate = model.sampling_rate
 
         # if state["lang"] == "auto":
