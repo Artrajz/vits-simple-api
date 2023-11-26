@@ -127,9 +127,10 @@ def generate_random_password(length=16):
 
 def init_config():
     global global_config
-    model_path = ["MODEL_LIST", "HUBERT_SOFT_MODEL", "DIMENSIONAL_EMOTION_NPY", "DIMENSIONAL_EMOTION_MODEL"]
-    default_parameter = ["ID", "FORMAT", "LANG", "LENGTH", "NOISE", "NOISEW", "SEGMENT_SIZE", "SDP_RATIO", "LENGTH_ZH",
-                         "LENGTH_JA", "LENGTH_EN"]
+    model_path_key = ["MODEL_LIST", "HUBERT_SOFT_MODEL", "DIMENSIONAL_EMOTION_NPY", "DIMENSIONAL_EMOTION_MODEL"]
+    default_parameter_key = ["ID", "FORMAT", "LANG", "LENGTH", "NOISE", "NOISEW", "SEGMENT_SIZE", "SDP_RATIO",
+                             "LENGTH_ZH",
+                             "LENGTH_JA", "LENGTH_EN"]
 
     try:
         global_config.update(load_yaml_config(YAML_CONFIG_FILE))
@@ -140,27 +141,30 @@ def init_config():
         for key, value in vars(default_config).items():
             if key.islower():
                 continue
-            if key in model_path:
+            if key in model_path_key:
                 global_config["model_config"][key.lower()] = value
-            elif key in default_parameter:
+            elif key in default_parameter_key:
                 global_config["default_parameter"][key.lower()] = value
             else:
                 global_config[key] = value
         logging.info("config.yml not found. Generating a new config.yml based on config.py.")
         save_yaml_config(global_config, YAML_CONFIG_FILE)
 
+    # 初始化CSRF的SECRET_KEY
     if check_is_none(global_config.SECRET_KEY):
         secret_key = generate_secret_key()
         global_config["SECRET_KEY"] = secret_key
         logging.info(f"SECRET_KEY is not found or is None. Generating a new SECRET_KEY:{secret_key}")
         save_yaml_config(global_config, YAML_CONFIG_FILE)
 
+    # 初始化API_KEY
     if check_is_none(global_config.API_KEY):
         secret_key = generate_secret_key()
         global_config["API_KEY"] = secret_key
         logging.info(f"API_KEY is not found or is None. Generating a new API_KEY:{secret_key}")
         save_yaml_config(global_config, YAML_CONFIG_FILE)
 
+    # 初始化管理员账号密码
     if getattr(global_config, "users") is None:
         random_username = generate_random_username()
         random_password = generate_random_password()
@@ -174,6 +178,25 @@ def init_config():
         global_config["users"] = {}
         global_config["users"]["admin"] = {f"admin": User(1, random_username, random_password)}
         save_yaml_config(global_config, YAML_CONFIG_FILE)
+
+    if config.MODEL_LIST != []:
+        model_list = global_config["model_config"]["model_list"]
+        existing_paths = set(os.path.abspath(existing_model[0]) for existing_model in model_list)
+        if model_list == []: save = True
+
+        for model in config.MODEL_LIST:
+            model_path = model[0]
+            abs_model_path = os.path.abspath(model_path)
+
+            # 检查是否存在相同的路径
+            if abs_model_path not in existing_paths:
+                model_list.append(model)
+                existing_paths.add(abs_model_path)
+
+        global_config["model_config"]["model_list"] = model_list
+
+        # 如果config.yml的模型列表为空，则将config.py中填写的模型保存到config.yml里。
+        if save: save_yaml_config(global_config, YAML_CONFIG_FILE)
 
     return global_config
 
