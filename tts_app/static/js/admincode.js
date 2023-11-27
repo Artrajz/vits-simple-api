@@ -145,7 +145,7 @@ function loadModel(card, modelPath, configPath) {
             isRequestInProgress = false;
         },
         error: function (response) {
-            alert("Unload model failed!");
+            alert("Model loading failed!");
             isRequestInProgress = false;
         }
     });
