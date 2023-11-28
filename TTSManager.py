@@ -347,7 +347,7 @@ class TTSManager(Observer):
     def bert_vits2_infer(self, state, encode=True):
         model = self.get_model(model_type=ModelType.BERT_VITS2, id=state["id"])
         state["id"] = self.get_real_id(model_type=ModelType.BERT_VITS2, id=state["id"])
-        
+
         # 去除所有多余的空白字符
         if state["text"] is not None:
             state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
@@ -373,7 +373,7 @@ class TTSManager(Observer):
                 length = state["length"]
             for sentence in sentences:
                 audio = model.infer(sentence, state["id"], lang, state["sdp_ratio"], state["noise"],
-                                    state["noise"], length)
+                                    state["noise"], length, emotion=state["emotion"])
                 audios.append(audio)
         audio = np.concatenate(audios)
 
@@ -396,7 +396,8 @@ class TTSManager(Observer):
             sentences = sentence_split(text, state["segment_size"])
             for sentence in sentences:
                 audio = model.infer(sentence, state["id"], lang, state["sdp_ratio"], state["noise"],
-                                    state["noise"], state["length"])
+                                    state["noise"], state["length"], emotion=state["emotion"],
+                                    reference_audio=state["reference_audio"])
                 # audios.append(audio)
                 # audio = np.concatenate(audios, axis=0)
                 encoded_audio = self.encode(sampling_rate, audio, state["format"])

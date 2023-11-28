@@ -128,7 +128,7 @@ Download the VITS model files and place them in the Model directory.
 
 If you are starting for the first time, modify the default model path configuration in the config.py file (optional).
 
-After the first startup, a config.yml configuration file will be generated. You can either modify the model_list in the configuration file or make changes through the admin backend in the browser (not yet implemented).
+After the first startup, a config.yml configuration file will be generated. You can either modify the model_list in the configuration file or make changes through the admin backend in the browser.
 
 You can specify the model paths using either absolute or relative paths, where relative paths are considered from the Model folder in the project's root directory.
 
@@ -262,7 +262,10 @@ To ensure compatibility with the Bert-VITS2 model, modify the config.json file b
     ...
 ```
 
-​    
+# Admin Backend
+The default address is http://127.0.0.1:23456/admin.
+
+The initial username and password can be found at the bottom of the config.yml file after the first startup.
 
 # API
 
@@ -358,17 +361,20 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 
 ## Bert-VITS2
 
-| Name             | Parameter    | Is must | Default           | Type  | Instruction                                                  |
-| ---------------- | ------------ | ------- | ----------------- | ----- | ------------------------------------------------------------ |
-| Synthesized text | text         | true    |                   | str   | Text needed for voice synthesis.                             |
-| Speaker ID       | id           | false   | From `config.yml` | int   | The speaker ID.                                              |
-| Audio format     | format       | false   | From `config.yml` | str   | Support for wav,ogg,silk,mp3,flac                            |
-| Text language    | lang         | false   | From `config.yml` | str   | "Auto" is a mode for automatic language detection and is also the default mode. However, it currently only supports detecting the language of an entire text passage and cannot distinguish languages on a per-sentence basis. The other available language options are "zh" and "ja". |
-| Audio length     | length       | false   | From `config.yml` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
-| Noise            | noise        | false   | From `config.yml` | float | Sample noise, controlling the randomness of the synthesis.   |
-| SDP noise        | noisew       | false   | From `config.yml` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
-| Segment Size     | segment_size | false   | From `config.yml` | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds segment_size. If segment_size<=0, the text will not be divided into paragraphs. |
-| SDP/DP mix ratio | sdp_ratio    | false   | From `config.yml` | int   | The theoretical proportion of SDP during synthesis, the higher the ratio, the larger the variance in synthesized voice tone. |
+| Name             | Parameter       | Is must | Default           | Type  | Instruction                                                  |
+| ---------------- | --------------- | ------- | ----------------- | ----- | ------------------------------------------------------------ |
+| Synthesized text | text            | true    |                   | str   | Text needed for voice synthesis.                             |
+| Speaker ID       | id              | false   | From `config.yml` | int   | The speaker ID.                                              |
+| Audio format     | format          | false   | From `config.yml` | str   | Support for wav,ogg,silk,mp3,flac                            |
+| Text language    | lang            | false   | From `config.yml` | str   | "Auto" is a mode for automatic language detection and is also the default mode. However, it currently only supports detecting the language of an entire text passage and cannot distinguish languages on a per-sentence basis. The other available language options are "zh" and "ja". |
+| Audio length     | length          | false   | From `config.yml` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise            | noise           | false   | From `config.yml` | float | Sample noise, controlling the randomness of the synthesis.   |
+| SDP noise        | noisew          | false   | From `config.yml` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
+| Segment Size     | segment_size    | false   | From `config.yml` | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds segment_size. If segment_size<=0, the text will not be divided into paragraphs. |
+| SDP/DP mix ratio | sdp_ratio       | false   | From `config.yml` | int   | The theoretical proportion of SDP during synthesis, the higher the ratio, the larger the variance in synthesized voice tone. |
+| Emotion          | emotion         | false   | None              |       | Available for Bert-VITS2 v2.1, ranging from 0 to 9           |
+| Reference Audio  | reference_audio | false   | None              |       | Available for Bert-VITS2 v2.1                                |
+
 
 ## SSML (Speech Synthesis Markup Language)
 

@@ -205,7 +205,6 @@ _ALPHASYMBOL_YOMI = {
     "ω": "オメガ",
 }
 
-
 _NUMBER_WITH_SEPARATOR_RX = re.compile("[0-9]{1,3}(,[0-9]{3})+")
 _CURRENCY_MAP = {"$": "ドル", "¥": "円", "£": "ポンド", "€": "ユーロ"}
 _CURRENCY_RX = re.compile(r"([$¥£€])([0-9.]*[0-9])")
@@ -264,16 +263,15 @@ rep_map = {
     "？": "?",
     "\n": ".",
     "．": ".",
-    "…": "...",
-    "···": "...",
-    "・・・": "...",
+    "...": "…",
+    "···": "…",
+    "・・・": "…",
     "·": ",",
     "・": ",",
     "、": ",",
     "$": ".",
     "“": "'",
     "”": "'",
-    '"': "'",
     "‘": "'",
     "’": "'",
     "（": "'",
@@ -316,7 +314,6 @@ def text_normalize(text):
     res = japanese_convert_numbers_to_words(res)
     # res = "".join([i for i in res if is_japanese_character(i)])
     res = replace_punctuation(res)
-    res = res.replace("゙", "")
     return res
 
 
@@ -362,35 +359,9 @@ def align_tones(phones, tones):
     return res
 
 
-def rearrange_tones(tones, phones):
-    res = [0] * len(tones)
-    for i in range(len(tones)):
-        if i == 0:
-            if tones[i] not in punctuation:
-                res[i] = 1
-        elif tones[i] == prev:
-            if phones[i] in punctuation:
-                res[i] = 0
-            else:
-                res[i] = 1
-        elif tones[i] > prev:
-            res[i] = 2
-        elif tones[i] < prev:
-            res[i - 1] = 3
-            res[i] = 1
-        prev = tones[i]
-    return res
-
-
 def g2p(norm_text, tokenizer):
     sep_text, sep_kata, acc = text2sep_kata(norm_text)
-    sep_tokenized = []
-    for i in sep_text:
-        if i not in punctuation:
-            sep_tokenized.append(tokenizer.tokenize(i))
-        else:
-            sep_tokenized.append([i])
-
+    sep_tokenized = [tokenizer.tokenize(i) for i in sep_text]
     sep_phonemes = handle_long([kata2phoneme(i) for i in sep_kata])
     # 异常处理，MeCab不认识的词的话会一路传到这里来，然后炸掉。目前来看只有那些超级稀有的生僻词会出现这种情况
     for i in sep_phonemes:
@@ -406,7 +377,6 @@ def g2p(norm_text, tokenizer):
         aaa = distribute_phone(phone_len, word_len)
         word2ph += aaa
     phones = ["_"] + [j for i in sep_phonemes for j in i] + ["_"]
-    # tones = [0] + rearrange_tones(tones, phones[1:-1]) + [0]
     tones = [0] + tones + [0]
     word2ph = [1] + word2ph + [1]
     assert len(phones) == len(tones)
@@ -415,14 +385,15 @@ def g2p(norm_text, tokenizer):
 
 if __name__ == "__main__":
     from transformers import AutoTokenizer
+
     tokenizer = AutoTokenizer.from_pretrained("./bert/deberta-v2-large-japanese")
     text = "hello,こんにちは、世界ー！……"
-    from bert_vits2.text.japanese_bert import get_bert_feature
+    from bert_vits2.text.japanese_bert_v200 import get_bert_feature
 
     text = text_normalize(text)
     print(text)
 
-    phones, tones, word2ph = g2p(text)
+    phones, tones, word2ph = g2p(text, tokenizer)
     bert = get_bert_feature(text, word2ph)
 
     print(phones, tones, word2ph, bert.shape)

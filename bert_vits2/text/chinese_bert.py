@@ -1,9 +1,9 @@
 import torch
 
-from utils.config_manager import global_config as config
+from utils.config_manager import global_config
 
 
-def get_bert_feature(text, word2ph, tokenizer, model, device=config.DEVICE):
+def get_bert_feature(text, word2ph, tokenizer, model, device=global_config.DEVICE):
     with torch.no_grad():
         inputs = tokenizer(text, return_tensors='pt')
         for i in inputs:

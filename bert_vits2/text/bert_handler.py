@@ -11,6 +11,8 @@ from .chinese_bert import get_bert_feature as zh_bert
 from .english_bert_mock import get_bert_feature as en_bert
 from .japanese_bert import get_bert_feature as ja_bert
 from .japanese_bert_v111 import get_bert_feature as ja_bert_v111
+from .japanese_bert_v200 import get_bert_feature as ja_bert_v200
+from .english_bert_mock_v200 import get_bert_feature as en_bert_v200
 
 
 class BertHandler:
@@ -23,7 +25,8 @@ class BertHandler:
             "DEBERTA_V2_LARGE_JAPANESE": os.path.join(config.ABS_PATH, "bert_vits2/bert/deberta-v2-large-japanese"),
             "DEBERTA_V3_LARGE": os.path.join(config.ABS_PATH, "bert_vits2/bert/deberta-v3-large")
         }
-        self.lang_bert_func_map = {"zh": zh_bert, "en": en_bert, "ja": ja_bert, "ja_v111": ja_bert_v111}
+        self.lang_bert_func_map = {"zh": zh_bert, "en": en_bert, "ja": ja_bert, "ja_v111": ja_bert_v111,
+                                   "ja_v200": ja_bert_v200, "en_v200": en_bert_v200}
 
         self.bert_models = {}  # Value: (tokenizer, model, reference_count)
         self.device = device
@@ -54,6 +57,10 @@ class BertHandler:
                 "https://huggingface.co/microsoft/deberta-v3-large/resolve/main/spm.model",
                 "https://hf-mirror.com/microsoft/deberta-v3-large/resolve/main/spm.model",
             ],
+            "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM": [
+                "https://huggingface.co/ku-nlp/deberta-v2-large-japanese-char-wwm/resolve/main/pytorch_model.bin",
+                "https://hf-mirror.com/ku-nlp/deberta-v2-large-japanese-char-wwm/resolve/main/pytorch_model.bin",
+            ]
         }
 
         SHA256 = {
@@ -63,6 +70,7 @@ class BertHandler:
             "DEBERTA_V2_LARGE_JAPANESE": "a6c15feac0dea77ab8835c70e1befa4cf4c2137862c6fb2443b1553f70840047",
             "DEBERTA_V3_LARGE": "dd5b5d93e2db101aaf281df0ea1216c07ad73620ff59c5b42dccac4bf2eef5b5",
             "SPM": "c679fbf93643d19aab7ee10c0b99e460bdbc02fedf34b92b05af343b4af586fd",
+            "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM": "bf0dab8ad87bd7c22e85ec71e04f2240804fda6d33196157d6b5923af6ea1201"
         }
         urls = DOWNLOAD_PATHS[bert_model_name]
 

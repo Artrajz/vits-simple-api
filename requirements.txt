@@ -37,6 +37,7 @@ jaconv
 # Machine Learning and Deep Learning
 torch
 audonnx
+vector_quantize_pytorch
 
 # Web and API services
 flask==2.2.3

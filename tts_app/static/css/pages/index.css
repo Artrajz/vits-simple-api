@@ -68,7 +68,7 @@ label {
     margin-bottom: 0.5rem;
 }
 
-button {
+.play-button button {
     margin-left: 10px;
     margin-right: 10px;
 }
@@ -99,8 +99,12 @@ button {
     vertical-align: middle
 }
 
-.play-button .form-check label{
-    margin-top:8px;
+.play-button .form-check label {
+    margin-top: 8px;
+}
+
+.reference_audio {
+    
 }
 
 

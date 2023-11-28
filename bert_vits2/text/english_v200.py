@@ -1,6 +1,5 @@
 import pickle
 import os
-import re
 from g2p_en import G2p
 
 from bert_vits2.text import symbols
@@ -96,9 +95,7 @@ def post_replace_ph(ph):
         "\n": ".",
         "·": ",",
         "、": ",",
-        "…": "...",
-        "···": "...",
-        "・・・": "...",
+        "...": "…",
         "v": "V",
     }
     if ph in rep_map.keys():
@@ -108,62 +105,6 @@ def post_replace_ph(ph):
     if ph not in symbols:
         ph = "UNK"
     return ph
-
-
-rep_map = {
-    "：": ",",
-    "；": ",",
-    "，": ",",
-    "。": ".",
-    "！": "!",
-    "？": "?",
-    "\n": ".",
-    "．": ".",
-    "…": "...",
-    "···": "...",
-    "・・・": "...",
-    "·": ",",
-    "・": ",",
-    "、": ",",
-    "$": ".",
-    "“": "'",
-    "”": "'",
-    '"': "'",
-    "‘": "'",
-    "’": "'",
-    "（": "'",
-    "）": "'",
-    "(": "'",
-    ")": "'",
-    "《": "'",
-    "》": "'",
-    "【": "'",
-    "】": "'",
-    "[": "'",
-    "]": "'",
-    "—": "-",
-    "−": "-",
-    "～": "-",
-    "~": "-",
-    "「": "'",
-    "」": "'",
-}
-
-
-def replace_punctuation(text):
-    pattern = re.compile("|".join(re.escape(p) for p in rep_map.keys()))
-
-    replaced_text = pattern.sub(lambda x: rep_map[x.group()], text)
-
-    # replaced_text = re.sub(
-    #     r"[^\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\u3400-\u4DBF\u3005"
-    #     + "".join(punctuation)
-    #     + r"]+",
-    #     "",
-    #     replaced_text,
-    # )
-
-    return replaced_text
 
 
 def read_dict():
@@ -365,68 +306,38 @@ def normalize_numbers(text):
 
 def text_normalize(text):
     text = normalize_numbers(text)
-    text = replace_punctuation(text)
-    text = re.sub(r"([,;.\?\!])([\w])", r"\1 \2", text)
     return text
 
 
-def distribute_phone(n_phone, n_word):
-    phones_per_word = [0] * n_word
-    for task in range(n_phone):
-        min_tasks = min(phones_per_word)
-        min_index = phones_per_word.index(min_tasks)
-        phones_per_word[min_index] += 1
-    return phones_per_word
-
-
-def sep_text(text):
-    words = re.split(r"([,;.\?\!\s+])", text)
-    words = [word for word in words if word.strip() != ""]
-    return words
-
-
-def g2p(text, tokenizer):
+def g2p(text, **kwargs):
     phones = []
     tones = []
-    # word2ph = []
-    words = sep_text(text)
-    tokens = [tokenizer.tokenize(i) for i in words]
+    word2ph = []
+    words = re.split(r"([,;.\-\?\!\s+])", text)
+    words = [word for word in words if word.strip() != ""]
     for word in words:
         if word.upper() in eng_dict:
             phns, tns = refine_syllables(eng_dict[word.upper()])
-            phones.append([post_replace_ph(i) for i in phns])
-            tones.append(tns)
-            # word2ph.append(len(phns))
+            phones += phns
+            tones += tns
+            word2ph.append(len(phns))
         else:
             phone_list = list(filter(lambda p: p != " ", _g2p(word)))
-            phns = []
-            tns = []
             for ph in phone_list:
                 if ph in arpa:
                     ph, tn = refine_ph(ph)
-                    phns.append(ph)
-                    tns.append(tn)
+                    phones.append(ph)
+                    tones.append(tn)
                 else:
-                    phns.append(ph)
-                    tns.append(0)
-            phones.append([post_replace_ph(i) for i in phns])
-            tones.append(tns)
-            # word2ph.append(len(phns))
-    # phones = [post_replace_ph(i) for i in phones]
+                    phones.append(ph)
+                    tones.append(0)
+            word2ph.append(len(phone_list))
 
-    word2ph = []
-    for token, phoneme in zip(tokens, phones):
-        phone_len = len(phoneme)
-        word_len = len(token)
+    phones = [post_replace_ph(i) for i in phones]
 
-        aaa = distribute_phone(phone_len, word_len)
-        word2ph += aaa
-
-    phones = ["_"] + [j for i in phones for j in i] + ["_"]
-    tones = [0] + [j for i in tones for j in i] + [0]
+    phones = ["_"] + phones + ["_"]
+    tones = [0] + tones + [0]
     word2ph = [1] + word2ph + [1]
-    assert len(phones) == len(tones), text
-    assert len(phones) == sum(word2ph), text
 
     return phones, tones, word2ph
 

@@ -25,6 +25,8 @@ BERT_BASE_JAPANESE_V3 = os.path.join(config.ABS_PATH, "bert_vits2/bert/bert-base
 BERT_LARGE_JAPANESE_V2 = os.path.join(config.ABS_PATH, "bert_vits2/bert/bert-large-japanese-v2")
 DEBERTA_V2_LARGE_JAPANESE = os.path.join(config.ABS_PATH, "bert_vits2/bert/deberta-v2-large-japanese")
 DEBERTA_V3_LARGE = os.path.join(config.ABS_PATH, "bert_vits2/bert/deberta-v3-large")
+WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM = os.path.join(config.ABS_PATH,
+                                                           "bert_vits2/emotional/wav2vec2-large-robust-12-ft-emotion-msp-dim")
 
 
 class ModelManager(Subject):
@@ -57,6 +59,7 @@ class ModelManager(Subject):
         self.tts_front = None
         self.bert_models = {}
         self.bert_handler = None
+        self.emotion_model = None
 
         # self.sid2model = []
         # self.name_mapping_id = []
@@ -193,7 +196,23 @@ class ModelManager(Subject):
                     from bert_vits2.text.bert_handler import BertHandler
                     self.bert_handler = BertHandler(self.device)
                 self.bert_handler.load_bert(bert_model_name)
-            model.load_model(self.bert_handler)
+            if model.hps_ms.model.emotion_embbeding:
+                if self.emotion_model is None:
+                    from transformers import Wav2Vec2Processor
+                    self.load_emotion_model(WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM)
+                    self.Wav2Vec2Processor = Wav2Vec2Processor.from_pretrained(
+                        WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM)
+                emotion_model = self.emotion_model
+                processor = Wav2Vec2Processor
+            else:
+                emotion_model = None
+                processor = None
+                
+            model.load_model(
+                self.bert_handler,
+                emotion_model=emotion_model,
+                processor=processor
+            )
 
         sid2model = []
         speakers = []
@@ -332,6 +351,11 @@ class ModelManager(Subject):
         from vits.text.vits_pinyin import VITS_PinYin
         if self.tts_front is None:
             self.tts_front = VITS_PinYin(bert_path, self.device)
+
+    def load_emotion_model(self, model_path):
+        """Bert-VITS2 v2.1 EmotionModel"""
+        from bert_vits2.get_emo import EmotionModel
+        self.emotion_model = EmotionModel.from_pretrained(model_path).to(self.device)
 
     def reorder_model(self, old_index, new_index):
         """重新排序模型，将old_index位置的模型移动到new_index位置"""

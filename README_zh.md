@@ -131,7 +131,7 @@ python app.py
 
 如果是首次启动，在 `config.py` 文件中修改默认模型路径的配置。（非必须）
 
-首次启动之后会生成一个config.yml配置文件，可以修改配置文件中的model_list或者在浏览器中进入管理员后台进行修改（暂未实现） 
+首次启动之后会生成一个config.yml配置文件，可以修改配置文件中的model_list或者在浏览器中进入管理员后台进行修改.
 
 路径可填绝对路径或相对路径，相对路径则是从项目根目录中的Model文件夹开头。
 
@@ -268,7 +268,11 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
     ...
 ```
 
+# 管理员后台
 
+默认为http://127.0.0.1:23456/admin
+
+初始账号密码在初次启动后，在config.yml最下方可找到。
 
 # API
 
@@ -367,17 +371,19 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 
 ## Bert-VITS2语音合成
 
-| Name          | Parameter    | Is must | Default              | Type  | Instruction                                                  |
-| ------------- | ------------ | ------- | -------------------- | ----- | ------------------------------------------------------------ |
-| 合成文本      | text         | true    |                      | str   | 需要合成语音的文本。                                         |
-| 角色id        | id           | false   | 从`config.yml`中获取 | int   | 即说话人id。                                                 |
-| 音频格式      | format       | false   | 从`config.yml`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
-| 文本语言      | lang         | false   | 从`config.yml`中获取 | str   | auto为自动识别语言模式，也是默认模式，但目前只支持识别整段文本的语言，无法细分到每个句子。其余可选语言zh和ja。 |
-| 语音长度/语速 | length       | false   | 从`config.yml`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢。           |
-| 噪声          | noise        | false   | 从`config.yml`中获取 | float | 样本噪声，控制合成的随机性。                                 |
-| sdp噪声       | noisew       | false   | 从`config.yml`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
-| 分段阈值      | segment_size | false   | 从`config.yml`中获取 | int   | 按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段。 |
-| SDP/DP混合比  | sdp_ratio    | false   | 从`config.yml`中获取 | int   | SDP在合成时的占比，理论上此比率越高，合成的语音语调方差越大。 |
+| Name          | Parameter       | Is must | Default              | Type  | Instruction                                                  |
+| ------------- | --------------- | ------- | -------------------- | ----- | ------------------------------------------------------------ |
+| 合成文本      | text            | true    |                      | str   | 需要合成语音的文本。                                         |
+| 角色id        | id              | false   | 从`config.yml`中获取 | int   | 即说话人id。                                                 |
+| 音频格式      | format          | false   | 从`config.yml`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
+| 文本语言      | lang            | false   | 从`config.yml`中获取 | str   | auto为自动识别语言模式，也是默认模式，但目前只支持识别整段文本的语言，无法细分到每个句子。其余可选语言zh和ja。 |
+| 语音长度/语速 | length          | false   | 从`config.yml`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢。           |
+| 噪声          | noise           | false   | 从`config.yml`中获取 | float | 样本噪声，控制合成的随机性。                                 |
+| sdp噪声       | noisew          | false   | 从`config.yml`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
+| 分段阈值      | segment_size    | false   | 从`config.yml`中获取 | int   | 按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段。 |
+| SDP/DP混合比  | sdp_ratio       | false   | 从`config.yml`中获取 | int   | SDP在合成时的占比，理论上此比率越高，合成的语音语调方差越大。 |
+| 情感控制      | emotion         | false   | None                 |       | Bert-VITS2 v2.1可用，范围为0-9                               |
+| 情感参考音频  | reference_audio | false   | None                 |       | Bert-VITS2 v2.1可用                                          |
 
 ## SSML语音合成标记语言
 目前支持的元素与属性

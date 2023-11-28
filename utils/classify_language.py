@@ -1,6 +1,6 @@
 import re
 
-from utils.config_manager import global_config
+# from utils.config_manager import global_config
 
 langid_languages = ["af", "am", "an", "ar", "as", "az", "be", "bg", "bn", "br", "bs", "ca", "cs", "cy", "da", "de",
                     "dz", "el",
@@ -16,7 +16,8 @@ langid_languages = ["af", "am", "an", "ar", "as", "az", "be", "bg", "bn", "br", 
 
 
 def classify_language(text: str, target_languages: list = None) -> str:
-    module = global_config["LANGUAGE_IDENTIFICATION_LIBRARY"].lower()
+    # module = global_config["LANGUAGE_IDENTIFICATION_LIBRARY"].lower()
+    module = "langid"
     if module == "fastlid" or module == "fasttext":
         from fastlid import fastlid, supported_langs
         classifier = fastlid
@@ -56,10 +57,25 @@ def classify_zh_ja(text: str) -> str:
     return "zh"
 
 
-def split_alpha_nonalpha(text):
-    return re.split(
-        r'(?:(?<=[\u4e00-\u9fff])|(?<=[\u3040-\u30FF]))(?=[a-zA-Z])|(?<=[a-zA-Z])(?:(?=[\u4e00-\u9fff])|(?=[\u3040-\u30FF]))',
-        text)
+def split_alpha_nonalpha(text, mode=1):
+    """
+    Splits the input text based on the specified mode.
+
+    Parameters:
+    - text (str): The input text to be split.
+    - mode (int): The mode for splitting (1 or 2).
+        - Mode 1: Splits based on the pattern - Chinese/Japanese followed by English or vice versa.
+        - Mode 2: Splits based on the pattern - Chinese/Japanese followed by English/digit or vice versa.
+
+    Returns:
+    - list: A list of substrings after the split.
+    """
+    if mode == 1:
+        return re.split(
+            r'(?<=[\u4e00-\u9fff\u3040-\u30FF\d])(?=[a-zA-Z])|(?<=[a-zA-Z])(?=[\u4e00-\u9fff\u3040-\u30FF\d])', text)
+    elif mode == 2:
+        return re.split(
+            r'(?<=[\u4e00-\u9fff\u3040-\u30FF])(?=[a-zA-Z\d])|(?<=[a-zA-Z\d])(?=[\u4e00-\u9fff\u3040-\u30FF])', text)
 
 
 if __name__ == "__main__":

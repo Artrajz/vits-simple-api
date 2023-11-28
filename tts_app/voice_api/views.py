@@ -409,6 +409,8 @@ def voice_bert_vits2_api():
         sdp_ratio = get_param(request_data, "sdp_ratio", current_app.config.get("SDP_RATIO", 0.2), float)
         segment_size = get_param(request_data, "segment_size", current_app.config.get("SEGMENT_SIZE", 50), int)
         use_streaming = get_param(request_data, 'streaming', False, bool)
+        emotion = get_param(request_data, 'emotion', None, int)
+        reference_audio = request.files.get("reference_audio", None)
     except Exception as e:
         logger.error(f"[{ModelType.BERT_VITS2.value}] {e}")
         return make_response("parameter error", 400)
@@ -429,6 +431,10 @@ def voice_bert_vits2_api():
     if id < 0 or id >= model_manager.bert_vits2_speakers_count:
         logger.info(f"[{ModelType.BERT_VITS2.value}] speaker id {id} does not exist")
         return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
+
+    if emotion and (emotion < 0 or emotion > 9):
+        logger.info(f"[{ModelType.BERT_VITS2.value}] emotion {emotion} out of the range 0-9")
+        return make_response(jsonify({"status": "error", "message": f"emotion {emotion} out of the range 0-9"}), 400)
 
     # 校验模型是否支持输入的语言
     speaker_lang = model_manager.voice_speakers[ModelType.BERT_VITS2.value][id].get('lang')
@@ -459,7 +465,9 @@ def voice_bert_vits2_api():
              "sdp_ratio": sdp_ratio,
              "segment_size": segment_size,
              "lang": lang,
-             "speaker_lang": speaker_lang}
+             "speaker_lang": speaker_lang,
+             "emotion": emotion,
+             "reference_audio": reference_audio}
 
     if use_streaming:
         audio = tts_manager.stream_bert_vits2_infer(state)

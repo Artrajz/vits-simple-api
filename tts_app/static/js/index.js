@@ -3,6 +3,7 @@ var currentModelPage = 1;
 var vitsSpeakersCount = 0;
 var w2v2SpeakersCount = 0;
 var bertVits2SpeakersCount = 0;
+var selectedFile = null;
 
 function speakersInit() {
     $.ajax({
@@ -65,15 +66,17 @@ function getLink() {
     let url = baseUrl
     let streaming = null;
     let sdp_ratio = null;
+    let emotion = null;
     if (currentModelPage == 1) {
         streaming = document.getElementById('streaming1');
         url += "/voice/vits?text=" + text + "&id=" + id;
     } else if (currentModelPage == 2) {
-        let emotion = document.getElementById('emotion').value;
+        emotion = document.getElementById('emotion').value;
         url += "/voice/w2v2-vits?text=" + text + "&id=" + id + "&emotion=" + emotion;
     } else if (currentModelPage == 3) {
         sdp_ratio = document.getElementById("input_sdp_ratio").value;
         streaming = document.getElementById('streaming3');
+        emotion = document.getElementById('input_emotion3').value;
         url += "/voice/bert-vits2?text=" + text + "&id=" + id;
 
     } else {
@@ -116,6 +119,8 @@ function getLink() {
         length_en = document.getElementById("input_length_en3").value;
         if (length_en != "")
             url += "&length_en=" + length_en;
+        if (emotion !== null && emotion !== "")
+            url += "&emotion=" + emotion;
     }
 
     return url;
@@ -165,6 +170,7 @@ function setAudioSourceByPost() {
         alert("未加载Bert-VITS2模型");
         return;
     }
+
     let text = $("#input_text" + currentModelPage).val();
     let id = $("#input_id" + currentModelPage).val();
     let format = $("#input_format" + currentModelPage).val();
@@ -174,18 +180,29 @@ function setAudioSourceByPost() {
     let noisew = $("#input_noisew" + currentModelPage).val();
     let segment_size = $("#input_segment_size" + currentModelPage).val();
 
+    let formData = new FormData();
+    formData.append('text', text);
+    formData.append('id', id);
+    formData.append('format', format);
+    formData.append('lang', lang);
+    formData.append('length', length);
+    formData.append('noise', noise);
+    formData.append('noisew', noisew);
+    formData.append('segment_size', segment_size);
+
     let url = "";
     let streaming = null;
     let sdp_ratio = null;
     let length_zh = 0;
     let length_ja = 0;
     let length_en = 0;
+    let emotion = null;
 
     if (currentModelPage == 1) {
         url = baseUrl + "/voice/vits";
         streaming = $("#streaming1")[0];
     } else if (currentModelPage == 2) {
-        let emotion = $("#emotion").val();
+        emotion = $("#emotion").val();
         url = baseUrl + "/voice/w2v2-vits";
     } else if (currentModelPage == 3) {
         sdp_ratio = $("#input_sdp_ratio").val();
@@ -194,49 +211,46 @@ function setAudioSourceByPost() {
         length_zh = $("#input_length_zh3").val();
         length_ja = $("#input_length_ja3").val();
         length_en = $("#input_length_en3").val();
+        emotion = $("#input_emotion3").val();
     }
 
-    let data = {
-        text: text,
-        id: id,
-        format: format,
-        lang: lang,
-        length: length,
-        noise: noise,
-        noisew: noisew,
-        segment_size: segment_size
-    };
-
+    // 添加其他配置参数到 FormData
     if ((currentModelPage == 1 || currentModelPage == 3) && streaming.checked) {
-        data.streaming = true;
+        formData.append('streaming', true);
     }
     if (currentModelPage == 3 && sdp_ratio != "") {
-        data.sdp_ratio = sdp_ratio;
+        formData.append('sdp_ratio', sdp_ratio);
     }
     if (currentModelPage == 3 && length_zh != "") {
-        data.length_zh = length_zh;
+        formData.append('length_zh', length_zh);
     }
     if (currentModelPage == 3 && length_ja != "") {
-        data.length_ja = length_ja;
+        formData.append('length_ja', length_ja);
     }
     if (currentModelPage == 3 && length_en != "") {
-        data.length_en = length_en;
+        formData.append('length_en', length_en);
     }
-
+    if ((currentModelPage == 2 || currentModelPage == 3) && emotion != null && emotion != "") {
+        formData.append('emotion', emotion);
+    }
+    if (currentModelPage == 3 && selectedFile) {
+        formData.append('reference_audio', selectedFile);
+    }
 
     let downloadButton = document.getElementById("downloadButton" + currentModelPage);
 
+    // 发送请求
     $.ajax({
         url: url,
         method: 'POST',
-        data: JSON.stringify(data),
-        contentType: 'application/json',
+        data: formData,
+        processData: false,
+        contentType: false,
         responseType: 'blob',
         xhrFields: {
             responseType: 'blob'
         },
         success: function (response, status, xhr) {
-
             let blob = new Blob([response], {type: 'audio/wav'});
             let audioPlayer = document.getElementById("audioPlayer" + currentModelPage);
             let audioFileName = getFileNameFromResponseHeader(xhr);
@@ -253,8 +267,8 @@ function setAudioSourceByPost() {
             downloadButton.disabled = true;
         }
     });
-
 }
+
 
 function getFileNameFromResponseHeader(xhr) {
     var contentDispositionHeader = xhr.getResponseHeader('Content-Disposition');
@@ -329,4 +343,18 @@ $(document).ready(function () {
     speakersInit();
     setDefaultParameter();
     setBaseUrl();
+
+    $('.reference_audio').fileinput({
+        language: 'zh',
+        dropZoneEnabled: true,
+        dropZoneTitle: "上传参考音频",
+        uploadAsync: false,
+        maxFileCount: 1,
+        showPreview: false,
+        showRemove: false,
+        showUpload: false
+    }).on("fileloaded", function (event, file, previewId, index, reader) {
+        selectedFile = file;
+        console.log(selectedFile);
+    });
 });
