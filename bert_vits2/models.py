@@ -262,7 +262,7 @@ class TextEncoder(nn.Module):
                  symbols=None,
                  ja_bert_dim=1024,
                  num_tones=None,
-                 emotion_embbeding=False,
+                 emotion_embedding=False,
                  ):
         super().__init__()
         self.n_vocab = n_vocab
@@ -283,8 +283,8 @@ class TextEncoder(nn.Module):
         self.bert_proj = nn.Conv1d(1024, hidden_channels, 1)
         self.ja_bert_proj = nn.Conv1d(ja_bert_dim, hidden_channels, 1)
         self.en_bert_proj = nn.Conv1d(1024, hidden_channels, 1)
-        self.emotion_embbeding = emotion_embbeding
-        if self.emotion_embbeding:
+        self.emotion_embedding = emotion_embedding
+        if self.emotion_embedding:
             self.emo_proj = nn.Linear(1024, 1024)
             self.emo_quantizer = [
                                      VectorQuantize(
@@ -313,7 +313,7 @@ class TextEncoder(nn.Module):
         ja_bert_emb = self.ja_bert_proj(ja_bert).transpose(1, 2)
         en_bert_emb = self.en_bert_proj(en_bert).transpose(1, 2)
         x = self.emb(x) + self.tone_emb(tone) + self.language_emb(language) + zh_bert_emb + ja_bert_emb + en_bert_emb
-        
+
         if emo is not None:
             emo = emo.to(zh_bert_emb.device)
             if emo.size(-1) == 1024:
@@ -641,6 +641,7 @@ class SynthesizerTrn(nn.Module):
                  symbols=None,
                  ja_bert_dim=1024,
                  num_tones=None,
+                 emotion_embedding=False,
                  **kwargs):
 
         super().__init__()
@@ -671,6 +672,7 @@ class SynthesizerTrn(nn.Module):
         self.current_mas_noise_scale = self.mas_noise_scale_initial
         if self.use_spk_conditioned_encoder and gin_channels > 0:
             self.enc_gin_channels = gin_channels
+        self.emotion_embedding = emotion_embedding
         self.enc_p = TextEncoder(n_vocab,
                                  inter_channels,
                                  hidden_channels,
@@ -684,7 +686,7 @@ class SynthesizerTrn(nn.Module):
                                  symbols=symbols,
                                  ja_bert_dim=ja_bert_dim,
                                  num_tones=num_tones,
-                                 emotion_embbeding = True
+                                 emotion_embedding=self.emotion_embedding
                                  )
         self.dec = Generator(inter_channels, resblock, resblock_kernel_sizes, resblock_dilation_sizes, upsample_rates,
                              upsample_initial_channel, upsample_kernel_sizes, gin_channels=gin_channels)
