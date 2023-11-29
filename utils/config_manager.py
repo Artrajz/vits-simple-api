@@ -182,8 +182,11 @@ def init_config():
     if config.MODEL_LIST != []:
         model_list = global_config["model_config"]["model_list"]
         existing_paths = set(os.path.abspath(existing_model[0]) for existing_model in model_list)
-        if model_list == []: save = True
-
+        if model_list == []: 
+            save = True
+        else:
+            save = False
+            
         for model in config.MODEL_LIST:
             model_path = model[0]
             abs_model_path = os.path.abspath(model_path)

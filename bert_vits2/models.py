@@ -315,6 +315,7 @@ class TextEncoder(nn.Module):
         x = self.emb(x) + self.tone_emb(tone) + self.language_emb(language) + zh_bert_emb + ja_bert_emb + en_bert_emb
         
         if emo is not None:
+            emo = emo.to(zh_bert_emb.device)
             if emo.size(-1) == 1024:
                 emo_emb = self.emo_proj(emo.unsqueeze(1))
                 emo_emb_ = []
@@ -327,9 +328,10 @@ class TextEncoder(nn.Module):
             else:
                 emo_emb = (
                     self.emo_quantizer[sid[0]]
-                        .get_output_from_indices(emo.to(torch.int))
-                        .unsqueeze(0)
+                        .get_output_from_indices(emo.to(torch.int).cpu())
+                        .unsqueeze(0).to(emo.device)
                 )
+
             x += self.emo_q_proj(emo_emb)
 
         x *= math.sqrt(self.hidden_channels)  # [b, t, h]
@@ -681,7 +683,8 @@ class SynthesizerTrn(nn.Module):
                                  gin_channels=self.enc_gin_channels,
                                  symbols=symbols,
                                  ja_bert_dim=ja_bert_dim,
-                                 num_tones=num_tones
+                                 num_tones=num_tones,
+                                 emotion_embbeding = True
                                  )
         self.dec = Generator(inter_channels, resblock, resblock_kernel_sizes, resblock_dilation_sizes, upsample_rates,
                              upsample_initial_channel, upsample_kernel_sizes, gin_channels=gin_channels)
