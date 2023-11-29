@@ -351,10 +351,10 @@ $(document).ready(function () {
         uploadAsync: false,
         maxFileCount: 1,
         showPreview: false,
-        showRemove: false,
         showUpload: false
     }).on("fileloaded", function (event, file, previewId, index, reader) {
         selectedFile = file;
-        console.log(selectedFile);
+    }).on("filecleared", function (event) {
+        selectedFile = null;
     });
 });

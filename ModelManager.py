@@ -60,6 +60,7 @@ class ModelManager(Subject):
         self.bert_models = {}
         self.bert_handler = None
         self.emotion_model = None
+        self.processor = None
 
         # self.sid2model = []
         # self.name_mapping_id = []
@@ -200,18 +201,14 @@ class ModelManager(Subject):
                 if self.emotion_model is None:
                     from transformers import Wav2Vec2Processor
                     self.load_emotion_model(WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM)
-                    self.Wav2Vec2Processor = Wav2Vec2Processor.from_pretrained(
+                if self.processor is None:
+                    self.processor = Wav2Vec2Processor.from_pretrained(
                         WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM)
-                emotion_model = self.emotion_model
-                processor = Wav2Vec2Processor
-            else:
-                emotion_model = None
-                processor = None
-                
+
             model.load_model(
                 self.bert_handler,
-                emotion_model=emotion_model,
-                processor=processor
+                emotion_model=self.emotion_model,
+                processor=self.processor
             )
 
         sid2model = []

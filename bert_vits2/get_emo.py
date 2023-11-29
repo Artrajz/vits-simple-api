@@ -79,8 +79,8 @@ def process_func(
     return y
 
 
-def get_emo(path, emotion_model, processor):
-    wav, sr = librosa.load(path, 16000)
+def get_emo(audio, emotion_model, processor):
+    wav, sr = librosa.load(audio, 16000)
     device = global_config["DEVICE"]
     return process_func(
         np.expand_dims(wav, 0).astype(np.float),

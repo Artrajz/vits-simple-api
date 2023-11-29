@@ -328,7 +328,7 @@ class TextEncoder(nn.Module):
             else:
                 emo_emb = (
                     self.emo_quantizer[sid[0]]
-                        .get_output_from_indices(emo.to(torch.int).cpu())
+                        .get_output_from_indices(emo.to(torch.long).cpu())
                         .unsqueeze(0).to(emo.device)
                 )
 

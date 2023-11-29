@@ -193,6 +193,7 @@ class Bert_VITS2:
             en_bert = en_bert.to(self.device).unsqueeze(0)
             x_tst_lengths = torch.LongTensor([phones.size(0)]).to(self.device)
             speakers = torch.LongTensor([int(id)]).to(self.device)
+            emo = emo.to(self.device).unsqueeze(0)
             audio = self.net_g.infer(x_tst,
                                      x_tst_lengths,
                                      speakers,
