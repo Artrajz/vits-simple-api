@@ -47,13 +47,27 @@ app.register_blueprint(voice_api, url_prefix='/voice')
 if app.config.get("IS_ADMIN_ENABLED", False):
     app.register_blueprint(auth, url_prefix=app.config.get("ADMIN_ROUTE", "/admin"))
     app.register_blueprint(admin, url_prefix=app.config.get("ADMIN_ROUTE", "/admin"))
-    
+
+
+def create_folders(paths):
+    for path in paths:
+        if not os.path.exists(path):
+            os.makedirs(path, exist_ok=True)
+
+
+create_folders([app.config["UPLOAD_FOLDER"],
+                app.config["CACHE_PATH"],
+                os.path.join(app.config["ABS_PATH"], "Model")
+                ])
+
+
 # regular cleaning
 @scheduler.task('interval', id='clean_task', seconds=app.config.get("CLEAN_INTERVAL_SECONDS", 3600),
                 misfire_grace_time=900)
 def clean_task():
     clean_folder(app.config["UPLOAD_FOLDER"])
     clean_folder(app.config["CACHE_PATH"])
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=app.config.get("PORT", 23456), debug=app.config.get("DEBUG", False))

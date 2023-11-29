@@ -157,18 +157,21 @@ class Bert_VITS2:
         return zh_bert, ja_bert, en_bert, phone, tone, language
 
     def get_emo_(self, reference_audio, emotion):
-        emo = None
-        if self.hps_ms.model.emotion_embedding:
-            emo = torch.from_numpy(
-                get_emo(reference_audio, self.emotion_model, self.processor)) if reference_audio else torch.Tensor(
-                [emotion])
+        emo = torch.from_numpy(
+            get_emo(reference_audio, self.emotion_model, self.processor)) if reference_audio else torch.Tensor(
+            [emotion])
 
         return emo
 
     def infer(self, text, id, lang, sdp_ratio, noise, noisew, length, reference_audio=None, emotion=None,
               skip_start=False, skip_end=False, **kwargs):
         zh_bert, ja_bert, en_bert, phones, tones, lang_ids = self.get_text(text, lang, self.hps_ms)
-        emo = self.get_emo_(reference_audio, emotion)
+        
+        if self.hps_ms.model.emotion_embedding:
+            emo = self.get_emo_(reference_audio, emotion).to(self.device).unsqueeze(0)
+        else:
+            emo = None
+            
         if skip_start:
             phones = phones[1:]
             tones = tones[1:]
@@ -193,7 +196,6 @@ class Bert_VITS2:
             en_bert = en_bert.to(self.device).unsqueeze(0)
             x_tst_lengths = torch.LongTensor([phones.size(0)]).to(self.device)
             speakers = torch.LongTensor([int(id)]).to(self.device)
-            emo = emo.to(self.device).unsqueeze(0)
             audio = self.net_g.infer(x_tst,
                                      x_tst_lengths,
                                      speakers,
