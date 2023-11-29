@@ -30,7 +30,7 @@ class Bert_VITS2:
         self.version = process_legacy_versions(self.hps_ms)
         self.text_extra_str_map = {"zh": "", "ja": "", "en": ""}
         self.bert_extra_str_map = {"zh": "", "ja": "", "en": ""}
-        self.hps_ms.model.emotion_embbeding = False
+        self.hps_ms.model.emotion_embedding = False
         if self.version in ["1.0", "1.0.0", "1.0.1"]:
             self.symbols = symbols_legacy
             self.hps_ms.model.n_layers_trans_flow = 3
@@ -67,14 +67,14 @@ class Bert_VITS2:
             self.bert_extra_str_map.update({"ja": "_V200", "en": "_v200"})
         elif self.version in ["2.1", "2.1.0"]:
             self.hps_ms.model.n_layers_trans_flow = 4
-            self.hps_ms.model.emotion_embbeding = True
+            self.hps_ms.model.emotion_embedding = True
             self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja", "en"])
             self.num_tones = num_tones
             if "ja" in self.lang: self.bert_model_names.update({"ja": "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM"})
             if "en" in self.lang: self.bert_model_names.update({"en": "DEBERTA_V3_LARGE"})
         else:
             self.hps_ms.model.n_layers_trans_flow = 4
-            self.hps_ms.model.emotion_embbeding = True
+            self.hps_ms.model.emotion_embedding = True
             self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja", "en"])
             self.num_tones = num_tones
             if "ja" in self.lang: self.bert_model_names.update({"ja": "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM"})
@@ -158,7 +158,7 @@ class Bert_VITS2:
 
     def get_emo_(self, reference_audio, emotion):
         emo = None
-        if self.hps_ms.model.emotion_embbeding:
+        if self.hps_ms.model.emotion_embedding:
             emo = torch.from_numpy(
                 get_emo(reference_audio, self.emotion_model, self.processor)) if reference_audio else torch.Tensor(
                 [emotion])

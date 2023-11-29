@@ -196,7 +196,7 @@ class ModelManager(Subject):
                     from bert_vits2.text.bert_handler import BertHandler
                     self.bert_handler = BertHandler(self.device)
                 self.bert_handler.load_bert(bert_model_name)
-            if model.hps_ms.model.emotion_embbeding:
+            if model.hps_ms.model.emotion_embedding:
                 if self.emotion_model is None:
                     from transformers import Wav2Vec2Processor
                     self.load_emotion_model(WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM)
