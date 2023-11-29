@@ -45,8 +45,8 @@ class Bert_VITS2:
             self.ja_bert_dim = 768
             self.num_tones = num_tones_v111
             if "ja" in self.lang: self.bert_model_names.update({"ja": "BERT_BASE_JAPANESE_V3"})
-            self.text_extra_str_map.update({"zh": "_v100", "ja": "_V111"})
-            self.bert_extra_str_map.update({"ja": "_V111"})
+            self.text_extra_str_map.update({"zh": "_v100", "ja": "_v111"})
+            self.bert_extra_str_map.update({"ja": "_v111"})
 
         elif self.version in ["1.1", "1.1.0", "1.1.1"]:
             self.hps_ms.model.n_layers_trans_flow = 6
@@ -54,8 +54,8 @@ class Bert_VITS2:
             self.ja_bert_dim = 768
             self.num_tones = num_tones_v111
             if "ja" in self.lang: self.bert_model_names.update({"ja": "BERT_BASE_JAPANESE_V3"})
-            self.text_extra_str_map.update({"zh": "_v100", "ja": "_V111"})
-            self.bert_extra_str_map.update({"ja": "_V111"})
+            self.text_extra_str_map.update({"zh": "_v100", "ja": "_v111"})
+            self.bert_extra_str_map.update({"ja": "_v111"})
 
         elif self.version in ["2.0", "2.0.0", "2.0.1", "2.0.2"]:
             self.hps_ms.model.n_layers_trans_flow = 4
@@ -63,8 +63,8 @@ class Bert_VITS2:
             self.num_tones = num_tones
             if "ja" in self.lang: self.bert_model_names.update({"ja": "DEBERTA_V2_LARGE_JAPANESE"})
             if "en" in self.lang: self.bert_model_names.update({"en": "DEBERTA_V3_LARGE"})
-            self.text_extra_str_map.update({"zh": "_v100", "ja": "_V200", "en": "_v200"})
-            self.bert_extra_str_map.update({"ja": "_V200", "en": "_v200"})
+            self.text_extra_str_map.update({"zh": "_v100", "ja": "_v200", "en": "_v200"})
+            self.bert_extra_str_map.update({"ja": "_v200", "en": "_v200"})
         elif self.version in ["2.1", "2.1.0"]:
             self.hps_ms.model.n_layers_trans_flow = 4
             self.hps_ms.model.emotion_embedding = True
