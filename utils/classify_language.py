@@ -1,6 +1,9 @@
-import re
+import regex as re
 
-# from utils.config_manager import global_config
+try:
+    from utils.config_manager import global_config
+except:
+    pass
 
 langid_languages = ["af", "am", "an", "ar", "as", "az", "be", "bg", "bn", "br", "bs", "ca", "cs", "cy", "da", "de",
                     "dz", "el",
@@ -16,8 +19,10 @@ langid_languages = ["af", "am", "an", "ar", "as", "az", "be", "bg", "bn", "br", 
 
 
 def classify_language(text: str, target_languages: list = None) -> str:
-    # module = global_config["LANGUAGE_IDENTIFICATION_LIBRARY"].lower()
-    module = "langid"
+    try:
+        module = global_config["LANGUAGE_IDENTIFICATION_LIBRARY"].lower()
+    except:
+        module = "langid"
     if module == "fastlid" or module == "fasttext":
         from fastlid import fastlid, supported_langs
         classifier = fastlid
@@ -71,11 +76,13 @@ def split_alpha_nonalpha(text, mode=1):
     - list: A list of substrings after the split.
     """
     if mode == 1:
-        return re.split(
-            r'(?<=[\u4e00-\u9fff\u3040-\u30FF\d])(?=[a-zA-Z])|(?<=[a-zA-Z])(?=[\u4e00-\u9fff\u3040-\u30FF\d])', text)
+        pattern = r'(?<=[\u4e00-\u9fff\u3040-\u30FF\d])(?=[\p{Latin}])|(?<=[\p{Latin}])(?=[\u4e00-\u9fff\u3040-\u30FF\d])'
     elif mode == 2:
-        return re.split(
-            r'(?<=[\u4e00-\u9fff\u3040-\u30FF])(?=[a-zA-Z\d])|(?<=[a-zA-Z\d])(?=[\u4e00-\u9fff\u3040-\u30FF])', text)
+        pattern = r'(?<=[\u4e00-\u9fff\u3040-\u30FF])(?=[\p{Latin}\d])|(?<=[\p{Latin}\d])(?=[\u4e00-\u9fff\u3040-\u30FF])'
+    else:
+        raise ValueError("Invalid mode. Supported modes are 1 and 2.")
+
+    return re.split(pattern, text)
 
 
 if __name__ == "__main__":
