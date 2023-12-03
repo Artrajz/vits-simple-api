@@ -22,8 +22,9 @@
         <div class="tabs w-100 border-b-2" id="component-2">
             <button class="tab-button px-4 pb-2 pt-2" onclick="showContent(0)" id="vits-button">VITS</button>
             <button class="tab-button px-4 pb-2 pt-2" onclick="showContent(1)" id="w2v2-vits-button">W2V2-VITS</button>
-            <button class="tab-button px-4 pb-2 pt-2" onclick="showContent(2)" id="bert-vits2-button">Bert-VITS2
-            </button>
+            <button class="tab-button px-4 pb-2 pt-2" onclick="showContent(2)" id="bert-vits2-button">Bert-VITS2</button>
+            <!-- 新增的设置页 -->
+            <button class="tab-button px-4 pb-2 pt-2" onclick="showContent(3)" id="set-button">Set</button>
         </div>
 
         <div class="content w-100 border-lr-2 border-b-2" id="component-3">
@@ -372,8 +373,42 @@
                                title="按照segment_size分段推理文本，推理好一段即输出，无需等待所有文本都推理完毕">流式响应</label>
                     </div>
                 </div>
+                
+            </div>
+
+            <!--set界面-->
+            <div class="content-pane w-100 flex-wrap" id="set-page">
+
+                <div class="upload-container">
+                    <input type="file" id="uploadInput" accept="image/*">
+                    <label for="uploadInput" id="uploadLabel">上传壁纸</label>
+                </div>
+
+                <div class="toggle-container">
+                    <input type="checkbox" id="glassToggle" onchange="toggleGlassEffect()">
+                    <label for="glassToggle" id="glassToggleLabel">启用/禁用毛玻璃效果</label>
+                </div>
+
+                <div id="themeColorContainer">
+                    <label for="themeColor">主题色（建议配合毛玻璃效果使用）：</label>
+                    <input type="color" id="themeColor">
+                </div>
+
+                <div class="player-container">
+                    <!-- 隐藏的 input 元素 -->
+                    <input type="checkbox" id="toggleCheckbox" style="display: none;">
+
+                    <!-- 使用 label 元素作为按钮 -->
+                    <label for="toggleCheckbox" id="toggleSpectrumLabel">切换频谱播放器</label>
+                </div>
+
+                <div id="sakura-container">
+                    <!-- 使用label作为按钮 -->
+                    <label for="sakuraToggle" onclick="toggleSakura()" id="toggleSakuraLabel">樱花飘落</label>
+                </div>
 
             </div>
+
         </div>
 
         <div class="mt-2">
@@ -404,5 +439,11 @@
 
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 <script src="{{ url_for('static', filename='js/plugins/fileinput.min.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/background.js') }}"></script>
+<script src="{{ url_for('static', filename='js/glasstoggle.js') }}"></script>
+<script src="{{ url_for('static', filename='js/themecolor.js') }}"></script>
+<script src="{{ url_for('static', filename='js/player.js') }}"></script>
+<script src="{{ url_for('static', filename='js/sakuraplus.js') }}"></script>
 </body>
 </html>

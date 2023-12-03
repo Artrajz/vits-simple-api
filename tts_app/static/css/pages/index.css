@@ -63,11 +63,11 @@
     border-style: solid;
     border-color: #e5e7eb;
 }
-
+/*
 label {
     margin-bottom: 0.5rem;
 }
-
+*/
 .play-button button {
     margin-left: 10px;
     margin-right: 10px;
@@ -107,4 +107,332 @@ label {
     
 }
 
+
+
+
+/* Additional Styles for Your Page */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa;
+    color: #495057;
+    margin: 0;
+    padding: 0;
+}
+
+main {
+    margin: 20px;
+}
+
+.container {
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    border-radius: 5px;
+}
+
+h1 {
+    font-size: 24px;
+    margin: 0;
+}
+
+.tab-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px 5px 0 0;
+    margin-right: 5px;
+}
+
+.tab-button:hover {
+    background-color: #0056b3;
+}
+
+.content {
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-top: -1px;
+    border-radius: 0 0 5px 5px;
+}
+
+label {
+    font-weight: bold;
+}
+
+
+
+.btn-outline-secondary {
+    color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.form-check-label {
+    margin-left: 5px;
+}
+
+.mt-2 {
+    margin-top: 20px;
+}
+
+.mt-2 div {
+    margin-bottom: 10px;
+}
+
+.mt-2 div label {
+    font-weight: bold;
+}
+
+.mt-2 div a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.mt-2 div a:hover {
+    text-decoration: underline;
+}
+
+/* 修改标题样式 */
+h1 a {
+    font-size: 32px; /* 你可以根据需要调整字体大小 */
+    font-weight: bold;
+    text-decoration: none;
+    color: black;
+}
+
+h1 a:hover {
+    text-decoration: underline;
+}
+
+/* 取消左右滚动条 */
+html, body {
+    overflow-x: hidden;
+}
+
+/* 上下滚动条样式 */
+body {
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+/* 添加垂直滚动条样式 */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #8eb4b4;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: #ebddfc;
+}
+
+/* 背景更改 */
+
+body {
+    margin: 0;
+    padding: 0;
+    background-size: cover;
+    background-position: center;
+    transition: background 0.5 ease;
+}
+
+#uploadInput {
+    display: none;
+}
+ 
+ 
+#uploadLabel {
+    position: absolute;
+            top: 170px;
+            left: 32px;
+            right: 32px;
+
+    cursor: pointer;
+    padding: 10px;
+    border: 2px solid #3498db;
+    border-radius: 5px;
+    background-color: #3498db;
+    color: #fff;
+    font-size: 16px;
+    transition: background-color 0.3 ease;
+}
+
+#uploadLabel:hover {
+    background-color: #2980b9;
+}
+
+.upload-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#uploadLabel:hover {
+    background-color: #2980b9;
+}
+
+
+/* 毛玻璃的开关样式 */
+#glassToggle {
+    display: none;
+}
+
+#glassToggleLabel {
+    position: absolute;
+            top: 250px;
+            left: 32px;
+            right: 32px;
+
+    cursor: pointer;
+    padding: 10px;
+    border: 2px solid #3498db;
+    border-radius: 5px;
+    background-color: #3498db;
+    color: #fff;
+    font-size: 16px;
+    transition: background-color 0.3 ease;
+}
+
+#glassToggleLabel:hover {
+    background-color: #2980b9;
+}
+
+.toggle-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+
+#glassToggle:checked + label {
+    background-color: #2980b9;
+}
+
+
+/* 毛玻璃样式 */
+.container {
+    /* 设置容器为相对定位，以便毛玻璃效果能够相对于该容器生效 */
+    position: relative;
+}
+
+.foreground {
+    /* 设置前景元素的样式 */
+    /* 为前景元素添加背景颜色和透明度，以便毛玻璃效果更明显 */
+    background-color: rgba(255, 36, 36, 0.8); /* 调整透明度 */
+    padding: 20px; /* 调整前景元素的内边距 */
+    z-index: 1; /* 将前景元素置于背景之上 */
+
+    /* 添加毛玻璃效果 */
+    backdrop-filter: blur(10px);
+}
+
+/* 播放器样式 */
+#spectrogramCanvas {
+    margin: auto;
+    width: 85%; /* 适应容器宽度 */
+    height: 200px; /* 设置容器高度 */
+    /* 其他样式属性，根据需要调整 */
+}
+
+/* 播放器切换按钮 */
+.player-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#toggleSpectrumLabel {
+    position: absolute;
+        top: 375px;
+        left: 32px;
+        right: 32px;
+
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    transition: background-color 0.3 ease;
+    display: inline-block;
+}
+
+#toggleSpectrumLabel:hover {
+    background-color: #2980b9;
+}
+
+#toggleCheckbox {
+    display: none;
+}
+
+#toggleCheckbox:checked + #toggleSpectrumLabel {
+    background-color: #1f618d;
+}
+
+
+/* 主题色设置 */
+#themeColorContainer {
+    position: absolute;
+            top: 330px;
+            left: 36px;
+    display: flex;
+    align-items: center;
+  }
+
+:root {
+    --主题色: #000000; /* 设置默认主题色 */
+  }
+
+  body {
+    /*background-color: var(--主题色);*/
+    color: var(--主题色);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--主题色);
+  }
+
+  a,.form-control {
+    color: var(--主题色);
+  }
+
+/* 樱花飘落开关 */
+#toggleSakuraLabel {
+    position: absolute;
+        top: 450px;
+        left: 32px;
+        right: 32px;
+
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    transition: background-color 0.3 ease;
+    display: inline-block;
+}
+
+#toggleSakuraLabel:hover {
+    background-color: #2980b9;
+}
+
+#sakuraToggle {
+    display: none;
+}
+
+#sakuraToggle:checked + #toggleSakuraLabel {
+    background-color: #1f618d;
+}
 
