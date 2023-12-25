@@ -239,7 +239,6 @@ function setAudioSourceByPost() {
 
     let downloadButton = document.getElementById("downloadButton" + currentModelPage);
 
-    /*
     // 发送请求
     $.ajax({
         url: url,
@@ -268,124 +267,6 @@ function setAudioSourceByPost() {
             downloadButton.disabled = true;
         }
     });
-    */
-
-// 发送请求
-$.ajax({
-    url: url,
-    method: 'POST',
-    data: formData,
-    processData: false,
-    contentType: false,
-    responseType: 'arraybuffer',  // 指定响应类型为 arraybuffer
-    xhrFields: {
-        responseType: 'arraybuffer'
-    },
-    success: function (response, status, xhr) {
-        let audioFileName = getFileNameFromResponseHeader(xhr);
-
-        // 如果 player_type 的值为 1，则显示频谱播放器
-        if (player_type == 1) {
-            let audioPlayer = document.getElementById("audioPlayer" + currentModelPage);
-
-            // 创建 Web Audio 上下文
-            let audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            let analyser = audioContext.createAnalyser();
-            let source = audioContext.createBufferSource();
-
-            // 解码音频数据
-            audioContext.decodeAudioData(response, function(buffer) {
-                source.buffer = buffer;
-
-                // 连接节点
-                source.connect(analyser);
-                analyser.connect(audioContext.destination);
-
-                // 创建频谱 Canvas 元素
-                let spectrogramCanvas = document.createElement('canvas');
-                spectrogramCanvas.id = 'spectrogramCanvas'; // 为 Canvas 设置 ID
-                // 设置 Canvas 的宽度和高度
-                const canvasWidth = 600;  // 根据实际情况调整
-                const canvasHeight = 150; // 根据实际情况调整
-                spectrogramCanvas.width = canvasWidth;
-                spectrogramCanvas.height = canvasHeight;
-
-                // 添加样式使其居中
-                spectrogramCanvas.style.position = 'absolute';
-                spectrogramCanvas.style.top = '50%';
-                spectrogramCanvas.style.left = '52%';
-                spectrogramCanvas.style.margin = 'auto';
-                spectrogramCanvas.style.width = '50%';
-                spectrogramCanvas.style.height = '200px';
-                spectrogramCanvas.style.transform = 'translate(-50%, -50%)';
-
-                // 将 Canvas 直接添加到 body 中
-                document.body.appendChild(spectrogramCanvas);
-
-                // 获取 Canvas 2D 上下文
-                let ctx = spectrogramCanvas.getContext('2d');
-
-                // 设置 Canvas 的绘制参数
-                analyser.fftSize = 256;
-                let bufferLength = analyser.frequencyBinCount;
-                let dataArray = new Uint8Array(bufferLength);
-                const barWidth = (canvasWidth / bufferLength) * 2.5;
-                let x = 0;
-
-                // 绘制频谱
-                function drawSpectrogram() {
-                    analyser.getByteFrequencyData(dataArray);
-
-                    // 清除 Canvas
-                    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-                    // 绘制频谱
-                    for (let i = 0; i < bufferLength; i++) {
-                        let barHeight = dataArray[i];
-                        ctx.fillStyle = localStorage.getItem('themeColor'); // 适配主题色
-                        ctx.fillRect(x, canvasHeight - barHeight / 2, barWidth, barHeight / 2);
-                        x += barWidth + 1;
-                    }
-
-                    x = 0;
-
-                    // 递归调用以持续绘制频谱
-                    requestAnimationFrame(drawSpectrogram);
-                }
-
-                // 当音频开始播放时调用
-                source.onended = function() {
-                    // 移除 Canvas 元素
-                    document.body.removeChild(spectrogramCanvas);
-                };
-
-                // 播放音频
-                source.start();
-
-                // 开始绘制频谱
-                drawSpectrogram();
-            });
-
-        } else {
-            // 处理其他情况，例如 player_type 不为 1
-            let blob = new Blob([response], { type: 'audio/wav' });
-            let audioPlayer = document.getElementById("audioPlayer" + currentModelPage);
-
-            audioPlayer.setAttribute('data-file-name', audioFileName);
-            audioPlayer.src = URL.createObjectURL(blob);
-            audioPlayer.load();
-            audioPlayer.play();
-        }
-
-        downloadButton.disabled = false;
-    },
-    error: function (error) {
-        console.error('Error:', error);
-        alert("无法获取音频数据");
-        downloadButton.disabled = true;
-    }
-});
-
 }
 
 
