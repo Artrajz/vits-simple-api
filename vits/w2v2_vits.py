@@ -11,8 +11,7 @@ from vits.models import SynthesizerTrn
 
 
 class W2V2_VITS:
-    def __init__(self, model_path, config, emotion_reference, dimensional_emotion_model, device=torch.device("cpu"),
-                 **kwargs):
+    def __init__(self, model_path, config, device=torch.device("cpu"), **kwargs):
         self.hps_ms = get_hparams_from_file(config) if isinstance(config, str) else config
         self.n_speakers = getattr(self.hps_ms.data, 'n_speakers', 0)
         self.n_symbols = len(getattr(self.hps_ms, 'symbols', []))
@@ -23,12 +22,17 @@ class W2V2_VITS:
         self.emotion_embedding = getattr(self.hps_ms.data, 'emotion_embedding',
                                          getattr(self.hps_ms.model, 'emotion_embedding', False))
         self.hps_ms.model.emotion_embedding = self.emotion_embedding
-        self.emotion_reference = emotion_reference
-        self.dimensional_emotion_model = dimensional_emotion_model
+
         self.text_cleaners = getattr(self.hps_ms.data, 'text_cleaners', [None])[0]
         self.sampling_rate = self.hps_ms.data.sampling_rate
-
         self.device = device
+        self.model_path = model_path
+
+        self.lang = lang_dict.get(self.text_cleaners, ["unknown"])
+
+    def load_model(self, emotion_reference, dimensional_emotion_model):
+        self.emotion_reference = emotion_reference
+        self.dimensional_emotion_model = dimensional_emotion_model
 
         self.net_g_ms = SynthesizerTrn(
             self.n_symbols,
@@ -37,14 +41,7 @@ class W2V2_VITS:
             n_speakers=self.n_speakers,
             **self.hps_ms.model)
         _ = self.net_g_ms.eval()
-
-        # load checkpoint
-        self.load_checkpoint(model_path)
-
-        self.lang = lang_dict.get(self.text_cleaners, ["unknown"])
-
-    def load_checkpoint(self, model):
-        utils.load_checkpoint(model, self.net_g_ms)
+        utils.load_checkpoint(self.model_path, self.net_g_ms)
         self.net_g_ms.to(self.device)
 
     def get_cleaned_text(self, text, hps, cleaned=False):

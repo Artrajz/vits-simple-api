@@ -182,13 +182,13 @@ class ModelManager(Subject):
         if model_type == ModelType.W2V2_VITS:
             if self.emotion_reference is None:
                 self.emotion_reference = self.load_npy(config["model_config"]["dimensional_emotion_npy"])
-            model_args.update({"emotion_reference": self.emotion_reference,
-                               "dimensional_emotion_model": self.dimensional_emotion_model})
+            model.load_model(emotion_reference=self.emotion_reference,
+                             dimensional_emotion_model=self.dimensional_emotion_model)
 
         if model_type == ModelType.HUBERT_VITS:
             if self.hubert is None:
                 self.hubert = self.load_hubert_model(config["model_config"]["hubert_soft_model"])
-            model_args.update({"hubert": self.hubert})
+            model.load_model(hubert=self.hubert)
 
         if model_type == ModelType.BERT_VITS2:
             bert_model_names = model.bert_model_names
@@ -457,7 +457,8 @@ class ModelManager(Subject):
                 for file_name in files:
                     if file_name.endswith(".npy"):
                         file_path = os.path.join(root, file_name)
-                        emotion_reference = np.append(emotion_reference, self._load_npy_from_path(file_path), axis=0)
+                        emotion_reference = np.append(emotion_reference, self._load_npy_from_path(file_path),
+                                                      axis=0)
 
         elif os.path.isfile(emotion_reference_npy):
             emotion_reference = self._load_npy_from_path(emotion_reference_npy)
