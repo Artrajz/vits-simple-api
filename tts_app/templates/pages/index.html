@@ -269,30 +269,28 @@
                                    value=""
                                    placeholder="auto"/>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-1 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="调节语音长度，相当于调节语速，该数值越大语速越慢。">length</label>
                             <input type="number" class="form-control input_length" id="input_length3"
                                    oninput="updateLink()" value=""
                                    placeholder="1" min="0" step="0.001"/>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-1 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="调节中文语音长度，相当于调节语速，该数值越大语速越慢。">length_zh</label>
                             <input type="number" class="form-control input_length_zh" id="input_length_zh3"
                                    oninput="updateLink()" value=""
                                    placeholder="0" min="0" step="0.001"/>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-1 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="调节日语语音长度，相当于调节语速，该数值越大语速越慢。">length_ja</label>
                             <input type="number" class="form-control input_length_ja" id="input_length_ja3"
                                    oninput="updateLink()" value=""
                                    placeholder="0" min="0" step="0.001"/>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-1 mb-3">
                             <label data-toggle="tooltip" data-placement="top"
                                    title="调节英文语音长度，相当于调节语速，该数值越大语速越慢。">length_en</label>
                             <input type="number" class="form-control input_length_en" id="input_length_en3"
@@ -344,8 +342,19 @@
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="reference_audio" data-toggle="tooltip" data-placement="top"
-                                   title="Bert-VITS2 v2.1: 上传音频文件作为情感参考,emotion和reference_audio二选一。">reference_audio</label>
+                                   title="Bert-VITS2 v2.1: 上传音频文件作为情感参考,emotion和reference_audio二选一。
+                                    v2.2: text_prompt和reference_audio二选一。">reference_audio</label>
                             <input type="file" class="reference_audio" id="reference_audio3" multiple>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="text_prompt" data-toggle="tooltip" data-placement="top"
+                                   title="Bert-VITS2 v2.2: ">text_prompt</label>
+                            <input type="text" class="form-control text_prompt" id="input_text_prompt3" oninput="updateLink()"
+                                   value=""
+                                   placeholder=""/>
                         </div>
                     </div>
                 </form>

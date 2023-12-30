@@ -374,7 +374,7 @@ class TTSManager(Observer):
             for sentence in sentences:
                 audio = model.infer(sentence, state["id"], lang, state["sdp_ratio"], state["noise"],
                                     state["noise"], length, emotion=state["emotion"],
-                                    reference_audio=state["reference_audio"])
+                                    reference_audio=state["reference_audio"], text_prompt="text_prompt")
                 audios.append(audio)
         audio = np.concatenate(audios)
 
@@ -395,10 +395,18 @@ class TTSManager(Observer):
 
         for (text, lang) in sentences_list:
             sentences = sentence_split(text, state["segment_size"])
+            if lang == 'zh' and state["length_zh"] > 0:
+                length = state["length_zh"]
+            elif lang == 'ja' and state["length_ja"] > 0:
+                length = state["length_ja"]
+            elif lang == 'en' and state["length_en"] > 0:
+                length = state["length_en"]
+            else:
+                length = state["length"]
             for sentence in sentences:
                 audio = model.infer(sentence, state["id"], lang, state["sdp_ratio"], state["noise"],
-                                    state["noise"], state["length"], emotion=state["emotion"],
-                                    reference_audio=state["reference_audio"])
+                                    state["noise"], length, emotion=state["emotion"],
+                                    reference_audio=state["reference_audio"], text_prompt="text_prompt")
                 # audios.append(audio)
                 # audio = np.concatenate(audios, axis=0)
                 encoded_audio = self.encode(sampling_rate, audio, state["format"])

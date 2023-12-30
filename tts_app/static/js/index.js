@@ -67,6 +67,7 @@ function getLink() {
     let streaming = null;
     let sdp_ratio = null;
     let emotion = null;
+    let text_prompt = "";
     if (currentModelPage == 1) {
         streaming = document.getElementById('streaming1');
         url += "/voice/vits?text=" + text + "&id=" + id;
@@ -77,6 +78,7 @@ function getLink() {
         sdp_ratio = document.getElementById("input_sdp_ratio").value;
         streaming = document.getElementById('streaming3');
         emotion = document.getElementById('input_emotion3').value;
+        text_prompt = document.getElementById('input_text_prompt3').value;
         url += "/voice/bert-vits2?text=" + text + "&id=" + id;
 
     } else {
@@ -121,6 +123,8 @@ function getLink() {
             url += "&length_en=" + length_en;
         if (emotion !== null && emotion !== "")
             url += "&emotion=" + emotion;
+        if (text_prompt !== null && text_prompt !== "")
+            url += "&text_prompt=" + text_prompt;
     }
 
     return url;
@@ -197,6 +201,7 @@ function setAudioSourceByPost() {
     let length_ja = 0;
     let length_en = 0;
     let emotion = null;
+    let text_prompt = "";
 
     if (currentModelPage == 1) {
         url = baseUrl + "/voice/vits";
@@ -212,6 +217,7 @@ function setAudioSourceByPost() {
         length_ja = $("#input_length_ja3").val();
         length_en = $("#input_length_en3").val();
         emotion = $("#input_emotion3").val();
+        text_prompt = $("#input_text_prompt3").val();
     }
 
     // 添加其他配置参数到 FormData
@@ -236,10 +242,13 @@ function setAudioSourceByPost() {
     if (currentModelPage == 3 && selectedFile) {
         formData.append('reference_audio', selectedFile);
     }
+    if (currentModelPage == 3 && text_prompt) {
+        formData.append('text_prompt', text_prompt);
+    }
 
     let downloadButton = document.getElementById("downloadButton" + currentModelPage);
 
-    // 发送请求
+    // 发送post请求
     $.ajax({
         url: url,
         method: 'POST',

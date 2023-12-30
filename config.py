@@ -50,7 +50,7 @@ SECRET_KEY = ""
 IS_ADMIN_ENABLED = True  # Set to True to enable the admin backend, set to False to disable it
 
 # Define the route for the admin backend
-ADMIN_ROUTE = '/admin' # You can change this to your desired route
+ADMIN_ROUTE = '/admin'  # You can change this to your desired route
 
 # logging_level:DEBUG/INFO/WARNING/ERROR/CRITICAL
 LOGGING_LEVEL = "DEBUG"
@@ -89,6 +89,16 @@ DIMENSIONAL_EMOTION_NPY = ABS_PATH + "/Model/npy"
 
 # w2v2-vits: Need to have both `model.onnx` and `model.yaml` files in the same path.
 # DIMENSIONAL_EMOTION_MODEL = ABS_PATH + "/Model/model.yaml"
+
+
+CHINESE_ROBERTA_WWM_EXT_LARGE = ABS_PATH + "bert_vits2/bert/chinese-roberta-wwm-ext-large"
+BERT_BASE_JAPANESE_V3 = ABS_PATH + "bert_vits2/bert/bert-base-japanese-v3"
+BERT_LARGE_JAPANESE_V2 = ABS_PATH + "bert_vits2/bert/bert-large-japanese-v2"
+DEBERTA_V2_LARGE_JAPANESE = ABS_PATH + "bert_vits2/bert/deberta-v2-large-japanese"
+DEBERTA_V3_LARGE = ABS_PATH + "bert_vits2/bert/deberta-v3-large"
+DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM = ABS_PATH + "bert_vits2/bert/deberta-v2-large-japanese-char-wwm"
+WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM = ABS_PATH + "bert_vits2/emotional/wav2vec2-large-robust-12-ft-emotion-msp-dim"
+VITS_CHINESE_BERT = ABS_PATH + "vits/bert"
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
