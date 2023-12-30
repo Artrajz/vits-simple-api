@@ -421,6 +421,8 @@ def voice_bert_vits2_api():
         f" length_zh:{length_zh} length_ja:{length_ja} length_en:{length_en}")
     if reference_audio:
         logger.info(f"[{ModelType.BERT_VITS2.value}] reference_audio:{reference_audio.filename}")
+    elif emotion:
+        logger.info(f"[{ModelType.BERT_VITS2.value}] emotion:{emotion}")
     elif text_prompt:
         logger.info(f"[{ModelType.BERT_VITS2.value}] text_prompt:{text_prompt}")
     logger.info(f"[{ModelType.BERT_VITS2.value}] len:{len(text)} text：{text}")
