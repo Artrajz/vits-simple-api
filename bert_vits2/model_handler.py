@@ -7,33 +7,17 @@ from transformers import AutoTokenizer, AutoModelForMaskedLM
 
 import config
 from utils.download import download_file
-from .chinese_bert import get_bert_feature as zh_bert
-from .english_bert_mock import get_bert_feature as en_bert
-from .japanese_bert import get_bert_feature as ja_bert
-from .japanese_bert_v111 import get_bert_feature as ja_bert_v111
-from .japanese_bert_v200 import get_bert_feature as ja_bert_v200
-from .english_bert_mock_v200 import get_bert_feature as en_bert_v200
+from bert_vits2.text.chinese_bert import get_bert_feature as zh_bert
+from bert_vits2.text.english_bert_mock import get_bert_feature as en_bert
+from bert_vits2.text.japanese_bert import get_bert_feature as ja_bert
+from bert_vits2.text.japanese_bert_v111 import get_bert_feature as ja_bert_v111
+from bert_vits2.text.japanese_bert_v200 import get_bert_feature as ja_bert_v200
+from bert_vits2.text.english_bert_mock_v200 import get_bert_feature as en_bert_v200
 
 
-class BertHandler:
+class ModelHandler:
     def __init__(self, device):
-        self.bert_model_path = {
-            "CHINESE_ROBERTA_WWM_EXT_LARGE": os.path.join(config.ABS_PATH,
-                                                          "bert_vits2/bert/chinese-roberta-wwm-ext-large"),
-            "BERT_BASE_JAPANESE_V3": os.path.join(config.ABS_PATH, "bert_vits2/bert/bert-base-japanese-v3"),
-            "BERT_LARGE_JAPANESE_V2": os.path.join(config.ABS_PATH, "bert_vits2/bert/bert-large-japanese-v2"),
-            "DEBERTA_V2_LARGE_JAPANESE": os.path.join(config.ABS_PATH, "bert_vits2/bert/deberta-v2-large-japanese"),
-            "DEBERTA_V3_LARGE": os.path.join(config.ABS_PATH, "bert_vits2/bert/deberta-v3-large"),
-            "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM":os.path.join(config.ABS_PATH, "bert_vits2/bert/deberta-v2-large-japanese-char-wwm")
-        }
-        self.lang_bert_func_map = {"zh": zh_bert, "en": en_bert, "ja": ja_bert, "ja_v111": ja_bert_v111,
-                                   "ja_v200": ja_bert_v200, "en_v200": en_bert_v200}
-
-        self.bert_models = {}  # Value: (tokenizer, model, reference_count)
-        self.device = device
-
-    def _download_model(self, bert_model_name, target_path=None):
-        DOWNLOAD_PATHS = {
+        self.DOWNLOAD_PATHS = {
             "CHINESE_ROBERTA_WWM_EXT_LARGE": [
                 "https://huggingface.co/hfl/chinese-roberta-wwm-ext-large/resolve/main/pytorch_model.bin",
                 "https://hf-mirror.com/hfl/chinese-roberta-wwm-ext-large/resolve/main/pytorch_model.bin",
@@ -61,27 +45,73 @@ class BertHandler:
             "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM": [
                 "https://huggingface.co/ku-nlp/deberta-v2-large-japanese-char-wwm/resolve/main/pytorch_model.bin",
                 "https://hf-mirror.com/ku-nlp/deberta-v2-large-japanese-char-wwm/resolve/main/pytorch_model.bin",
+            ],
+            "WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM": [
+
+            ],
+            "CLAP_HTSAT_FUSED": [
+
             ]
         }
 
-        SHA256 = {
+        self.SHA256 = {
             "CHINESE_ROBERTA_WWM_EXT_LARGE": "4ac62d49144d770c5ca9a5d1d3039c4995665a080febe63198189857c6bd11cd",
             "BERT_BASE_JAPANESE_V3": "e172862e0674054d65e0ba40d67df2a4687982f589db44aa27091c386e5450a4",
             "BERT_LARGE_JAPANESE_V2": "50212d714f79af45d3e47205faa356d0e5030e1c9a37138eadda544180f9e7c9",
             "DEBERTA_V2_LARGE_JAPANESE": "a6c15feac0dea77ab8835c70e1befa4cf4c2137862c6fb2443b1553f70840047",
             "DEBERTA_V3_LARGE": "dd5b5d93e2db101aaf281df0ea1216c07ad73620ff59c5b42dccac4bf2eef5b5",
             "SPM": "c679fbf93643d19aab7ee10c0b99e460bdbc02fedf34b92b05af343b4af586fd",
-            "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM": "bf0dab8ad87bd7c22e85ec71e04f2240804fda6d33196157d6b5923af6ea1201"
+            "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM": "bf0dab8ad87bd7c22e85ec71e04f2240804fda6d33196157d6b5923af6ea1201",
+            "CLAP_HTSAT_FUSED": ""
         }
-        urls = DOWNLOAD_PATHS[bert_model_name]
+        self.model_path = {
+            "CHINESE_ROBERTA_WWM_EXT_LARGE": os.path.join(config.ABS_PATH,
+                                                          "bert_vits2/bert/chinese-roberta-wwm-ext-large"),
+            "BERT_BASE_JAPANESE_V3": os.path.join(config.ABS_PATH, "bert_vits2/bert/bert-base-japanese-v3"),
+            "BERT_LARGE_JAPANESE_V2": os.path.join(config.ABS_PATH, "bert_vits2/bert/bert-large-japanese-v2"),
+            "DEBERTA_V2_LARGE_JAPANESE": os.path.join(config.ABS_PATH, "bert_vits2/bert/deberta-v2-large-japanese"),
+            "DEBERTA_V3_LARGE": os.path.join(config.ABS_PATH, "bert_vits2/bert/deberta-v3-large"),
+            "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM": os.path.join(config.ABS_PATH,
+                                                               "bert_vits2/bert/deberta-v2-large-japanese-char-wwm"),
+            "WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM": os.path.join(config.ABS_PATH,
+                                                                        "bert_vits2/emotional/wav2vec2-large-robust-12-ft-emotion-msp-dim"),
+            "CLAP_HTSAT_FUSED": os.path.join(config.ABS_PATH, "bert_vits2/emotional/clap-htsat-fused")
+        }
+
+        self.lang_bert_func_map = {"zh": zh_bert, "en": en_bert, "ja": ja_bert, "ja_v111": ja_bert_v111,
+                                   "ja_v200": ja_bert_v200, "en_v200": en_bert_v200}
+
+        self.bert_models = {}  # Value: (tokenizer, model, reference_count)
+        self.emotion = None
+        self.clap = None
+        self.device = device
+
+    @property
+    def emotion_model(self):
+        return self.emotion["model"]
+
+    @property
+    def emotion_processor(self):
+        return self.emotion["processor"]
+
+    @property
+    def clap_model(self):
+        return self.clap["model"]
+
+    @property
+    def clap_processor(self):
+        return self.clap["processor"]
+
+    def _download_model(self, model_name, target_path=None):
+        urls = self.DOWNLOAD_PATHS[model_name]
 
         if target_path is None:
-            target_path = os.path.join(self.bert_model_path[bert_model_name], "pytorch_model.bin")
+            target_path = os.path.join(self.model_path[model_name], "pytorch_model.bin")
 
-        expected_sha256 = SHA256[bert_model_name]
+        expected_sha256 = self.SHA256[model_name]
         success, message = download_file(urls, target_path, expected_sha256=expected_sha256)
         if not success:
-            logging.error(f"Failed to download {bert_model_name}: {message}")
+            logging.error(f"Failed to download {model_name}: {message}")
         else:
             logging.info(f"{message}")
 
@@ -89,12 +119,12 @@ class BertHandler:
         if bert_model_name not in self.bert_models:
             retries = 0
             while retries < max_retries:
-                model_path = self.bert_model_path[bert_model_name]
+                model_path = self.model_path[bert_model_name]
                 logging.info(f"Loading BERT model: {model_path}")
                 try:
                     tokenizer = AutoTokenizer.from_pretrained(model_path)
                     model = AutoModelForMaskedLM.from_pretrained(model_path).to(self.device)
-                    self.bert_models[bert_model_name] = (tokenizer, model, 1)  # 初始化引用计数为1\
+                    self.bert_models[bert_model_name] = (tokenizer, model, 1)  # 初始化引用计数为1
                     logging.info(f"Success loading: {model_path}")
                     break
                 except Exception as e:
@@ -110,6 +140,31 @@ class BertHandler:
         else:
             tokenizer, model, count = self.bert_models[bert_model_name]
             self.bert_models[bert_model_name] = (tokenizer, model, count + 1)
+
+    def load_emotion(self):
+        """Bert-VITS2 v2.1 EmotionModel"""
+        if self.emotion is None:
+            from transformers import Wav2Vec2Processor
+            from bert_vits2.get_emo import EmotionModel
+            self.emotion = {}
+            self.emotion["model"] = EmotionModel.from_pretrained(
+                self.model_path["WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM"]).to(self.device)
+            self.emotion["processor"] = Wav2Vec2Processor.from_pretrained(
+                self.model_path["WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM"])
+            self.emotion["reference_count"] = 1
+        else:
+            self.emotion["reference_count"] += 1
+
+    def load_clap(self):
+        """Bert-VITS2 v2.2 ClapModel"""
+        if self.clap is None:
+            from transformers import ClapModel, ClapProcessor
+            self.clap = {}
+            self.clap["model"] = ClapModel.from_pretrained(self.model_path["CLAP_HTSAT_FUSED"]).to(self.device)
+            self.clap["processor"] = ClapProcessor.from_pretrained(self.model_path["CLAP_HTSAT_FUSED"])
+            self.clap["reference_count"] = 1
+        else:
+            self.clap["reference_count"] += 1
 
     def get_bert_model(self, bert_model_name):
         if bert_model_name not in self.bert_models:

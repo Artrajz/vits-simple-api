@@ -58,7 +58,7 @@ class ModelManager(Subject):
         self.dimensional_emotion_model = None
         self.tts_front = None
         self.bert_models = {}
-        self.bert_handler = None
+        self.model_handler = None
         self.emotion_model = None
         self.processor = None
 
@@ -193,22 +193,17 @@ class ModelManager(Subject):
         if model_type == ModelType.BERT_VITS2:
             bert_model_names = model.bert_model_names
             for bert_model_name in bert_model_names.values():
-                if self.bert_handler is None:
-                    from bert_vits2.text.bert_handler import BertHandler
-                    self.bert_handler = BertHandler(self.device)
-                self.bert_handler.load_bert(bert_model_name)
-            if model.hps_ms.model.emotion_embedding:
-                if self.emotion_model is None:
-                    from transformers import Wav2Vec2Processor
-                    self.load_emotion_model(WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM)
-                if self.processor is None:
-                    self.processor = Wav2Vec2Processor.from_pretrained(
-                        WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM)
+                if self.model_handler is None:
+                    from bert_vits2.model_handler import ModelHandler
+                    self.model_handler = ModelHandler(self.device)
+                self.model_handler.load_bert(bert_model_name)
+            if model.hps_ms.model.emotion_embedding == 1:
+                self.model_handler.load_emotion()
+            elif model.hps_ms.model.emotion_embedding == 2:
+                self.model_handler.load_clap()
 
             model.load_model(
-                self.bert_handler,
-                emotion_model=self.emotion_model,
-                processor=self.processor
+                self.model_handler
             )
 
         sid2model = []
@@ -283,7 +278,7 @@ class ModelManager(Subject):
 
                 if model_type == ModelType.BERT_VITS2:
                     for bert_model_name in self.models[model_type][model_id][1].bert_model_names.values():
-                        self.bert_handler.release_bert(bert_model_name)
+                        self.model_handler.release_bert(bert_model_name)
 
                 del self.sid2model[model_type][start:start + n_speakers]
                 del self.voice_speakers[model_type.value][start:start + n_speakers]
@@ -348,11 +343,6 @@ class ModelManager(Subject):
         from vits.text.vits_pinyin import VITS_PinYin
         if self.tts_front is None:
             self.tts_front = VITS_PinYin(bert_path, self.device)
-
-    def load_emotion_model(self, model_path):
-        """Bert-VITS2 v2.1 EmotionModel"""
-        from bert_vits2.get_emo import EmotionModel
-        self.emotion_model = EmotionModel.from_pretrained(model_path).to(self.device)
 
     def reorder_model(self, old_index, new_index):
         """重新排序模型，将old_index位置的模型移动到new_index位置"""

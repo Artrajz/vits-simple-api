@@ -85,6 +85,30 @@ class DurationDiscriminator(nn.Module):  # vits2
         return output_probs
 
 
+class Block(nn.Module):
+    def __init__(self, in_dim, hidden_dim) -> None:
+        super().__init__()
+        self.norm = nn.LayerNorm(in_dim)
+        self.mlp = MLP(in_dim, hidden_dim)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = x + self.mlp(self.norm(x))
+        return x
+
+
+class MLP(nn.Module):
+    def __init__(self, in_dim, hidden_dim):
+        super().__init__()
+        self.c_fc1 = nn.Linear(in_dim, hidden_dim, bias=False)
+        self.c_fc2 = nn.Linear(in_dim, hidden_dim, bias=False)
+        self.c_proj = nn.Linear(hidden_dim, in_dim, bias=False)
+
+    def forward(self, x: torch.Tensor):
+        x = F.silu(self.c_fc1(x)) * self.c_fc2(x)
+        x = self.c_proj(x)
+        return x
+
+
 class TransformerCouplingBlock(nn.Module):
     def __init__(self,
                  channels,
@@ -262,7 +286,7 @@ class TextEncoder(nn.Module):
                  symbols=None,
                  ja_bert_dim=1024,
                  num_tones=None,
-                 emotion_embedding=False,
+                 emotion_embedding=1,
                  ):
         super().__init__()
         self.n_vocab = n_vocab
@@ -284,19 +308,42 @@ class TextEncoder(nn.Module):
         self.ja_bert_proj = nn.Conv1d(ja_bert_dim, hidden_channels, 1)
         self.en_bert_proj = nn.Conv1d(1024, hidden_channels, 1)
         self.emotion_embedding = emotion_embedding
-        if self.emotion_embedding:
+        if self.emotion_embedding == 1:
             self.emo_proj = nn.Linear(1024, 1024)
-            self.emo_quantizer = [
-                                     VectorQuantize(
-                                         dim=1024,
-                                         codebook_size=10,
-                                         decay=0.8,
-                                         commitment_weight=1.0,
-                                         learnable_codebook=True,
-                                         ema_update=False,
-                                     )
-                                 ] * n_speakers
+            self.emo_quantizer = VectorQuantize(
+                dim=1024,
+                codebook_size=10,
+                decay=0.8,
+                commitment_weight=1.0,
+                learnable_codebook=True,
+                ema_update=False,
+            )
             self.emo_q_proj = nn.Linear(1024, hidden_channels)
+        elif self.emotion_embedding == 2:
+            self.in_feature_net = nn.Sequential(
+                # input is assumed to an already normalized embedding
+                nn.Linear(512, 1028, bias=False),
+                nn.GELU(),
+                nn.LayerNorm(1028),
+                *[Block(1028, 512) for _ in range(1)],
+                nn.Linear(1028, 512, bias=False),
+                # normalize before passing to VQ?
+                # nn.GELU(),
+                # nn.LayerNorm(512),
+            )
+            self.emo_vq = VectorQuantize(
+                dim=512,
+                codebook_size=64,
+                codebook_dim=32,
+                commitment_weight=0.1,
+                decay=0.85,
+                heads=32,
+                kmeans_iters=20,
+                separate_codebook_per_head=True,
+                stochastic_sample_codes=True,
+                threshold_ema_dead_code=2,
+            )
+            self.out_feature_net = nn.Linear(512, hidden_channels)
 
         self.encoder = attentions.Encoder(
             hidden_channels,
@@ -314,25 +361,30 @@ class TextEncoder(nn.Module):
         en_bert_emb = self.en_bert_proj(en_bert).transpose(1, 2)
         x = self.emb(x) + self.tone_emb(tone) + self.language_emb(language) + zh_bert_emb + ja_bert_emb + en_bert_emb
 
-        if emo is not None:
+        if self.emotion_embedding == 1:
             emo = emo.to(zh_bert_emb.device)
             if emo.size(-1) == 1024:
                 emo_emb = self.emo_proj(emo.unsqueeze(1))
                 emo_emb_ = []
                 for i in range(emo_emb.size(0)):
-                    temp_emo_emb, _, _ = self.emo_quantizer[sid[i]](
-                        emo_emb[i].unsqueeze(0).cpu()
-                    )
+                    temp_emo_emb, _, _ = self.emo_quantizer(
+                    emo_emb[i].unsqueeze(0)
+                )
                     emo_emb_.append(temp_emo_emb)
                 emo_emb = torch.cat(emo_emb_, dim=0).to(emo_emb.device)
             else:
                 emo_emb = (
-                    self.emo_quantizer[sid[0]]
-                        .get_output_from_indices(emo.to(torch.long).cpu())
-                        .unsqueeze(0).to(emo.device)
+                    self.emo_quantizer.get_output_from_indices(emo.to(torch.long))
+                        .unsqueeze(0)
+                        .to(emo.device)
                 )
 
             x += self.emo_q_proj(emo_emb)
+        elif self.emotion_embedding == 2:
+            emo_emb = self.in_feature_net(emo)
+            emo_emb, _, _ = self.emo_vq(emo_emb.unsqueeze(1))
+            emo_emb = self.out_feature_net(emo_emb)
+            x += emo_emb
 
         x *= math.sqrt(self.hidden_channels)  # [b, t, h]
         x = torch.transpose(x, 1, -1)  # [b, h, t]
