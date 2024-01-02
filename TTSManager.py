@@ -374,7 +374,7 @@ class TTSManager(Observer):
             for sentence in sentences:
                 audio = model.infer(sentence, state["id"], lang, state["sdp_ratio"], state["noise"],
                                     state["noise"], length, emotion=state["emotion"],
-                                    reference_audio=state["reference_audio"], text_prompt="text_prompt")
+                                    reference_audio=state["reference_audio"], text_prompt=state["text_prompt"])
                 audios.append(audio)
         audio = np.concatenate(audios)
 
