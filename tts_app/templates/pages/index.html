@@ -351,10 +351,25 @@
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label for="text_prompt" data-toggle="tooltip" data-placement="top"
-                                   title="Bert-VITS2 v2.2: ">text_prompt</label>
+                                   title="Bert-VITS2 v2.2: 融合文本语义">text_prompt</label>
                             <input type="text" class="form-control text_prompt" id="input_text_prompt3" oninput="updateLink()"
                                    value=""
                                    placeholder=""/>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="style_text" data-toggle="tooltip" data-placement="top"
+                                   title="Bert-VITS2 v2.3: 融合文本语义">style_text</label>
+                            <input type="text" class="form-control style_text" id="input_style_text3" oninput="updateLink()"
+                                   value=""
+                                   placeholder=""/>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="Bert-VITS2 v2.3: style_text文本语义权重">style_weight</label>
+                            <input type="number" class="form-control style_weight" id="input_style_weight3"
+                                   oninput="updateLink()"
+                                   value=""
+                                   placeholder="0" step="0.1" min="0" max="1"/>
                         </div>
                     </div>
                 </form>
