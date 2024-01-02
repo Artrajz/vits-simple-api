@@ -14,7 +14,6 @@ from bert_vits2.text.japanese_bert_v111 import get_bert_feature as ja_bert_v111
 from bert_vits2.text.japanese_bert_v200 import get_bert_feature as ja_bert_v200
 from bert_vits2.text.english_bert_mock_v200 import get_bert_feature as en_bert_v200
 
-
 class ModelHandler:
     def __init__(self, device):
         self.DOWNLOAD_PATHS = {
@@ -47,10 +46,12 @@ class ModelHandler:
                 "https://hf-mirror.com/ku-nlp/deberta-v2-large-japanese-char-wwm/resolve/main/pytorch_model.bin",
             ],
             "WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM": [
-
+                "https://huggingface.co/audeering/wav2vec2-large-robust-12-ft-emotion-msp-dim/resolve/main/pytorch_model.bin",
+                "https://hf-mirror.com/audeering/wav2vec2-large-robust-12-ft-emotion-msp-dim/resolve/main/pytorch_model.bin",
             ],
             "CLAP_HTSAT_FUSED": [
-
+                "https://huggingface.co/laion/clap-htsat-fused/resolve/main/pytorch_model.bin?download=true",
+                "https://hf-mirror.com/laion/clap-htsat-fused/resolve/main/pytorch_model.bin?download=true",
             ]
         }
 
@@ -62,7 +63,8 @@ class ModelHandler:
             "DEBERTA_V3_LARGE": "dd5b5d93e2db101aaf281df0ea1216c07ad73620ff59c5b42dccac4bf2eef5b5",
             "SPM": "c679fbf93643d19aab7ee10c0b99e460bdbc02fedf34b92b05af343b4af586fd",
             "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM": "bf0dab8ad87bd7c22e85ec71e04f2240804fda6d33196157d6b5923af6ea1201",
-            "CLAP_HTSAT_FUSED": ""
+            "WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM": "176d9d1ce29a8bddbab44068b9c1c194c51624c7f1812905e01355da58b18816",
+            "CLAP_HTSAT_FUSED": "1ed5d0215d887551ddd0a49ce7311b21429ebdf1e6a129d4e68f743357225253",
         }
         self.model_path = {
             "CHINESE_ROBERTA_WWM_EXT_LARGE": os.path.join(config.ABS_PATH,
@@ -141,28 +143,45 @@ class ModelHandler:
             tokenizer, model, count = self.bert_models[bert_model_name]
             self.bert_models[bert_model_name] = (tokenizer, model, count + 1)
 
-    def load_emotion(self):
+    def load_emotion(self, max_retries=3):
         """Bert-VITS2 v2.1 EmotionModel"""
         if self.emotion is None:
             from transformers import Wav2Vec2Processor
             from bert_vits2.get_emo import EmotionModel
-            self.emotion = {}
-            self.emotion["model"] = EmotionModel.from_pretrained(
-                self.model_path["WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM"]).to(self.device)
-            self.emotion["processor"] = Wav2Vec2Processor.from_pretrained(
-                self.model_path["WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM"])
-            self.emotion["reference_count"] = 1
+            retries = 0
+            model_path = self.model_path["WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM"]
+            while retries < max_retries:
+                try:
+                    self.emotion = {}
+                    self.emotion["model"] = EmotionModel.from_pretrained(model_path).to(self.device)
+                    self.emotion["processor"] = Wav2Vec2Processor.from_pretrained(model_path)
+                    self.emotion["reference_count"] = 1
+                    break
+                except Exception as e:
+                    logging.error(f"Failed loading {model_path}. {e}")
+                    self._download_model("WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM")
+                    retries += 1
         else:
             self.emotion["reference_count"] += 1
 
-    def load_clap(self):
+    def load_clap(self, max_retries=3):
         """Bert-VITS2 v2.2 ClapModel"""
         if self.clap is None:
             from transformers import ClapModel, ClapProcessor
-            self.clap = {}
-            self.clap["model"] = ClapModel.from_pretrained(self.model_path["CLAP_HTSAT_FUSED"]).to(self.device)
-            self.clap["processor"] = ClapProcessor.from_pretrained(self.model_path["CLAP_HTSAT_FUSED"])
-            self.clap["reference_count"] = 1
+            retries = 0
+            model_path = self.model_path["CLAP_HTSAT_FUSED"]
+            while retries < max_retries:
+                try:
+                    self.clap = {}
+                    self.clap["model"] = ClapModel.from_pretrained(model_path).to(self.device)
+                    self.clap["processor"] = ClapProcessor.from_pretrained(model_path)
+                    self.clap["reference_count"] = 1
+                    break
+                except Exception as e:
+                    logging.error(f"Failed loading {model_path}. {e}")
+                    self._download_model("CLAP_HTSAT_FUSED")
+                    retries += 1
+
         else:
             self.clap["reference_count"] += 1
 
@@ -173,9 +192,10 @@ class ModelHandler:
         tokenizer, model, _ = self.bert_models[bert_model_name]
         return tokenizer, model
 
-    def get_bert_feature(self, norm_text, word2ph, language, bert_model_name):
+    def get_bert_feature(self, norm_text, word2ph, language, bert_model_name, style_text=None, style_weight=0.7):
         tokenizer, model = self.get_bert_model(bert_model_name)
-        bert_feature = self.lang_bert_func_map[language](norm_text, word2ph, tokenizer, model, self.device)
+        bert_feature = self.lang_bert_func_map[language](norm_text, word2ph, tokenizer, model, self.device, style_text,
+                                                         style_weight)
         return bert_feature
 
     def release_bert(self, bert_model_name):

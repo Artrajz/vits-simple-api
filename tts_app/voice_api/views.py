@@ -412,6 +412,8 @@ def voice_bert_vits2_api():
         emotion = get_param(request_data, 'emotion', None, int)
         reference_audio = request.files.get("reference_audio", None)
         text_prompt = get_param(request_data, 'text_prompt', None, str)
+        style_text = get_param(request_data, 'style_text', None, str)
+        style_weight = get_param(request_data, 'style_weight', current_app.config.get("STYLE_WEIGHT", 0.7), float)
     except Exception as e:
         logger.error(f"[{ModelType.BERT_VITS2.value}] {e}")
         return make_response("parameter error", 400)
@@ -425,6 +427,8 @@ def voice_bert_vits2_api():
         logger.info(f"[{ModelType.BERT_VITS2.value}] emotion:{emotion}")
     elif text_prompt:
         logger.info(f"[{ModelType.BERT_VITS2.value}] text_prompt:{text_prompt}")
+    elif style_text:
+        logger.info(f"[{ModelType.BERT_VITS2.value}] style_text:{style_text} style_weight:{style_weight}")
     logger.info(f"[{ModelType.BERT_VITS2.value}] len:{len(text)} text：{text}")
 
     if check_is_none(text):
@@ -475,7 +479,10 @@ def voice_bert_vits2_api():
              "speaker_lang": speaker_lang,
              "emotion": emotion,
              "reference_audio": reference_audio,
-             "text_prompt":text_prompt}
+             "text_prompt": text_prompt,
+             "style_text": style_text,
+             "style_weight": style_weight,
+             }
 
     if use_streaming:
         audio = tts_manager.stream_bert_vits2_infer(state)

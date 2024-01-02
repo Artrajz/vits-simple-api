@@ -1,3 +1,5 @@
+import logging
+
 import torch
 
 from bert_vits2 import commons
@@ -5,6 +7,7 @@ from bert_vits2 import utils as bert_vits2_utils
 from bert_vits2.clap_wrapper import get_clap_audio_feature, get_clap_text_feature
 from bert_vits2.get_emo import get_emo
 from bert_vits2.models import SynthesizerTrn
+from bert_vits2.models_v230 import SynthesizerTrn as SynthesizerTrn_v230
 from bert_vits2.text import *
 from bert_vits2.text.cleaner import clean_text
 from bert_vits2.utils import process_legacy_versions
@@ -80,14 +83,19 @@ class Bert_VITS2:
             self.num_tones = num_tones
             if "ja" in self.lang: self.bert_model_names.update({"ja": "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM"})
             if "en" in self.lang: self.bert_model_names.update({"en": "DEBERTA_V3_LARGE"})
-
-        # else:
-        #     self.hps_ms.model.n_layers_trans_flow = 4
-        #     self.hps_ms.model.emotion_embedding = 1
-        #     self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja", "en"])
-        #     self.num_tones = num_tones
-        #     if "ja" in self.lang: self.bert_model_names.update({"ja": "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM"})
-        #     if "en" in self.lang: self.bert_model_names.update({"en": "DEBERTA_V3_LARGE"})
+        elif self.version in ["2.3", "2.3.0"]:
+            self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja", "en"])
+            self.num_tones = num_tones
+            self.text_extra_str_map.update({"en": "_v230"})
+            if "ja" in self.lang: self.bert_model_names.update({"ja": "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM"})
+            if "en" in self.lang: self.bert_model_names.update({"en": "DEBERTA_V3_LARGE"})
+        else:
+            logging.debug("Version information not found. Loaded as the newest version: v2.3.")
+            self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja", "en"])
+            self.num_tones = num_tones
+            self.text_extra_str_map.update({"en": "_v230"})
+            if "ja" in self.lang: self.bert_model_names.update({"ja": "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM"})
+            if "en" in self.lang: self.bert_model_names.update({"en": "DEBERTA_V3_LARGE"})
 
         if "zh" in self.lang:
             self.bert_model_names.update({"zh": "CHINESE_ROBERTA_WWM_EXT_LARGE"})
@@ -99,22 +107,31 @@ class Bert_VITS2:
     def load_model(self, model_handler):
         self.model_handler = model_handler
 
-        self.net_g = SynthesizerTrn(
-            len(self.symbols),
-            self.hps_ms.data.filter_length // 2 + 1,
-            self.hps_ms.train.segment_size // self.hps_ms.data.hop_length,
-            n_speakers=self.hps_ms.data.n_speakers,
-            symbols=self.symbols,
-            ja_bert_dim=self.ja_bert_dim,
-            num_tones=self.num_tones,
-            **self.hps_ms.model).to(self.device)
+        if self.version in ["2.3", "2.3.0"]:
+            self.net_g = SynthesizerTrn_v230(
+                len(symbols),
+                self.hps_ms.data.filter_length // 2 + 1,
+                self.hps_ms.train.segment_size // self.hps_ms.data.hop_length,
+                n_speakers=self.hps_ms.data.n_speakers,
+                **self.hps_ms.model,
+            ).to(self.device)
+        else:
+            self.net_g = SynthesizerTrn(
+                len(self.symbols),
+                self.hps_ms.data.filter_length // 2 + 1,
+                self.hps_ms.train.segment_size // self.hps_ms.data.hop_length,
+                n_speakers=self.hps_ms.data.n_speakers,
+                symbols=self.symbols,
+                ja_bert_dim=self.ja_bert_dim,
+                num_tones=self.num_tones,
+                **self.hps_ms.model).to(self.device)
         _ = self.net_g.eval()
         bert_vits2_utils.load_checkpoint(self.model_path, self.net_g, None, skip_optimizer=True, version=self.version)
 
     def get_speakers(self):
         return self.speakers
 
-    def get_text(self, text, language_str, hps):
+    def get_text(self, text, language_str, hps, style_text=None, style_weight=0.7):
         clean_text_lang_str = language_str + self.text_extra_str_map.get(language_str, "")
         bert_feature_lang_str = language_str + self.bert_extra_str_map.get(language_str, "")
 
@@ -132,8 +149,9 @@ class Bert_VITS2:
                 word2ph[i] = word2ph[i] * 2
             word2ph[0] += 1
 
+        style_text = None if style_text == "" else style_text
         bert = self.model_handler.get_bert_feature(norm_text, word2ph, bert_feature_lang_str,
-                                                   self.bert_model_names[language_str])
+                                                   self.bert_model_names[language_str], style_text, style_weight)
         del word2ph
         assert bert.shape[-1] == len(phone), phone
 
@@ -173,8 +191,9 @@ class Bert_VITS2:
         return emo
 
     def infer(self, text, id, lang, sdp_ratio, noise, noisew, length, reference_audio=None, emotion=None,
-              skip_start=False, skip_end=False, text_prompt=None, **kwargs):
-        zh_bert, ja_bert, en_bert, phones, tones, lang_ids = self.get_text(text, lang, self.hps_ms)
+              skip_start=False, skip_end=False, text_prompt=None, style_text=None, style_weigth=0.7, **kwargs):
+        zh_bert, ja_bert, en_bert, phones, tones, lang_ids = self.get_text(text, lang, self.hps_ms, style_text,
+                                                                           style_weigth)
 
         if self.hps_ms.model.emotion_embedding == 1:
             emo = self.get_emo_(reference_audio, emotion).to(self.device).unsqueeze(0)

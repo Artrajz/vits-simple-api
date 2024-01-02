@@ -68,6 +68,8 @@ function getLink() {
     let sdp_ratio = null;
     let emotion = null;
     let text_prompt = "";
+    let style_text = "";
+    let style_weight = "";
     if (currentModelPage == 1) {
         streaming = document.getElementById('streaming1');
         url += "/voice/vits?text=" + text + "&id=" + id;
@@ -79,6 +81,8 @@ function getLink() {
         streaming = document.getElementById('streaming3');
         emotion = document.getElementById('input_emotion3').value;
         text_prompt = document.getElementById('input_text_prompt3').value;
+        style_text = document.getElementById('input_style_text3').value;
+        style_weight = document.getElementById('input_style_weight3').value;
         url += "/voice/bert-vits2?text=" + text + "&id=" + id;
 
     } else {
@@ -125,6 +129,10 @@ function getLink() {
             url += "&emotion=" + emotion;
         if (text_prompt !== null && text_prompt !== "")
             url += "&text_prompt=" + text_prompt;
+        if (style_text !== null && style_text !== "")
+            url += "&style_text=" + style_text;
+        if (style_weight !== null && style_weight !== "")
+            url += "&style_weight=" + style_weight;
     }
 
     return url;
@@ -202,6 +210,8 @@ function setAudioSourceByPost() {
     let length_en = 0;
     let emotion = null;
     let text_prompt = "";
+    let style_text = "";
+    let style_weight = "";
 
     if (currentModelPage == 1) {
         url = baseUrl + "/voice/vits";
@@ -218,6 +228,8 @@ function setAudioSourceByPost() {
         length_en = $("#input_length_en3").val();
         emotion = $("#input_emotion3").val();
         text_prompt = $("#input_text_prompt3").val();
+        style_text = $("#input_style_text3").val();
+        style_weight = $("#input_style_weight3").val();
     }
 
     // 添加其他配置参数到 FormData
@@ -244,6 +256,12 @@ function setAudioSourceByPost() {
     }
     if (currentModelPage == 3 && text_prompt) {
         formData.append('text_prompt', text_prompt);
+    }
+    if (currentModelPage == 3 && style_text) {
+        formData.append('style_text', style_text);
+    }
+    if (currentModelPage == 3 && style_weight) {
+        formData.append('style_weight', style_weight);
     }
 
     let downloadButton = document.getElementById("downloadButton" + currentModelPage);

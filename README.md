@@ -194,6 +194,20 @@ pip install torch==1.13.1+cu117 --extra-index-url https://download.pytorch.org/w
 ## Linux
 The installation process is similar, but I don't have the environment to test it.
 
+# WebUI
+
+## Inference Frontend
+
+ http://127.0.0.1:23456
+
+*Port is modifiable under the default setting of port 23456.
+
+## Admin Backend
+
+The default address is http://127.0.0.1:23456/admin.
+
+The initial username and password can be found at the bottom of the config.yml file after the first startup.
+
 # Function Options Explanation
 
 ## Disable the Admin Backend
@@ -261,11 +275,6 @@ To ensure compatibility with the Bert-VITS2 model, modify the config.json file b
     "seed": 52,
     ...
 ```
-
-# Admin Backend
-The default address is http://127.0.0.1:23456/admin.
-
-The initial username and password can be found at the bottom of the config.yml file after the first startup.
 
 # API
 
@@ -372,8 +381,11 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 | SDP noise        | noisew          | false   | From `config.yml` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
 | Segment Size     | segment_size    | false   | From `config.yml` | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds segment_size. If segment_size<=0, the text will not be divided into paragraphs. |
 | SDP/DP mix ratio | sdp_ratio       | false   | From `config.yml` | int   | The theoretical proportion of SDP during synthesis, the higher the ratio, the larger the variance in synthesized voice tone. |
-| Emotion          | emotion         | false   | None              |       | Available for Bert-VITS2 v2.1, ranging from 0 to 9           |
-| Reference Audio  | reference_audio | false   | None              |       | Available for Bert-VITS2 v2.1                                |
+| Emotion          | emotion         | false   | None              | int | Available for Bert-VITS2 v2.1, ranging from 0 to 9           |
+| Emotion reference Audio | reference_audio | false   | None              |       | Bert-VITS2 v2.1 uses reference audio to control the synthesized audio's emotion |
+|Text Prompt|text_prompt|false|None|str|Bert-VITS2 v2.2 text prompt used for emotion control|
+|Style Text|style_text|false|None|str|Bert-VITS2 v2.3 text prompt used for emotion control|
+|Style Text Weight|style_weight|false|From `config.yml`|float|Bert-VITS2 v2.3 text prompt weight used for prompt weighting|
 
 
 ## SSML (Speech Synthesis Markup Language)
