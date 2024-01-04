@@ -4,7 +4,7 @@ from utils.config_manager import global_config
 from bert_vits2.text.japanese_v200 import text2sep_kata
 
 
-def get_bert_feature(text, word2ph, tokenizer, model, device=global_config.DEVICE):
+def get_bert_feature(text, word2ph, tokenizer, model, device=global_config.DEVICE, **kwargs):
     sep_text, _, _ = text2sep_kata(text)
     sep_tokens = [tokenizer.tokenize(t) for t in sep_text]
     sep_ids = [tokenizer.convert_tokens_to_ids(t) for t in sep_tokens]

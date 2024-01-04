@@ -14,6 +14,7 @@ from bert_vits2.text.japanese_bert_v111 import get_bert_feature as ja_bert_v111
 from bert_vits2.text.japanese_bert_v200 import get_bert_feature as ja_bert_v200
 from bert_vits2.text.english_bert_mock_v200 import get_bert_feature as en_bert_v200
 
+
 class ModelHandler:
     def __init__(self, device):
         self.DOWNLOAD_PATHS = {
@@ -194,8 +195,8 @@ class ModelHandler:
 
     def get_bert_feature(self, norm_text, word2ph, language, bert_model_name, style_text=None, style_weight=0.7):
         tokenizer, model = self.get_bert_model(bert_model_name)
-        bert_feature = self.lang_bert_func_map[language](norm_text, word2ph, tokenizer, model, self.device, style_text,
-                                                         style_weight)
+        bert_feature = self.lang_bert_func_map[language](norm_text, word2ph, tokenizer, model, self.device,
+                                                         style_text=style_text, style_weight=style_weight)
         return bert_feature
 
     def release_bert(self, bert_model_name):

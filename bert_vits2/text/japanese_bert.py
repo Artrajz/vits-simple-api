@@ -6,7 +6,7 @@ from bert_vits2.text.japanese import text2sep_kata
 LOCAL_PATH = "./bert/deberta-v2-large-japanese-char-wwm"
 
 
-def get_bert_feature(text, word2ph, tokenizer, model, device=global_config.DEVICE, style_text=None, style_weight=0.7):
+def get_bert_feature(text, word2ph, tokenizer, model, device=global_config.DEVICE, style_text=None, style_weight=0.7, **kwargs):
     text = "".join(text2sep_kata(text)[0])
     if style_text:
         style_text = "".join(text2sep_kata(style_text)[0])
