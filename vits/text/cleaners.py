@@ -1,10 +1,14 @@
 import re
-from utils.config_manager import global_config as config
 from unidecode import unidecode
 from phonemizer import phonemize
 from phonemizer.backend.espeak.wrapper import EspeakWrapper
 
-ESPEAK_LIBRARY = getattr(config, "ESPEAK_LIBRARY", "")
+try:
+    from utils.config_manager import global_config as config
+    ESPEAK_LIBRARY = getattr(config, "ESPEAK_LIBRARY", "")
+except:
+    import config
+    ESPEAK_LIBRARY = getattr(config, "ESPEAK_LIBRARY", "")
 if ESPEAK_LIBRARY != "":
     EspeakWrapper.set_library(ESPEAK_LIBRARY)
 

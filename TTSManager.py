@@ -361,7 +361,9 @@ class TTSManager(Observer):
             sentences_list = [(state["text"], state["lang"])]
         audios = []
 
-        for (text, lang) in sentences_list:
+        for idx, (text, lang) in enumerate(sentences_list):
+            skip_start = idx != 0
+            skip_end = idx != len(sentences_list) - 1
             sentences = sentence_split(text, state["segment_size"])
             if lang == 'zh' and state["length_zh"] > 0:
                 length = state["length_zh"]
@@ -371,15 +373,18 @@ class TTSManager(Observer):
                 length = state["length_en"]
             else:
                 length = state["length"]
-            for sentence in sentences:
+            for _idx, sentence in enumerate(sentences):
+                _skip_start = (_idx != 0) or (skip_start and _idx == 0)
+                _skip_end = (_idx != len(sentences) - 1) or skip_end
                 audio = model.infer(sentence, state["id"], lang, state["sdp_ratio"], state["noise"],
                                     state["noise"], length, emotion=state["emotion"],
                                     reference_audio=state["reference_audio"], text_prompt=state["text_prompt"],
-                                    style_text=state["style_text"], style_weight=state["style_weight"])
-                audios.append(audio)
+                                    style_text=state["style_text"], style_weight=state["style_weight"],
+                                    skip_start=_skip_start, skip_end=_skip_end)
+                audios.extend(audio)
         audio = np.concatenate(audios)
 
-        return self.encode(sampling_rate, audio, state["format"]) if encode else audio
+        return self.encode(sampling_rate, audio, state["format"]) if encode else audios
 
     def stream_bert_vits2_infer(self, state, fname=None):
         model = self.get_model(ModelType.BERT_VITS2, state["id"])
@@ -414,3 +419,43 @@ class TTSManager(Observer):
 
                 for encoded_audio_chunk in self.generate_audio_chunks(encoded_audio):
                     yield encoded_audio_chunk
+
+    def bert_vits2_infer_multilang(self, state, encode=True):
+        model = self.get_model(model_type=ModelType.BERT_VITS2, id=state["id"])
+        state["id"] = self.get_real_id(model_type=ModelType.BERT_VITS2, id=state["id"])
+
+        # 去除所有多余的空白字符
+        if state["text"] is not None:
+            state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
+        sampling_rate = model.sampling_rate
+        sentences_list = sentence_split(state["text"], state["segment_size"])
+        audios = []
+        for sentences in sentences_list:
+            audio = model.infer_multilang(sentences, state["id"], state["sdp_ratio"], state["noise"], state["noise"],
+                                          state["length"], emotion=state["emotion"],
+                                          reference_audio=state["reference_audio"], text_prompt="text_prompt")
+            audios.append(audio)
+        audio = np.concatenate(audios)
+
+        return self.encode(sampling_rate, audio, state["format"]) if encode else audio
+
+    def stream_bert_vits2_infer_mutilang(self, state, fname=None):
+        model = self.get_model(ModelType.BERT_VITS2, state["id"])
+        state["id"] = self.get_real_id(ModelType.BERT_VITS2, state["id"])
+
+        # 去除所有多余的空白字符
+        if state["text"] is not None:
+            state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
+        sampling_rate = model.sampling_rate
+        sentences_list = sentence_split(state["text"], state["segment_size"])
+        # audios = []
+        for sentences in sentences_list:
+            audio = model.infer_multilang(sentences, state["id"], state["sdp_ratio"], state["noise"], state["noise"],
+                                          state["length"], emotion=state["emotion"],
+                                          reference_audio=state["reference_audio"], text_prompt="text_prompt")
+            # audios.append(audio)
+            # audio = np.concatenate(audios, axis=0)
+            encoded_audio = self.encode(sampling_rate, audio, state["format"])
+
+            for encoded_audio_chunk in self.generate_audio_chunks(encoded_audio):
+                yield encoded_audio_chunk

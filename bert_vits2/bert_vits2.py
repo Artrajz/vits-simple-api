@@ -12,6 +12,7 @@ from bert_vits2.text import *
 from bert_vits2.text.cleaner import clean_text
 from bert_vits2.utils import process_legacy_versions
 from utils import get_hparams_from_file
+from utils.sentence import split_by_language
 
 
 class Bert_VITS2:
@@ -190,39 +191,8 @@ class Bert_VITS2:
 
         return emo
 
-    def infer(self, text, id, lang, sdp_ratio, noise, noisew, length, reference_audio=None, emotion=None,
-              skip_start=False, skip_end=False, text_prompt=None, style_text=None, style_weigth=0.7, **kwargs):
-        zh_bert, ja_bert, en_bert, phones, tones, lang_ids = self.get_text(text, lang, self.hps_ms, style_text,
-                                                                           style_weigth)
-
-        if self.hps_ms.model.emotion_embedding == 1:
-            emo = self.get_emo_(reference_audio, emotion).to(self.device).unsqueeze(0)
-        elif self.hps_ms.model.emotion_embedding == 2:
-            if isinstance(text_prompt, str):
-                emo = get_clap_text_feature(text_prompt, self.model_handler.clap_model,
-                                            self.model_handler.clap_processor, self.device)
-            else:
-                emo = get_clap_audio_feature(reference_audio, self.model_handler.clap_model,
-                                             self.model_handler.clap_processor, self.device)
-            emo = torch.squeeze(emo, dim=1).unsqueeze(0)
-        else:
-            emo = None
-
-        if skip_start:
-            phones = phones[3:]
-            tones = tones[3:]
-            lang_ids = lang_ids[3:]
-            zh_bert = zh_bert[:, 3:]
-            ja_bert = ja_bert[:, 3:]
-            en_bert = en_bert[:, 3:]
-        if skip_end:
-            phones = phones[:-2]
-            tones = tones[:-2]
-            lang_ids = lang_ids[:-2]
-            zh_bert = zh_bert[:, :-2]
-            ja_bert = ja_bert[:, :-2]
-            en_bert = en_bert[:, :-2]
-
+    def _infer(self, id, phones, tones, lang_ids, zh_bert, ja_bert, en_bert, sdp_ratio, noise, noisew, length,
+               emo=None):
         with torch.no_grad():
             x_tst = phones.to(self.device).unsqueeze(0)
             tones = tones.to(self.device).unsqueeze(0)
@@ -248,4 +218,82 @@ class Bert_VITS2:
                                      )[0][0, 0].data.cpu().float().numpy()
 
         torch.cuda.empty_cache()
+        return audio
+
+    def infer(self, text, id, lang, sdp_ratio, noise, noisew, length, reference_audio=None, emotion=None,
+              text_prompt=None, style_text=None, style_weigth=0.7, **kwargs):
+        zh_bert, ja_bert, en_bert, phones, tones, lang_ids = self.get_text(text, lang, self.hps_ms, style_text,
+                                                                           style_weigth)
+
+        if self.hps_ms.model.emotion_embedding == 1:
+            emo = self.get_emo_(reference_audio, emotion).to(self.device).unsqueeze(0)
+        elif self.hps_ms.model.emotion_embedding == 2:
+            if isinstance(text_prompt, str):
+                emo = get_clap_text_feature(text_prompt, self.model_handler.clap_model,
+                                            self.model_handler.clap_processor, self.device)
+            else:
+                emo = get_clap_audio_feature(reference_audio, self.model_handler.clap_model,
+                                             self.model_handler.clap_processor, self.device)
+            emo = torch.squeeze(emo, dim=1).unsqueeze(0)
+        else:
+            emo = None
+
+        return self._infer(id, phones, tones, lang_ids, zh_bert, ja_bert, en_bert, sdp_ratio, noise, noisew, length,
+                           emo)
+
+    def infer_multilang(self, text, id, sdp_ratio, noise, noisew, length, reference_audio=None, emotion=None,
+                        text_prompt=None, style_text=None, style_weigth=0.7, **kwargs):
+        sentences_list = split_by_language(text, self.lang)
+
+        if self.hps_ms.model.emotion_embedding == 1:
+            emo = self.get_emo_(reference_audio, emotion).to(self.device).unsqueeze(0)
+        elif self.hps_ms.model.emotion_embedding == 2:
+            if isinstance(text_prompt, str):
+                emo = get_clap_text_feature(text_prompt, self.model_handler.clap_model,
+                                            self.model_handler.clap_processor, self.device)
+            else:
+                emo = get_clap_audio_feature(reference_audio, self.model_handler.clap_model,
+                                             self.model_handler.clap_processor, self.device)
+            emo = torch.squeeze(emo, dim=1).unsqueeze(0)
+        else:
+            emo = None
+
+        tmp_phones, tmp_tones, tmp_lang_ids, tmp_zh_bert, tmp_ja_bert, tmp_en_bert = [], [], [], [], [], []
+
+        for idx, (_text, lang) in enumerate(sentences_list):
+            skip_start = idx != 0
+            skip_end = idx != len(sentences_list) - 1
+            zh_bert, ja_bert, en_bert, phones, tones, lang_ids = self.get_text(_text, lang, self.hps_ms, style_text,
+                                                                               style_weigth)
+            if skip_start:
+                phones = phones[3:]
+                tones = tones[3:]
+                lang_ids = lang_ids[3:]
+                zh_bert = zh_bert[:, 3:]
+                ja_bert = ja_bert[:, 3:]
+                en_bert = en_bert[:, 3:]
+            if skip_end:
+                phones = phones[:-2]
+                tones = tones[:-2]
+                lang_ids = lang_ids[:-2]
+                zh_bert = zh_bert[:, :-2]
+                ja_bert = ja_bert[:, :-2]
+                en_bert = en_bert[:, :-2]
+
+            tmp_phones.append(phones)
+            tmp_tones.append(tones)
+            tmp_lang_ids.append(lang_ids)
+            tmp_zh_bert.append(zh_bert)
+            tmp_ja_bert.append(ja_bert)
+            tmp_en_bert.append(en_bert)
+
+        zh_bert = torch.concatenate(tmp_zh_bert, dim=1)
+        ja_bert = torch.concatenate(tmp_ja_bert, dim=1)
+        en_bert = torch.concatenate(tmp_en_bert, dim=1)
+        phones = torch.concatenate(tmp_phones, dim=0)
+        tones = torch.concatenate(tmp_tones, dim=0)
+        lang_ids = torch.concatenate(tmp_lang_ids, dim=0)
+        audio = self._infer(id, phones, tones, lang_ids, zh_bert, ja_bert, en_bert, sdp_ratio, noise,
+                            noisew, length, emo)
+
         return audio

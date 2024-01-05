@@ -116,15 +116,15 @@ function getLink() {
             url += '&streaming=true';
         if (sdp_ratio != "")
             url += "&sdp_ratio=" + sdp_ratio;
-        length_zh = document.getElementById("input_length_zh3").value;
-        if (length_zh != "")
-            url += "&length_zh=" + length_zh;
-        length_ja = document.getElementById("input_length_ja3").value;
-        if (length_ja != "")
-            url += "&length_ja=" + length_ja;
-        length_en = document.getElementById("input_length_en3").value;
-        if (length_en != "")
-            url += "&length_en=" + length_en;
+        // length_zh = document.getElementById("input_length_zh3").value;
+        // if (length_zh != "")
+        //     url += "&length_zh=" + length_zh;
+        // length_ja = document.getElementById("input_length_ja3").value;
+        // if (length_ja != "")
+        //     url += "&length_ja=" + length_ja;
+        // length_en = document.getElementById("input_length_en3").value;
+        // if (length_en != "")
+        //     url += "&length_en=" + length_en;
         if (emotion !== null && emotion !== "")
             url += "&emotion=" + emotion;
         if (text_prompt !== null && text_prompt !== "")
@@ -205,9 +205,9 @@ function setAudioSourceByPost() {
     let url = "";
     let streaming = null;
     let sdp_ratio = null;
-    let length_zh = 0;
-    let length_ja = 0;
-    let length_en = 0;
+    // let length_zh = 0;
+    // let length_ja = 0;
+    // let length_en = 0;
     let emotion = null;
     let text_prompt = "";
     let style_text = "";
@@ -223,9 +223,9 @@ function setAudioSourceByPost() {
         sdp_ratio = $("#input_sdp_ratio").val();
         url = baseUrl + "/voice/bert-vits2";
         streaming = $("#streaming3")[0];
-        length_zh = $("#input_length_zh3").val();
-        length_ja = $("#input_length_ja3").val();
-        length_en = $("#input_length_en3").val();
+        // length_zh = $("#input_length_zh3").val();
+        // length_ja = $("#input_length_ja3").val();
+        // length_en = $("#input_length_en3").val();
         emotion = $("#input_emotion3").val();
         text_prompt = $("#input_text_prompt3").val();
         style_text = $("#input_style_text3").val();
@@ -239,15 +239,15 @@ function setAudioSourceByPost() {
     if (currentModelPage == 3 && sdp_ratio != "") {
         formData.append('sdp_ratio', sdp_ratio);
     }
-    if (currentModelPage == 3 && length_zh != "") {
-        formData.append('length_zh', length_zh);
-    }
-    if (currentModelPage == 3 && length_ja != "") {
-        formData.append('length_ja', length_ja);
-    }
-    if (currentModelPage == 3 && length_en != "") {
-        formData.append('length_en', length_en);
-    }
+    // if (currentModelPage == 3 && length_zh != "") {
+    //     formData.append('length_zh', length_zh);
+    // }
+    // if (currentModelPage == 3 && length_ja != "") {
+    //     formData.append('length_ja', length_ja);
+    // }
+    // if (currentModelPage == 3 && length_en != "") {
+    //     formData.append('length_en', length_en);
+    // }
     if ((currentModelPage == 2 || currentModelPage == 3) && emotion != null && emotion != "") {
         formData.append('emotion', emotion);
     }
