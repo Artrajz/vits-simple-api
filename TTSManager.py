@@ -23,7 +23,7 @@ class TTSManager(Observer):
             ModelType.VITS: self.vits_infer,
             ModelType.W2V2_VITS: self.w2v2_vits_infer,
             ModelType.HUBERT_VITS: self.hubert_vits_infer,
-            ModelType.BERT_VITS2: self.bert_vits2_infer,
+            ModelType.BERT_VITS2: self.bert_vits2_infer_multilang,
         }
         self.speaker_lang = None
         if getattr(config, "LANGUAGE_AUTOMATIC_DETECT", []) != []:
@@ -125,18 +125,25 @@ class TTSManager(Observer):
 
         for element in root.iter():
             if element.tag == "voice":
-                id = int(element.attrib.get("id", root.attrib.get("id", config.ID)))
-                lang = element.attrib.get("lang", root.attrib.get("lang", config.LANG))
-                length = float(element.attrib.get("length", root.attrib.get("length", config.LENGTH)))
-                noise = float(element.attrib.get("noise", root.attrib.get("noise", config.NOISE)))
-                noisew = float(element.attrib.get("noisew", root.attrib.get("noisew", config.NOISEW)))
-                segment_size = int(element.attrib.get("segment_size", root.attrib.get("segment_size", "0")))
-                # 不填写默认就是vits
-                model_type = element.attrib.get("model_type", root.attrib.get("model_type", "vits"))
-                # w2v2-vits/emotion-vits才有emotion
+                id = int(element.attrib.get("id", root.attrib.get("id", config["default_parameter"]["id"])))
+                lang = element.attrib.get("lang", root.attrib.get("lang", config["default_parameter"]["lang"]))
+                length = float(
+                    element.attrib.get("length", root.attrib.get("length", config["default_parameter"]["length"])))
+                noise = float(
+                    element.attrib.get("noise", root.attrib.get("noise", config["default_parameter"]["noise"])))
+                noisew = float(
+                    element.attrib.get("noisew", root.attrib.get("noisew", config["default_parameter"]["noisew"])))
+                segment_size = int(element.attrib.get("segment_size", root.attrib.get("segment_size",
+                                                                                      config["default_parameter"][
+                                                                                          "segment_size"])))
+                # 不填写则默认从已加载的模型中选择
+                model_type = element.attrib.get("model_type", root.attrib.get("model_type", list(
+                    self.model_manager.available_tts_model)[0]))
                 emotion = int(element.attrib.get("emotion", root.attrib.get("emotion", 0)))
                 # Bert-VITS2的参数
-                sdp_ratio = int(element.attrib.get("sdp_ratio", root.attrib.get("sdp_ratio", config.SDP_RATIO)))
+                sdp_ratio = int(element.attrib.get("sdp_ratio", root.attrib.get("sdp_ratio",
+                                                                                config["default_parameter"][
+                                                                                    "sdp_ratio"])))
 
                 voice_element = ET.tostring(element, encoding='unicode')
 
@@ -188,8 +195,8 @@ class TTSManager(Observer):
                                         self.convert_time_string(element.attrib.get("time", "750ms")))
                 voice_tasks.append({"break": brk})
 
-        for i in voice_tasks:
-            self.logger.debug(i)
+        # for i in voice_tasks:
+        #     self.logger.debug(i)
 
         return voice_tasks, format
 
@@ -377,10 +384,11 @@ class TTSManager(Observer):
                 _skip_start = (_idx != 0) or (skip_start and _idx == 0)
                 _skip_end = (_idx != len(sentences) - 1) or skip_end
                 audio = model.infer(sentence, state["id"], lang, state["sdp_ratio"], state["noise"],
-                                    state["noise"], length, emotion=state["emotion"],
-                                    reference_audio=state["reference_audio"], text_prompt=state["text_prompt"],
-                                    style_text=state["style_text"], style_weight=state["style_weight"],
-                                    skip_start=_skip_start, skip_end=_skip_end)
+                                    state["noise"], length, emotion=state.get("emotion", None),
+                                    reference_audio=state.get("reference_audio", None),
+                                    text_prompt=state.get("text_prompt", None),
+                                    style_text=state.get("style_text", None),
+                                    style_weight=state.get("style_weight", 0.7))
                 audios.extend(audio)
         audio = np.concatenate(audios)
 
@@ -411,8 +419,11 @@ class TTSManager(Observer):
                 length = state["length"]
             for sentence in sentences:
                 audio = model.infer(sentence, state["id"], lang, state["sdp_ratio"], state["noise"],
-                                    state["noise"], length, emotion=state["emotion"],
-                                    reference_audio=state["reference_audio"], text_prompt="text_prompt")
+                                    state["noise"], emotion=state.get("emotion", None),
+                                    reference_audio=state.get("reference_audio", None),
+                                    text_prompt=state.get("text_prompt", None),
+                                    style_text=state.get("style_text", None),
+                                    style_weight=state.get("style_weight", 0.7))
                 # audios.append(audio)
                 # audio = np.concatenate(audios, axis=0)
                 encoded_audio = self.encode(sampling_rate, audio, state["format"])
@@ -432,8 +443,11 @@ class TTSManager(Observer):
         audios = []
         for sentences in sentences_list:
             audio = model.infer_multilang(sentences, state["id"], state["sdp_ratio"], state["noise"], state["noise"],
-                                          state["length"], emotion=state["emotion"],
-                                          reference_audio=state["reference_audio"], text_prompt="text_prompt")
+                                          state["length"], emotion=state.get("emotion", None),
+                                          reference_audio=state.get("reference_audio", None),
+                                          text_prompt=state.get("text_prompt", None),
+                                          style_text=state.get("style_text", None),
+                                          style_weight=state.get("style_weight", 0.7))
             audios.append(audio)
         audio = np.concatenate(audios)
 
@@ -451,8 +465,11 @@ class TTSManager(Observer):
         # audios = []
         for sentences in sentences_list:
             audio = model.infer_multilang(sentences, state["id"], state["sdp_ratio"], state["noise"], state["noise"],
-                                          state["length"], emotion=state["emotion"],
-                                          reference_audio=state["reference_audio"], text_prompt="text_prompt")
+                                          state["length"], emotion=state.get("emotion", None),
+                                          reference_audio=state.get("reference_audio", None),
+                                          text_prompt=state.get("text_prompt", None),
+                                          style_text=state.get("style_text", None),
+                                          style_weight=state.get("style_weight", 0.7))
             # audios.append(audio)
             # audio = np.concatenate(audios, axis=0)
             encoded_audio = self.encode(sampling_rate, audio, state["format"])

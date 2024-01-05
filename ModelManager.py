@@ -75,6 +75,8 @@ class ModelManager(Subject):
             ModelType.W2V2_VITS: W2V2_VITS,
             ModelType.BERT_VITS2: Bert_VITS2
         }
+        
+        self.available_tts_model = set()
 
     def model_init(self, model_list):
         if model_list is None: model_list = []
@@ -178,12 +180,14 @@ class ModelManager(Subject):
                 self.load_VITS_PinYin_model(os.path.join(config.ABS_PATH, "vits/bert"))
             if not config["DYNAMIC_LOADING"]:
                 model.load_model()
+            self.available_tts_model.add(ModelType.VITS.value)
 
         if model_type == ModelType.W2V2_VITS:
             if self.emotion_reference is None:
                 self.emotion_reference = self.load_npy(config["model_config"]["dimensional_emotion_npy"])
             model.load_model(emotion_reference=self.emotion_reference,
                              dimensional_emotion_model=self.dimensional_emotion_model)
+            self.available_tts_model.add(ModelType.W2V2_VITS.value)
 
         if model_type == ModelType.HUBERT_VITS:
             if self.hubert is None:
@@ -205,6 +209,7 @@ class ModelManager(Subject):
             model.load_model(
                 self.model_handler
             )
+            self.available_tts_model.add(ModelType.BERT_VITS2.value)
 
         sid2model = []
         speakers = []
