@@ -216,7 +216,7 @@ class Bert_VITS2:
             emo = get_clap_audio_feature(reference_audio, self.model_handler.clap_model,
                                          self.model_handler.clap_processor, self.device)
         else:
-            if text_prompt is None: text_prompt = ""
+            if text_prompt is None: text_prompt = "Happy"
             emo = get_clap_text_feature(text_prompt, self.model_handler.clap_model,
                                         self.model_handler.clap_processor, self.device)
         emo = torch.squeeze(emo, dim=1).unsqueeze(0)
@@ -265,7 +265,7 @@ class Bert_VITS2:
         return self._infer(id, phones, tones, lang_ids, zh_bert, ja_bert, en_bert, sdp_ratio, noise, noisew, length,
                            emo)
 
-    def infer_multilang(self, text, id, sdp_ratio, noise, noisew, length, reference_audio=None, emotion=None,
+    def infer_multilang(self, text, id, lang, sdp_ratio, noise, noisew, length, reference_audio=None, emotion=None,
                         text_prompt=None, style_text=None, style_weigth=0.7, **kwargs):
         sentences_list = split_by_language(text, self.lang)
 
@@ -311,7 +311,7 @@ class Bert_VITS2:
         phones = torch.cat(phones, dim=0)
         tones = torch.cat(tones, dim=0)
         lang_ids = torch.cat(lang_ids, dim=0)
-        
+
         audio = self._infer(id, phones, tones, lang_ids, zh_bert, ja_bert, en_bert, sdp_ratio, noise,
                             noisew, length, emo)
 

@@ -23,7 +23,7 @@ class TTSManager(Observer):
             ModelType.VITS: self.vits_infer,
             ModelType.W2V2_VITS: self.w2v2_vits_infer,
             ModelType.HUBERT_VITS: self.hubert_vits_infer,
-            ModelType.BERT_VITS2: self.bert_vits2_infer_multilang,
+            ModelType.BERT_VITS2: self.bert_vits2_infer_v2,
         }
         self.speaker_lang = None
         if getattr(config, "LANGUAGE_AUTOMATIC_DETECT", []) != []:
@@ -431,7 +431,7 @@ class TTSManager(Observer):
                 for encoded_audio_chunk in self.generate_audio_chunks(encoded_audio):
                     yield encoded_audio_chunk
 
-    def bert_vits2_infer_multilang(self, state, encode=True):
+    def bert_vits2_infer_v2(self, state, encode=True):
         model = self.get_model(model_type=ModelType.BERT_VITS2, id=state["id"])
         state["id"] = self.get_real_id(model_type=ModelType.BERT_VITS2, id=state["id"])
 
@@ -442,18 +442,22 @@ class TTSManager(Observer):
         sentences_list = sentence_split(state["text"], state["segment_size"])
         audios = []
         for sentences in sentences_list:
-            audio = model.infer_multilang(sentences, state["id"], state["sdp_ratio"], state["noise"], state["noise"],
-                                          state["length"], emotion=state.get("emotion", None),
-                                          reference_audio=state.get("reference_audio", None),
-                                          text_prompt=state.get("text_prompt", None),
-                                          style_text=state.get("style_text", None),
-                                          style_weight=state.get("style_weight", 0.7))
+            if state["lang"].lower() == "auto":
+                infer_func = model.infer_multilang
+            else:
+                infer_func = model.infer
+            audio = infer_func(sentences, state["id"], state["lang"], state["sdp_ratio"], state["noise"],
+                               state["noise"], state["length"], emotion=state.get("emotion", None),
+                               reference_audio=state.get("reference_audio", None),
+                               text_prompt=state.get("text_prompt", None),
+                               style_text=state.get("style_text", None),
+                               style_weight=state.get("style_weight", 0.7))
             audios.append(audio)
         audio = np.concatenate(audios)
 
         return self.encode(sampling_rate, audio, state["format"]) if encode else audio
 
-    def stream_bert_vits2_infer_mutilang(self, state, fname=None):
+    def stream_bert_vits2_infer_v2(self, state, fname=None):
         model = self.get_model(ModelType.BERT_VITS2, state["id"])
         state["id"] = self.get_real_id(ModelType.BERT_VITS2, state["id"])
 
@@ -464,12 +468,16 @@ class TTSManager(Observer):
         sentences_list = sentence_split(state["text"], state["segment_size"])
         # audios = []
         for sentences in sentences_list:
-            audio = model.infer_multilang(sentences, state["id"], state["sdp_ratio"], state["noise"], state["noise"],
-                                          state["length"], emotion=state.get("emotion", None),
-                                          reference_audio=state.get("reference_audio", None),
-                                          text_prompt=state.get("text_prompt", None),
-                                          style_text=state.get("style_text", None),
-                                          style_weight=state.get("style_weight", 0.7))
+            if state["lang"].lower() == "auto":
+                infer_func = model.infer_multilang
+            else:
+                infer_func = model.infer
+            audio = infer_func(sentences, state["id"], state["lang"], state["sdp_ratio"], state["noise"],
+                               state["noise"], state["length"], emotion=state.get("emotion", None),
+                               reference_audio=state.get("reference_audio", None),
+                               text_prompt=state.get("text_prompt", None),
+                               style_text=state.get("style_text", None),
+                               style_weight=state.get("style_weight", 0.7))
             # audios.append(audio)
             # audio = np.concatenate(audios, axis=0)
             encoded_audio = self.encode(sampling_rate, audio, state["format"])
