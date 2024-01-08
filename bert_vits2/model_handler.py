@@ -3,7 +3,7 @@ import logging
 import os
 
 import torch
-from transformers import AutoTokenizer, AutoModelForMaskedLM
+from transformers import AutoTokenizer, AutoModelForMaskedLM, BertTokenizer, MegatronBertModel
 
 import config
 from utils.download import download_file
@@ -133,8 +133,12 @@ class ModelHandler:
                 model_path = self.model_path[bert_model_name]
                 logging.info(f"Loading BERT model: {model_path}")
                 try:
-                    tokenizer = AutoTokenizer.from_pretrained(model_path)
-                    model = AutoModelForMaskedLM.from_pretrained(model_path).to(self.device)
+                    if bert_model_name == "bert_model_name":
+                        tokenizer = BertTokenizer.from_pretrained(model_path)
+                        model = MegatronBertModel.from_pretrained(model_path).to(self.device)
+                    else:
+                        tokenizer = AutoTokenizer.from_pretrained(model_path)
+                        model = AutoModelForMaskedLM.from_pretrained(model_path).to(self.device)
                     self.bert_models[bert_model_name] = (tokenizer, model, 1)  # 初始化引用计数为1
                     logging.info(f"Success loading: {model_path}")
                     break
