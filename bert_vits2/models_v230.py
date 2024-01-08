@@ -2,6 +2,7 @@ import math
 import torch
 from torch import nn
 from torch.nn import functional as F
+from vector_quantize_pytorch import VectorQuantize
 
 from bert_vits2 import commons
 from bert_vits2 import modules
@@ -341,6 +342,7 @@ class TextEncoder(nn.Module):
             kernel_size,
             p_dropout,
             gin_channels=0,
+            zh_bert_extra=False,
     ):
         super().__init__()
         self.n_vocab = n_vocab
@@ -359,8 +361,36 @@ class TextEncoder(nn.Module):
         self.language_emb = nn.Embedding(num_languages, hidden_channels)
         nn.init.normal_(self.language_emb.weight, 0.0, hidden_channels ** -0.5)
         self.bert_proj = nn.Conv1d(1024, hidden_channels, 1)
-        self.ja_bert_proj = nn.Conv1d(1024, hidden_channels, 1)
-        self.en_bert_proj = nn.Conv1d(1024, hidden_channels, 1)
+        self.zh_bert_extra = zh_bert_extra
+        if self.zh_bert_extra:
+            self.bert_pre_proj = nn.Conv1d(2048, 1024, 1)
+            self.in_feature_net = nn.Sequential(
+                # input is assumed to an already normalized embedding
+                nn.Linear(512, 1028, bias=False),
+                nn.GELU(),
+                nn.LayerNorm(1028),
+                *[Block(1028, 512) for _ in range(1)],
+                nn.Linear(1028, 512, bias=False),
+                # normalize before passing to VQ?
+                # nn.GELU(),
+                # nn.LayerNorm(512),
+            )
+            self.emo_vq = VectorQuantize(
+                dim=512,
+                codebook_size=64,
+                codebook_dim=32,
+                commitment_weight=0.1,
+                decay=0.85,
+                heads=32,
+                kmeans_iters=20,
+                separate_codebook_per_head=True,
+                stochastic_sample_codes=True,
+                threshold_ema_dead_code=2,
+            )
+            self.out_feature_net = nn.Linear(512, hidden_channels)
+        else:
+            self.ja_bert_proj = nn.Conv1d(1024, hidden_channels, 1)
+            self.en_bert_proj = nn.Conv1d(1024, hidden_channels, 1)
 
         self.encoder = attentions.Encoder(
             hidden_channels,
@@ -373,12 +403,19 @@ class TextEncoder(nn.Module):
         )
         self.proj = nn.Conv1d(hidden_channels, out_channels * 2, 1)
 
-    def forward(self, x, x_lengths, tone, language, zh_bert, ja_bert, en_bert, g=None):
+    def forward(self, x, x_lengths, tone, language, zh_bert, ja_bert, en_bert, emo=None, g=None):
         x = self.emb(x) + self.tone_emb(tone) + self.language_emb(language)
-        
-        x +=self.bert_proj(zh_bert).transpose(1, 2)
-        x += self.ja_bert_proj(ja_bert).transpose(1, 2)
-        x += self.en_bert_proj(en_bert).transpose(1, 2)
+
+        if self.zh_bert_extra:
+            zh_bert = self.bert_pre_proj(zh_bert)
+            emo_emb = self.in_feature_net(emo)
+            emo_emb, _, _ = self.emo_vq(emo_emb.unsqueeze(1))
+            emo_emb = self.out_feature_net(emo_emb)
+            x += emo_emb
+        x += self.bert_proj(zh_bert).transpose(1, 2)
+        if not self.zh_bert_extra:
+            x += self.ja_bert_proj(ja_bert).transpose(1, 2)
+            x += self.en_bert_proj(en_bert).transpose(1, 2)
 
         x *= math.sqrt(self.hidden_channels)  # [b, t, h]
         x = torch.transpose(x, 1, -1)  # [b, h, t]
@@ -831,6 +868,7 @@ class SynthesizerTrn(nn.Module):
             n_layers_trans_flow=4,
             flow_share_parameter=False,
             use_transformer_flow=True,
+            zh_bert_extra=False,
             **kwargs
     ):
         super().__init__()
@@ -873,6 +911,7 @@ class SynthesizerTrn(nn.Module):
             kernel_size,
             p_dropout,
             gin_channels=self.enc_gin_channels,
+            zh_bert_extra=zh_bert_extra,
         )
         self.dec = Generator(
             inter_channels,
@@ -937,6 +976,7 @@ class SynthesizerTrn(nn.Module):
             zh_bert,
             ja_bert,
             en_bert,
+            emo=None,
             noise_scale=0.667,
             length_scale=1,
             noise_scale_w=0.8,
@@ -952,7 +992,7 @@ class SynthesizerTrn(nn.Module):
         else:
             g = self.ref_enc(y.transpose(1, 2)).unsqueeze(-1)
         x, m_p, logs_p, x_mask = self.enc_p(
-            x, x_lengths, tone, language, zh_bert, ja_bert, en_bert, g=g
+            x, x_lengths, tone, language, zh_bert, ja_bert, en_bert, emo=emo, g=g
         )
         logw = self.sdp(x, x_mask, g=g, reverse=True, noise_scale=noise_scale_w) * (
             sdp_ratio

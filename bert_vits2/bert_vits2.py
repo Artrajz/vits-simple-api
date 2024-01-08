@@ -127,25 +127,20 @@ class Bert_VITS2:
     def load_model(self, model_handler):
         self.model_handler = model_handler
 
-        if self.version == "2.3":
-            self.net_g = SynthesizerTrn_v230(
-                len(symbols),
-                self.hps_ms.data.filter_length // 2 + 1,
-                self.hps_ms.train.segment_size // self.hps_ms.data.hop_length,
-                n_speakers=self.hps_ms.data.n_speakers,
-                **self.hps_ms.model,
-            ).to(self.device)
+        if self.version in ["2.3", "extra"]:
+            Synthesizer = SynthesizerTrn_v230
         else:
-            self.net_g = SynthesizerTrn(
-                len(self.symbols),
-                self.hps_ms.data.filter_length // 2 + 1,
-                self.hps_ms.train.segment_size // self.hps_ms.data.hop_length,
-                n_speakers=self.hps_ms.data.n_speakers,
-                symbols=self.symbols,
-                ja_bert_dim=self.ja_bert_dim,
-                num_tones=self.num_tones,
-                zh_bert_extra=self.zh_bert_extra,
-                **self.hps_ms.model).to(self.device)
+            Synthesizer = SynthesizerTrn
+        self.net_g = Synthesizer(
+            len(self.symbols),
+            self.hps_ms.data.filter_length // 2 + 1,
+            self.hps_ms.train.segment_size // self.hps_ms.data.hop_length,
+            n_speakers=self.hps_ms.data.n_speakers,
+            symbols=self.symbols,
+            ja_bert_dim=self.ja_bert_dim,
+            num_tones=self.num_tones,
+            zh_bert_extra=self.zh_bert_extra,
+            **self.hps_ms.model).to(self.device)
         _ = self.net_g.eval()
         bert_vits2_utils.load_checkpoint(self.model_path, self.net_g, None, skip_optimizer=True, version=self.version)
 
@@ -176,7 +171,10 @@ class Bert_VITS2:
         del word2ph
         assert bert.shape[-1] == len(phone), phone
 
-        if language_str == "zh" or self.zh_bert_extra:
+        if self.zh_bert_extra:
+            zh_bert = bert
+            ja_bert, en_bert = None, None
+        elif language_str == "zh":
             zh_bert = bert
             ja_bert = torch.zeros(self.ja_bert_dim, len(phone))
             en_bert = torch.zeros(1024, len(phone))
@@ -229,8 +227,9 @@ class Bert_VITS2:
             tones = tones.to(self.device).unsqueeze(0)
             lang_ids = lang_ids.to(self.device).unsqueeze(0)
             zh_bert = zh_bert.to(self.device).unsqueeze(0)
-            ja_bert = ja_bert.to(self.device).unsqueeze(0)
-            en_bert = en_bert.to(self.device).unsqueeze(0)
+            if not self.zh_bert_extra:
+                ja_bert = ja_bert.to(self.device).unsqueeze(0)
+                en_bert = en_bert.to(self.device).unsqueeze(0)
             x_tst_lengths = torch.LongTensor([phones.size(0)]).to(self.device)
             speakers = torch.LongTensor([int(id)]).to(self.device)
             audio = self.net_g.infer(x_tst,
@@ -238,9 +237,9 @@ class Bert_VITS2:
                                      speakers,
                                      tones,
                                      lang_ids,
-                                     zh_bert,
-                                     ja_bert,
-                                     en_bert,
+                                     zh_bert=zh_bert,
+                                     ja_bert=ja_bert,
+                                     en_bert=en_bert,
                                      sdp_ratio=sdp_ratio,
                                      noise_scale=noise,
                                      noise_scale_w=noisew,

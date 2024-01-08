@@ -2,6 +2,7 @@ import librosa
 import re
 import numpy as np
 import xml.etree.ElementTree as ET
+
 from utils.config_manager import global_config as config
 import soundfile as sf
 from io import BytesIO
@@ -442,7 +443,10 @@ class TTSManager(Observer):
         sentences_list = sentence_split(state["text"], state["segment_size"])
         audios = []
         for sentences in sentences_list:
-            if state["lang"].lower() == "auto":
+            if model.zh_bert_extra:
+                infer_func = model.infer
+                state["lang"] = "zh"
+            elif state["lang"].lower() == "auto":
                 infer_func = model.infer_multilang
             else:
                 infer_func = model.infer

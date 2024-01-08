@@ -4,13 +4,16 @@ import logging
 import jieba
 import pypinyin
 from pypinyin_dict.phrase_pinyin_data import large_pinyin
-from pypinyin_dict.pinyin_data import cc_cedict
+from pypinyin_dict.pinyin_data import cc_cedict, kxhc1983
 
 import config
 
 phrases_dict = {
     "一骑当千": [["yí"], ["jì"], ["dāng"], ["qiān"]],
     "桔子": [["jú"], ["zǐ"]],
+    "重生": [["chóng"], ["shēng"]],
+    "重重地":[["zhòng"], ["zhòng"], ["dě"]],
+    "自少时":[["zì"], ["shào"], ["shí"]],
 }
 
 

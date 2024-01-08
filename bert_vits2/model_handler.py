@@ -164,16 +164,20 @@ class ModelHandler:
             retries = 0
             model_path = self.model_path["WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM"]
             while retries < max_retries:
+                logging.info(f"Loading WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM: {model_path}")
                 try:
                     self.emotion = {}
                     self.emotion["model"] = EmotionModel.from_pretrained(model_path).to(self.device)
                     self.emotion["processor"] = Wav2Vec2Processor.from_pretrained(model_path)
                     self.emotion["reference_count"] = 1
+                    logging.info(f"Success loading: {model_path}")
                     break
                 except Exception as e:
                     logging.error(f"Failed loading {model_path}. {e}")
                     self._download_model("WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM")
                     retries += 1
+            if retries == max_retries:
+                logging.error(f"Failed to load {model_path} after {max_retries} retries.")
         else:
             self.emotion["reference_count"] += 1
 
@@ -184,17 +188,20 @@ class ModelHandler:
             retries = 0
             model_path = self.model_path["CLAP_HTSAT_FUSED"]
             while retries < max_retries:
+                logging.info(f"Loading CLAP_HTSAT_FUSED: {model_path}")
                 try:
                     self.clap = {}
                     self.clap["model"] = ClapModel.from_pretrained(model_path).to(self.device)
                     self.clap["processor"] = ClapProcessor.from_pretrained(model_path)
                     self.clap["reference_count"] = 1
+                    logging.info(f"Success loading: {model_path}")
                     break
                 except Exception as e:
                     logging.error(f"Failed loading {model_path}. {e}")
                     self._download_model("CLAP_HTSAT_FUSED")
                     retries += 1
-
+            if retries == max_retries:
+                logging.error(f"Failed to load {model_path} after {max_retries} retries.")
         else:
             self.clap["reference_count"] += 1
 
