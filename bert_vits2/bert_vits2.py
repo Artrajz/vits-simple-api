@@ -1,5 +1,6 @@
 import logging
 
+import numpy as np
 import torch
 
 from bert_vits2 import commons
@@ -26,6 +27,7 @@ class Bert_VITS2:
         self.sampling_rate = self.hps_ms.data.sampling_rate
 
         self.bert_model_names = {}
+        self.zh_bert_extra = False
         self.ja_bert_dim = 1024
         self.num_tones = num_tones
 
@@ -35,6 +37,7 @@ class Bert_VITS2:
         self.bert_extra_str_map = {"zh": "", "ja": "", "en": ""}
         self.hps_ms.model.emotion_embedding = None
         if self.version in ["1.0", "1.0.0", "1.0.1"]:
+            self.version = "1.0"
             self.symbols = symbols_legacy
             self.hps_ms.model.n_layers_trans_flow = 3
             self.lang = getattr(self.hps_ms.data, "lang", ["zh"])
@@ -43,6 +46,7 @@ class Bert_VITS2:
             self.text_extra_str_map.update({"zh": "_v100"})
 
         elif self.version in ["1.1.0-transition"]:
+            self.version = "1.1.0-transition"
             self.hps_ms.model.n_layers_trans_flow = 3
             self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja"])
             self.ja_bert_dim = 768
@@ -52,6 +56,7 @@ class Bert_VITS2:
             self.bert_extra_str_map.update({"ja": "_v111"})
 
         elif self.version in ["1.1", "1.1.0", "1.1.1"]:
+            self.version = "1.1"
             self.hps_ms.model.n_layers_trans_flow = 6
             self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja"])
             self.ja_bert_dim = 768
@@ -61,6 +66,7 @@ class Bert_VITS2:
             self.bert_extra_str_map.update({"ja": "_v111"})
 
         elif self.version in ["2.0", "2.0.0", "2.0.1", "2.0.2"]:
+            self.version = "2.0"
             self.hps_ms.model.n_layers_trans_flow = 4
             self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja", "en"])
             self.num_tones = num_tones
@@ -70,6 +76,7 @@ class Bert_VITS2:
             self.bert_extra_str_map.update({"ja": "_v200", "en": "_v200"})
 
         elif self.version in ["2.1", "2.1.0"]:
+            self.version = "2.1"
             self.hps_ms.model.n_layers_trans_flow = 4
             self.hps_ms.model.emotion_embedding = 1
             self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja", "en"])
@@ -78,6 +85,7 @@ class Bert_VITS2:
             if "en" in self.lang: self.bert_model_names.update({"en": "DEBERTA_V3_LARGE"})
 
         elif self.version in ["2.2", "2.2.0"]:
+            self.version = "2.2"
             self.hps_ms.model.n_layers_trans_flow = 4
             self.hps_ms.model.emotion_embedding = 2
             self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja", "en"])
@@ -85,20 +93,31 @@ class Bert_VITS2:
             if "ja" in self.lang: self.bert_model_names.update({"ja": "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM"})
             if "en" in self.lang: self.bert_model_names.update({"en": "DEBERTA_V3_LARGE"})
         elif self.version in ["2.3", "2.3.0"]:
+            self.version = "2.3"
             self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja", "en"])
             self.num_tones = num_tones
             self.text_extra_str_map.update({"en": "_v230"})
             if "ja" in self.lang: self.bert_model_names.update({"ja": "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM"})
             if "en" in self.lang: self.bert_model_names.update({"en": "DEBERTA_V3_LARGE"})
+        elif self.version.lower().replace("-", "_") in ["extra", "zh_clap"]:
+            self.version = "extra"
+            self.hps_ms.model.emotion_embedding = 2
+            self.hps_ms.model.n_layers_trans_flow = 6
+            self.lang = ["zh"]
+            self.num_tones = num_tones
+            self.zh_bert_extra = True
+            self.bert_model_names.update({"zh": "Erlangshen-MegatronBert-1.3B-Chinese"})
+            self.bert_extra_str_map.update({"zh": "_extra"})
         else:
             logging.debug("Version information not found. Loaded as the newest version: v2.3.")
+            self.version = "2.3"
             self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja", "en"])
             self.num_tones = num_tones
             self.text_extra_str_map.update({"en": "_v230"})
             if "ja" in self.lang: self.bert_model_names.update({"ja": "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM"})
             if "en" in self.lang: self.bert_model_names.update({"en": "DEBERTA_V3_LARGE"})
 
-        if "zh" in self.lang:
+        if "zh" in self.lang and "zh" not in self.bert_model_names.keys():
             self.bert_model_names.update({"zh": "CHINESE_ROBERTA_WWM_EXT_LARGE"})
 
         self._symbol_to_id = {s: i for i, s in enumerate(self.symbols)}
@@ -108,7 +127,7 @@ class Bert_VITS2:
     def load_model(self, model_handler):
         self.model_handler = model_handler
 
-        if self.version in ["2.3", "2.3.0"]:
+        if self.version == "2.3":
             self.net_g = SynthesizerTrn_v230(
                 len(symbols),
                 self.hps_ms.data.filter_length // 2 + 1,
@@ -125,6 +144,7 @@ class Bert_VITS2:
                 symbols=self.symbols,
                 ja_bert_dim=self.ja_bert_dim,
                 num_tones=self.num_tones,
+                zh_bert_extra=self.zh_bert_extra,
                 **self.hps_ms.model).to(self.device)
         _ = self.net_g.eval()
         bert_vits2_utils.load_checkpoint(self.model_path, self.net_g, None, skip_optimizer=True, version=self.version)
@@ -156,7 +176,7 @@ class Bert_VITS2:
         del word2ph
         assert bert.shape[-1] == len(phone), phone
 
-        if language_str == "zh":
+        if language_str == "zh" or self.zh_bert_extra:
             zh_bert = bert
             ja_bert = torch.zeros(self.ja_bert_dim, len(phone))
             en_bert = torch.zeros(1024, len(phone))
@@ -180,7 +200,7 @@ class Bert_VITS2:
         language = torch.LongTensor(language)
         return zh_bert, ja_bert, en_bert, phone, tone, language
 
-    def get_emo_(self, reference_audio, emotion):
+    def _get_emo(self, reference_audio, emotion):
         if reference_audio:
             emo = torch.from_numpy(
                 get_emo(reference_audio, self.model_handler.emotion_model,
@@ -189,6 +209,17 @@ class Bert_VITS2:
             if emotion is None: emotion = 0
             emo = torch.Tensor([emotion])
 
+        return emo
+
+    def _get_clap(self, reference_audio, text_prompt):
+        if isinstance(reference_audio, np.ndarray):
+            emo = get_clap_audio_feature(reference_audio, self.model_handler.clap_model,
+                                         self.model_handler.clap_processor, self.device)
+        else:
+            if text_prompt is None: text_prompt = ""
+            emo = get_clap_text_feature(text_prompt, self.model_handler.clap_model,
+                                        self.model_handler.clap_processor, self.device)
+        emo = torch.squeeze(emo, dim=1).unsqueeze(0)
         return emo
 
     def _infer(self, id, phones, tones, lang_ids, zh_bert, ja_bert, en_bert, sdp_ratio, noise, noisew, length,
@@ -225,18 +256,11 @@ class Bert_VITS2:
         zh_bert, ja_bert, en_bert, phones, tones, lang_ids = self.get_text(text, lang, self.hps_ms, style_text,
                                                                            style_weigth)
 
+        emo = None
         if self.hps_ms.model.emotion_embedding == 1:
-            emo = self.get_emo_(reference_audio, emotion).to(self.device).unsqueeze(0)
+            emo = self._get_emo(reference_audio, emotion).to(self.device).unsqueeze(0)
         elif self.hps_ms.model.emotion_embedding == 2:
-            if isinstance(text_prompt, str):
-                emo = get_clap_text_feature(text_prompt, self.model_handler.clap_model,
-                                            self.model_handler.clap_processor, self.device)
-            else:
-                emo = get_clap_audio_feature(reference_audio, self.model_handler.clap_model,
-                                             self.model_handler.clap_processor, self.device)
-            emo = torch.squeeze(emo, dim=1).unsqueeze(0)
-        else:
-            emo = None
+            emo = self._get_clap(reference_audio, text_prompt)
 
         return self._infer(id, phones, tones, lang_ids, zh_bert, ja_bert, en_bert, sdp_ratio, noise, noisew, length,
                            emo)
@@ -245,54 +269,49 @@ class Bert_VITS2:
                         text_prompt=None, style_text=None, style_weigth=0.7, **kwargs):
         sentences_list = split_by_language(text, self.lang)
 
+        emo = None
         if self.hps_ms.model.emotion_embedding == 1:
-            emo = self.get_emo_(reference_audio, emotion).to(self.device).unsqueeze(0)
+            emo = self._get_emo(reference_audio, emotion).to(self.device).unsqueeze(0)
         elif self.hps_ms.model.emotion_embedding == 2:
-            if isinstance(text_prompt, str):
-                emo = get_clap_text_feature(text_prompt, self.model_handler.clap_model,
-                                            self.model_handler.clap_processor, self.device)
-            else:
-                emo = get_clap_audio_feature(reference_audio, self.model_handler.clap_model,
-                                             self.model_handler.clap_processor, self.device)
-            emo = torch.squeeze(emo, dim=1).unsqueeze(0)
-        else:
-            emo = None
+            emo = self._get_clap(reference_audio, text_prompt)
 
-        tmp_phones, tmp_tones, tmp_lang_ids, tmp_zh_bert, tmp_ja_bert, tmp_en_bert = [], [], [], [], [], []
+        phones, tones, lang_ids, zh_bert, ja_bert, en_bert = [], [], [], [], [], []
 
         for idx, (_text, lang) in enumerate(sentences_list):
             skip_start = idx != 0
             skip_end = idx != len(sentences_list) - 1
-            zh_bert, ja_bert, en_bert, phones, tones, lang_ids = self.get_text(_text, lang, self.hps_ms, style_text,
-                                                                               style_weigth)
+            _zh_bert, _ja_bert, _en_bert, _phones, _tones, _lang_ids = self.get_text(_text, lang, self.hps_ms,
+                                                                                     style_text, style_weigth)
+
             if skip_start:
-                phones = phones[3:]
-                tones = tones[3:]
-                lang_ids = lang_ids[3:]
-                zh_bert = zh_bert[:, 3:]
-                ja_bert = ja_bert[:, 3:]
-                en_bert = en_bert[:, 3:]
+                _phones = _phones[3:]
+                _tones = _tones[3:]
+                _lang_ids = _lang_ids[3:]
+                _zh_bert = _zh_bert[:, 3:]
+                _ja_bert = _ja_bert[:, 3:]
+                _en_bert = _en_bert[:, 3:]
             if skip_end:
-                phones = phones[:-2]
-                tones = tones[:-2]
-                lang_ids = lang_ids[:-2]
-                zh_bert = zh_bert[:, :-2]
-                ja_bert = ja_bert[:, :-2]
-                en_bert = en_bert[:, :-2]
+                _phones = _phones[:-2]
+                _tones = _tones[:-2]
+                _lang_ids = _lang_ids[:-2]
+                _zh_bert = _zh_bert[:, :-2]
+                _ja_bert = _ja_bert[:, :-2]
+                _en_bert = _en_bert[:, :-2]
 
-            tmp_phones.append(phones)
-            tmp_tones.append(tones)
-            tmp_lang_ids.append(lang_ids)
-            tmp_zh_bert.append(zh_bert)
-            tmp_ja_bert.append(ja_bert)
-            tmp_en_bert.append(en_bert)
+            phones.append(_phones)
+            tones.append(_tones)
+            lang_ids.append(_lang_ids)
+            zh_bert.append(_zh_bert)
+            ja_bert.append(_ja_bert)
+            en_bert.append(_en_bert)
 
-        zh_bert = torch.concatenate(tmp_zh_bert, dim=1)
-        ja_bert = torch.concatenate(tmp_ja_bert, dim=1)
-        en_bert = torch.concatenate(tmp_en_bert, dim=1)
-        phones = torch.concatenate(tmp_phones, dim=0)
-        tones = torch.concatenate(tmp_tones, dim=0)
-        lang_ids = torch.concatenate(tmp_lang_ids, dim=0)
+        zh_bert = torch.cat(zh_bert, dim=1)
+        ja_bert = torch.cat(ja_bert, dim=1)
+        en_bert = torch.cat(en_bert, dim=1)
+        phones = torch.cat(phones, dim=0)
+        tones = torch.cat(tones, dim=0)
+        lang_ids = torch.cat(lang_ids, dim=0)
+        
         audio = self._infer(id, phones, tones, lang_ids, zh_bert, ja_bert, en_bert, sdp_ratio, noise,
                             noisew, length, emo)
 

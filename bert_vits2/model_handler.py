@@ -13,6 +13,7 @@ from bert_vits2.text.japanese_bert import get_bert_feature as ja_bert
 from bert_vits2.text.japanese_bert_v111 import get_bert_feature as ja_bert_v111
 from bert_vits2.text.japanese_bert_v200 import get_bert_feature as ja_bert_v200
 from bert_vits2.text.english_bert_mock_v200 import get_bert_feature as en_bert_v200
+from bert_vits2.text.chinese_bert_extra import get_bert_feature as zh_bert_extra
 
 
 class ModelHandler:
@@ -53,6 +54,10 @@ class ModelHandler:
             "CLAP_HTSAT_FUSED": [
                 "https://huggingface.co/laion/clap-htsat-fused/resolve/main/pytorch_model.bin?download=true",
                 "https://hf-mirror.com/laion/clap-htsat-fused/resolve/main/pytorch_model.bin?download=true",
+            ],
+            "Erlangshen-MegatronBert-1.3B-Chinese": [
+                "https://huggingface.co/IDEA-CCNL/Erlangshen-UniMC-MegatronBERT-1.3B-Chinese/resolve/main/pytorch_model.bin",
+                "https://hf-mirror.com/IDEA-CCNL/Erlangshen-UniMC-MegatronBERT-1.3B-Chinese/resolve/main/pytorch_model.bin",
             ]
         }
 
@@ -66,6 +71,7 @@ class ModelHandler:
             "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM": "bf0dab8ad87bd7c22e85ec71e04f2240804fda6d33196157d6b5923af6ea1201",
             "WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM": "176d9d1ce29a8bddbab44068b9c1c194c51624c7f1812905e01355da58b18816",
             "CLAP_HTSAT_FUSED": "1ed5d0215d887551ddd0a49ce7311b21429ebdf1e6a129d4e68f743357225253",
+            "Erlangshen-MegatronBert-1.3B-Chinese": "3456bb8f2c7157985688a4cb5cecdb9e229cb1dcf785b01545c611462ffe3579",
         }
         self.model_path = {
             "CHINESE_ROBERTA_WWM_EXT_LARGE": os.path.join(config.ABS_PATH,
@@ -78,11 +84,13 @@ class ModelHandler:
                                                                "bert_vits2/bert/deberta-v2-large-japanese-char-wwm"),
             "WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM": os.path.join(config.ABS_PATH,
                                                                         "bert_vits2/emotional/wav2vec2-large-robust-12-ft-emotion-msp-dim"),
-            "CLAP_HTSAT_FUSED": os.path.join(config.ABS_PATH, "bert_vits2/emotional/clap-htsat-fused")
+            "CLAP_HTSAT_FUSED": os.path.join(config.ABS_PATH, "bert_vits2/emotional/clap-htsat-fused"),
+            "Erlangshen-MegatronBert-1.3B-Chinese": os.path.join(config.ABS_PATH,
+                                                                 "bert_vits2/bert/Erlangshen-MegatronBert-1.3B-Chinese"),
         }
 
         self.lang_bert_func_map = {"zh": zh_bert, "en": en_bert, "ja": ja_bert, "ja_v111": ja_bert_v111,
-                                   "ja_v200": ja_bert_v200, "en_v200": en_bert_v200}
+                                   "ja_v200": ja_bert_v200, "en_v200": en_bert_v200, "zh_extra": zh_bert_extra}
 
         self.bert_models = {}  # Value: (tokenizer, model, reference_count)
         self.emotion = None

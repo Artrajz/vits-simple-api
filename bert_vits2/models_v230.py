@@ -374,19 +374,13 @@ class TextEncoder(nn.Module):
         self.proj = nn.Conv1d(hidden_channels, out_channels * 2, 1)
 
     def forward(self, x, x_lengths, tone, language, zh_bert, ja_bert, en_bert, g=None):
-        zh_bert_emb = self.bert_proj(zh_bert).transpose(1, 2)
-        ja_bert_emb = self.ja_bert_proj(ja_bert).transpose(1, 2)
-        en_bert_emb = self.en_bert_proj(en_bert).transpose(1, 2)
-        x = (
-                    self.emb(x)
-                    + self.tone_emb(tone)
-                    + self.language_emb(language)
-                    + zh_bert_emb
-                    + ja_bert_emb
-                    + en_bert_emb
-            ) * math.sqrt(
-            self.hidden_channels
-        )  # [b, t, h]
+        x = self.emb(x) + self.tone_emb(tone) + self.language_emb(language)
+        
+        x +=self.bert_proj(zh_bert).transpose(1, 2)
+        x += self.ja_bert_proj(ja_bert).transpose(1, 2)
+        x += self.en_bert_proj(en_bert).transpose(1, 2)
+
+        x *= math.sqrt(self.hidden_channels)  # [b, t, h]
         x = torch.transpose(x, 1, -1)  # [b, h, t]
         x_mask = torch.unsqueeze(commons.sequence_mask(x_lengths, x.size(2)), 1).to(
             x.dtype
@@ -940,7 +934,7 @@ class SynthesizerTrn(nn.Module):
             sid,
             tone,
             language,
-            bert,
+            zh_bert,
             ja_bert,
             en_bert,
             noise_scale=0.667,
@@ -958,7 +952,7 @@ class SynthesizerTrn(nn.Module):
         else:
             g = self.ref_enc(y.transpose(1, 2)).unsqueeze(-1)
         x, m_p, logs_p, x_mask = self.enc_p(
-            x, x_lengths, tone, language, bert, ja_bert, en_bert, g=g
+            x, x_lengths, tone, language, zh_bert, ja_bert, en_bert, g=g
         )
         logw = self.sdp(x, x_mask, g=g, reverse=True, noise_scale=noise_scale_w) * (
             sdp_ratio

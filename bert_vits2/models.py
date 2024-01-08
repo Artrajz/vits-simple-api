@@ -287,6 +287,7 @@ class TextEncoder(nn.Module):
                  ja_bert_dim=1024,
                  num_tones=None,
                  emotion_embedding=1,
+                 zh_bert_extra=False,
                  ):
         super().__init__()
         self.n_vocab = n_vocab
@@ -305,9 +306,13 @@ class TextEncoder(nn.Module):
         self.language_emb = nn.Embedding(num_languages, hidden_channels)
         nn.init.normal_(self.language_emb.weight, 0.0, hidden_channels ** -0.5)
         self.bert_proj = nn.Conv1d(1024, hidden_channels, 1)
+        self.zh_bert_extra = zh_bert_extra
+        if self.zh_bert_extra:
+            self.bert_pre_proj = nn.Conv1d(2048, 1024, 1)
         self.ja_bert_proj = nn.Conv1d(ja_bert_dim, hidden_channels, 1)
         self.en_bert_proj = nn.Conv1d(1024, hidden_channels, 1)
         self.emotion_embedding = emotion_embedding
+
         if self.emotion_embedding == 1:
             self.emo_proj = nn.Linear(1024, 1024)
             self.emo_quantizer = VectorQuantize(
@@ -356,20 +361,24 @@ class TextEncoder(nn.Module):
         self.proj = nn.Conv1d(hidden_channels, out_channels * 2, 1)
 
     def forward(self, x, x_lengths, tone, language, zh_bert, ja_bert, en_bert, emo=None, sid=None, g=None):
-        zh_bert_emb = self.bert_proj(zh_bert).transpose(1, 2)
-        ja_bert_emb = self.ja_bert_proj(ja_bert).transpose(1, 2)
-        en_bert_emb = self.en_bert_proj(en_bert).transpose(1, 2)
-        x = self.emb(x) + self.tone_emb(tone) + self.language_emb(language) + zh_bert_emb + ja_bert_emb + en_bert_emb
+        x = self.emb(x) + self.tone_emb(tone) + self.language_emb(language)
 
+        if self.zh_bert_extra:
+            zh_bert = self.bert_pre_proj(zh_bert)
+        x += self.bert_proj(zh_bert).transpose(1, 2)
+        x += self.ja_bert_proj(ja_bert).transpose(1, 2)
+        x += self.en_bert_proj(en_bert).transpose(1, 2)
+
+        x *= math.sqrt(self.hidden_channels)  # [b, t, h]
         if self.emotion_embedding == 1:
-            emo = emo.to(zh_bert_emb.device)
+            # emo = emo.to(zh_bert_emb.device)
             if emo.size(-1) == 1024:
                 emo_emb = self.emo_proj(emo.unsqueeze(1))
                 emo_emb_ = []
                 for i in range(emo_emb.size(0)):
                     temp_emo_emb, _, _ = self.emo_quantizer(
-                    emo_emb[i].unsqueeze(0)
-                )
+                        emo_emb[i].unsqueeze(0).to(emo.device)
+                    )
                     emo_emb_.append(temp_emo_emb)
                 emo_emb = torch.cat(emo_emb_, dim=0).to(emo_emb.device)
             else:
@@ -694,6 +703,7 @@ class SynthesizerTrn(nn.Module):
                  ja_bert_dim=1024,
                  num_tones=None,
                  emotion_embedding=False,
+                 zh_bert_extra=False,
                  **kwargs):
 
         super().__init__()
@@ -738,7 +748,8 @@ class SynthesizerTrn(nn.Module):
                                  symbols=symbols,
                                  ja_bert_dim=ja_bert_dim,
                                  num_tones=num_tones,
-                                 emotion_embedding=self.emotion_embedding
+                                 emotion_embedding=self.emotion_embedding,
+                                 zh_bert_extra=zh_bert_extra,
                                  )
         self.dec = Generator(inter_channels, resblock, resblock_kernel_sizes, resblock_dilation_sizes, upsample_rates,
                              upsample_initial_channel, upsample_kernel_sizes, gin_channels=gin_channels)
@@ -769,8 +780,8 @@ class SynthesizerTrn(nn.Module):
             g = self.ref_enc(y.transpose(1, 2)).unsqueeze(-1)
         x, m_p, logs_p, x_mask = self.enc_p(x, x_lengths, tone, language, zh_bert, ja_bert, en_bert, emo, sid, g=g)
         logw = self.sdp(x, x_mask, g=g, reverse=True, noise_scale=noise_scale_w) * (sdp_ratio) + self.dp(x, x_mask,
-                                                                                                         g=g) * (
-                       1 - sdp_ratio)
+                                                                                                             g=g) * (
+                               1 - sdp_ratio)
         w = torch.exp(logw) * x_mask * length_scale
         w_ceil = torch.ceil(w)
         y_lengths = torch.clamp_min(torch.sum(w_ceil, [1, 2]), 1).long()
