@@ -234,6 +234,17 @@ Example:
   "max_wav_value": 32768.0,
   ...
 ```
+## Custom Chinese Polyphonic Dictionary
+
+If you encounter issues with incorrect pronunciation of polyphonic characters, you can try resolving it using the following method.
+
+Open phrases_dict.txt and add polyphonic words.
+
+```python
+{
+"一骑当千": [["yí"], ["jì"], ["dāng"], ["qiān"]],
+}
+```
 
 # Frequently Asked Questions
 
@@ -456,5 +467,5 @@ Learning and communication,now there is only Chinese [QQ group](https://qm.qq.co
 
 # Thank You to All Contributors
 
-<a href="https://github.com/artrajz/vits-simple-ap/graphs/contributors" target="_blank">
+<a href="https://github.com/artrajz/vits-simple-api/graphs/contributors" target="_blank">
   <img src="https://contrib.rocks/image?repo=artrajz/vits-simple-api"/></a>

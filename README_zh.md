@@ -243,6 +243,18 @@ http://127.0.0.1:23456
   ...
 ```
 
+## 自定义中文多音字词典
+
+如果遇到多音字发音不正确，可以尝试用这种办法解决。
+
+打开phrases_dict.txt添加多音字词。
+
+```python
+{
+"一骑当千": [["yí"], ["jì"], ["dāng"], ["qiān"]],
+}
+```
+
 # 常见问题
 
 ## fasttext依赖安装问题
@@ -463,5 +475,5 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 
 # 感谢所有的贡献者
 
-<a href="https://github.com/artrajz/vits-simple-ap/graphs/contributors" target="_blank">
+<a href="https://github.com/artrajz/vits-simple-api/graphs/contributors" target="_blank">
   <img src="https://contrib.rocks/image?repo=artrajz/vits-simple-api"/></a>
