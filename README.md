@@ -238,7 +238,7 @@ Example:
 
 If you encounter issues with incorrect pronunciation of polyphonic characters, you can try resolving it using the following method.
 
-Open phrases_dict.txt and add polyphonic words.
+Create and open phrases_dict.txt in the project's root directory to add polyphonic words.
 
 ```python
 {

@@ -12,8 +12,8 @@ phrases_dict = {
     "一骑当千": [["yí"], ["jì"], ["dāng"], ["qiān"]],
     "桔子": [["jú"], ["zi"]],
     "重生": [["chóng"], ["shēng"]],
-    "重重地":[["zhòng"], ["zhòng"], ["de"]],
-    "自少时":[["zì"], ["shào"], ["shí"]],
+    "重重地": [["zhòng"], ["zhòng"], ["de"]],
+    "自少时": [["zì"], ["shào"], ["shí"]],
 }
 
 
@@ -35,7 +35,7 @@ def phrases_dict_init():
     cc_cedict.load()
     additional_phrases_file = config.ABS_PATH + "/phrases_dict.txt"
     load_phrases_from_file(additional_phrases_file)
-        
+
     for word in phrases_dict.keys():
         jieba.add_word(word)
     pypinyin.load_phrases_dict(phrases_dict)
