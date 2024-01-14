@@ -6,7 +6,7 @@ import pypinyin
 from pypinyin_dict.phrase_pinyin_data import large_pinyin
 from pypinyin_dict.pinyin_data import cc_cedict
 
-import config
+from contants import config
 
 phrases_dict = {
     "一骑当千": [["yí"], ["jì"], ["dāng"], ["qiān"]],
@@ -32,8 +32,7 @@ def load_phrases_from_file(file_path):
 def phrases_dict_init():
     logging.info("Loading phrases_dict")
     large_pinyin.load()
-    cc_cedict.load()
-    additional_phrases_file = config.ABS_PATH + "/phrases_dict.txt"
+    additional_phrases_file = config.abs_path + "/phrases_dict.txt"
     load_phrases_from_file(additional_phrases_file)
 
     for word in phrases_dict.keys():

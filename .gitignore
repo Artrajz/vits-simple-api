@@ -4,8 +4,11 @@
 /cache/
 /upload/
 /vits/text/chinese_dialect_lexicons/
-/vits/bert/prosody_model.pt
+/data/bert/prosody_model/prosody_model.pt
 config.yml
 **/pytorch_model.bin
 **/spm.model
 phrases_dict.txt
+/data/emotional/dimensional_emotion_model/model.onnx
+/data/hubert_soft/hubert-soft-0d54a1f4.pt
+/config.yaml

@@ -1,15 +1,10 @@
-import json
 import logging
-from copy import deepcopy
 
-import torch
 from flask import Blueprint, request, render_template, make_response, jsonify
 from flask_login import login_required
 
-from tts_app.auth.models import user2str, str2user
+from contants import config
 from tts_app.model_manager import model_manager
-from utils import config_manager
-from utils.config_manager import global_config
 
 admin = Blueprint('admin', __name__)
 
@@ -96,12 +91,7 @@ def get_path():
 @admin.route('/get_config', methods=["GET", "POST"])
 @login_required
 def get_config():
-    dict_data = deepcopy(dict(global_config))
-    dict_data["DEVICE"] = str(dict_data["DEVICE"])
-
-    dict_data = user2str(dict_data)
-    
-    return jsonify(dict_data)
+    return jsonify(config.asdict())
 
 
 @admin.route('/set_config', methods=["GET", "POST"])
@@ -114,17 +104,21 @@ def set_config():
         else:
             request_data = request.form
 
-    dict_data = dict(request_data)
-    # dict_data["DEVICE"] = torch.device(dict_data["DEVICE"])
-    if dict_data.get("users", None) is not None:
-        dict_data = str2user(dict_data)
-    dict_data = config_manager.validate_and_convert_data(dict_data)
-    dict_data["model_config"]["model_list"] = global_config["model_config"]["model_list"]
-    global_config.update(dict_data)
-    config_manager.save_yaml_config(global_config)
-
+    # try:
+    #     new_config = dict(request_data)
+    #     config.update_config(new_config)
+    #     status = "success"
+    #     code = 200
+    # except Exception as e:
+    #     status = "failed"
+    #     code = 500
+    #     logging.error(e)
+    new_config = dict(request_data)
+    config.update_config(new_config)
+    config.save_config(config)
     status = "success"
-    return make_response(jsonify({"status": status}), 200)
+    code = 200
+    return make_response(jsonify({"status": status}), code)
 
 
 @admin.route('/save_current_model', methods=["GET", "POST"])
@@ -133,8 +127,8 @@ def save_current_model():
     try:
         models_path = model_manager.get_models_path()
         model_list = {"model_list": models_path}
-        global_config["model_config"].update(model_list)
-        config_manager.save_yaml_config(global_config)
+        # global_config["model_config"].update(model_list)
+        # config_manager.save_yaml_config(global_config)
 
         status = "success"
         response_code = 200

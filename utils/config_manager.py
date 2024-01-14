@@ -8,12 +8,11 @@ import torch
 import yaml
 from flask import current_app
 
-import config
-import config as default_config
+# from contants import config
 from tts_app.auth.models import User
 from utils.data_utils import check_is_none
 
-YAML_CONFIG_FILE = os.path.join(default_config.ABS_PATH, 'config.yml')
+YAML_CONFIG_FILE = os.path.join(config.abs_path, 'config.yml')
 
 logging.getLogger().setLevel(logging.DEBUG)
 
@@ -157,7 +156,7 @@ def init_config():
         save_yaml_config(global_config, YAML_CONFIG_FILE)
 
     # 初始化API_KEY
-    if check_is_none(global_config.API_KEY):
+    if check_is_none(global_config.system.api_key):
         secret_key = generate_secret_key()
         global_config["API_KEY"] = secret_key
         logging.info(f"API_KEY is not found or is None. Generating a new API_KEY:{secret_key}")

@@ -3,7 +3,7 @@ import re
 import numpy as np
 import xml.etree.ElementTree as ET
 
-from utils.config_manager import global_config as config
+from contants import config
 import soundfile as sf
 from io import BytesIO
 from graiax import silkcoder
@@ -11,7 +11,7 @@ from contants import ModelType
 from scipy.signal import resample_poly
 
 from logger import logger
-from observer import Observer
+from manager.observer import Observer
 from utils.sentence import sentence_split_and_markup, split_by_language, sentence_split
 
 

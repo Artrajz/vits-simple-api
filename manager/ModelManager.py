@@ -9,28 +9,29 @@ import numpy as np
 import psutil
 import torch
 
-from utils.config_manager import global_config as config
+# from contants import config
+from contants import config
 import utils
 from bert_vits2 import Bert_VITS2
 from contants import ModelType
 from logger import logger
-from observer import Subject
+from manager.observer import Subject
 from utils.data_utils import HParams
 from vits import VITS
 from vits.hubert_vits import HuBert_VITS
 from vits.w2v2_vits import W2V2_VITS
 
-CHINESE_ROBERTA_WWM_EXT_LARGE = os.path.join(config.ABS_PATH, "bert_vits2/bert/chinese-roberta-wwm-ext-large")
-BERT_BASE_JAPANESE_V3 = os.path.join(config.ABS_PATH, "bert_vits2/bert/bert-base-japanese-v3")
-BERT_LARGE_JAPANESE_V2 = os.path.join(config.ABS_PATH, "bert_vits2/bert/bert-large-japanese-v2")
-DEBERTA_V2_LARGE_JAPANESE = os.path.join(config.ABS_PATH, "bert_vits2/bert/deberta-v2-large-japanese")
-DEBERTA_V3_LARGE = os.path.join(config.ABS_PATH, "bert_vits2/bert/deberta-v3-large")
-WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM = os.path.join(config.ABS_PATH,
-                                                           "bert_vits2/emotional/wav2vec2-large-robust-12-ft-emotion-msp-dim")
+CHINESE_ROBERTA_WWM_EXT_LARGE = os.path.join(config.abs_path, "data/bert/chinese-roberta-wwm-ext-large")
+BERT_BASE_JAPANESE_V3 = os.path.join(config.abs_path, "data/bert/bert-base-japanese-v3")
+BERT_LARGE_JAPANESE_V2 = os.path.join(config.abs_path, "data/bert/bert-large-japanese-v2")
+DEBERTA_V2_LARGE_JAPANESE = os.path.join(config.abs_path, "data/bert/deberta-v2-large-japanese")
+DEBERTA_V3_LARGE = os.path.join(config.abs_path, "data/bert/deberta-v3-large")
+WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM = os.path.join(config.abs_path,
+                                                           "data/emotional/wav2vec2-large-robust-12-ft-emotion-msp-dim")
 
 
 class ModelManager(Subject):
-    def __init__(self, device=config.DEVICE):
+    def __init__(self, device=config.system.device):
         self.device = device
         self.logger = logger
 
@@ -78,15 +79,14 @@ class ModelManager(Subject):
         
         self.available_tts_model = set()
 
-    def model_init(self, model_list):
-        if model_list is None: model_list = []
-        for model_path, config_path in model_list:
-            self.load_model(model_path, config_path)
+    def model_init(self):
+        for model in config.tts_config.models:
+            self.load_model(model.model_path, model.config_path)
 
-        if config.model_config.get("dimensional_emotion_model", None) is not None:
+        if os.path.isfile(config.model_config.dimensional_emotion_model):
             if self.dimensional_emotion_model is None:
                 self.dimensional_emotion_model = self.load_dimensional_emotion_model(
-                    config.model_list["dimensional_emotion_model"])
+                    config.model_list.dimensional_emotion_model)
 
         self.log_device_info()
 
@@ -177,7 +177,7 @@ class ModelManager(Subject):
         if model_type == ModelType.VITS:
             bert_embedding = getattr(hps.data, 'bert_embedding', getattr(hps.model, 'bert_embedding', False))
             if bert_embedding and self.tts_front is None:
-                self.load_VITS_PinYin_model(os.path.join(config.ABS_PATH, "vits/bert"))
+                self.load_VITS_PinYin_model(os.path.join(config.abs_path, "../vits/bert"))
             if not config["DYNAMIC_LOADING"]:
                 model.load_model()
             self.available_tts_model.add(ModelType.VITS.value)
@@ -240,15 +240,15 @@ class ModelManager(Subject):
         try:
             model_path = os.path.normpath(model_path)
             if model_path.startswith('Model'):
-                model_path = os.path.join(config.ABS_PATH, model_path)
+                model_path = os.path.join(config.abs_path, model_path)
             else:
-                model_path = os.path.join(config.ABS_PATH, 'Model', model_path)
+                model_path = os.path.join(config.abs_path, '../Model', model_path)
 
             config_path = os.path.normpath(config_path)
             if config_path.startswith('Model'):
-                config_path = os.path.join(config.ABS_PATH, config_path)
+                config_path = os.path.join(config.abs_path, config_path)
             else:
-                config_path = os.path.join(config.ABS_PATH, 'Model', config_path)
+                config_path = os.path.join(config.abs_path, '../Model', config_path)
 
             model_data = self._load_model_from_path(model_path, config_path)
             model_id = model_data["model_id"]
@@ -462,7 +462,7 @@ class ModelManager(Subject):
         return emotion_reference
 
     def scan_path(self):
-        folder_path = os.path.join(config.ABS_PATH, 'Model')
+        folder_path = os.path.join(config.abs_path, '../Model')
         pth_files = glob.glob(folder_path + "/**/*.pth", recursive=True)
         all_paths = []
         unload_paths = []

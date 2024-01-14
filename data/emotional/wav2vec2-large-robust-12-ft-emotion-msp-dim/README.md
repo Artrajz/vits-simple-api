@@ -80,7 +80,7 @@ class EmotionModel(Wav2Vec2PreTrainedModel):
 
 
 
-# load model from hub
+# load models from hub
 device = 'cpu'
 model_name = 'audeering/wav2vec2-large-robust-12-ft-emotion-msp-dim'
 processor = Wav2Vec2Processor.from_pretrained(model_name)
@@ -106,7 +106,7 @@ def process_func(
     y = y.reshape(1, -1)
     y = torch.from_numpy(y).to(device)
 
-    # run through model
+    # run through models
     with torch.no_grad():
         y = model(y)[0 if embeddings else 1]
 

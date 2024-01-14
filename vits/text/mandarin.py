@@ -6,7 +6,7 @@ import cn2an
 import logging
 
 logging.getLogger('jieba').setLevel(logging.WARNING)
-jieba.set_dictionary(config.ABS_PATH + '/vits/text/jieba/dict.txt')
+jieba.set_dictionary(config.abs_path + '/vits/text/jieba/dict.txt')
 jieba.initialize()
 
 # List of (Latin alphabet, bopomofo) pairs:
@@ -360,5 +360,5 @@ def VITS_PinYin_model():
     from vits.text.vits_pinyin import VITS_PinYin
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # pinyin
-    tts_front = VITS_PinYin(f"{config.ABS_PATH}/vits/bert", device)
+    tts_front = VITS_PinYin(f"{config.abs_path}/vits/bert", device)
     return tts_front

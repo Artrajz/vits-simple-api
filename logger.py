@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 import logzero
-from utils.config_manager import global_config as config
+from contants import config
 from logging.handlers import TimedRotatingFileHandler
 
 logzero.loglevel(logging.WARNING)
@@ -16,8 +16,9 @@ logging.getLogger().setLevel(level_dict[level])
 formatter = logging.Formatter('%(asctime)s [%(levelname)s] [%(module)s.%(funcName)s:%(lineno)d] %(message)s',
                               datefmt='%Y-%m-%d %H:%M:%S')
 
-os.makedirs(config.LOGS_PATH, exist_ok=True)
-log_file = os.path.join(config.LOGS_PATH, 'latest.log')
+logs_path = os.path.join(config.abs_path, config.log_config.logs_path)
+os.makedirs(logs_path, exist_ok=True)
+log_file = os.path.join(logs_path, 'latest.log')
 backup_count = getattr(config, "LOGS_BACKUPCOUNT", 30)
 handler = TimedRotatingFileHandler(log_file, when="midnight", interval=1, backupCount=backup_count, encoding='utf-8')
 handler.suffix = "%Y-%m-%d.log"

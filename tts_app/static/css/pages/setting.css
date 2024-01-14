@@ -9,19 +9,10 @@
     margin: 20px;
 }
 
-.item .input-group-text {
-
+.configuration .title{
+    font-size: 1.5rem;
 }
 
-
-#default-parameter {
-    flex-wrap: wrap;
-    flex-grow: 1;
-}
-
-#default-parameter .item {
-    width: 300px;
-}
 
 #addModelRow {
     width: max-content;
@@ -42,12 +33,12 @@
     padding: 8px;
     border-radius: 5px;
     color: white;
-    background-color: #673ab7;
+    background-color: #62478c;
     cursor: pointer;
 }
 
 .config-save:hover {
-    background-color: gainsboro;
+    background-color: #673ab7;
 }
 
 
