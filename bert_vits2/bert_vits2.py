@@ -12,6 +12,7 @@ from bert_vits2.models_v230 import SynthesizerTrn as SynthesizerTrn_v230
 from bert_vits2.text import *
 from bert_vits2.text.cleaner import clean_text
 from bert_vits2.utils import process_legacy_versions
+from contants import config
 from utils import get_hparams_from_file
 from utils.sentence import split_by_language
 
@@ -214,7 +215,7 @@ class Bert_VITS2:
             emo = get_clap_audio_feature(reference_audio, self.model_handler.clap_model,
                                          self.model_handler.clap_processor, self.device)
         else:
-            if text_prompt is None: text_prompt = "Happy"
+            if text_prompt is None: text_prompt = config.bert_vits2_config.text_prompt
             emo = get_clap_text_feature(text_prompt, self.model_handler.clap_model,
                                         self.model_handler.clap_processor, self.device)
         emo = torch.squeeze(emo, dim=1).unsqueeze(0)

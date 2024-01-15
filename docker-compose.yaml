@@ -14,6 +14,5 @@ services:
       - ./config.yaml:/app/config.yaml # 挂载配置文件
       - ./logs:/app/logs # logging logs
       - ./gunicorn_config.py:/app/gunicorn_config.py # gunicorn configuration
-      - ./data:/app/data
       - ./pyopenjtalk/open_jtalk_dic_utf_8-1.11:/usr/local/lib/python3.10/site-packages/pyopenjtalk/open_jtalk_dic_utf_8-1.11 #pyopentjalk
       - ./nltk_data:/usr/local/share/nltk_data

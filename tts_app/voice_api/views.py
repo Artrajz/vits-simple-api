@@ -39,11 +39,10 @@ def get_param(request_data, key, default, data_type=None):
 
 @voice_api.route('/default_parameter', methods=["GET", "POST"])
 def default_parameter():
-    data = {}
-    data.update(config.vits_config.asdict())
-    data.update(config.w2v2_vits_config.asdict())
-    data.update(config.hubert_vits_config.asdict())
-    data.update(config.bert_vits2_config.asdict())
+    data = {"vits_config": config.vits_config.asdict(),
+            "w2v2_vits_config": config.w2v2_vits_config.asdict(),
+            "hubert_vits_config": config.hubert_vits_config.asdict(),
+            "bert_vits2_config": config.bert_vits2_config.asdict()}
     return jsonify(data)
 
 

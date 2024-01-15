@@ -92,10 +92,11 @@ class ModelManager(Subject):
             for model_path, config_path in models:
                 self.load_model(model_path, config_path)
 
-        if os.path.isfile(config.model_config.dimensional_emotion_model):
+        dimensional_emotion_model_path = os.path.join(config.abs_path, config.system.data_path,
+                                                      config.model_config.dimensional_emotion_model)
+        if os.path.isfile(dimensional_emotion_model_path):
             if self.dimensional_emotion_model is None:
-                self.dimensional_emotion_model = self.load_dimensional_emotion_model(
-                    config.model_config.dimensional_emotion_model)
+                self.dimensional_emotion_model = self.load_dimensional_emotion_model(dimensional_emotion_model_path)
 
         self.log_device_info()
 
@@ -289,7 +290,7 @@ class ModelManager(Subject):
         model_id = int(model_id)
         try:
             if model_id in self.models[model_type].keys():
-                
+
                 model_path, config_path, model, n_speakers = self.models[model_type][model_id].values()
                 start = 0
 

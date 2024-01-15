@@ -72,10 +72,10 @@ function getLink() {
     let style_weight = "";
     if (currentModelPage == 1) {
         streaming = document.getElementById('streaming1');
-        url += "/voice/vits?text=" + text + "&id=" + id;
+        url += "/voice/vits?id=" + id;
     } else if (currentModelPage == 2) {
         emotion = document.getElementById('emotion').value;
-        url += "/voice/w2v2-vits?text=" + text + "&id=" + id + "&emotion=" + emotion;
+        url += "/voice/w2v2-vits?id=" + id + "&emotion=" + emotion;
     } else if (currentModelPage == 3) {
         sdp_ratio = document.getElementById("input_sdp_ratio").value;
         streaming = document.getElementById('streaming3');
@@ -83,7 +83,7 @@ function getLink() {
         text_prompt = document.getElementById('input_text_prompt3').value;
         style_text = document.getElementById('input_style_text3').value;
         style_weight = document.getElementById('input_style_weight3').value;
-        url += "/voice/bert-vits2?text=" + text + "&id=" + id;
+        url += "/voice/bert-vits2?id=" + id;
 
     } else {
         console.error("Invalid model page: ", currentModelPage);
@@ -134,7 +134,7 @@ function getLink() {
         if (style_weight !== null && style_weight !== "")
             url += "&style_weight=" + style_weight;
     }
-
+    url += "&text=" + text
     return url;
 }
 
