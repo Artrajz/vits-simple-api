@@ -205,7 +205,6 @@ _ALPHASYMBOL_YOMI = {
     "ω": "オメガ",
 }
 
-
 _NUMBER_WITH_SEPARATOR_RX = re.compile("[0-9]{1,3}(,[0-9]{3})+")
 _CURRENCY_MAP = {"$": "ドル", "¥": "円", "£": "ポンド", "€": "ユーロ"}
 _CURRENCY_RX = re.compile(r"([$¥£€])([0-9.]*[0-9])")
@@ -415,6 +414,7 @@ def g2p(norm_text, tokenizer):
 
 if __name__ == "__main__":
     from transformers import AutoTokenizer
+
     tokenizer = AutoTokenizer.from_pretrained("./bert/deberta-v2-large-japanese")
     text = "hello,こんにちは、世界ー！……"
     from bert_vits2.text.japanese_bert import get_bert_feature
