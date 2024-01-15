@@ -86,41 +86,41 @@ ZH_MESSAGES=(
 )
 
 JA_MESSAGES=(
-	["ATTEMPT_DOWNLOAD"]="ダウンロードを試みています"
-	["FROM"]="から"
-	["DOWNLOAD_FAIL"]="ダウンロードに失敗しました"
-	["FROM_ALL_URLS"]="提供されたすべてのURLから。"
-	["DOWNLOADING"]="ダウンロード中..."
-	["VERIFYING"]="検証中..."
-	["UNZIPPING"]="解凍中..."
-	["CREATE_PLACEHOLDER_FILE"]="プレースホルダーファイルを作成しました"
-	["CHOOSE_VERSION"]="どのバージョンのdocker-compose.yamlをダウンロードしますか？"
-	["DOCKER_CPU"]="docker-compose.yaml (CPUバージョン)"
-	["DOCKER_GPU"]="docker-compose-gpu.yaml (GPUバージョン)"
-	["NO_DOWNLOAD"]="YAMLファイルは既に存在しているため、ダウンロードの必要はありません"
-	["ENTER_CHOICE"]="選択肢を入力してください: "
-	["INVALID_CHOICE"]="無効な選択です。1、2、または3を入力してください。"
-	["DOWNLOAD_CONFIG"]="まもなく設定ファイルをダウンロードします..."
-	["PULL_IMAGE"]="イメージのプルを開始しますか？はいの場合は1を、いいえの場合は2を入力してください"
-	["DOWNLOAD_DICT"]="pyopenjtalk辞書ファイルをダウンロードしますか？はいの場合は1を、いいえの場合は2を入力してください"
-	["MUST_DOWNLOAD_JP"]="日本語モデルをダウンロードする必要があります。"
-	["DOWNLOAD_VITS_CHINESE"]="vits_chinese用のbertモデルをダウンロードしますか？はいの場合は1を、いいえの場合は2を入力してください。"
-	["MUST_DOWNLOAD_VITS_CHINESE"]="vits_chineseを使用するには、これらのモデルをダウンロードする必要があり、約410MBの容量が必要です。"
-	["DOWNLOAD_BERT_VITS2_1"]="chinese-roberta-wwm-ext-largeをダウンロードしますか？このモデルはフルバージョン用の中国語BERTモデルで、約1.21GBの容量を占めます。はいの場合は1を、いいえの場合は2を入力してください。"
-	["DOWNLOAD_BERT_VITS2_2"]="bert-base-japanese-v3をダウンロードしますか？このモデルはバージョン2.0以前に使用される日本語BERTモデルで、約426MBの容量を占めます。はいの場合は1を、いいえの場合は2を入力してください。"
-	["DOWNLOAD_BERT_VITS2_3"]="bert-large-japanese-v2をダウンロードしますか？はいの場合は1を、いいえの場合は2を入力してください。"
-	["DOWNLOAD_BERT_VITS2_4"]="deberta-v2-large-japaneseをダウンロードしますか？このモデルはバージョン2.0以降に使用される日本語BERTモデルで、約1.38GBの容量を占めます。はいの場合は1を、いいえの場合は2を入力してください。"
-	["DOWNLOAD_BERT_VITS2_5"]="deberta-v3-largeをダウンロードしますか？このモデルはバージョン2.0以降に使用される英語BERTモデルで、約835MBの容量を占めます。はいの場合は1を、いいえの場合は2を入力してください。"
-	["MUST_DOWNLOAD_BERT_VITS2"]="Bert-VITS2を使用するには、これらのモデルをダウンロードする必要があり、約1.63GBの容量が必要です。"
-	["DOWNLOADED"]="ファイルが正しくダウンロードされました。"
-	["CORRUPTED"]="ファイルがダウンロードされていないか、ダウンロードが不完全である可能性があります。また、ファイルが破損している可能性もあります。"
-	["INSTALL_COMPLETE"]="アップグレードまたはインストールが完了しました。"
-	["CONFIG_DIR"]="設定ファイルのディレクトリは以下の通りです"
-	["IMPORT_NOTICE"]="vitsモデルがインポートされていない場合、使用できません。設定ファイルのディレクトリでモデルをインポートしてください。"
-	["RESTART_NOTICE"]="設定ファイルを変更した後、変更を反映させるためにdockerコンテナを再起動してください。"
-	["ISSUE_NOTICE"]="何か質問がある場合は、イシューに投稿してください。"
-	["GITHUB_LINK"]="https://github.com/Artrajz/vits-simple-api"
-	["CONTAINERS_STARTING"]="コンテナが起動中です"
+  ["ATTEMPT_DOWNLOAD"]="ダウンロードを試みています"
+  ["FROM"]="から"
+  ["DOWNLOAD_FAIL"]="ダウンロードに失敗しました"
+  ["FROM_ALL_URLS"]="提供されたすべてのURLから。"
+  ["DOWNLOADING"]="ダウンロード中..."
+  ["VERIFYING"]="検証中..."
+  ["UNZIPPING"]="解凍中..."
+  ["CREATE_PLACEHOLDER_FILE"]="プレースホルダーファイルを作成しました"
+  ["CHOOSE_VERSION"]="どのバージョンのdocker-compose.yamlをダウンロードしますか？"
+  ["DOCKER_CPU"]="docker-compose.yaml (CPUバージョン)"
+  ["DOCKER_GPU"]="docker-compose-gpu.yaml (GPUバージョン)"
+  ["NO_DOWNLOAD"]="YAMLファイルは既に存在しているため、ダウンロードの必要はありません"
+  ["ENTER_CHOICE"]="選択肢を入力してください: "
+  ["INVALID_CHOICE"]="無効な選択です。1、2、または3を入力してください。"
+  ["DOWNLOAD_CONFIG"]="まもなく設定ファイルをダウンロードします..."
+  ["PULL_IMAGE"]="イメージのプルを開始しますか？はいの場合は1を、いいえの場合は2を入力してください"
+  ["DOWNLOAD_DICT"]="pyopenjtalk辞書ファイルをダウンロードしますか？はいの場合は1を、いいえの場合は2を入力してください"
+  ["MUST_DOWNLOAD_JP"]="日本語モデルをダウンロードする必要があります。"
+  ["DOWNLOAD_VITS_CHINESE"]="vits_chinese用のbertモデルをダウンロードしますか？はいの場合は1を、いいえの場合は2を入力してください。"
+  ["MUST_DOWNLOAD_VITS_CHINESE"]="vits_chineseを使用するには、これらのモデルをダウンロードする必要があり、約410MBの容量が必要です。"
+  ["DOWNLOAD_BERT_VITS2_1"]="chinese-roberta-wwm-ext-largeをダウンロードしますか？このモデルはフルバージョン用の中国語BERTモデルで、約1.21GBの容量を占めます。はいの場合は1を、いいえの場合は2を入力してください。"
+  ["DOWNLOAD_BERT_VITS2_2"]="bert-base-japanese-v3をダウンロードしますか？このモデルはバージョン2.0以前に使用される日本語BERTモデルで、約426MBの容量を占めます。はいの場合は1を、いいえの場合は2を入力してください。"
+  ["DOWNLOAD_BERT_VITS2_3"]="bert-large-japanese-v2をダウンロードしますか？はいの場合は1を、いいえの場合は2を入力してください。"
+  ["DOWNLOAD_BERT_VITS2_4"]="deberta-v2-large-japaneseをダウンロードしますか？このモデルはバージョン2.0以降に使用される日本語BERTモデルで、約1.38GBの容量を占めます。はいの場合は1を、いいえの場合は2を入力してください。"
+  ["DOWNLOAD_BERT_VITS2_5"]="deberta-v3-largeをダウンロードしますか？このモデルはバージョン2.0以降に使用される英語BERTモデルで、約835MBの容量を占めます。はいの場合は1を、いいえの場合は2を入力してください。"
+  ["MUST_DOWNLOAD_BERT_VITS2"]="Bert-VITS2を使用するには、これらのモデルをダウンロードする必要があり、約1.63GBの容量が必要です。"
+  ["DOWNLOADED"]="ファイルが正しくダウンロードされました。"
+  ["CORRUPTED"]="ファイルがダウンロードされていないか、ダウンロードが不完全である可能性があります。また、ファイルが破損している可能性もあります。"
+  ["INSTALL_COMPLETE"]="アップグレードまたはインストールが完了しました。"
+  ["CONFIG_DIR"]="設定ファイルのディレクトリは以下の通りです"
+  ["IMPORT_NOTICE"]="vitsモデルがインポートされていない場合、使用できません。設定ファイルのディレクトリでモデルをインポートしてください。"
+  ["RESTART_NOTICE"]="設定ファイルを変更した後、変更を反映させるためにdockerコンテナを再起動してください。"
+  ["ISSUE_NOTICE"]="何か質問がある場合は、イシューに投稿してください。"
+  ["GITHUB_LINK"]="https://github.com/Artrajz/vits-simple-api"
+  ["CONTAINERS_STARTING"]="コンテナが起動中です"
 )
 
 echo -e "${PLAIN}${GREEN}Choose a language/选择语言/言語: ${PLAIN}"
@@ -135,9 +135,9 @@ if [ "$choice_language" -eq 1 ]; then
     MESSAGES["$key"]="${EN_MESSAGES[$key]}"
   done
 elif [ "$choice_language" -eq 3 ]; then
-	for key in "${!JA_MESSAGES[@]}"; do
-		MESSAGES["$key"]="${JA_MESSAGES[$key]}"
-	done
+  for key in "${!JA_MESSAGES[@]}"; do
+    MESSAGES["$key"]="${JA_MESSAGES[$key]}"
+  done
 else
   for key in "${!ZH_MESSAGES[@]}"; do
     MESSAGES["$key"]="${ZH_MESSAGES[$key]}"
@@ -185,14 +185,7 @@ create_placeholder_files() {
   done
 }
 
-create_placeholder_files "config.yml" \
-  "bert_vits2/bert/bert-base-japanese-v3/pytorch_model.bin" \
-  "bert_vits2/bert/bert-large-japanese-v2/pytorch_model.bin" \
-  "bert_vits2/bert/chinese-roberta-wwm-ext-large/pytorch_model.bin" \
-  "bert_vits2/bert/deberta-v2-large-japanese/pytorch_model.bin" \
-  "bert_vits2/bert/deberta-v3-large/pytorch_model.bin" \
-  "bert_vits2/bert/deberta-v3-large/spm.model" \
-  "vits/bert/prosody_model.pt"
+create_placeholder_files "config.yaml"
 
 while true; do
   echo -e "${GREEN}${MESSAGES["CHOOSE_VERSION"]}${PLAIN}"
@@ -284,10 +277,10 @@ echo -e "${GREEN}${MESSAGES["MUST_DOWNLOAD_VITS_CHINESE"]}${PLAIN}"
 read -p "${MESSAGES["ENTER_CHOICE"]}" choice_download_vits_chinese
 
 if [ "$choice_download_vits_chinese" -eq 1 ]; then
-  mkdir -p vits/bert
+  mkdir -p data/bert/prosody_model
 
   EXPECTED_MD5="dea78034433141adc8002404aa1b3184"
-  FILE_PATH="vits/bert/prosody_model.pt"
+  FILE_PATH="data/bert/prosody_model/prosody_model.pt"
   echo -e "${MESSAGES["VERIFYING"]}$FILE_PATH"
   ACTUAL_MD5=$(md5sum $FILE_PATH | awk '{print $1}')
 
@@ -295,7 +288,7 @@ if [ "$choice_download_vits_chinese" -eq 1 ]; then
     echo "${MESSAGES["DOWNLOADED"]}"
   else
     echo "${MESSAGES["CORRUPTED"]}"
-    download_with_fallback vits/bert/prosody_model.pt \
+    download_with_fallback data/bert/prosody_model/prosody_model.pt \
       "https://huggingface.co/spaces/maxmax20160403/vits_chinese/resolve/main/bert/prosody_model.pt" \
       "https://hf-mirror.com/spaces/maxmax20160403/vits_chinese/resolve/main/bert/prosody_model.pt"
   fi
@@ -306,10 +299,10 @@ echo -e "${GREEN}${MESSAGES["DOWNLOAD_BERT_VITS2_1"]}${PLAIN}"
 read -p "${MESSAGES["ENTER_CHOICE"]}" choice_download_bert_vits2_1
 
 if [ "$choice_download_bert_vits2_1" -eq 1 ]; then
-  mkdir -p bert_vits2/bert/chinese-roberta-wwm-ext-large
+  mkdir -p data/bert/chinese-roberta-wwm-ext-large
 
   EXPECTED_MD5="15d7435868fef1bd4222ff7820149a2a"
-  FILE_PATH="bert_vits2/bert/chinese-roberta-wwm-ext-large/pytorch_model.bin"
+  FILE_PATH="data/bert/chinese-roberta-wwm-ext-large/pytorch_model.bin"
   echo -e "${MESSAGES["VERIFYING"]}$FILE_PATH"
   ACTUAL_MD5=$(md5sum $FILE_PATH | awk '{print $1}')
 
@@ -317,7 +310,7 @@ if [ "$choice_download_bert_vits2_1" -eq 1 ]; then
     echo "${MESSAGES["DOWNLOADED"]}"
   else
     echo ${MESSAGES["CORRUPTED"]}
-    download_with_fallback bert_vits2/bert/chinese-roberta-wwm-ext-large/pytorch_model.bin \
+    download_with_fallback data/bert/chinese-roberta-wwm-ext-large/pytorch_model.bin \
       "https://huggingface.co/hfl/chinese-roberta-wwm-ext-large/resolve/main/pytorch_model.bin" \
       "https://hf-mirror.com/hfl/chinese-roberta-wwm-ext-large/resolve/main/pytorch_model.bin"
   fi
@@ -327,10 +320,10 @@ echo -e "${GREEN}${MESSAGES["DOWNLOAD_BERT_VITS2_2"]}${PLAIN}"
 read -p "${MESSAGES["ENTER_CHOICE"]}" choice_download_bert_vits2_2
 
 if [ "$choice_download_bert_vits2_2" -eq 1 ]; then
-  mkdir -p bert_vits2/bert/bert-base-japanese-v3
+  mkdir -p data/bert/bert-base-japanese-v3
 
   EXPECTED_MD5="6d0f8f3503dae04df0711b6175ef0c8e"
-  FILE_PATH="bert_vits2/bert/bert-base-japanese-v3/pytorch_model.bin"
+  FILE_PATH="data/bert/bert-base-japanese-v3/pytorch_model.bin"
   echo -e "${MESSAGES["VERIFYING"]}$FILE_PATH"
   ACTUAL_MD5=$(md5sum $FILE_PATH | awk '{print $1}')
 
@@ -338,7 +331,7 @@ if [ "$choice_download_bert_vits2_2" -eq 1 ]; then
     echo "${MESSAGES["DOWNLOADED"]}"
   else
     echo ${MESSAGES["CORRUPTED"]}
-    download_with_fallback bert_vits2/bert/bert-base-japanese-v3/pytorch_model.bin \
+    download_with_fallback data/bert/bert-base-japanese-v3/pytorch_model.bin \
       "https://huggingface.co/cl-tohoku/bert-base-japanese-v3/resolve/main/pytorch_model.bin" \
       "https://hf-mirror.com/cl-tohoku/bert-base-japanese-v3/resolve/main/pytorch_model.bin"
   fi
@@ -349,10 +342,10 @@ echo -e "${GREEN}${MESSAGES["DOWNLOAD_BERT_VITS2_4"]}${PLAIN}"
 read -p "${MESSAGES["ENTER_CHOICE"]}" choice_download_bert_vits2_4
 
 if [ "$choice_download_bert_vits2_4" -eq 1 ]; then
-  mkdir -p bert_vits2/bert/deberta-v2-large-japanese
+  mkdir -p data/bert/deberta-v2-large-japanese
 
   EXPECTED_MD5="1AAB4BC5DA8B5354315378439AC5BFA7"
-  FILE_PATH="bert_vits2/bert/deberta-v2-large-japanese/pytorch_model.bin"
+  FILE_PATH="data/bert/deberta-v2-large-japanese/pytorch_model.bin"
   echo -e "${MESSAGES["VERIFYING"]}$FILE_PATH"
   ACTUAL_MD5=$(md5sum $FILE_PATH | awk '{print $1}')
 
@@ -360,7 +353,7 @@ if [ "$choice_download_bert_vits2_4" -eq 1 ]; then
     echo "${MESSAGES["DOWNLOADED"]}"
   else
     echo ${MESSAGES["CORRUPTED"]}
-    download_with_fallback bert_vits2/bert/deberta-v2-large-japanese/pytorch_model.bin \
+    download_with_fallback data/bert/deberta-v2-large-japanese/pytorch_model.bin \
       "https://huggingface.co/ku-nlp/deberta-v2-large-japanese/resolve/main/pytorch_model.bin" \
       "https://hf-mirror.com/ku-nlp/deberta-v2-large-japanese/resolve/main/pytorch_model.bin"
   fi
@@ -371,10 +364,10 @@ echo -e "${GREEN}${MESSAGES["DOWNLOAD_BERT_VITS2_5"]}${PLAIN}"
 read -p "${MESSAGES["ENTER_CHOICE"]}" choice_download_bert_vits2_5
 
 if [ "$choice_download_bert_vits2_5" -eq 1 ]; then
-  mkdir -p bert_vits2/bert/deberta-v3-large
+  mkdir -p data/bert/deberta-v3-large
 
   EXPECTED_MD5="917265658911F15661869FC4C06BB23C"
-  FILE_PATH="bert_vits2/bert/deberta-v3-large/pytorch_model.bin"
+  FILE_PATH="data/bert/deberta-v3-large/pytorch_model.bin"
   echo -e "${MESSAGES["VERIFYING"]}$FILE_PATH"
   ACTUAL_MD5=$(md5sum $FILE_PATH | awk '{print $1}')
 
@@ -382,13 +375,13 @@ if [ "$choice_download_bert_vits2_5" -eq 1 ]; then
     echo "${MESSAGES["DOWNLOADED"]}"
   else
     echo ${MESSAGES["CORRUPTED"]}
-    download_with_fallback bert_vits2/bert/deberta-v3-large/pytorch_model.bin \
+    download_with_fallback data/bert/deberta-v3-large/pytorch_model.bin \
       "https://huggingface.co/microsoft/deberta-v3-large/resolve/main/pytorch_model.bin" \
       "https://hf-mirror.com/microsoft/deberta-v3-large/resolve/main/pytorch_model.bin"
   fi
 
   EXPECTED_MD5="1613FCBF3B82999C187B09C9DB79B568"
-  FILE_PATH="bert_vits2/bert/deberta-v3-large/spm.model"
+  FILE_PATH="data/bert/deberta-v3-large/spm.model"
   echo -e "${MESSAGES["VERIFYING"]}$FILE_PATH"
   ACTUAL_MD5=$(md5sum $FILE_PATH | awk '{print $1}')
 
@@ -396,7 +389,7 @@ if [ "$choice_download_bert_vits2_5" -eq 1 ]; then
     echo "${MESSAGES["DOWNLOADED"]}"
   else
     echo ${MESSAGES["CORRUPTED"]}
-    download_with_fallback bert_vits2/bert/deberta-v3-large/spm.model \
+    download_with_fallback data/bert/deberta-v3-large/spm.model \
       "https://huggingface.co/microsoft/deberta-v3-large/resolve/main/spm.model" \
       "https://hf-mirror.com/microsoft/deberta-v3-large/resolve/main/spm.model"
   fi

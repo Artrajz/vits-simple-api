@@ -1,3 +1,11 @@
+"""
+在首次启动自动生成config.yaml文件后，对配置进行修改时，应该直接在config.yaml文件中进行，而不是在config.py文件中修改。
+
+初回の起動後にconfig.yamlが自動生成された場合、設定の変更はconfig.pyではなくconfig.yamlで行うべきです。
+
+After the initial launch that automatically generates the config.yaml file, any modifications to the configuration should be made directly in the config.yaml file, not in the config.py file.
+"""
+
 import copy
 import logging
 import os
@@ -21,31 +29,22 @@ ABS_PATH = os.path.dirname(os.path.realpath(__file__))
 # WTForms CSRF
 SECRET_KEY = secrets.token_hex(16)
 
-# Fill in the models path here
+"""
+模型存放在data/models文件夹下，每个文件夹包含一个模型文件和一个配置文件。请按照以下格式填写路径信息：
+{"model_path": "文件夹名/模型文件.pth", "config_path": "文件夹名/config.json"},
+注意：只有当auto_load（自动加载模型）为False时才有效。当auto_load为True（默认值）时，
+此处填写的模型路径具有最高优先级，将在每次启动时加载。如非必要，请尽量在config.yaml填写模型路径。
+
+Models are stored in the data/models folder, with each folder containing a model file and a configuration file. 
+Please fill in the paths following the format: {"model_path": "folder_name/model_file.pth", "config_path": "folder_name/config.json"},
+Note: This is effective only when auto_load (automatic model loading) is set to False. When auto_load is True (default),
+the model paths specified here have the highest priority and will be loaded each time the program starts. If not necessary, 
+it's recommended to specify model paths in config.yaml.
+"""
+
 model_list = [
-    # VITS
-    # {"model_path": "g/G_953000.pth", "config_path": "g/config.json"},
-    # HuBert-VITS (Need to configure HUBERT_SOFT_MODEL)
-    # {"model_path": "louise/360_epochs.pth", "config_path": "louise/config.json"},
-    # W2V2-VITS (Need to configure DIMENSIONAL_EMOTION_NPY)
-    # {"model_path": "w2v2-vits/1026_epochs.pth", "config_path": "w2v2-vits/1026_epochs.pth"},
-    # Bert-VITS2
-    # {"model_path": "bert_vits2/G_9000.pth", "config_path": "bert_vits2/config.json"},
+    # {"model_path": "model_name/G_9000.pth", "config_path": "model_name/config.json"},
 ]
-
-
-# # torch.device
-# def represent_torch_device(dumper, device_obj):
-#     return dumper.represent_scalar('!torch.device', str(device_obj))
-# 
-# 
-# def construct_torch_device(loader, node):
-#     device_str = loader.construct_scalar(node)
-#     return torch.device(device_str)
-# 
-# 
-# yaml.add_representer(torch.device, represent_torch_device, Dumper=yaml.SafeDumper)
-# yaml.add_constructor('!torch.device', construct_torch_device, Loader=yaml.SafeLoader)
 
 
 @dataclass
@@ -143,6 +142,8 @@ class BertVits2Config(AsDictMixin):
     style_text: str = "Happy"
     style_weight: float = 0.7
     use_streaming: bool = False
+    fp16_run: bool = False
+    int8_run: bool = False
 
 
 @dataclass
@@ -173,8 +174,12 @@ class TTSModelConfig(AsDictMixin):
 
 @dataclass
 class TTSConfig(AsDictMixin):
+    # Directory name for models under the data folder
     models_path: str = "models"
+    # List to store configurations of Text-to-Speech models
     models: List[TTSModelConfig] = field(default_factory=list)
+    # If set to True (default), models under the specified models_path will be automatically loaded.
+    # When set to False, you can manually specify the models to load.
     auto_load: bool = True
 
     def asdict(self):
@@ -206,7 +211,8 @@ class TTSConfig(AsDictMixin):
                     elif field_type == torch.device:
                         new_value = torch.device(new_value)
                     elif field_type == List[TTSModelConfig]:
-                        new_value = [TTSModelConfig(model.get("model_path"), model.get("config_path")) for model in new_value]
+                        new_value = [TTSModelConfig(model.get("model_path"), model.get("config_path")) for model in
+                                     new_value]
 
                     setattr(self, field_name, new_value)
 
@@ -311,9 +317,10 @@ class Config(AsDictMixin):
     def load_config():
         logging.getLogger().setLevel(logging.INFO)
         config_path = os.path.join(Config.abs_path, "config.yaml")
-        if not os.path.exists(config_path):
+        if not os.path.exists(config_path) or not os.path.isfile(config_path):
             logging.info("config.yaml not found. Generating a new config.yaml based on config.py.")
             config = Config()
+
             # 初始化管理员账号密码
             logging.info(
                 f"New admin user created:\n"
@@ -323,16 +330,28 @@ class Config(AsDictMixin):
                 f"{'-' * 40}\n"
                 f"Please do not share this information.")
             Config.save_config(config)
+
             return config
         else:
             try:
                 logging.info("Loading config...")
                 with open(config_path, 'r') as f:
                     loaded_config = yaml.safe_load(f)
-                    config = Config()
+                config = Config()
+
+                if loaded_config is not None:
                     config.update_config(loaded_config)
                     logging.info("Loading config success!")
-                    return config
+                else:
+                    logging.info("config.yaml is empty, initializing config.yaml...")
+
+                # Load default models from config.py.
+                config.update_config(model_list)
+
+                # If parameters are incomplete, they will be automatically filled in upon saving.
+                Config.save_config(config)
+                
+                return config
             except Exception as e:
                 ValueError(e)
 
