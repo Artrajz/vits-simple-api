@@ -9,7 +9,7 @@ def get_bert_feature(text, word2ph, tokenizer, model, device=config.system.devic
         for i in inputs:
             inputs[i] = inputs[i].to(device)
         res = model(**inputs, output_hidden_states=True)
-        res = torch.cat(res["hidden_states"][-3:-2], -1)[0].cpu()
+        res = torch.cat(res["hidden_states"][-3:-2], -1)[0].float().cpu()
     # assert len(word2ph) == len(text)+2
     word2phone = word2ph
     phone_level_feature = []

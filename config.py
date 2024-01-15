@@ -142,8 +142,8 @@ class BertVits2Config(AsDictMixin):
     style_text: str = "Happy"
     style_weight: float = 0.7
     use_streaming: bool = False
-    fp16_run: bool = False
-    int8_run: bool = False
+    # Can be set to "float16"/"fp16" or "int8".
+    torch_data_type:str = ""
 
 
 @dataclass

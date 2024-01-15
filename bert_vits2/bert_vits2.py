@@ -106,7 +106,7 @@ class Bert_VITS2:
             self.lang = ["zh"]
             self.num_tones = num_tones
             self.zh_bert_extra = True
-            self.bert_model_names.update({"zh": "Erlangshen-MegatronBert-1.3B-Chinese"})
+            self.bert_model_names.update({"zh": "Erlangshen_MegatronBert_1.3B_Chinese"})
             self.bert_extra_str_map.update({"zh": "_extra"})
         else:
             logging.debug("Version information not found. Loaded as the newest version: v2.3.")

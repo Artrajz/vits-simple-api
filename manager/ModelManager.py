@@ -95,7 +95,7 @@ class ModelManager(Subject):
         if os.path.isfile(config.model_config.dimensional_emotion_model):
             if self.dimensional_emotion_model is None:
                 self.dimensional_emotion_model = self.load_dimensional_emotion_model(
-                    config.model_list.dimensional_emotion_model)
+                    config.model_config.dimensional_emotion_model)
 
         self.log_device_info()
 
