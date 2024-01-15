@@ -1,3 +1,4 @@
+import copy
 import logging
 import os
 import secrets
@@ -65,20 +66,28 @@ class AsDictMixin:
                 new_value = new_config_dict[field_name]
 
                 if is_dataclass(field_type):
-                    nested_config = getattr(self, field_name)
-                    nested_config.update_config(new_value)
-                elif field_type == bool:
-                    new_value = bool(new_value)
-                elif field_type == int:
-                    new_value = int(new_value)
-                elif field_type == float:
-                    new_value = float(new_value)
-                elif field_type == str:
-                    new_value = str(new_value)
-                elif field_type == torch.device:
-                    new_value = torch.device(new_value)
+                    if isinstance(new_value, list):
+                        # If the field type is a dataclass and the new value is a list
+                        # Convert each element of the list to the corresponding class object
+                        new_value = [field_type(**item) for item in new_value]
+                        setattr(self, field_name, new_value)
+                    else:
+                        # If the field type is a dataclass but not a list, recursively update the dataclass
+                        nested_config = getattr(self, field_name)
+                        nested_config.update_config(new_value)
+                else:
+                    if field_type == bool:
+                        new_value = str(new_value).lower() == "true"
+                    elif field_type == int:
+                        new_value = int(new_value)
+                    elif field_type == float:
+                        new_value = float(new_value)
+                    elif field_type == str:
+                        new_value = str(new_value)
+                    elif field_type == torch.device:
+                        new_value = torch.device(new_value)
 
-                setattr(self, field_name, new_value)
+                    setattr(self, field_name, new_value)
 
 
 @dataclass
@@ -93,6 +102,7 @@ class VitsConfig(AsDictMixin):
     noisew: float = 0.4
     # Batch processing threshold. Text will not be processed in batches if segment_size<=0
     segment_size: int = 50
+    use_streaming: bool = False
 
 
 @dataclass
@@ -129,8 +139,10 @@ class BertVits2Config(AsDictMixin):
     segment_size: int = 50
     sdp_ratio: float = 0.2
     emotion: int = 0
-    text_prompy: str = "Happy"
+    text_prompt: str = "Happy"
+    style_text: str = "Happy"
     style_weight: float = 0.7
+    use_streaming: bool = False
 
 
 @dataclass
@@ -161,7 +173,42 @@ class TTSModelConfig(AsDictMixin):
 
 @dataclass
 class TTSConfig(AsDictMixin):
+    models_path: str = "models"
     models: List[TTSModelConfig] = field(default_factory=list)
+    auto_load: bool = True
+
+    def asdict(self):
+        config_copy = copy.deepcopy(self)
+        config_copy.models = [[tts_model.model_path, tts_model.config_path] for tts_model in self.models]
+        data = asdict(config_copy)
+        return data
+
+    def update_config(self, new_config_dict):
+        for field in fields(self):
+            field_name = field.name
+            field_type = field.type
+
+            if field_name in new_config_dict:
+                new_value = new_config_dict[field_name]
+
+                if is_dataclass(field_type):
+                    nested_config = getattr(self, field_name)
+                    nested_config.update_config(new_value)
+                else:
+                    if field_type == bool:
+                        new_value = str(new_value).lower() == "true"
+                    elif field_type == int:
+                        new_value = int(new_value)
+                    elif field_type == float:
+                        new_value = float(new_value)
+                    elif field_type == str:
+                        new_value = str(new_value)
+                    elif field_type == torch.device:
+                        new_value = torch.device(new_value)
+                    elif field_type == List[TTSModelConfig]:
+                        new_value = [TTSModelConfig(model.get("model_path"), model.get("config_path")) for model in new_value]
+
+                    setattr(self, field_name, new_value)
 
 
 @dataclass
@@ -202,6 +249,10 @@ class System(AsDictMixin):
     admin_route: str = '/admin'
     # Path to the 'data' folder, where various models are stored
     data_path: str = "data"
+
+    def asdict(self):
+        self.models = [[tts_model.model_path, tts_model.config_path] for tts_model in self.models]
+        return asdict(self)
 
 
 @dataclass
@@ -292,29 +343,3 @@ class Config(AsDictMixin):
             yaml.safe_dump(config.asdict(), f, default_style=None)
         shutil.move(temp_filename, os.path.join(Config.abs_path, "config.yaml"))
         logging.info(f"Config is saved.")
-
-    def update_config(self, new_config_dict):
-        for field in fields(self):
-            field_name = field.name
-            field_type = field.type
-
-            if field_name in new_config_dict:
-                new_value = new_config_dict[field_name]
-
-                if is_dataclass(field_type):
-                    nested_config = getattr(self, field_name)
-                    nested_config.update_config(new_value)
-                else:
-                    if field_type == bool:
-                        new_value = bool(new_value)
-                    elif field_type == int:
-                        new_value = int(new_value)
-                    elif field_type == float:
-                        new_value = float(new_value)
-                    elif field_type == str:
-                        new_value = str(new_value)
-                    elif field_type == torch.device:
-                        new_value = torch.device(new_value)
-
-                    setattr(self, field_name, new_value)
-

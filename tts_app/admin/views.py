@@ -41,9 +41,7 @@ def load_model():
 
     model_path = request_data.get("model_path")
     config_path = request_data.get("config_path")
-    logging.info(f"Loading model\n"
-                 f"model_path: {model_path}\n"
-                 f"config_path: {config_path}")
+    logging.info(f"Loading model model_path: {model_path} config_path: {config_path}")
     state = model_manager.load_model(model_path, config_path)
     if state:
         status = "success"
@@ -85,7 +83,7 @@ def unload_model():
 @admin.route('/get_path', methods=["GET", "POST"])
 @login_required
 def get_path():
-    return model_manager.scan_path()
+    return model_manager.scan_unload_path()
 
 
 @admin.route('/get_config', methods=["GET", "POST"])
@@ -126,9 +124,10 @@ def set_config():
 def save_current_model():
     try:
         models_path = model_manager.get_models_path()
-        model_list = {"model_list": models_path}
-        # global_config["model_config"].update(model_list)
-        # config_manager.save_yaml_config(global_config)
+        models = {"models": models_path}
+
+        config.update_config({"tts_config": models})
+        config.save_config(config)
 
         status = "success"
         response_code = 200
@@ -136,4 +135,5 @@ def save_current_model():
         status = "failed"
         response_code = 500
         logging.info(e)
+
     return make_response(jsonify({"status": status}), response_code)

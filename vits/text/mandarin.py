@@ -1,4 +1,4 @@
-import  config
+from contants import config
 import re
 from pypinyin import lazy_pinyin, BOPOMOFO
 import jieba

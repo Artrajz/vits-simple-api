@@ -8,7 +8,7 @@ from transformers import BertModel, BertConfig, BertTokenizer
 try:
     from contants import config
 except:
-    import config
+    from contants import config
 
 class CharEmbedding(nn.Module):
     def __init__(self, model_dir):

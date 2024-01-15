@@ -7,7 +7,7 @@ try:
     from utils.config_manager import global_config as config
     ESPEAK_LIBRARY = getattr(config, "ESPEAK_LIBRARY", "")
 except:
-    import config
+    from contants import config
     ESPEAK_LIBRARY = getattr(config, "ESPEAK_LIBRARY", "")
 if ESPEAK_LIBRARY != "":
     EspeakWrapper.set_library(ESPEAK_LIBRARY)

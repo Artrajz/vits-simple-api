@@ -12,7 +12,6 @@ from tts_app.voice_api.views import voice_api
 from tts_app.auth.views import auth
 from tts_app.admin.views import admin
 
-# from utils.config_manager import global_config
 from contants import config
 
 app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), 'tts_app', 'templates'),

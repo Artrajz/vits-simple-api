@@ -230,7 +230,7 @@ class TTSManager(Observer):
 
     def vits_infer(self, state, encode=True):
         model = self.get_model(ModelType.VITS, state["id"])
-        if config["DYNAMIC_LOADING"]:
+        if config.vits_config.dynamic_loading:
             model.load_model()
         state["id"] = self.get_real_id(ModelType.VITS, state["id"])  # Change to real id
         # 去除所有多余的空白字符
@@ -253,7 +253,7 @@ class TTSManager(Observer):
                 audios.append(brk)
 
         audio = np.concatenate(audios, axis=0)
-        if config["DYNAMIC_LOADING"]:
+        if config.vits_config.dynamic_loading:
             model.release_model()
         return self.encode(sampling_rate, audio, state["format"]) if encode else audio
 
