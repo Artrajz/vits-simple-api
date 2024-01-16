@@ -348,6 +348,12 @@ function showModelContentBasedOnStatus() {
     }
 }
 
+function updatePlaceholders(config, page) {
+    for (var key in config) {
+        $("#input_" + key + page).attr("placeholder", config[key]);
+    }
+}
+
 function setDefaultParameter() {
     $.ajax({
         url: "/voice/default_parameter",
@@ -355,11 +361,9 @@ function setDefaultParameter() {
         responseType: 'json',
         success: function (response) {
             default_parameter = response;
-            for (var key in default_parameter) {
-                if (default_parameter.hasOwnProperty(key)) {
-                    $(".input_" + key).attr("placeholder", default_parameter[key]);
-                }
-            }
+            updatePlaceholders(default_parameter.vits_config, 1);
+            updatePlaceholders(default_parameter.w2v2_vits_config, 2);
+            updatePlaceholders(default_parameter.bert_vits2_config, 3);
         },
         error: function (error) {
         }
