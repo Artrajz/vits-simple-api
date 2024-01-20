@@ -8,124 +8,138 @@
 {% block content %}
     <div class="setting-content flex-column flex-grow-1">
         <div class="configuration flex-column flex-grow-1">
-            <label for="" class="form-label">默认参数配置</label>
-            <div class="flex" id="default-parameter">
-                <div class="input-group mb-3 item">
-                    <span class="input-group-text">format</span>
-                    <input type="text" class="form-control" id="format">
-                </div>
-                <div class="input-group mb-3 item">
-                    <span class="input-group-text">id</span>
-                    <input type="text" class="form-control" id="id">
-                </div>
-                <div class="input-group mb-3 item">
-                    <span class="input-group-text">lang</span>
-                    <input type="text" class="form-control" id="lang">
-                </div>
-                <div class="input-group mb-3 item">
-                    <span class="input-group-text">length</span>
-                    <input type="text" class="form-control" id="length">
-                </div>
-                <div class="input-group mb-3 item">
-                    <span class="input-group-text">segment_size</span>
-                    <input type="text" class="form-control" id="segment_size">
-                </div>
-                <div class="input-group mb-3 item">
-                    <span class="input-group-text">noise</span>
-                    <input type="text" class="form-control" id="noise">
-                </div>
-                <div class="input-group mb-3 item">
-                    <span class="input-group-text">noisew</span>
-                    <input type="text" class="form-control" id="noisew">
-                </div>
-                <div class="input-group mb-3 item">
-                    <span class="input-group-text">sdp_ratio</span>
-                    <input type="text" class="form-control" id="sdp_ratio">
-                </div>
-                <div class="input-group mb-3 item">
-                    <span class="input-group-text">length_zh</span>
-                    <input type="text" class="form-control" id="length_zh">
-                </div>
-                <div class="input-group mb-3 item">
-                    <span class="input-group-text">length_ja</span>
-                    <input type="text" class="form-control" id="length_ja">
-                </div>
-                <div class="input-group mb-3 item">
-                    <span class="input-group-text">length_en</span>
-                    <input type="text" class="form-control" id="length_en">
+            <div class="config-wrapper">
+                <label for="" class="form-label title">vits_config</label>
+                <div class="flex flex-wrap" id="vits-config"></div>
+            </div>
+
+            <div class="config-wrapper">
+                <label for="" class="form-label title">w2v2_vits_config</label>
+                <div class="flex flex-wrap" id="w2v2-vits-config"></div>
+            </div>
+
+            <div class="config-wrapper">
+                <label for="" class="form-label title">hubert_vits_config</label>
+                <div class="flex flex-wrap" id="hubert-vits-config"></div>
+            </div>
+
+            <div class="config-wrapper">
+                <label for="" class="form-label title">bert_vits2_config</label>
+                <div class="flex flex-wrap" id="bert-vits2-config"></div>
+            </div>
+
+            <div class="config-wrapper">
+                <label for="" class="form-label title">log_config</label>
+                <div class="" id="log-config">
+                    <div class="input-group mb-3 item">
+                        <span class="input-group-text">logging_level</span>
+                        <select class="form-select" id="logging-level">
+                            <option value="DEBUG">DEBUG</option>
+                            <option value="INFO">INFO</option>
+                            <option value="WARNING">WARNING</option>
+                            <option value="ERROR">ERROR</option>
+                            <option value="CRITICAL">CRITICAL</option>
+                        </select>
+                    </div>
+
                 </div>
             </div>
 
-            <label for="" class="form-label">默认模型配置</label>
-            <div class="model-config flex-column">
-                <div class="input-group mb-3 item">
-                    <span class="input-group-text">dimensional_emotion_npy</span>
-                    <input type="text" class="form-control" id="dimensional_emotion_npy">
-                </div>
-                <div class="input-group mb-3 item">
-                    <span class="input-group-text">hubert_soft_model</span>
-                    <input type="text" class="form-control" id="hubert_soft_model">
-                </div>
-                {#                <label for="" class="form-label">默认模型列表</label>#}
-                {#                <div id="addModelRow">添加默认模型</div>#}
-                {#                <div class="model-list">#}
-                {#                </div>#}
+            <div class="config-wrapper">
+                <label for="" class="form-label title">model_config</label>
+                <div class="" id="model-config"></div>
             </div>
 
-            <label for="" class="form-label">日志配置</label>
-            <div class="" id="others">
-                <div class="input-group mb-3 item">
-                    <span class="input-group-text">日志级别</span>
-                    <input type="text" class="form-control" id="logging-level">
-                </div>
-                <div class="input-group mb-3 item">
-                    <span class="input-group-text">保存日志数量</span>
-                    <input type="text" class="form-control" id="log-backupcount">
-                </div>
-                <div class="input-group mb-3 item">
-                    <span class="input-group-text">日志路径</span>
-                    <input type="text" class="form-control" id="logs-path">
-                </div>
-
-            </div>
-
-            <label for="" class="form-label">语种识别</label>
-            <div class="" id="others">
-                <div class="input-group mb-3 item">
-                    <span class="input-group-text">语种识别库</span>
-                    <select class="form-select" id="lang-lib">
-                        <option value="langid">langid</option>
-                        <option value="fastlid">fastlid</option>
-                    </select>
-                </div>
-                <div class="input-group mb-3 item">
-                    <span class="input-group-text">espeak-ng路径（选填）</span>
-                    <input type="text" class="form-control" id="espeak-ng">
-                </div>
-                <div class="input-group mb-3 item">
-                    <span class="input-group-text">语种识别范围（示例['zh','ja','en']）</span>
-                    <input type="text" class="form-control" id="detect">
+            <div class="config-wrapper">
+                <label for="" class="form-label title">language_identification</label>
+                <div class="" id="language-identification">
+                    <div class="input-group mb-3 item">
+                        <span class="input-group-text">language_identification_library</span>
+                        <select class="form-select" id="language-identification-library">
+                            <option value="langid">langid</option>
+                            <option value="fastlid">fastlid</option>
+                        </select>
+                    </div>
+                    <div class="input-group mb-3 item">
+                        <span class="input-group-text">espeak_library</span>
+                        <input type="text" class="form-control" id="espeak-library">
+                    </div>
+                    <div class="input-group mb-3 item">
+                        <span class="input-group-text">language_automatic_detect (e.g., ['zh','ja','en'])</span>
+                        <input type="text" class="form-control" id="language-automatic-detect">
+                    </div>
                 </div>
             </div>
 
-            {#            <label for="" class="form-label">其他配置</label>#}
-            {#            <div class="" id="others">#}
-            {#                #}
-            {##}
-            {#            </div>#}
+            <div class="config-wrapper">
+                <label for="" class="form-label title">system</label>
+                <div class="" id="system">
+                    <div class="input-group mb-3 item">
+                        <span class="input-group-text">admin_route</span>
+                        <input type="text" class="form-control" id="admin-route">
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="api-key-enable">
+                        <label class="form-check-label" for="flexSwitchCheckDefault">api_key_enabled</label>
+                    </div>
+                    <div class="input-group mb-3 item">
+                        <span class="input-group-text">api_key</span>
+                        <input type="text" class="form-control" type="text" id="api-key">
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="cache-audio">
+                        <label class="form-check-label" for="flexSwitchCheckDefault">cache_audio</label>
+                    </div>
+                    <div class="input-group mb-3 item">
+                        <span class="input-group-text">cache_path</span>
+                        <input type="text" class="form-control" id="cache-path">
+                    </div>
+                    <div class="input-group mb-3 item">
+                        <span class="input-group-text">clean_interval_seconds</span>
+                        <input type="text" class="form-control" id="clean-interval-seconds">
+                    </div>
+                    <div class="input-group mb-3 item">
+                        <span class="input-group-text">data_path</span>
+                        <input type="text" class="form-control" id="data-path">
+                    </div>
+                    <div class="input-group mb-3 item">
+                        <span class="input-group-text">device</span>
+                        <input type="text" class="form-control" id="device">
+                    </div>
+                    <div class="input-group mb-3 item">
+                        <span class="input-group-text">is_admin_enabled</span>
+                        <input type="text" class="form-control" id="is-admin-enabled">
+                    </div>
+                    <div class="input-group mb-3 item">
+                        <span class="input-group-text">upload_folder</span>
+                        <input type="text" class="form-control" id="upload-folder">
+                    </div>
 
-            <label for="">安全</label>
-            <div id="security">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" role="switch" id="api-key-enable">
-                    <label class="form-check-label" for="flexSwitchCheckDefault">是否开启api-key验证</label>
                 </div>
-                <div class="input-group mb-3 item">
-                    <span class="input-group-text">api-key</span>
-                    <input type="text" class="form-control" type="text" id="api-key">
+            </div>
+
+            <div class="config-wrapper">
+                <label for="" class="form-label title">http_service</label>
+                <div class="" id="http-service">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="debug">
+                        <label class="form-check-label" for="flexSwitchCheckDefault">debug</label>
+                    </div>
+                    <div class="input-group mb-3 item">
+                        <span class="input-group-text">host</span>
+                        <input class="form-control" type="text" id="host">
+                    </div>
+                    <div class="input-group mb-3 item">
+                        <span class="input-group-text">port</span>
+                        <input class="form-control" type="password" id="port">
+                    </div>
+
                 </div>
-                <label for="">管理员后台账号密码</label>
-                <div id="admin">
+            </div>
+
+            <div class="config-wrapper">
+                <label for="" class="form-label title">admin</label>
+                <div class="" id="admin">
                     <div class="input-group mb-3 item">
                         <span class="input-group-text">username</span>
                         <input type="text" class="form-control" type="text" id="username">
@@ -136,12 +150,9 @@
                     </div>
 
                 </div>
-
-
-                </input>
-
             </div>
-            <div class="config-save">全部保存</div>
+
+            <div class="config-save">save</div>
         </div>
     </div>
 {% endblock %}

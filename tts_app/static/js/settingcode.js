@@ -17,110 +17,131 @@ $(document).ready(function () {
         $(".config-save").click(function () {
             set_config();
         });
-        $("#addModelRow").click(function () {
-            var newRow = $('<div class="input-group mb-3 item"></div>');
-            var inputGroupText1 = $('<span class="input-group-text"></span>').text("模型路径");
-            var inputGroupText2 = $('<span class="input-group-text"></span>').text("配置路径");
-            var input1 = $('<input type="text" class="form-control model-path">').attr("placeholder", "模型路径");
-            var input2 = $('<input type="text" class="form-control config-path">').attr("placeholder", "配置路径");
-
-            inputGroupText1.appendTo(newRow);
-            input1.appendTo(newRow);
-            inputGroupText2.appendTo(newRow);
-            input2.appendTo(newRow);
-            newRow.appendTo(".model-list");
-        });
     }
 );
 
 function show_config(configData) {
-    $.each(configData.default_parameter, function (key, value) {
-        $('#' + key).val(value);
+    $.each(configData.vits_config, function (key, value) {
+        var formattedKey = key.replace(/_/g, '-');
+        //为了避免id冲突，组合key作为id
+        var itemId = 'vits-config-' + formattedKey;
+        $('#vits-config').append(`
+        <div class="input-group mb-3 item">
+            <span class="input-group-text">${key}</span>
+            <input type="text" class="form-control" id="${itemId}" value="${value}">
+        </div>
+        `);
     })
+
+    $.each(configData.w2v2_vits_config, function (key, value) {
+        var formattedKey = key.replace(/_/g, '-');
+        var itemId = 'w2v2-vits-config-' + formattedKey;
+        $('#w2v2-vits-config').append(`
+        <div class="input-group mb-3 item">
+            <span class="input-group-text">${key}</span>
+            <input type="text" class="form-control" id="${itemId}" value="${value}">
+        </div>
+        `);
+    })
+
+    $.each(configData.hubert_vits_config, function (key, value) {
+        var formattedKey = key.replace(/_/g, '-');
+        var itemId = 'hubert-vits-config-' + formattedKey;
+        $('#hubert-vits-config').append(`
+        <div class="input-group mb-3 item">
+            <span class="input-group-text">${key}</span>
+            <input type="text" class="form-control" id="${itemId}" value="${value}">
+        </div>
+        `);
+    })
+
+    $.each(configData.bert_vits2_config, function (key, value) {
+        var formattedKey = key.replace(/_/g, '-');
+        var itemId = 'bert-vits2-config-' + formattedKey;
+        $('#bert-vits2-config').append(`
+        <div class="input-group mb-3 item">
+            <span class="input-group-text">${key}</span>
+            <input type="text" class="form-control" id="${itemId}" value="${value}">
+        </div>
+        `);
+    })
+
+    $.each(configData.log_config, function (key, value) {
+        var formattedKey = key.replace(/_/g, '-');
+
+        if (key != 'logging_level') {
+            $('#log-config').append(`
+            <div class="input-group mb-3 item">
+                <span class="input-group-text">${key}</span>
+                <input type="text" class="form-control" id="${formattedKey}" value="${value}">
+            </div>
+            `);
+        }
+
+    });
 
     $.each(configData.model_config, function (key, value) {
-        if (key != 'model_list') {
-            $('#' + key).val(value);
+        var formattedKey = key.replace(/_/g, '-');
+
+        $('#model-config').append(`
+        <div class="input-group mb-3 item">
+            <span class="input-group-text">${key}</span>
+            <input type="text" class="form-control" id="${formattedKey}" value="${value}">
+        </div>
+        `);
+    });
+
+    $.each(configData.language_identification, function (key, value) {
+        var formattedKey = key.replace(/_/g, '-');
+        $('#language-identification ' + '#' + formattedKey).val(value)
+    });
+
+    $.each(configData.http_service, function (key, value) {
+        var formattedKey = key.replace(/_/g, '-');
+        if (formattedKey == 'api-key-enable' || formattedKey == 'debug') {
+            $('#' + formattedKey).prop('checked', value);
         } else {
-            $.each(value, function (index, element) {
-                var newRow = $('<div class="input-group mb-3 item"></div>');
-                var inputGroupText1 = $('<span class="input-group-text"></span>').text("模型路径");
-                var inputGroupText2 = $('<span class="input-group-text"></span>').text("配置路径");
-                var input1 = $('<input type="text" class="form-control model-path">').attr("placeholder", "模型路径").val(element[0]);
-                var input2 = $('<input type="text" class="form-control config-path">').attr("placeholder", "配置路径").val(element[1]);
-                inputGroupText1.appendTo(newRow);
-                input1.appendTo(newRow);
-                inputGroupText2.appendTo(newRow);
-                input2.appendTo(newRow);
-                newRow.appendTo(".model-list");
-            })
-
+            $('#' + formattedKey).val(value);
         }
-    })
-    // console.log(configData.LANGUAGE_IDENTIFICATION_LIBRARY)
-    $('#lang-lib').val(configData.LANGUAGE_IDENTIFICATION_LIBRARY);
-    $('#espeak-ng').val(configData.ESPEAK_LIBRARY);
-    $('#detect').val(configData.LANGUAGE_AUTOMATIC_DETECT);
+    });
 
-    $('#logging-level').val(configData.LOGGING_LEVEL);
-    $('#log-backupcount').val(configData.LOGS_BACKUPCOUNT);
-    $('#logs-path').val(configData.LOGS_PATH);
-
-    $('#api-key').val(configData.API_KEY);
-    $('#api-key-enable').prop('checked', configData.API_KEY_ENABLED);
-    $.each(configData.users.admin, function (key, value) {
-        if (key == "admin") {
-            $('#username').val(value.username);
-            $('#password').val(value.password);
-            $('#password').prop('type', 'password');
+    $.each(configData.system, function (key, value) {
+        var formattedKey = key.replace(/_/g, '-');
+        if (formattedKey == 'api-key-enable' || formattedKey == 'cache-audio') {
+            $('#' + formattedKey).prop('checked', value);
+        } else {
+            $('#' + formattedKey).val(value);
         }
+    });
 
-    })
+    $.each(configData.admin, function (key, value) {
+        $('#' + key).val(value);
+    });
 
 
 }
 
 function set_config() {
-    var configData = {
-        API_KEY: $('#api-key').val(),
-        API_KEY_ENABLED: $('#api-key-enable').prop('checked'),
-        default_parameter: {
-            format: $('#format').val(),
-            id: $('#id').val(),
-            lang: $('#lang').val(),
-            length: $('#length').val(),
-            segment_size: $('#segment_size').val(),
-            noise: $('#noise').val(),
-            noisew: $('#noisew').val(),
-            sdp_ratio: $('#sdp_ratio').val(),
-            length_zh: $('#length_zh').val(),
-            length_ja: $('#length_ja').val(),
-            length_en: $('#length_en').val()
-        },
-        model_config: {
-            dimensional_emotion_npy: $('#dimensional_emotion_npy').val(),
-            hubert_soft_model: $('#hubert_soft_model').val(),
-        },
-        LANGUAGE_IDENTIFICATION_LIBRARY: $('#lang-lib').val(),
-        ESPEAK_LIBRARY: $('#espeak-ng').val(),
-        LOGGING_LEVEL: $('#logging-level').val(),
-        LOGS_BACKUPCOUNT: $('#log-backupcount').val(),
-        LOGS_PATH: $('#logs-path').val(),
-        LANGUAGE_AUTOMATIC_DETECT: $('#detect').val(),
-        users: {admin: {admin: {id: 1, username: $('#username').val(), password: $('#password').val()}}}
+    var configData = {}
 
-    }
+    $('.configuration .form-label').each(function () {
+        var labelId = $(this).next().attr('id');
+        var nestedDict = {};
 
-    var modelListData = [];
-    $(".model-list .item").each(function () {
-        var modelPath = $(this).find(".model-path").val();
-        var configPath = $(this).find(".config-path").val();
-        if (modelPath || configPath) {
-            modelListData.push([modelPath, configPath]);
-        }
-    })
-    configData.model_config.model_list = modelListData;
 
+        $('#' + labelId).find('.item').each(function () {
+            var itemId = $(this).find('input, select').attr('id').replace(/-/g, '_');
+
+            if (labelId == 'vits-config' || labelId == 'w2v2-vits-config' || labelId == 'hubert-vits-config' || labelId == 'bert-vits2-config') {
+                //还原组合key
+                itemId = itemId.replace(labelId.replace(/-/g, '_') + "_", "");
+            }
+            var itemValue = $(this).find('input, select').val();
+            nestedDict[itemId] = itemValue;
+        });
+
+        configData[labelId.replace(/-/g, '_')] = nestedDict;
+    });
 
     $.ajax({
         type: "POST",

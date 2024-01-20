@@ -1,0 +1,8 @@
+$audonnx.core.model.Model==0.3.2:
+  path: models.onnx
+  labels:
+    logits:
+    - arousal
+    - dominance
+    - valence
+  transform: null

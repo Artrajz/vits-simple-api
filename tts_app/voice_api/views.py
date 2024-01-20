@@ -3,9 +3,10 @@ import time
 import uuid
 from io import BytesIO
 
-from flask import request, jsonify, make_response, send_file, Blueprint, current_app
+from flask import request, jsonify, make_response, send_file, Blueprint
 from werkzeug.utils import secure_filename
 
+from contants import config
 from logger import logger
 from contants import ModelType
 from tts_app.voice_api.auth import require_api_key
@@ -38,7 +39,11 @@ def get_param(request_data, key, default, data_type=None):
 
 @voice_api.route('/default_parameter', methods=["GET", "POST"])
 def default_parameter():
-    return jsonify(current_app.config.get("default_parameter"))
+    data = {"vits_config": config.vits_config.asdict(),
+            "w2v2_vits_config": config.w2v2_vits_config.asdict(),
+            "hubert_vits_config": config.hubert_vits_config.asdict(),
+            "bert_vits2_config": config.bert_vits2_config.asdict()}
+    return jsonify(data)
 
 
 @voice_api.route('/speakers', methods=["GET", "POST"])
@@ -61,14 +66,14 @@ def voice_vits_api():
                 request_data = request.form
 
         text = get_param(request_data, "text", "", str)
-        id = get_param(request_data, "id", current_app.config.get("ID", 0), int)
-        format = get_param(request_data, "format", current_app.config.get("FORMAT", "wav"), str)
-        lang = get_param(request_data, "lang", current_app.config.get("LANG", "auto"), str).lower()
-        length = get_param(request_data, "length", current_app.config.get("LENGTH", 1), float)
-        noise = get_param(request_data, "noise", current_app.config.get("NOISE", 0.667), float)
-        noisew = get_param(request_data, "noisew", current_app.config.get("NOISEW", 0.8), float)
-        segment_size = get_param(request_data, "segment_size", current_app.config.get("SEGMENT_SIZE", 50), int)
-        use_streaming = get_param(request_data, 'streaming', False, bool)
+        id = get_param(request_data, "id", config.vits_config.id, int)
+        format = get_param(request_data, "format", config.vits_config.format, str)
+        lang = get_param(request_data, "lang", config.vits_config.lang, str).lower()
+        length = get_param(request_data, "length", config.vits_config.length, float)
+        noise = get_param(request_data, "noise", config.vits_config.noise, float)
+        noisew = get_param(request_data, "noisew", config.vits_config.noisew, float)
+        segment_size = get_param(request_data, "segment_size", config.vits_config.segment_size, int)
+        use_streaming = get_param(request_data, 'streaming', config.vits_config.use_streaming, bool)
     except Exception as e:
         logger.error(f"[{ModelType.VITS.value}] {e}")
         return make_response("parameter error", 400)
@@ -97,8 +102,8 @@ def voice_vits_api():
                              400)
 
     # 如果配置文件中设置了LANGUAGE_AUTOMATIC_DETECT则强制将speaker_lang设置为LANGUAGE_AUTOMATIC_DETECT
-    if current_app.config.get("LANGUAGE_AUTOMATIC_DETECT", []) != []:
-        speaker_lang = current_app.config.get("LANGUAGE_AUTOMATIC_DETECT")
+    if (lang_detect := config.language_identification.language_automatic_detect) and isinstance(lang_detect, list):
+        speaker_lang = lang_detect
 
     if use_streaming and format.upper() != "MP3":
         format = "mp3"
@@ -128,9 +133,9 @@ def voice_vits_api():
         t2 = time.time()
         logger.info(f"[{ModelType.VITS.value}] finish in {(t2 - t1):.2f}s")
 
-        if current_app.config.get("SAVE_AUDIO", False):
+        if config.system.cache_audio:
             logger.debug(f"[{ModelType.VITS.value}] {fname}")
-            path = os.path.join(current_app.config.get('CACHE_PATH'), fname)
+            path = os.path.join(config.system.cache_path, fname)
             save_audio(audio.getvalue(), path)
 
         return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
@@ -142,11 +147,11 @@ def voice_hubert_api():
     if request.method == "POST":
         try:
             voice = request.files['upload']
-            id = get_param(request.form, "id", 0, int)
-            format = get_param(request.form, "format", current_app.config.get("LANG", "auto"))
-            length = get_param(request.form, "length", current_app.config.get("LENGTH", 1), float)
-            noise = get_param(request.form, "noise", current_app.config.get("NOISE", 0.667), float)
-            noisew = get_param(request.form, "noisew", current_app.config.get("NOISEW", 0.8), float)
+            id = get_param(request.form, "id", config.hubert_vits_config.id, int)
+            format = get_param(request.form, "format", config.hubert_vits_config.format)
+            length = get_param(request.form, "length", config.hubert_vits_config.length, float)
+            noise = get_param(request.form, "noise", config.hubert_vits_config.noise, float)
+            noisew = get_param(request.form, "noisew", config.hubert_vits_config.noisew, float)
             use_streaming = get_param(request.form, 'streaming', False, bool)
         except Exception as e:
             logger.error(f"[{ModelType.HUBERT_VITS.value}] {e}")
@@ -156,7 +161,7 @@ def voice_hubert_api():
         f"[{ModelType.HUBERT_VITS.value}] id:{id} format:{format} length:{length} noise:{noise} noisew:{noisew}")
 
     fname = secure_filename(str(uuid.uuid1()) + "." + voice.filename.split(".")[1])
-    voice.save(os.path.join(current_app.config['UPLOAD_FOLDER'], fname))
+    voice.save(os.path.join(config.system.upload_folder, fname))
 
     if check_is_none(id):
         logger.info(f"[{ModelType.HUBERT_VITS.value}] speaker id is empty")
@@ -172,16 +177,16 @@ def voice_hubert_api():
             "length": length,
             "noise": noise,
             "noisew": noisew,
-            "audio_path": os.path.join(current_app.config['UPLOAD_FOLDER'], fname)}
+            "audio_path": os.path.join(config.system.upload_folder, fname)}
 
     t1 = time.time()
     audio = tts_manager.hubert_vits_infer(task)
     t2 = time.time()
     logger.info(f"[{ModelType.HUBERT_VITS.value}] finish in {(t2 - t1):.2f}s")
 
-    if current_app.config.get("SAVE_AUDIO", False):
+    if config.system.cache_audio:
         logger.debug(f"[{ModelType.HUBERT_VITS.value}] {fname}")
-        path = os.path.join(current_app.config.get('CACHE_PATH'), fname)
+        path = os.path.join(config.system.cache_path, fname)
         save_audio(audio.getvalue(), path)
 
     if use_streaming:
@@ -208,14 +213,14 @@ def voice_w2v2_api():
                 request_data = request.form
 
         text = get_param(request_data, "text", "", str)
-        id = get_param(request_data, "id", current_app.config.get("ID", 0), int)
-        format = get_param(request_data, "format", current_app.config.get("FORMAT", "wav"), str)
-        lang = get_param(request_data, "lang", current_app.config.get("LANG", "auto"), str).lower()
-        length = get_param(request_data, "length", current_app.config.get("LENGTH", 1), float)
-        noise = get_param(request_data, "noise", current_app.config.get("NOISE", 0.667), float)
-        noisew = get_param(request_data, "noisew", current_app.config.get("NOISEW", 0.8), float)
-        segment_size = get_param(request_data, "segment_size", current_app.config.get("SEGMENT_SIZE", 50), int)
-        emotion = get_param(request_data, "emotion", current_app.config.get("EMOTION", 0), int)
+        id = get_param(request_data, "id", config.w2v2_vits_config.id, int)
+        format = get_param(request_data, "format", config.w2v2_vits_config.format, str)
+        lang = get_param(request_data, "lang", config.w2v2_vits_config.lang, str).lower()
+        length = get_param(request_data, "length", config.w2v2_vits_config.length, float)
+        noise = get_param(request_data, "noise", config.w2v2_vits_config.noise, float)
+        noisew = get_param(request_data, "noisew", config.w2v2_vits_config.noisew, float)
+        segment_size = get_param(request_data, "segment_size", config.w2v2_vits_config.segment_size, int)
+        emotion = get_param(request_data, "emotion", config.w2v2_vits_config.emotion, int)
         emotion_reference = get_param(request_data, "emotion_reference", None, str)
         use_streaming = get_param(request_data, 'streaming', False, bool)
     except Exception as e:
@@ -246,8 +251,8 @@ def voice_w2v2_api():
                              400)
 
     # 如果配置文件中设置了LANGUAGE_AUTOMATIC_DETECT则强制将speaker_lang设置为LANGUAGE_AUTOMATIC_DETECT
-    if current_app.config.get("LANGUAGE_AUTOMATIC_DETECT", []) != []:
-        speaker_lang = current_app.config.get("LANGUAGE_AUTOMATIC_DETECT")
+    if (lang_detect := config.language_identification.language_automatic_detect) and isinstance(lang_detect, list):
+        speaker_lang = lang_detect
 
     if use_streaming and format.upper() != "MP3":
         format = "mp3"
@@ -272,9 +277,9 @@ def voice_w2v2_api():
     t2 = time.time()
     logger.info(f"[{ModelType.W2V2_VITS.value}] finish in {(t2 - t1):.2f}s")
 
-    if current_app.config.get("SAVE_AUDIO", False):
+    if config.system.cache_audio:
         logger.debug(f"[{ModelType.W2V2_VITS.value}] {fname}")
-        path = os.path.join(current_app.config.get('CACHE_PATH'), fname)
+        path = os.path.join(config.system.cache_path, fname)
         save_audio(audio.getvalue(), path)
 
     if use_streaming:
@@ -304,7 +309,7 @@ def vits_voice_conversion_api():
 
         logger.info(f"[vits_voice_convertsion] orginal_id:{original_id} target_id:{target_id}")
         fname = secure_filename(str(uuid.uuid1()) + "." + voice.filename.split(".")[1])
-        audio_path = os.path.join(current_app.config['UPLOAD_FOLDER'], fname)
+        audio_path = os.path.join(config.system.upload_folder, fname)
         voice.save(audio_path)
         file_type = f"audio/{format}"
         state = {"audio_path": audio_path,
@@ -317,9 +322,9 @@ def vits_voice_conversion_api():
         t2 = time.time()
         logger.info(f"[Voice conversion] finish in {(t2 - t1):.2f}s")
 
-        if current_app.config.get("SAVE_AUDIO", False):
+        if config.system.cache_audio:
             logger.debug(f"[Voice conversion] {fname}")
-            path = os.path.join(current_app.config.get('CACHE_PATH'), fname)
+            path = os.path.join(config.system.cache_path, fname)
             save_audio(audio.getvalue(), path)
 
         if use_streaming:
@@ -357,9 +362,9 @@ def ssml_api():
     t2 = time.time()
     logger.info(f"[ssml] finish in {(t2 - t1):.2f}s")
 
-    if current_app.config.get("SAVE_AUDIO", False):
+    if config.system.cache_audio:
         logger.debug(f"[ssml] {fname}")
-        path = os.path.join(current_app.config.get('CACHE_PATH'), fname)
+        path = os.path.join(config.system.cache_path, fname)
         save_audio(audio.getvalue(), path)
 
     return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
@@ -397,30 +402,33 @@ def voice_bert_vits2_api():
                 request_data = request.form
 
         text = get_param(request_data, "text", "", str)
-        id = get_param(request_data, "id", current_app.config.get("ID", 0), int)
-        format = get_param(request_data, "format", current_app.config.get("FORMAT", "wav"), str)
-        lang = get_param(request_data, "lang", current_app.config.get("LANG", "auto"), str).lower()
-        length = get_param(request_data, "length", current_app.config.get("LENGTH", 1), float)
-        length_zh = get_param(request_data, "length_zh", current_app.config.get("LENGTH_ZH", 0), float)
-        length_ja = get_param(request_data, "length_ja", current_app.config.get("LENGTH_JA", 0), float)
-        length_en = get_param(request_data, "length_en", current_app.config.get("LENGTH_EN", 0), float)
-        noise = get_param(request_data, "noise", current_app.config.get("NOISE", 0.667), float)
-        noisew = get_param(request_data, "noisew", current_app.config.get("NOISEW", 0.8), float)
-        sdp_ratio = get_param(request_data, "sdp_ratio", current_app.config.get("SDP_RATIO", 0.2), float)
-        segment_size = get_param(request_data, "segment_size", current_app.config.get("SEGMENT_SIZE", 50), int)
-        use_streaming = get_param(request_data, 'streaming', False, bool)
-        emotion = get_param(request_data, 'emotion', None, int)
+        id = get_param(request_data, "id", config.bert_vits2_config.id, int)
+        format = get_param(request_data, "format", config.bert_vits2_config.format, str)
+        lang = get_param(request_data, "lang", config.bert_vits2_config.lang, str).lower()
+        length = get_param(request_data, "length", config.bert_vits2_config.length, float)
+        # length_zh = get_param(request_data, "length_zh", config.bert_vits2_config.length_zh, float)
+        # length_ja = get_param(request_data, "length_ja", config.bert_vits2_config.length_ja, float)
+        # length_en = get_param(request_data, "length_en", config.bert_vits2_config.length_en, float)
+        noise = get_param(request_data, "noise", config.bert_vits2_config.noise, float)
+        noisew = get_param(request_data, "noisew", config.bert_vits2_config.noisew, float)
+        sdp_ratio = get_param(request_data, "sdp_ratio", config.bert_vits2_config.sdp_ratio, float)
+        segment_size = get_param(request_data, "segment_size", config.bert_vits2_config.segment_size, int)
+        use_streaming = get_param(request_data, 'streaming', config.bert_vits2_config.use_streaming, bool)
+        emotion = get_param(request_data, 'emotion', config.bert_vits2_config.emotion, int)
         reference_audio = request.files.get("reference_audio", None)
-        text_prompt = get_param(request_data, 'text_prompt', None, str)
-        style_text = get_param(request_data, 'style_text', None, str)
-        style_weight = get_param(request_data, 'style_weight', current_app.config.get("STYLE_WEIGHT", 0.7), float)
+        text_prompt = get_param(request_data, 'text_prompt', config.bert_vits2_config.text_prompt, str)
+        style_text = get_param(request_data, 'style_text', config.bert_vits2_config.style_text, str)
+        style_weight = get_param(request_data, 'style_weight', config.bert_vits2_config.style_weight, float)
     except Exception as e:
         logger.error(f"[{ModelType.BERT_VITS2.value}] {e}")
         return make_response("parameter error", 400)
 
+    # logger.info(
+    #     f"[{ModelType.BERT_VITS2.value}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size}"
+    #     f" length_zh:{length_zh} length_ja:{length_ja} length_en:{length_en}")
+
     logger.info(
-        f"[{ModelType.BERT_VITS2.value}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size}"
-        f" length_zh:{length_zh} length_ja:{length_ja} length_en:{length_en}")
+        f"[{ModelType.BERT_VITS2.value}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size}")
     if reference_audio:
         logger.info(f"[{ModelType.BERT_VITS2.value}] reference_audio:{reference_audio.filename}")
     elif emotion:
@@ -455,8 +463,8 @@ def voice_bert_vits2_api():
                              400)
 
     # 如果配置文件中设置了LANGUAGE_AUTOMATIC_DETECT则强制将speaker_lang设置为LANGUAGE_AUTOMATIC_DETECT
-    if current_app.config.get("LANGUAGE_AUTOMATIC_DETECT", []) != []:
-        speaker_lang = current_app.config.get("LANGUAGE_AUTOMATIC_DETECT")
+    if (lang_detect := config.language_identification.language_automatic_detect) and isinstance(lang_detect, list):
+        speaker_lang = lang_detect
 
     if use_streaming and format.upper() != "MP3":
         format = "mp3"
@@ -468,9 +476,9 @@ def voice_bert_vits2_api():
              "id": id,
              "format": format,
              "length": length,
-             "length_zh": length_zh,
-             "length_ja": length_ja,
-             "length_en": length_en,
+             # "length_zh": length_zh,
+             # "length_ja": length_ja,
+             # "length_en": length_en,
              "noise": noise,
              "noisew": noisew,
              "sdp_ratio": sdp_ratio,
@@ -498,9 +506,9 @@ def voice_bert_vits2_api():
         t2 = time.time()
         logger.info(f"[{ModelType.BERT_VITS2.value}] finish in {(t2 - t1):.2f}s")
 
-    if current_app.config.get("SAVE_AUDIO", False):
+    if config.system.cache_audio:
         logger.debug(f"[{ModelType.BERT_VITS2.value}] {fname}")
-        path = os.path.join(current_app.config.get('CACHE_PATH'), fname)
+        path = os.path.join(config.system.cache_path, fname)
         save_audio(audio.getvalue(), path)
 
     return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)

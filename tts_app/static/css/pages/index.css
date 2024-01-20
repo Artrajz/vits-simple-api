@@ -64,7 +64,7 @@
     border-color: #e5e7eb;
 }
 
-label {
+.main-container label {
     margin-bottom: 0.5rem;
 }
 
@@ -103,8 +103,54 @@ label {
     margin-top: 8px;
 }
 
-.reference_audio {
-    
+
+.floating-icon {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+}
+
+
+.settings-icon:hover {
+    cursor: pointer;
+}
+
+
+/*@keyframes rotate {*/
+/*    0% {*/
+/*        transform: rotate(0deg);*/
+/*    }*/
+/*    100% {*/
+/*        transform: rotate(360deg);*/
+/*    }*/
+/*}*/
+
+/*.floating-icon .settings-icon {*/
+/*    display: inline-block;*/
+/*    animation: rotate 2s linear infinite;*/
+/*}*/
+
+
+.api-key-input {
+    display: none;
+    position: absolute;
+    bottom: 40px;
+    right: 0;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    padding: 10px;
+}
+
+.api-key-input input {
+    width: 260px;
+}
+
+.api-key-input button {
+    padding: 5px 10px;
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    cursor: pointer;
 }
 
 

@@ -1,7 +1,7 @@
 import regex as re
 
 try:
-    from utils.config_manager import global_config
+    from  contants import config
 except:
     pass
 

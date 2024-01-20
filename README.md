@@ -122,17 +122,25 @@ Run `start.bat` to launch the program.
 ## Model Loading
 
 ### Step 1: Download VITS Models
-Download the VITS model files and place them in the Model directory.
+Download the VITS model files and place them in the `data/models` folder.
 
 ### Step 2: Loading Models
 
-If you are starting for the first time, modify the default model path configuration in the config.py file (optional).
+#### Automatic Model Loading
 
-After the first startup, a config.yml configuration file will be generated. You can either modify the model_list in the configuration file or make changes through the admin backend in the browser.
+Starting from version 0.6.6, it is default behavior to automatically load all models in the `data/models` folder, making it easier for beginners to use.
 
-You can specify the model paths using either absolute or relative paths, where relative paths are considered from the Model folder in the project's root directory.
+#### Manual Model Loading
 
-For example, if the Model folder contains the following files:
+After the initial startup, a config.yaml configuration file will be generated. You need to change `tts_config.auto_load` to `false` in order to enable manual loading mode.
+
+You can modify the `tts_config.models` in the config.yaml or make modifications in the admin panel in the browser.
+
+**Note: After version 0.6.6, the model loading path has been modified. Please follow the steps below to configure the model path again!**
+
+The path can be an absolute path or a relative path. If it's a relative path, it starts from the `data/models` folder in the project root directory.
+
+For example, if the `data/models` folder has the following files:
 
 ```
 ├─model1
@@ -143,37 +151,33 @@ For example, if the Model folder contains the following files:
    └─config.json
 ```
 
-You have multiple options for specifying the paths based on your preference.
+Fill in the configuration like this in the YAML file:
 
-Option 1:
-
-```
-'model_config':
-  'model_list': 
-  - - model1/G_1000.pth
-    - model1/config.json
-  - - model2/G_1000.pth
-    - model2/config.json
-```
-
-Option 2:
-
-```
-'model_config':
-  'model_list': 
-  - [model1/G_1000.pth, model1/config.json]
-  - [model2/G_1000.pth, model2/config.json]
+```yaml
+tts_config:
+  auto_load: false
+  models:
+  - config_path: model1/config.json
+    model_path: model1/G_1000.pth
+  - config_path: model2/config.json
+    model_path: model2/G_1000.pth
 ```
 
-Option 3:
+Loading models through the admin panel is convenient, but if you want to load models outside the `data/models` folder, you can only do so by modifying the config.yaml configuration file. The method is to directly provide the absolute path.
 
+Absolute path example:
+
+```yaml
+tts_config:
+  auto_load: false
+  models:
+  - config_path: D://model3/config.json
+    model_path: D://model3/G_1000.pth
 ```
-'model_config':
-  'model_list': [
-    [model1/G_1000.pth, model1/config.json],
-    [model2/G_1000.pth, model2/config.json],
-  ]
-```
+
+#### Other Models
+
+After downloading the BERT model and emotion model, place them in the `data/bert` and `data/emotional` folders respectively. Find the corresponding names and insert them accordingly.
 
 # GPU accelerated
 
@@ -206,13 +210,13 @@ The installation process is similar, but I don't have the environment to test it
 
 The default address is http://127.0.0.1:23456/admin.
 
-The initial username and password can be found at the bottom of the config.yml file after the first startup.
+**The initial username and password can be found at the bottom of the config.yaml file after the first startup.**
 
 # Function Options Explanation
 
 ## Disable the Admin Backend
 
-The admin backend allows loading and unloading models, and while it has login authentication, for added security, you can disable the admin backend in the `config.yml`:
+The admin backend allows loading and unloading models, and while it has login authentication, for added security, you can disable the admin backend in the `config.yaml`:
 
 ```yaml
 'IS_ADMIN_ENABLED': !!bool 'false'
@@ -331,13 +335,13 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 | Name               | Parameter    | Is must | Default           | Type  | Instruction                                                  |
 | ------------------ | ------------ | ------- | ----------------- | ----- | ------------------------------------------------------------ |
 | Synthesized text   | text         | true    |                   | str   | Text needed for voice synthesis.                             |
-| Speaker ID         | id           | false   | From `config.yml` | int   | The speaker ID.                                              |
-| Audio format       | format       | false   | From `config.yml` | str   | Support for wav,ogg,silk,mp3,flac                            |
-| Text language      | lang         | false   | From `config.yml` | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
-| Audio length       | length       | false   | From `config.yml` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
-| Noise              | noise        | false   | From `config.yml` | float | Sample noise, controlling the randomness of the synthesis.   |
-| SDP noise          | noisew       | false   | From `config.yml` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
-| Segment Size       | segment_size | false   | From `config.yml` | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds segment_size. If segment_size<=0, the text will not be divided into paragraphs. |
+| Speaker ID         | id           | false   | From `config.yaml` | int   | The speaker ID.                                              |
+| Audio format       | format       | false   | From `config.yaml` | str   | Support for wav,ogg,silk,mp3,flac                            |
+| Text language      | lang         | false   | From `config.yaml` | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
+| Audio length       | length       | false   | From `config.yaml` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise              | noise        | false   | From `config.yaml` | float | Sample noise, controlling the randomness of the synthesis.   |
+| SDP noise          | noisew       | false   | From `config.yaml` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
+| Segment Size       | segment_size | false   | From `config.yaml` | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds segment_size. If segment_size<=0, the text will not be divided into paragraphs. |
 | Streaming response | streaming    | false   | false             | bool  | Streamed synthesized speech with faster initial response.    |
 
 ## VITS voice conversion
@@ -364,13 +368,13 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 | Name                | Parameter    | Is must | Default           | Type  | Instruction                                                  |
 | ------------------- | ------------ | ------- | ----------------- | ----- | ------------------------------------------------------------ |
 | Synthesized text    | text         | true    |                   | str   | Text needed for voice synthesis.                             |
-| Speaker ID          | id           | false   | From `config.yml` | int   | The speaker ID.                                              |
-| Audio format        | format       | false   | From `config.yml` | str   | Support for wav,ogg,silk,mp3,flac                            |
-| Text language       | lang         | false   | From `config.yml` | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
-| Audio length        | length       | false   | From `config.yml` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
-| Noise               | noise        | false   | From `config.yml` | float | Sample noise, controlling the randomness of the synthesis.   |
-| SDP noise           | noisew       | false   | From `config.yml` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
-| Segment Size        | segment_size | false   | From `config.yml` | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds segment_size. If segment_size<=0, the text will not be divided into paragraphs. |
+| Speaker ID          | id           | false   | From `config.yaml` | int   | The speaker ID.                                              |
+| Audio format        | format       | false   | From `config.yaml` | str   | Support for wav,ogg,silk,mp3,flac                            |
+| Text language       | lang         | false   | From `config.yaml` | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
+| Audio length        | length       | false   | From `config.yaml` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise               | noise        | false   | From `config.yaml` | float | Sample noise, controlling the randomness of the synthesis.   |
+| SDP noise           | noisew       | false   | From `config.yaml` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
+| Segment Size        | segment_size | false   | From `config.yaml` | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds segment_size. If segment_size<=0, the text will not be divided into paragraphs. |
 | Dimensional emotion | emotion      | false   | 0                 | int   | The range depends on the emotion reference file in npy format, such as the  range of the [innnky](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)'s model all_emotions.npy, which is 0-5457. |
 
 ## Dimensional emotion
@@ -384,19 +388,19 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 | Name             | Parameter       | Is must | Default           | Type  | Instruction                                                  |
 | ---------------- | --------------- | ------- | ----------------- | ----- | ------------------------------------------------------------ |
 | Synthesized text | text            | true    |                   | str   | Text needed for voice synthesis.                             |
-| Speaker ID       | id              | false   | From `config.yml` | int   | The speaker ID.                                              |
-| Audio format     | format          | false   | From `config.yml` | str   | Support for wav,ogg,silk,mp3,flac                            |
-| Text language    | lang            | false   | From `config.yml` | str   | "Auto" is a mode for automatic language detection and is also the default mode. However, it currently only supports detecting the language of an entire text passage and cannot distinguish languages on a per-sentence basis. The other available language options are "zh" and "ja". |
-| Audio length     | length          | false   | From `config.yml` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
-| Noise            | noise           | false   | From `config.yml` | float | Sample noise, controlling the randomness of the synthesis.   |
-| SDP noise        | noisew          | false   | From `config.yml` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
-| Segment Size     | segment_size    | false   | From `config.yml` | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds segment_size. If segment_size<=0, the text will not be divided into paragraphs. |
-| SDP/DP mix ratio | sdp_ratio       | false   | From `config.yml` | int   | The theoretical proportion of SDP during synthesis, the higher the ratio, the larger the variance in synthesized voice tone. |
+| Speaker ID       | id              | false   | From `config.yaml` | int   | The speaker ID.                                              |
+| Audio format     | format          | false   | From `config.yaml` | str   | Support for wav,ogg,silk,mp3,flac                            |
+| Text language    | lang            | false   | From `config.yaml` | str   | "Auto" is a mode for automatic language detection and is also the default mode. However, it currently only supports detecting the language of an entire text passage and cannot distinguish languages on a per-sentence basis. The other available language options are "zh" and "ja". |
+| Audio length     | length          | false   | From `config.yaml` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise            | noise           | false   | From `config.yaml` | float | Sample noise, controlling the randomness of the synthesis.   |
+| SDP noise        | noisew          | false   | From `config.yaml` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
+| Segment Size     | segment_size    | false   | From `config.yaml` | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds segment_size. If segment_size<=0, the text will not be divided into paragraphs. |
+| SDP/DP mix ratio | sdp_ratio       | false   | From `config.yaml` | int   | The theoretical proportion of SDP during synthesis, the higher the ratio, the larger the variance in synthesized voice tone. |
 | Emotion          | emotion         | false   | None              | int | Available for Bert-VITS2 v2.1, ranging from 0 to 9           |
 | Emotion reference Audio | reference_audio | false   | None              |       | Bert-VITS2 v2.1 uses reference audio to control the synthesized audio's emotion |
 |Text Prompt|text_prompt|false|None|str|Bert-VITS2 v2.2 text prompt used for emotion control|
 |Style Text|style_text|false|None|str|Bert-VITS2 v2.3 text prompt used for emotion control|
-|Style Text Weight|style_weight|false|From `config.yml`|float|Bert-VITS2 v2.3 text prompt weight used for prompt weighting|
+|Style Text Weight|style_weight|false|From `config.yaml`|float|Bert-VITS2 v2.3 text prompt weight used for prompt weighting|
 
 
 ## SSML (Speech Synthesis Markup Language)
@@ -407,11 +411,11 @@ Supported Elements and Attributes
 
 | Attribute    | Instruction                                                  | Is must |
 | ------------ | ------------------------------------------------------------ | ------- |
-| id           | Default value is retrieved From `config.yml`                 | false   |
-| lang         | Default value is retrieved From `config.yml`                 | false   |
-| length       | Default value is retrieved From `config.yml`                 | false   |
-| noise        | Default value is retrieved From `config.yml`                 | false   |
-| noisew       | Default value is retrieved From `config.yml`                 | false   |
+| id           | Default value is retrieved From `config.yaml`                 | false   |
+| lang         | Default value is retrieved From `config.yaml`                 | false   |
+| length       | Default value is retrieved From `config.yaml`                 | false   |
+| noise        | Default value is retrieved From `config.yaml`                 | false   |
+| noisew       | Default value is retrieved From `config.yaml`                 | false   |
 | segment_size | Splits text into segments based on punctuation marks. When the sum of segment lengths exceeds `segment_size`, it is treated as one segment. `segment_size<=0` means no segmentation. The default value is 0. | false   |
 | model_type   | Default is VITS. Options: W2V2-VITS, BERT-VITS2              | false   |
 | emotion      | Only effective when using W2V2-VITS . The range depends on the npy emotion reference file. | false   |
@@ -423,11 +427,11 @@ Higher priority than `speak`.
 
 | Attribute    | Instruction                                                  | Is must |
 | ------------ | ------------------------------------------------------------ | ------- |
-| id           | Default value is retrieved From `config.yml`                 | false   |
-| lang         | Default value is retrieved From `config.yml`                 | false   |
-| length       | Default value is retrieved From `config.yml`                 | false   |
-| noise        | Default value is retrieved From `config.yml`                 | false   |
-| noisew       | Default value is retrieved From `config.yml`                 | false   |
+| id           | Default value is retrieved From `config.yaml`                 | false   |
+| lang         | Default value is retrieved From `config.yaml`                 | false   |
+| length       | Default value is retrieved From `config.yaml`                 | false   |
+| noise        | Default value is retrieved From `config.yaml`                 | false   |
+| noisew       | Default value is retrieved From `config.yaml`                 | false   |
 | segment_size | Splits text into segments based on punctuation marks. When the sum of segment lengths exceeds `segment_size`, it is treated as one segment. `segment_size<=0` means no segmentation. The default value is 0. | false   |
 | model_type   | Default is VITS. Options: W2V2-VITS, BERT-VITS2              | false   |
 | emotion      | Only effective when using W2V2-VITS . The range depends on the npy emotion reference file. | false   |

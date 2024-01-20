@@ -8,7 +8,7 @@ from transformers.models.wav2vec2.modeling_wav2vec2 import (
     Wav2Vec2PreTrainedModel,
 )
 
-from utils.config_manager import global_config
+from contants import config
 
 
 class RegressionHead(nn.Module):
@@ -81,7 +81,7 @@ def process_func(
 
 def get_emo(audio, emotion_model, processor):
     wav, sr = librosa.load(audio, 16000)
-    device = global_config["DEVICE"]
+    device = config.system.device
     return process_func(
         np.expand_dims(wav, 0).astype(np.float),
         sr,

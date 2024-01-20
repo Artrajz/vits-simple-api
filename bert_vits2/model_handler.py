@@ -5,7 +5,7 @@ import os
 import torch
 from transformers import AutoTokenizer, AutoModelForMaskedLM, BertTokenizer, MegatronBertModel
 
-import config
+from contants import config
 from utils.download import download_file
 from bert_vits2.text.chinese_bert import get_bert_feature as zh_bert
 from bert_vits2.text.english_bert_mock import get_bert_feature as en_bert
@@ -17,7 +17,7 @@ from bert_vits2.text.chinese_bert_extra import get_bert_feature as zh_bert_extra
 
 
 class ModelHandler:
-    def __init__(self, device):
+    def __init__(self, device=config.system.device):
         self.DOWNLOAD_PATHS = {
             "CHINESE_ROBERTA_WWM_EXT_LARGE": [
                 "https://huggingface.co/hfl/chinese-roberta-wwm-ext-large/resolve/main/pytorch_model.bin",
@@ -55,7 +55,7 @@ class ModelHandler:
                 "https://huggingface.co/laion/clap-htsat-fused/resolve/main/pytorch_model.bin?download=true",
                 "https://hf-mirror.com/laion/clap-htsat-fused/resolve/main/pytorch_model.bin?download=true",
             ],
-            "Erlangshen-MegatronBert-1.3B-Chinese": [
+            "Erlangshen_MegatronBert_1.3B_Chinese": [
                 "https://huggingface.co/IDEA-CCNL/Erlangshen-UniMC-MegatronBERT-1.3B-Chinese/resolve/main/pytorch_model.bin",
                 "https://hf-mirror.com/IDEA-CCNL/Erlangshen-UniMC-MegatronBERT-1.3B-Chinese/resolve/main/pytorch_model.bin",
             ]
@@ -71,22 +71,27 @@ class ModelHandler:
             "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM": "bf0dab8ad87bd7c22e85ec71e04f2240804fda6d33196157d6b5923af6ea1201",
             "WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM": "176d9d1ce29a8bddbab44068b9c1c194c51624c7f1812905e01355da58b18816",
             "CLAP_HTSAT_FUSED": "1ed5d0215d887551ddd0a49ce7311b21429ebdf1e6a129d4e68f743357225253",
-            "Erlangshen-MegatronBert-1.3B-Chinese": "3456bb8f2c7157985688a4cb5cecdb9e229cb1dcf785b01545c611462ffe3579",
+            "Erlangshen_MegatronBert_1.3B_Chinese": "3456bb8f2c7157985688a4cb5cecdb9e229cb1dcf785b01545c611462ffe3579",
         }
         self.model_path = {
-            "CHINESE_ROBERTA_WWM_EXT_LARGE": os.path.join(config.ABS_PATH,
-                                                          "bert_vits2/bert/chinese-roberta-wwm-ext-large"),
-            "BERT_BASE_JAPANESE_V3": os.path.join(config.ABS_PATH, "bert_vits2/bert/bert-base-japanese-v3"),
-            "BERT_LARGE_JAPANESE_V2": os.path.join(config.ABS_PATH, "bert_vits2/bert/bert-large-japanese-v2"),
-            "DEBERTA_V2_LARGE_JAPANESE": os.path.join(config.ABS_PATH, "bert_vits2/bert/deberta-v2-large-japanese"),
-            "DEBERTA_V3_LARGE": os.path.join(config.ABS_PATH, "bert_vits2/bert/deberta-v3-large"),
-            "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM": os.path.join(config.ABS_PATH,
-                                                               "bert_vits2/bert/deberta-v2-large-japanese-char-wwm"),
-            "WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM": os.path.join(config.ABS_PATH,
-                                                                        "bert_vits2/emotional/wav2vec2-large-robust-12-ft-emotion-msp-dim"),
-            "CLAP_HTSAT_FUSED": os.path.join(config.ABS_PATH, "bert_vits2/emotional/clap-htsat-fused"),
-            "Erlangshen-MegatronBert-1.3B-Chinese": os.path.join(config.ABS_PATH,
-                                                                 "bert_vits2/bert/Erlangshen-MegatronBert-1.3B-Chinese"),
+            "CHINESE_ROBERTA_WWM_EXT_LARGE": os.path.join(config.abs_path, config.system.data_path,
+                                                          config.model_config.chinese_roberta_wwm_ext_large),
+            "BERT_BASE_JAPANESE_V3": os.path.join(config.abs_path, config.system.data_path,
+                                                  config.model_config.bert_base_japanese_v3),
+            "BERT_LARGE_JAPANESE_V2": os.path.join(config.abs_path, config.system.data_path,
+                                                   config.model_config.bert_large_japanese_v2),
+            "DEBERTA_V2_LARGE_JAPANESE": os.path.join(config.abs_path, config.system.data_path,
+                                                      config.model_config.deberta_v2_large_japanese),
+            "DEBERTA_V3_LARGE": os.path.join(config.abs_path, config.system.data_path,
+                                             config.model_config.deberta_v3_large),
+            "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM": os.path.join(config.abs_path, config.system.data_path,
+                                                               config.model_config.deberta_v2_large_japanese_char_wwm),
+            "WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM": os.path.join(config.abs_path, config.system.data_path,
+                                                                        config.model_config.wav2vec2_large_robust_12_ft_emotion_msp_dim),
+            "CLAP_HTSAT_FUSED": os.path.join(config.abs_path, config.system.data_path,
+                                             config.model_config.clap_htsat_fused),
+            "Erlangshen_MegatronBert_1.3B_Chinese": os.path.join(config.abs_path, config.system.data_path,
+                                                                 config.model_config.erlangshen_MegatronBert_1_3B_Chinese),
         }
 
         self.lang_bert_func_map = {"zh": zh_bert, "en": en_bert, "ja": ja_bert, "ja_v111": ja_bert_v111,
@@ -96,6 +101,13 @@ class ModelHandler:
         self.emotion = None
         self.clap = None
         self.device = device
+        if config.bert_vits2_config.torch_data_type != "":
+            if config.bert_vits2_config.torch_data_type.lower() in ["float16","fp16"]:
+                self.torch_dtype = torch.float16
+            elif config.bert_vits2_config.torch_data_type.lower() in ["int8"]:
+                self.torch_dtype = torch.int8
+        else:
+            self.torch_dtype = None
 
     @property
     def emotion_model(self):
@@ -133,12 +145,14 @@ class ModelHandler:
                 model_path = self.model_path[bert_model_name]
                 logging.info(f"Loading BERT model: {model_path}")
                 try:
-                    if bert_model_name == "bert_model_name":
-                        tokenizer = BertTokenizer.from_pretrained(model_path)
-                        model = MegatronBertModel.from_pretrained(model_path).to(self.device)
+                    if bert_model_name == "Erlangshen_MegatronBert_1.3B_Chinese":
+                        tokenizer = BertTokenizer.from_pretrained(model_path, torch_dtype=self.torch_dtype)
+                        model = MegatronBertModel.from_pretrained(model_path, torch_dtype=self.torch_dtype).to(
+                            self.device)
                     else:
-                        tokenizer = AutoTokenizer.from_pretrained(model_path)
-                        model = AutoModelForMaskedLM.from_pretrained(model_path).to(self.device)
+                        tokenizer = AutoTokenizer.from_pretrained(model_path, torch_dtype=self.torch_dtype)
+                        model = AutoModelForMaskedLM.from_pretrained(model_path, torch_dtype=self.torch_dtype).to(
+                            self.device)
                     self.bert_models[bert_model_name] = (tokenizer, model, 1)  # 初始化引用计数为1
                     logging.info(f"Success loading: {model_path}")
                     break

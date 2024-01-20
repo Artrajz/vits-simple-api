@@ -3,14 +3,12 @@ from unidecode import unidecode
 from phonemizer import phonemize
 from phonemizer.backend.espeak.wrapper import EspeakWrapper
 
-try:
-    from utils.config_manager import global_config as config
-    ESPEAK_LIBRARY = getattr(config, "ESPEAK_LIBRARY", "")
-except:
-    import config
-    ESPEAK_LIBRARY = getattr(config, "ESPEAK_LIBRARY", "")
-if ESPEAK_LIBRARY != "":
-    EspeakWrapper.set_library(ESPEAK_LIBRARY)
+
+from contants import config
+espeak_library = config.language_identification.espeak_library
+
+if espeak_library != "":
+    EspeakWrapper.set_library(espeak_library)
 
 # List of (regular expression, replacement) pairs for abbreviations:
 _abbreviations = [(re.compile('\\b%s\\.' % x[0], re.IGNORECASE), x[1]) for x in [

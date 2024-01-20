@@ -125,17 +125,25 @@ python app.py
 
 ### 步骤1: 下载 VITS 模型
 
-将 VITS 模型文件下载并放入 `Model` 目录。
+将 VITS 模型文件下载并放入 `data/models`文件夹。
 
 ### 步骤2: 加载模型
 
-如果是首次启动，在 `config.py` 文件中修改默认模型路径的配置。（非必须）
+#### 自动加载模型
 
-首次启动之后会生成一个config.yml配置文件，可以修改配置文件中的model_list或者在浏览器中进入管理员后台进行修改.
+v0.6.6版本之后默认会自动加载`data/models`文件夹下的所有模型，方便小白使用。
 
-路径可填绝对路径或相对路径，相对路径则是从项目根目录中的Model文件夹开头。
+#### 手动加载模型
 
-比如Model文件夹中如下文件有
+首次启动之后会生成一个config.yaml配置文件，需要将`tts_config.auto_load`改为`false`以启用手动加载模式。
+
+可以修改配置文件中的`tts_config.models`或者在浏览器中进入管理员后台进行修改。
+
+**注意：v0.6.6版本之后已修改模型读取路径，请重新按照以下步骤配置模型路径！**
+
+路径可填绝对路径或相对路径，相对路径则是从项目根目录中的`data/models`文件夹开始。
+
+比如`data/models`文件夹中有如下文件
 
 ```
 ├─model1
@@ -146,37 +154,33 @@ python app.py
    └─config.json
 ```
 
-有多种可选的填法，按个人喜好选择
-
-填法1
+填写
 
 ```yaml
-'model_config':
-  'model_list': 
-  - - model1/G_1000.pth
-    - model1/config.json
-  - - model2/G_1000.pth
-    - model2/config.json
+tts_config:
+  auto_load: false
+  models:
+  - config_path: model1/config.json
+    model_path: model1/G_1000.pth
+  - config_path: model2/config.json
+    model_path: model2/G_1000.pth
 ```
 
-填法2
+在管理员后台加载模型比较方便，但如果想加载`data/models`文件夹之外的模型，则只能通过修改config.yaml配置文件来加载，方法是直接填写绝对路径。
+
+绝对路径填写：
 
 ```yaml
-'model_config':
-  'model_list': 
-  - [model1/G_1000.pth, model1/config.json]
-  - [model2/G_1000.pth, model2/config.json]
+tts_config:
+  auto_load: false
+  models:
+  - config_path: D://model3/config.json
+    model_path: D://model3/G_1000.pth
 ```
 
-填法3
+#### 其他模型
 
-```yaml
-'model_config':
-  'model_list': [
-    [model1/G_1000.pth, model1/config.json],
-    [model2/G_1000.pth, model2/config.json],
-  ]
-```
+bert模型以及情感模型下载之后放在`data/bert`文件夹和`data/emotional`文件夹中，找到对应名字放入即可。
 
 # GPU 加速
 
@@ -216,13 +220,13 @@ http://127.0.0.1:23456
 
 默认为http://127.0.0.1:23456/admin
 
-初始账号密码在初次启动后，在config.yml最下方可找到。
+**初始账号密码在初次启动后，在config.yaml最下方可找到。**
 
 # 功能选项说明
 
 ## 关闭管理员后台
 
-由于管理员后台可以对模型进行加载和卸载操作，虽然有登录验证的保障，为了绝对安全，当对公网开放时，可以在`config.yml`中关闭管理员后台：
+由于管理员后台可以对模型进行加载和卸载操作，虽然有登录验证的保障，为了绝对安全，当对公网开放时，可以在`config.yaml`中关闭管理员后台：
 
 ```yaml
 'IS_ADMIN_ENABLED': !!bool 'false'
@@ -341,13 +345,13 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 | Name          | Parameter    | Is must | Default              | Type  | Instruction                                                  |
 | ------------- | ------------ | ------- | -------------------- | ----- | ------------------------------------------------------------ |
 | 合成文本      | text         | true    |                      | str   | 需要合成语音的文本。                                         |
-| 角色id        | id           | false   | 从`config.yml`中获取 | int   | 即说话人id。                                                 |
-| 音频格式      | format       | false   | 从`config.yml`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
-| 文本语言      | lang         | false   | 从`config.yml`中获取 | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹。方言无法自动识别。 |
-| 语音长度/语速 | length       | false   | 从`config.yml`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢。           |
-| 噪声          | noise        | false   | 从`config.yml`中获取 | float | 样本噪声，控制合成的随机性。                                 |
-| sdp噪声       | noisew       | false   | 从`config.yml`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
-| 分段阈值      | segment_size | false   | 从`config.yml`中获取 | int   | 按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段。 |
+| 角色id        | id           | false   | 从`config.yaml`中获取 | int   | 即说话人id。                                                 |
+| 音频格式      | format       | false   | 从`config.yaml`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
+| 文本语言      | lang         | false   | 从`config.yaml`中获取 | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹。方言无法自动识别。 |
+| 语音长度/语速 | length       | false   | 从`config.yaml`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢。           |
+| 噪声          | noise        | false   | 从`config.yaml`中获取 | float | 样本噪声，控制合成的随机性。                                 |
+| sdp噪声       | noisew       | false   | 从`config.yaml`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
+| 分段阈值      | segment_size | false   | 从`config.yaml`中获取 | int   | 按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段。 |
 | 流式响应      | streaming    | false   | false                | bool  | 流式合成语音，更快的首包响应。                               |
 
 ## VITS 语音转换
@@ -374,13 +378,13 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 | Name          | Parameter    | Is must | Default              | Type  | Instruction                                                  |
 | ------------- | ------------ | ------- | -------------------- | ----- | ------------------------------------------------------------ |
 | 合成文本      | text         | true    |                      | str   | 需要合成语音的文本。                                         |
-| 角色id        | id           | false   | 从`config.yml`中获取 | int   | 即说话人id。                                                 |
-| 音频格式      | format       | false   | 从`config.yml`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
-| 文本语言      | lang         | false   | 从`config.yml`中获取 | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹。方言无法自动识别。 |
-| 语音长度/语速 | length       | false   | 从`config.yml`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢             |
-| 噪声          | noise        | false   | 从`config.yml`中获取 | float | 样本噪声，控制合成的随机性。                                 |
-| sdp噪声       | noisew       | false   | 从`config.yml`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
-| 分段阈值      | segment_size | false   | 从`config.yml`中获取 | int   | 按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段。 |
+| 角色id        | id           | false   | 从`config.yaml`中获取 | int   | 即说话人id。                                                 |
+| 音频格式      | format       | false   | 从`config.yaml`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
+| 文本语言      | lang         | false   | 从`config.yaml`中获取 | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹。方言无法自动识别。 |
+| 语音长度/语速 | length       | false   | 从`config.yaml`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢             |
+| 噪声          | noise        | false   | 从`config.yaml`中获取 | float | 样本噪声，控制合成的随机性。                                 |
+| sdp噪声       | noisew       | false   | 从`config.yaml`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
+| 分段阈值      | segment_size | false   | 从`config.yaml`中获取 | int   | 按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段。 |
 | 维度情感      | emotion      | false   | 0                    | int   | 范围取决于npy情感参考文件，如[innnky](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)的all_emotions.npy模型范围是0-5457 |
 
 ## Dimensional emotion
@@ -394,19 +398,19 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 | Name           | Parameter       | Is must | Default              | Type  | Instruction                                                  |
 | -------------- | --------------- | ------- | -------------------- | ----- | ------------------------------------------------------------ |
 | 合成文本       | text            | true    |                      | str   | 需要合成语音的文本。                                         |
-| 角色id         | id              | false   | 从`config.yml`中获取 | int   | 即说话人id。                                                 |
-| 音频格式       | format          | false   | 从`config.yml`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
-| 文本语言       | lang            | false   | 从`config.yml`中获取 | str   | auto为自动识别语言模式，也是默认模式，但目前只支持识别整段文本的语言，无法细分到每个句子。其余可选语言zh和ja。 |
-| 语音长度/语速  | length          | false   | 从`config.yml`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢。           |
-| 噪声           | noise           | false   | 从`config.yml`中获取 | float | 样本噪声，控制合成的随机性。                                 |
-| sdp噪声        | noisew          | false   | 从`config.yml`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
-| 分段阈值       | segment_size    | false   | 从`config.yml`中获取 | int   | 按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段。 |
-| SDP/DP混合比   | sdp_ratio       | false   | 从`config.yml`中获取 | int   | SDP在合成时的占比，理论上此比率越高，合成的语音语调方差越大。 |
+| 角色id         | id              | false   | 从`config.yaml`中获取 | int   | 即说话人id。                                                 |
+| 音频格式       | format          | false   | 从`config.yaml`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
+| 文本语言       | lang            | false   | 从`config.yaml`中获取 | str   | auto为自动识别语言模式，也是默认模式，但目前只支持识别整段文本的语言，无法细分到每个句子。其余可选语言zh和ja。 |
+| 语音长度/语速  | length          | false   | 从`config.yaml`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢。           |
+| 噪声           | noise           | false   | 从`config.yaml`中获取 | float | 样本噪声，控制合成的随机性。                                 |
+| sdp噪声        | noisew          | false   | 从`config.yaml`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
+| 分段阈值       | segment_size    | false   | 从`config.yaml`中获取 | int   | 按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段。 |
+| SDP/DP混合比   | sdp_ratio       | false   | 从`config.yaml`中获取 | int   | SDP在合成时的占比，理论上此比率越高，合成的语音语调方差越大。 |
 | 情感控制       | emotion         | false   | None                 | int   | Bert-VITS2 v2.1可用，范围为0-9                               |
 | 情感参考音频   | reference_audio | false   | None                 |       | Bert-VITS2 v2.1 使用参考音频来控制合成音频的情感             |
 | 文本提示词     | text_prompt     | false   | None                 | str   | Bert-VITS2 v2.2 文本提示词，用于控制情感                     |
 | 文本提示词     | style_text      | false   | None                 | str   | Bert-VITS2 v2.3 文本提示词，用于控制情感                     |
-| 文本提示词权重 | style_weight    | false   | 从`config.yml`中获取 | float | Bert-VITS2 v2.3 文本提示词，用于提示词权重                   |
+| 文本提示词权重 | style_weight    | false   | 从`config.yaml`中获取 | float | Bert-VITS2 v2.3 文本提示词，用于提示词权重                   |
 
 ## SSML语音合成标记语言
 目前支持的元素与属性
@@ -415,11 +419,11 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 
 | Attribute    | Description                                                  | Is must |
 | ------------ | ------------------------------------------------------------ | ------- |
-| id           | 默认值从`config.yml`中读取                                   | false   |
-| lang         | 默认值从`config.yml`中读取                                   | false   |
-| length       | 默认值从`config.yml`中读取                                   | false   |
-| noise        | 默认值从`config.yml`中读取                                   | false   |
-| noisew       | 默认值从`config.yml`中读取                                   | false   |
+| id           | 默认值从`config.yaml`中读取                                   | false   |
+| lang         | 默认值从`config.yaml`中读取                                   | false   |
+| length       | 默认值从`config.yaml`中读取                                   | false   |
+| noise        | 默认值从`config.yaml`中读取                                   | false   |
+| noisew       | 默认值从`config.yaml`中读取                                   | false   |
 | segment_size | 按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段，这里默认为0。 | false   |
 | model_type   | 默认为VITS，可选W2V2-VITS，BERT-VITS2                        | false   |
 | emotion      | 只有用W2V2-VITS时`emotion`才会生效，范围取决于npy情感参考文件 | false   |
@@ -431,11 +435,11 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 
 | Attribute    | Description                                                  | Is must |
 | ------------ | ------------------------------------------------------------ | ------- |
-| id           | 默认值从`config.yml`中读取                                   | false   |
-| lang         | 默认值从`config.yml`中读取                                   | false   |
-| length       | 默认值从`config.yml`中读取                                   | false   |
-| noise        | 默认值从`config.yml`中读取                                   | false   |
-| noisew       | 默认值从`config.yml`中读取                                   | false   |
+| id           | 默认值从`config.yaml`中读取                                   | false   |
+| lang         | 默认值从`config.yaml`中读取                                   | false   |
+| length       | 默认值从`config.yaml`中读取                                   | false   |
+| noise        | 默认值从`config.yaml`中读取                                   | false   |
+| noisew       | 默认值从`config.yaml`中读取                                   | false   |
 | segment_size | 按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段，这里默认为0。 | false   |
 | model_type   | 默认为VITS，可选W2V2-VITS，BERT-VITS2                        | false   |
 | emotion      | 只有用W2V2-VITS时`emotion`才会生效，范围取决于npy情感参考文件 | false   |

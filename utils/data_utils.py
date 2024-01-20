@@ -1,6 +1,8 @@
 import os
 import logging
 
+from contants import config
+
 
 class HParams():
     def __init__(self, **kwargs):
@@ -36,7 +38,7 @@ class HParams():
 
 def load_checkpoint(checkpoint_path, model):
     from torch import load
-    checkpoint_dict = load(checkpoint_path, map_location='cpu')
+    checkpoint_dict = load(checkpoint_path, map_location=config.system.device)
     iteration = checkpoint_dict.get('iteration', None)
     saved_state_dict = checkpoint_dict['model']
     if hasattr(model, 'module'):

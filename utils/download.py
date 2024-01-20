@@ -107,15 +107,17 @@ def download_file(urls, target_path, extract_destination=None, expected_md5=None
             os.remove(target_path)
 
         return True, "File already exists and verified successfully!"
-    
+
+    is_download = False
     for url in urls:
         try:
             _download_file(url, target_path)
+            is_download = True
             break
         except Exception as error:
             logger.error(f"downloading from URL {url}: {error}")
 
-    else:  # This else is tied to the for loop, and executes if no download is successful
+    if not is_download:
         return False, "Error downloading from all provided URLs."
 
     if expected_md5 is not None:
@@ -123,7 +125,7 @@ def download_file(urls, target_path, extract_destination=None, expected_md5=None
         if not success:
             os.remove(target_path)
             return False, message
-        
+
     if expected_sha256 is not None:
         success, message = verify_sha256(Path(target_path), expected_sha256)
         if not success:

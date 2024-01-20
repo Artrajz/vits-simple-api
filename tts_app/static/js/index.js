@@ -62,6 +62,7 @@ function getLink() {
     let noise = document.getElementById("input_noise" + currentModelPage).value;
     let noisew = document.getElementById("input_noisew" + currentModelPage).value;
     let segment_size = document.getElementById("input_segment_size" + currentModelPage).value;
+    let api_key = document.getElementById("apiKey").value;
 
     let url = baseUrl
     let streaming = null;
@@ -72,10 +73,10 @@ function getLink() {
     let style_weight = "";
     if (currentModelPage == 1) {
         streaming = document.getElementById('streaming1');
-        url += "/voice/vits?text=" + text + "&id=" + id;
+        url += "/voice/vits?id=" + id;
     } else if (currentModelPage == 2) {
         emotion = document.getElementById('emotion').value;
-        url += "/voice/w2v2-vits?text=" + text + "&id=" + id + "&emotion=" + emotion;
+        url += "/voice/w2v2-vits?id=" + id + "&emotion=" + emotion;
     } else if (currentModelPage == 3) {
         sdp_ratio = document.getElementById("input_sdp_ratio").value;
         streaming = document.getElementById('streaming3');
@@ -83,7 +84,7 @@ function getLink() {
         text_prompt = document.getElementById('input_text_prompt3').value;
         style_text = document.getElementById('input_style_text3').value;
         style_weight = document.getElementById('input_style_weight3').value;
-        url += "/voice/bert-vits2?text=" + text + "&id=" + id;
+        url += "/voice/bert-vits2?id=" + id;
 
     } else {
         console.error("Invalid model page: ", currentModelPage);
@@ -135,6 +136,11 @@ function getLink() {
             url += "&style_weight=" + style_weight;
     }
 
+    if (api_key != "") {
+        url += "&api_key=" + api_key
+    }
+
+    url += "&text=" + text
     return url;
 }
 
@@ -191,6 +197,7 @@ function setAudioSourceByPost() {
     let noise = $("#input_noise" + currentModelPage).val();
     let noisew = $("#input_noisew" + currentModelPage).val();
     let segment_size = $("#input_segment_size" + currentModelPage).val();
+    let api_key = $("#apiKey").val();
 
     let formData = new FormData();
     formData.append('text', text);
@@ -262,6 +269,9 @@ function setAudioSourceByPost() {
     }
     if (currentModelPage == 3 && style_weight) {
         formData.append('style_weight', style_weight);
+    }
+    if (api_key != "") {
+        formData.append('api_key', api_key);
     }
 
     let downloadButton = document.getElementById("downloadButton" + currentModelPage);
@@ -348,6 +358,12 @@ function showModelContentBasedOnStatus() {
     }
 }
 
+function updatePlaceholders(config, page) {
+    for (var key in config) {
+        $("#input_" + key + page).attr("placeholder", config[key]);
+    }
+}
+
 function setDefaultParameter() {
     $.ajax({
         url: "/voice/default_parameter",
@@ -355,16 +371,54 @@ function setDefaultParameter() {
         responseType: 'json',
         success: function (response) {
             default_parameter = response;
-            for (var key in default_parameter) {
-                if (default_parameter.hasOwnProperty(key)) {
-                    $(".input_" + key).attr("placeholder", default_parameter[key]);
-                }
-            }
+            updatePlaceholders(default_parameter.vits_config, 1);
+            updatePlaceholders(default_parameter.w2v2_vits_config, 2);
+            updatePlaceholders(default_parameter.bert_vits2_config, 3);
         },
         error: function (error) {
         }
     });
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    var apiKeyIcon = document.getElementById('apiKeyIcon');
+    var apiKeyInput = document.getElementById('apiKeyInput');
+    var apiKeyField = document.getElementById('apiKey');
+
+    // 检查 apiKey 是否已存储在 localStorage 中
+    var storedApiKey = localStorage.getItem('apiKey');
+    if (storedApiKey) {
+        apiKeyField.value = storedApiKey;
+    }
+
+    // 点击图标时切换 apiKeyInput 的可见性
+    apiKeyIcon.addEventListener('click', function (event) {
+        apiKeyInput.style.display = apiKeyInput.style.display === 'flex' ? 'none' : 'flex';
+        // 停止事件传播，防止文档点击事件立即隐藏输入框
+        event.stopPropagation();
+    });
+
+    // 在点击其他地方时隐藏 apiKeyInput
+    document.addEventListener('click', function () {
+        apiKeyInput.style.display = 'none';
+    });
+
+    // 防止点击输入框时输入框被隐藏
+    apiKeyInput.addEventListener('click', function (event) {
+        event.stopPropagation();
+    });
+});
+
+function saveApiKey() {
+    var apiKeyField = document.getElementById('apiKey');
+    var apiKey = apiKeyField.value;
+
+    // 将 apiKey 保存到 localStorage 中
+    localStorage.setItem('apiKey', apiKey);
+
+    document.getElementById('apiKeyInput').style.display = 'none';
+}
+
 
 $(document).ready(function () {
     speakersInit();

@@ -276,34 +276,34 @@
                                    oninput="updateLink()" value=""
                                    placeholder="1" min="0" step="0.001"/>
                         </div>
-{#                        <div class="col-md-1 mb-3">#}
-{#                            <label data-toggle="tooltip" data-placement="top"#}
-{#                                   title="调节语音长度，相当于调节语速，该数值越大语速越慢。">length</label>#}
-{#                            <input type="number" class="form-control input_length" id="input_length3"#}
-{#                                   oninput="updateLink()" value=""#}
-{#                                   placeholder="1" min="0" step="0.001"/>#}
-{#                        </div>#}
-{#                        <div class="col-md-1 mb-3">#}
-{#                            <label data-toggle="tooltip" data-placement="top"#}
-{#                                   title="调节中文语音长度，相当于调节语速，该数值越大语速越慢。">length_zh</label>#}
-{#                            <input type="number" class="form-control input_length_zh" id="input_length_zh3"#}
-{#                                   oninput="updateLink()" value=""#}
-{#                                   placeholder="0" min="0" step="0.001"/>#}
-{#                        </div>#}
-{#                        <div class="col-md-1 mb-3">#}
-{#                            <label data-toggle="tooltip" data-placement="top"#}
-{#                                   title="调节日语语音长度，相当于调节语速，该数值越大语速越慢。">length_ja</label>#}
-{#                            <input type="number" class="form-control input_length_ja" id="input_length_ja3"#}
-{#                                   oninput="updateLink()" value=""#}
-{#                                   placeholder="0" min="0" step="0.001"/>#}
-{#                        </div>#}
-{#                        <div class="col-md-1 mb-3">#}
-{#                            <label data-toggle="tooltip" data-placement="top"#}
-{#                                   title="调节英文语音长度，相当于调节语速，该数值越大语速越慢。">length_en</label>#}
-{#                            <input type="number" class="form-control input_length_en" id="input_length_en3"#}
-{#                                   oninput="updateLink()" value=""#}
-{#                                   placeholder="0" min="0" step="0.001"/>#}
-{#                        </div>#}
+                        {#                        <div class="col-md-1 mb-3">#}
+                        {#                            <label data-toggle="tooltip" data-placement="top"#}
+                        {#                                   title="调节语音长度，相当于调节语速，该数值越大语速越慢。">length</label>#}
+                        {#                            <input type="number" class="form-control input_length" id="input_length3"#}
+                        {#                                   oninput="updateLink()" value=""#}
+                        {#                                   placeholder="1" min="0" step="0.001"/>#}
+                        {#                        </div>#}
+                        {#                        <div class="col-md-1 mb-3">#}
+                        {#                            <label data-toggle="tooltip" data-placement="top"#}
+                        {#                                   title="调节中文语音长度，相当于调节语速，该数值越大语速越慢。">length_zh</label>#}
+                        {#                            <input type="number" class="form-control input_length_zh" id="input_length_zh3"#}
+                        {#                                   oninput="updateLink()" value=""#}
+                        {#                                   placeholder="0" min="0" step="0.001"/>#}
+                        {#                        </div>#}
+                        {#                        <div class="col-md-1 mb-3">#}
+                        {#                            <label data-toggle="tooltip" data-placement="top"#}
+                        {#                                   title="调节日语语音长度，相当于调节语速，该数值越大语速越慢。">length_ja</label>#}
+                        {#                            <input type="number" class="form-control input_length_ja" id="input_length_ja3"#}
+                        {#                                   oninput="updateLink()" value=""#}
+                        {#                                   placeholder="0" min="0" step="0.001"/>#}
+                        {#                        </div>#}
+                        {#                        <div class="col-md-1 mb-3">#}
+                        {#                            <label data-toggle="tooltip" data-placement="top"#}
+                        {#                                   title="调节英文语音长度，相当于调节语速，该数值越大语速越慢。">length_en</label>#}
+                        {#                            <input type="number" class="form-control input_length_en" id="input_length_en3"#}
+                        {#                                   oninput="updateLink()" value=""#}
+                        {#                                   placeholder="0" min="0" step="0.001"/>#}
+                        {#                        </div>#}
                     </div>
                     <div class="row">
                         <div class="col-md-4 mb-3">
@@ -359,14 +359,16 @@
                         <div class="col-md-4 mb-3">
                             <label for="text_prompt" data-toggle="tooltip" data-placement="top"
                                    title="Bert-VITS2 v2.2: 融合文本语义">text_prompt</label>
-                            <input type="text" class="form-control text_prompt" id="input_text_prompt3" oninput="updateLink()"
+                            <input type="text" class="form-control text_prompt" id="input_text_prompt3"
+                                   oninput="updateLink()"
                                    value=""
                                    placeholder=""/>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="style_text" data-toggle="tooltip" data-placement="top"
                                    title="Bert-VITS2 v2.3: 融合文本语义">style_text</label>
-                            <input type="text" class="form-control style_text" id="input_style_text3" oninput="updateLink()"
+                            <input type="text" class="form-control style_text" id="input_style_text3"
+                                   oninput="updateLink()"
                                    value=""
                                    placeholder=""/>
                         </div>
@@ -429,7 +431,27 @@
     </div>
     <br/>
 
+
 </main>
+
+<div class="floating-icon" id="apiKeyIcon">
+    <label data-toggle="tooltip" data-placement="left" data-bs-original-title="api_key">
+            <span class="settings-icon"><svg xmlns="http://www.w3.org/2000/svg" width="13px"
+                                                               height="13px" viewBox="0 0 24 24" fill="none"
+                                                               stroke="currentColor" stroke-width="2"
+                                                               stroke-linecap="round" stroke-linejoin="round"
+                                                               class="feather feather-settings" data-original-title=""
+                                                               title=""><circle cx="12" cy="12" r="3"></circle><path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span>
+    </label>
+    <div class="api-key-input" id="apiKeyInput">
+        <div class="input-group-prepend">
+            <span class="input-group-text">API Key</span>
+        </div>
+        <input type="text" class="form-control" id="apiKey" placeholder="Enter your API key" oninput="updateLink()">
+        <button class="btn btn-primary" onclick="saveApiKey()">Save</button>
+    </div>
+</div>
 
 {% include 'includes/scripts.html' %}
 

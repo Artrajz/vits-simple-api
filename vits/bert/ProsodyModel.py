@@ -5,6 +5,11 @@ import torch.nn.functional as F
 
 from transformers import BertModel, BertConfig, BertTokenizer
 
+try:
+    from contants import config
+except:
+    from contants import config
+
 
 class CharEmbedding(nn.Module):
     def __init__(self, model_dir):
@@ -35,8 +40,9 @@ class TTSProsody(object):
         self.char_model = CharEmbedding(path)
         self.char_model.load_state_dict(
             torch.load(
-                os.path.join(path, 'prosody_model.pt'),
-                map_location="cpu"
+                os.path.join(config.abs_path, config.system.data_path, config.model_config.vits_chinese_bert,
+                             "prosody_model.pt"),
+                map_location=config.system.device
             ),
             strict=False
         )

@@ -9,32 +9,34 @@ import numpy as np
 import psutil
 import torch
 
-from utils.config_manager import global_config as config
+# from contants import config
+from contants import config
 import utils
 from bert_vits2 import Bert_VITS2
 from contants import ModelType
 from logger import logger
-from observer import Subject
+from manager.observer import Subject
 from utils.data_utils import HParams
 from vits import VITS
 from vits.hubert_vits import HuBert_VITS
 from vits.w2v2_vits import W2V2_VITS
 
-CHINESE_ROBERTA_WWM_EXT_LARGE = os.path.join(config.ABS_PATH, "bert_vits2/bert/chinese-roberta-wwm-ext-large")
-BERT_BASE_JAPANESE_V3 = os.path.join(config.ABS_PATH, "bert_vits2/bert/bert-base-japanese-v3")
-BERT_LARGE_JAPANESE_V2 = os.path.join(config.ABS_PATH, "bert_vits2/bert/bert-large-japanese-v2")
-DEBERTA_V2_LARGE_JAPANESE = os.path.join(config.ABS_PATH, "bert_vits2/bert/deberta-v2-large-japanese")
-DEBERTA_V3_LARGE = os.path.join(config.ABS_PATH, "bert_vits2/bert/deberta-v3-large")
-WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM = os.path.join(config.ABS_PATH,
-                                                           "bert_vits2/emotional/wav2vec2-large-robust-12-ft-emotion-msp-dim")
+CHINESE_ROBERTA_WWM_EXT_LARGE = os.path.join(config.abs_path, "data/bert/chinese-roberta-wwm-ext-large")
+BERT_BASE_JAPANESE_V3 = os.path.join(config.abs_path, "data/bert/bert-base-japanese-v3")
+BERT_LARGE_JAPANESE_V2 = os.path.join(config.abs_path, "data/bert/bert-large-japanese-v2")
+DEBERTA_V2_LARGE_JAPANESE = os.path.join(config.abs_path, "data/bert/deberta-v2-large-japanese")
+DEBERTA_V3_LARGE = os.path.join(config.abs_path, "data/bert/deberta-v3-large")
+WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM = os.path.join(config.abs_path,
+                                                           "data/emotional/wav2vec2-large-robust-12-ft-emotion-msp-dim")
 
 
 class ModelManager(Subject):
-    def __init__(self, device=config.DEVICE):
+    def __init__(self, device=config.system.device):
         self.device = device
         self.logger = logger
 
-        self.models = {  # "model_id":([model_path, config_path], model, n_speakers)
+        self.models = {
+            # "model_id": {"model_path": model_path, "config_path": config_path, "model": model, "n_speakers": n_speakers}
             ModelType.VITS: {},
             ModelType.HUBERT_VITS: {},
             ModelType.W2V2_VITS: {},
@@ -75,18 +77,24 @@ class ModelManager(Subject):
             ModelType.W2V2_VITS: W2V2_VITS,
             ModelType.BERT_VITS2: Bert_VITS2
         }
-        
+
         self.available_tts_model = set()
 
-    def model_init(self, model_list):
-        if model_list is None: model_list = []
-        for model_path, config_path in model_list:
-            self.load_model(model_path, config_path)
+    def model_init(self):
+        if config.tts_config.auto_load:
+            models = self.scan_path()
+            for model in models:
+                self.load_model(model.get("model_path"), model.get("config_path"))
+        else:
+            models = config.tts_config.asdict()["models"]
+            for model_path, config_path in models:
+                self.load_model(model_path, config_path)
 
-        if config.model_config.get("dimensional_emotion_model", None) is not None:
+        dimensional_emotion_model_path = os.path.join(config.abs_path, config.system.data_path,
+                                                      config.model_config.dimensional_emotion_model)
+        if os.path.isfile(dimensional_emotion_model_path):
             if self.dimensional_emotion_model is None:
-                self.dimensional_emotion_model = self.load_dimensional_emotion_model(
-                    config.model_config["dimensional_emotion_model"])
+                self.dimensional_emotion_model = self.load_dimensional_emotion_model(dimensional_emotion_model_path)
 
         self.log_device_info()
 
@@ -150,7 +158,10 @@ class ModelManager(Subject):
         if self.device.type == 'cuda':
             if cuda_available:
                 device_name = torch.cuda.get_device_name(self.device.index)
-                self.logger.info(f"Using GPU on {device_name}, GPU Device Index: {self.device.index}")
+                gpu_memory_info = round(torch.cuda.get_device_properties(self.device).total_memory / 1024 ** 3)  # GB
+                gpu_memory_info = round(torch.cuda.get_device_properties(self.device).total_memory / 1024 ** 3)  # GB
+                self.logger.info(
+                    f"Using GPU on {device_name} {gpu_memory_info}GB, GPU Device Index: {self.device.index}")
             else:
                 self.logger.warning("GPU device specified, but CUDA is not available.")
         else:
@@ -158,7 +169,10 @@ class ModelManager(Subject):
             cpu_name = cpu_info['brand_raw']
             cpu_count = psutil.cpu_count(logical=False)
             thread_count = psutil.cpu_count(logical=True)
-            self.logger.info(f"Using CPU on {cpu_name} with {cpu_count} cores and {thread_count} threads.")
+            memory_info = psutil.virtual_memory()
+            total_memory = round(memory_info.total / (1024 ** 3))
+            self.logger.info(
+                f"Using CPU on {cpu_name} with {cpu_count} cores and {thread_count} threads. Total memory: {total_memory}GB")
 
     def _load_model_from_path(self, model_path, config_path):
         hps = utils.get_hparams_from_file(config_path)
@@ -177,21 +191,24 @@ class ModelManager(Subject):
         if model_type == ModelType.VITS:
             bert_embedding = getattr(hps.data, 'bert_embedding', getattr(hps.model, 'bert_embedding', False))
             if bert_embedding and self.tts_front is None:
-                self.load_VITS_PinYin_model(os.path.join(config.ABS_PATH, "vits/bert"))
-            if not config["DYNAMIC_LOADING"]:
+                self.load_VITS_PinYin_model(
+                    os.path.join(config.abs_path, config.system.data_path, config.model_config.vits_chinese_bert))
+            if not config.vits_config.dynamic_loading:
                 model.load_model()
             self.available_tts_model.add(ModelType.VITS.value)
 
         if model_type == ModelType.W2V2_VITS:
             if self.emotion_reference is None:
-                self.emotion_reference = self.load_npy(config["model_config"]["dimensional_emotion_npy"])
+                self.emotion_reference = self.load_npy(
+                    os.path.join(config.abs_path, config.system.data_path, config.model_config.dimensional_emotion_npy))
             model.load_model(emotion_reference=self.emotion_reference,
                              dimensional_emotion_model=self.dimensional_emotion_model)
             self.available_tts_model.add(ModelType.W2V2_VITS.value)
 
         if model_type == ModelType.HUBERT_VITS:
             if self.hubert is None:
-                self.hubert = self.load_hubert_model(config["model_config"]["hubert_soft_model"])
+                self.hubert = self.load_hubert_model(
+                    os.path.join(config.abs_path, config.system.data_path, config.model_config.hubert_soft_0d54a1f4))
             model.load_model(hubert=self.hubert)
 
         if model_type == ModelType.BERT_VITS2:
@@ -239,24 +256,27 @@ class ModelManager(Subject):
     def load_model(self, model_path: str, config_path: str):
         try:
             model_path = os.path.normpath(model_path)
-            if model_path.startswith('Model'):
-                model_path = os.path.join(config.ABS_PATH, model_path)
+            if model_path.startswith('models'):
+                model_path = os.path.join(config.abs_path, config.system.data_path, model_path)
             else:
-                model_path = os.path.join(config.ABS_PATH, 'Model', model_path)
+                model_path = os.path.join(config.abs_path, config.system.data_path, config.tts_config.models_path,
+                                          model_path)
 
             config_path = os.path.normpath(config_path)
-            if config_path.startswith('Model'):
-                config_path = os.path.join(config.ABS_PATH, config_path)
+            if config_path.startswith('models'):
+                config_path = os.path.join(config.abs_path, config.system.data_path, config_path)
             else:
-                config_path = os.path.join(config.ABS_PATH, 'Model', config_path)
+                config_path = os.path.join(config.abs_path, config.system.data_path, config.tts_config.models_path,
+                                           config_path)
 
             model_data = self._load_model_from_path(model_path, config_path)
             model_id = model_data["model_id"]
             sid2model = model_data["sid2model"]
             model_type = model_data["model_type"]
 
-            self.models[model_type][model_id] = (
-                [model_path, config_path], model_data["model"], len(model_data["speakers"]))
+            self.models[model_type][model_id] = {"model_path": model_path, "config_path": config_path,
+                                                 "model": model_data["model"],
+                                                 "n_speakers": len(model_data["speakers"])}
             self.sid2model[model_type].extend(sid2model)
             self.voice_speakers[model_type.value].extend(model_data["speakers"])
 
@@ -274,15 +294,17 @@ class ModelManager(Subject):
         model_id = int(model_id)
         try:
             if model_id in self.models[model_type].keys():
-                model_path, model, n_speakers = self.models[model_type][model_id]
+
+                model_path, config_path, model, n_speakers = self.models[model_type][model_id].values()
                 start = 0
-                for key, (_, _, ns) in self.models[model_type].items():
+
+                for key, value in self.models[model_type].items():
                     if key == model_id:
                         break
-                    start += ns
+                    start += value.get("n_speakers")
 
                 if model_type == ModelType.BERT_VITS2:
-                    for bert_model_name in self.models[model_type][model_id][1].bert_model_names.values():
+                    for bert_model_name in self.models[model_type][model_id]["model"].bert_model_names.values():
                         self.model_handler.release_bert(bert_model_name)
 
                 del self.sid2model[model_type][start:start + n_speakers]
@@ -357,12 +379,12 @@ class ModelManager(Subject):
             self.models.insert(new_index, model)
 
     def get_models_path(self):
-        """按返回模型路径列表，列表每一项为[model_path, config_path]"""
+        """按返回模型路径列表，列表每一项为{"model_path": model_path, "config_path": config_path}"""
         info = []
-
         for models in self.models.values():
-            for values in models.values():
-                info.append(values[0])
+            for model in models.values():
+                info.append({"model_path": model.get("model_path"),
+                             "config_path": model.get("config_path")})
 
         return info
 
@@ -389,12 +411,14 @@ class ModelManager(Subject):
             ModelType.BERT_VITS2.value: []
         }
         for model_type, model_data in self.models.items():
-            for model_id, (path, _, n_speakers) in model_data.items():
+            for model_id, model in model_data.items():
                 info[model_type.value].append(
                     {"model_id": model_id,
-                     "model_path": os.path.basename(os.path.dirname(path[0])) + "/" + os.path.basename(path[0]),
-                     "config_path": os.path.basename(os.path.dirname(path[1])) + "/" + os.path.basename(path[1]),
-                     "n_speakers": n_speakers})
+                     "model_path": os.path.basename(os.path.dirname(model.get("model_path"))) + "/" + os.path.basename(
+                         model.get("model_path")),
+                     "config_path": os.path.basename(
+                         os.path.dirname(model.get("config_path"))) + "/" + os.path.basename(model.get("config_path")),
+                     "n_speakers": model.get("n_speakers")})
 
         return info
 
@@ -462,15 +486,35 @@ class ModelManager(Subject):
         return emotion_reference
 
     def scan_path(self):
-        folder_path = os.path.join(config.ABS_PATH, 'Model')
+        folder_path = os.path.join(config.abs_path, config.system.data_path, config.tts_config.models_path)
+        pth_files = glob.glob(folder_path + "/**/*.pth", recursive=True)
+        all_paths = []
+
+        for id, pth_file in enumerate(pth_files):
+            dir_name = os.path.dirname(pth_file)
+            json_file = glob.glob(dir_name + "/*.json", recursive=True)[0]
+            relative_pth_path = os.path.relpath(pth_file, folder_path)
+            relative_pth_path = f"{os.path.dirname(relative_pth_path)}/{os.path.basename(relative_pth_path)}"
+            relative_json_path = os.path.relpath(json_file, folder_path)
+            relative_json_path = f"{os.path.dirname(relative_json_path)}/{os.path.basename(relative_json_path)}"
+            info = {
+                'model_id': id,
+                'model_path': relative_pth_path,
+                'config_path': relative_json_path
+            }
+            all_paths.append(info)
+
+        return all_paths
+
+    def scan_unload_path(self):
+        folder_path = os.path.join(config.abs_path, config.system.data_path, config.tts_config.models_path)
         pth_files = glob.glob(folder_path + "/**/*.pth", recursive=True)
         all_paths = []
         unload_paths = []
-
         loaded_paths = []
-        for path in self.get_models_path():
+        for model in self.get_models_path():
             # 只取已加载的模型路径
-            loaded_paths.append(path[0])
+            loaded_paths.append(model.get("model_path"))
 
         for id, pth_file in enumerate(pth_files):
             dir_name = os.path.dirname(pth_file)

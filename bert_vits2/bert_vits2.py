@@ -12,6 +12,7 @@ from bert_vits2.models_v230 import SynthesizerTrn as SynthesizerTrn_v230
 from bert_vits2.text import *
 from bert_vits2.text.cleaner import clean_text
 from bert_vits2.utils import process_legacy_versions
+from contants import config
 from utils import get_hparams_from_file
 from utils.sentence import split_by_language
 
@@ -92,6 +93,7 @@ class Bert_VITS2:
             self.num_tones = num_tones
             if "ja" in self.lang: self.bert_model_names.update({"ja": "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM"})
             if "en" in self.lang: self.bert_model_names.update({"en": "DEBERTA_V3_LARGE"})
+
         elif self.version in ["2.3", "2.3.0"]:
             self.version = "2.3"
             self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja", "en"])
@@ -99,15 +101,17 @@ class Bert_VITS2:
             self.text_extra_str_map.update({"en": "_v230"})
             if "ja" in self.lang: self.bert_model_names.update({"ja": "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM"})
             if "en" in self.lang: self.bert_model_names.update({"en": "DEBERTA_V3_LARGE"})
-        elif self.version.lower().replace("-", "_") in ["extra", "zh_clap"]:
+
+        elif self.version is not None and self.version.lower().replace("-", "_") in ["extra", "zh_clap"]:
             self.version = "extra"
             self.hps_ms.model.emotion_embedding = 2
             self.hps_ms.model.n_layers_trans_flow = 6
             self.lang = ["zh"]
             self.num_tones = num_tones
             self.zh_bert_extra = True
-            self.bert_model_names.update({"zh": "Erlangshen-MegatronBert-1.3B-Chinese"})
+            self.bert_model_names.update({"zh": "Erlangshen_MegatronBert_1.3B_Chinese"})
             self.bert_extra_str_map.update({"zh": "_extra"})
+
         else:
             logging.debug("Version information not found. Loaded as the newest version: v2.3.")
             self.version = "2.3"
@@ -214,7 +218,7 @@ class Bert_VITS2:
             emo = get_clap_audio_feature(reference_audio, self.model_handler.clap_model,
                                          self.model_handler.clap_processor, self.device)
         else:
-            if text_prompt is None: text_prompt = "Happy"
+            if text_prompt is None: text_prompt = config.bert_vits2_config.text_prompt
             emo = get_clap_text_feature(text_prompt, self.model_handler.clap_model,
                                         self.model_handler.clap_processor, self.device)
         emo = torch.squeeze(emo, dim=1).unsqueeze(0)
