@@ -62,6 +62,7 @@ function getLink() {
     let noise = document.getElementById("input_noise" + currentModelPage).value;
     let noisew = document.getElementById("input_noisew" + currentModelPage).value;
     let segment_size = document.getElementById("input_segment_size" + currentModelPage).value;
+    let api_key = document.getElementById("apiKey").value;
 
     let url = baseUrl
     let streaming = null;
@@ -134,6 +135,11 @@ function getLink() {
         if (style_weight !== null && style_weight !== "")
             url += "&style_weight=" + style_weight;
     }
+
+    if (api_key != "") {
+        url += "&api_key=" + api_key
+    }
+
     url += "&text=" + text
     return url;
 }
@@ -191,6 +197,7 @@ function setAudioSourceByPost() {
     let noise = $("#input_noise" + currentModelPage).val();
     let noisew = $("#input_noisew" + currentModelPage).val();
     let segment_size = $("#input_segment_size" + currentModelPage).val();
+    let api_key = $("#apiKey").val();
 
     let formData = new FormData();
     formData.append('text', text);
@@ -262,6 +269,9 @@ function setAudioSourceByPost() {
     }
     if (currentModelPage == 3 && style_weight) {
         formData.append('style_weight', style_weight);
+    }
+    if (api_key != "") {
+        formData.append('api_key', api_key);
     }
 
     let downloadButton = document.getElementById("downloadButton" + currentModelPage);
@@ -369,6 +379,46 @@ function setDefaultParameter() {
         }
     });
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+    var apiKeyIcon = document.getElementById('apiKeyIcon');
+    var apiKeyInput = document.getElementById('apiKeyInput');
+    var apiKeyField = document.getElementById('apiKey');
+
+    // 检查 apiKey 是否已存储在 localStorage 中
+    var storedApiKey = localStorage.getItem('apiKey');
+    if (storedApiKey) {
+        apiKeyField.value = storedApiKey;
+    }
+
+    // 点击图标时切换 apiKeyInput 的可见性
+    apiKeyIcon.addEventListener('click', function (event) {
+        apiKeyInput.style.display = apiKeyInput.style.display === 'flex' ? 'none' : 'flex';
+        // 停止事件传播，防止文档点击事件立即隐藏输入框
+        event.stopPropagation();
+    });
+
+    // 在点击其他地方时隐藏 apiKeyInput
+    document.addEventListener('click', function () {
+        apiKeyInput.style.display = 'none';
+    });
+
+    // 防止点击输入框时输入框被隐藏
+    apiKeyInput.addEventListener('click', function (event) {
+        event.stopPropagation();
+    });
+});
+
+function saveApiKey() {
+    var apiKeyField = document.getElementById('apiKey');
+    var apiKey = apiKeyField.value;
+
+    // 将 apiKey 保存到 localStorage 中
+    localStorage.setItem('apiKey', apiKey);
+
+    document.getElementById('apiKeyInput').style.display = 'none';
+}
+
 
 $(document).ready(function () {
     speakersInit();
