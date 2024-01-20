@@ -53,14 +53,16 @@ model load
 }
 
 .model-load-item {
+    margin: 6px;
     padding: 10px;
-    border-bottom: gray;
-    border-width: 2px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
     cursor: pointer;
+    background-color: rgba(199, 199, 203, 0.13);
 }
 
 .model-load-item:hover {
-    background-color: rgba(194, 182, 208, 0.13);
+    background-color: rgba(101, 99, 101, 0.13);
 }
 
 .unload-model-id {

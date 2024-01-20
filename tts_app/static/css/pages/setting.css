@@ -9,10 +9,19 @@
     margin: 20px;
 }
 
-.configuration .title{
-    font-size: 1.5rem;
+.config-wrapper {
+    padding: 20px;
+    margin-bottom: 20px;
+    border: solid white;
+    border-radius: 15px;
+    background-color: white;
+
 }
 
+.config-wrapper .title {
+    padding: 0.375rem 0.75rem;
+    font-size: 1.5rem;
+}
 
 #addModelRow {
     width: max-content;
@@ -40,5 +49,7 @@
 .config-save:hover {
     background-color: #673ab7;
 }
+
+
 
 

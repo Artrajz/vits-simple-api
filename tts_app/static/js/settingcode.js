@@ -95,6 +95,16 @@ function show_config(configData) {
         var formattedKey = key.replace(/_/g, '-');
         $('#language-identification ' + '#' + formattedKey).val(value)
     });
+
+    $.each(configData.http_service, function (key, value) {
+        var formattedKey = key.replace(/_/g, '-');
+        if (formattedKey == 'api-key-enable' || formattedKey == 'debug') {
+            $('#' + formattedKey).prop('checked', value);
+        } else {
+            $('#' + formattedKey).val(value);
+        }
+    });
+
     $.each(configData.system, function (key, value) {
         var formattedKey = key.replace(/_/g, '-');
         if (formattedKey == 'api-key-enable' || formattedKey == 'cache-audio') {
@@ -102,7 +112,6 @@ function show_config(configData) {
         } else {
             $('#' + formattedKey).val(value);
         }
-
     });
 
     $.each(configData.admin, function (key, value) {
