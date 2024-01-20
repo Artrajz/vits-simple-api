@@ -3,6 +3,8 @@ import sys
 import logging
 import torch
 
+from contants import config
+
 MATPLOTLIB_FLAG = False
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
@@ -11,7 +13,7 @@ logger = logging
 
 def load_checkpoint(checkpoint_path, model, optimizer=None, skip_optimizer=False, version=None):
     assert os.path.isfile(checkpoint_path)
-    checkpoint_dict = torch.load(checkpoint_path, map_location='cpu')
+    checkpoint_dict = torch.load(checkpoint_path, map_location=config.system.device)
     iteration = checkpoint_dict['iteration']
     learning_rate = checkpoint_dict['learning_rate']
     if optimizer is not None and not skip_optimizer and checkpoint_dict['optimizer'] is not None:

@@ -42,7 +42,7 @@ class TTSProsody(object):
             torch.load(
                 os.path.join(config.abs_path, config.system.data_path, config.model_config.vits_chinese_bert,
                              "prosody_model.pt"),
-                map_location="cpu"
+                map_location=config.system.device
             ),
             strict=False
         )
