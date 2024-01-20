@@ -3,21 +3,21 @@ import re
 from unidecode import unidecode
 import pyopenjtalk
 
-from config import ABS_PATH
+from contants import config
 from utils.download import download_file
 
 URLS = [
-    "https://github.com/r9y9/open_jtalk/releases/download/v1.11.1/open_jtalk_dic_utf_8-1.11.tar.gz",
-    "https://ghproxy.com/https://github.com/r9y9/open_jtalk/releases/download/v1.11.1/open_jtalk_dic_utf_8-1.11.tar.gz",
+    # "https://github.com/r9y9/open_jtalk/releases/download/v1.11.1/open_jtalk_dic_utf_8-1.11.tar.gz",
+    "https://github.moeyy.xyz/https://github.com/r9y9/open_jtalk/releases/download/v1.11.1/open_jtalk_dic_utf_8-1.11.tar.gz",
+    # "https://ghproxy.com/https://github.com/r9y9/open_jtalk/releases/download/v1.11.1/open_jtalk_dic_utf_8-1.11.tar.gz",
 ]
 install_path = os.path.dirname(pyopenjtalk.__file__)
 dict_path = os.path.join(install_path, "open_jtalk_dic_utf_8-1.11", "char.bin")
-TARGET_PATH = os.path.join(ABS_PATH, "open_jtalk_dic_utf_8-1.11.tar.gz")
+TARGET_PATH = os.path.join(config.abs_path, config.system.cache_path, "open_jtalk_dic_utf_8-1.11.tar.gz")
 EXTRACT_DESTINATION = os.path.join(install_path, "")
-EXPECTED_MD5 = None
 
 if not os.path.exists(dict_path):
-    success, message = download_file(URLS, TARGET_PATH, EXPECTED_MD5, EXTRACT_DESTINATION)
+    success, message = download_file(URLS, target_path=TARGET_PATH, extract_destination=EXTRACT_DESTINATION)
 
 # Regular expression matching Japanese without punctuation marks:
 _japanese_characters = re.compile(
