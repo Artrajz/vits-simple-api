@@ -10,6 +10,7 @@ try:
 except:
     from contants import config
 
+
 class CharEmbedding(nn.Module):
     def __init__(self, model_dir):
         super().__init__()
@@ -39,7 +40,8 @@ class TTSProsody(object):
         self.char_model = CharEmbedding(path)
         self.char_model.load_state_dict(
             torch.load(
-                config.ModelPath.VITS_CHINESE_BERT,
+                os.path.join(config.abs_path, config.system.data_path, config.model_config.vits_chinese_bert,
+                             "prosody_model.pt"),
                 map_location="cpu"
             ),
             strict=False

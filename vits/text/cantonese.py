@@ -10,7 +10,7 @@ URLS = [
     "https://github.moeyy.xyz/https://github.com/CjangCjengh/chinese-dialect-lexicons/releases/download/v1.0.3/chinese_dialects.7z",
     "https://ghproxy.com/https://github.com/CjangCjengh/chinese-dialect-lexicons/releases/download/v1.0.3/chinese_dialects.7z",
 ]
-TARGET_PATH = os.path.join(config.abs_path, "vits/text/chinese_dialects.7z")
+TARGET_PATH = os.path.join(config.abs_path, config.system.cache_path, "chinese_dialects.7z")
 EXTRACT_DESTINATION = os.path.join(config.abs_path, config.system.cache_path, "vits/text/chinese_dialect_lexicons/")
 OPENCC_FILE_PATH = os.path.join(config.abs_path, "vits/text/chinese_dialect_lexicons/jyutjyu.json")
 

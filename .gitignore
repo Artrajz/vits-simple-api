@@ -12,5 +12,5 @@ phrases_dict.txt
 /data/emotional/dimensional_emotion_model/model.onnx
 /data/hubert_soft/hubert-soft-0d54a1f4.pt
 /data/emotional/dimensional_emotion_npy/
-/data/bert/prosody_model/prosody_model.pt
+/data/bert/vits_chinese_bert/prosody_model.pt
 /data/emotional/dimensional_emotion_npy/
