@@ -93,6 +93,7 @@ class Bert_VITS2:
             self.num_tones = num_tones
             if "ja" in self.lang: self.bert_model_names.update({"ja": "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM"})
             if "en" in self.lang: self.bert_model_names.update({"en": "DEBERTA_V3_LARGE"})
+
         elif self.version in ["2.3", "2.3.0"]:
             self.version = "2.3"
             self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja", "en"])
@@ -100,7 +101,8 @@ class Bert_VITS2:
             self.text_extra_str_map.update({"en": "_v230"})
             if "ja" in self.lang: self.bert_model_names.update({"ja": "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM"})
             if "en" in self.lang: self.bert_model_names.update({"en": "DEBERTA_V3_LARGE"})
-        elif self.version.lower().replace("-", "_") in ["extra", "zh_clap"]:
+
+        elif self.version is not None and self.version.lower().replace("-", "_") in ["extra", "zh_clap"]:
             self.version = "extra"
             self.hps_ms.model.emotion_embedding = 2
             self.hps_ms.model.n_layers_trans_flow = 6
@@ -109,6 +111,7 @@ class Bert_VITS2:
             self.zh_bert_extra = True
             self.bert_model_names.update({"zh": "Erlangshen_MegatronBert_1.3B_Chinese"})
             self.bert_extra_str_map.update({"zh": "_extra"})
+
         else:
             logging.debug("Version information not found. Loaded as the newest version: v2.3.")
             self.version = "2.3"
