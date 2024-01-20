@@ -126,13 +126,13 @@ Download the VITS model files and place them in the Model directory.
 
 ### Step 2: Loading Models
 
-If you are starting for the first time, modify the default model path configuration in the config.py file (optional).
+After the initial startup, a config.yaml configuration file will be generated. You can modify the tts_config.models in the configuration file or make modifications in the admin panel in the browser.
 
-After the first startup, a config.yml configuration file will be generated. You can either modify the model_list in the configuration file or make changes through the admin backend in the browser.
+**Note: After version 0.6.6, the model loading path has been modified. Please follow the steps below to configure the model path again!**
 
-You can specify the model paths using either absolute or relative paths, where relative paths are considered from the Model folder in the project's root directory.
+The path can be an absolute path or a relative path. If it's a relative path, it starts from the data/models folder in the project root directory.
 
-For example, if the Model folder contains the following files:
+For example, if the data/models folder has the following files:
 
 ```
 ├─model1
@@ -143,36 +143,26 @@ For example, if the Model folder contains the following files:
    └─config.json
 ```
 
-You have multiple options for specifying the paths based on your preference.
+Fill in the configuration like this in the YAML file:
 
-Option 1:
-
-```
-'model_config':
-  'model_list': 
-  - - model1/G_1000.pth
-    - model1/config.json
-  - - model2/G_1000.pth
-    - model2/config.json
+```yaml
+tts_config:
+  models:
+  - config_path: model1/config.json
+    model_path: model1/G_1000.pth
+  - config_path: model2/config.json
+    model_path: model2/G_1000.pth
 ```
 
-Option 2:
+Loading models in the admin panel is more convenient. However, if you want to load the data/models folder, you can only do it by modifying the config.yaml configuration file. The method is to directly fill in the absolute path.
 
-```
-'model_config':
-  'model_list': 
-  - [model1/G_1000.pth, model1/config.json]
-  - [model2/G_1000.pth, model2/config.json]
-```
+Absolute path example:
 
-Option 3:
-
-```
-'model_config':
-  'model_list': [
-    [model1/G_1000.pth, model1/config.json],
-    [model2/G_1000.pth, model2/config.json],
-  ]
+```yaml
+tts_config:
+  models:
+  - config_path: D://model3/config.json
+    model_path: D://model3/G_1000.pth
 ```
 
 # GPU accelerated

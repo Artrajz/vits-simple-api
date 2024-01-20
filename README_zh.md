@@ -129,13 +129,13 @@ python app.py
 
 ### 步骤2: 加载模型
 
-如果是首次启动，在 `config.py` 文件中修改默认模型路径的配置。（非必须）
+首次启动之后会生成一个config.yaml配置文件，可以修改配置文件中的tts_config.models或者在浏览器中进入管理员后台进行修改。
 
-首次启动之后会生成一个config.yml配置文件，可以修改配置文件中的model_list或者在浏览器中进入管理员后台进行修改.
+**注意：v0.6.6版本之后已修改模型读取路径，请重新按照以下步骤配置模型路径！**
 
-路径可填绝对路径或相对路径，相对路径则是从项目根目录中的Model文件夹开头。
+路径可填绝对路径或相对路径，相对路径则是从项目根目录中的data/models文件夹开始。
 
-比如Model文件夹中如下文件有
+比如data/models文件夹中有如下文件
 
 ```
 ├─model1
@@ -146,36 +146,26 @@ python app.py
    └─config.json
 ```
 
-有多种可选的填法，按个人喜好选择
-
-填法1
+填写
 
 ```yaml
-'model_config':
-  'model_list': 
-  - - model1/G_1000.pth
-    - model1/config.json
-  - - model2/G_1000.pth
-    - model2/config.json
+tts_config:
+  models:
+  - config_path: model1/config.json
+    model_path: model1/G_1000.pth
+  - config_path: model2/config.json
+    model_path: model2/G_1000.pth
 ```
 
-填法2
+在后台加载模型比较方便，但如果想加载data/models文件夹，则只能通过修改config.yaml配置文件来加载，方法是直接填写绝对路径。
+
+绝对路径填写：
 
 ```yaml
-'model_config':
-  'model_list': 
-  - [model1/G_1000.pth, model1/config.json]
-  - [model2/G_1000.pth, model2/config.json]
-```
-
-填法3
-
-```yaml
-'model_config':
-  'model_list': [
-    [model1/G_1000.pth, model1/config.json],
-    [model2/G_1000.pth, model2/config.json],
-  ]
+tts_config:
+  models:
+  - config_path: D://model3/config.json
+    model_path: D://model3/G_1000.pth
 ```
 
 # GPU 加速
