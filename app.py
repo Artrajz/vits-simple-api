@@ -46,7 +46,7 @@ if config.system.clean_interval_seconds > 0:
     scheduler.start()
 
 app.register_blueprint(frontend, url_prefix='/')
-app.register_blueprint(voice_api, url_prefix='/voice')
+app.register_blueprint(voice_api, url_prefix='/')
 if config.system.is_admin_enabled:
     app.register_blueprint(auth, url_prefix=config.system.admin_route)
     app.register_blueprint(admin, url_prefix=config.system.admin_route)

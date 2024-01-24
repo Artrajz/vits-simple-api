@@ -37,7 +37,7 @@ def get_param(request_data, key, default, data_type=None):
     return value
 
 
-@voice_api.route('/default_parameter', methods=["GET", "POST"])
+@voice_api.route('/voice/default_parameter', methods=["GET", "POST"])
 def default_parameter():
     data = {"vits_config": config.vits_config.asdict(),
             "w2v2_vits_config": config.w2v2_vits_config.asdict(),
@@ -46,13 +46,17 @@ def default_parameter():
     return jsonify(data)
 
 
-@voice_api.route('/speakers', methods=["GET", "POST"])
-def voice_speakers_api():
-    return jsonify(model_manager.voice_speakers)
+@voice_api.route('/<model_id>/voice/speakers', methods=["GET", "POST"])
+def voice_speakers_api(model_id):
+    return jsonify({f"{ModelType.BERT_VITS2.value}":model_manager.voice_speakers[ModelType.BERT_VITS2.value][model_id]})
 
 
-@voice_api.route('/', methods=["GET", "POST"])
-@voice_api.route('/vits', methods=["GET", "POST"])
+@voice_api.route('/voice/get_models', methods=["GET", "POST"])
+def get_models():
+    return jsonify(model_manager.model_id2model_name)
+
+@voice_api.route('/voice/', methods=["GET", "POST"])
+@voice_api.route('/voice/vits', methods=["GET", "POST"])
 @require_api_key
 def voice_vits_api():
     try:
@@ -141,7 +145,7 @@ def voice_vits_api():
         return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
 
-@voice_api.route('/hubert-vits', methods=["POST"])
+@voice_api.route('/voice/hubert-vits', methods=["POST"])
 @require_api_key
 def voice_hubert_api():
     if request.method == "POST":
@@ -199,7 +203,7 @@ def voice_hubert_api():
         return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
 
-@voice_api.route('/w2v2-vits', methods=["GET", "POST"])
+@voice_api.route('/voice/w2v2-vits', methods=["GET", "POST"])
 @require_api_key
 def voice_w2v2_api():
     try:
@@ -292,8 +296,8 @@ def voice_w2v2_api():
         return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
 
-@voice_api.route('/conversion', methods=["POST"])
-@voice_api.route('/vits/conversion', methods=["POST"])
+@voice_api.route('/voice/conversion', methods=["POST"])
+@voice_api.route('/voice/vits/conversion', methods=["POST"])
 @require_api_key
 def vits_voice_conversion_api():
     if request.method == "POST":
@@ -337,7 +341,7 @@ def vits_voice_conversion_api():
             return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
 
-@voice_api.route('/ssml', methods=["POST"])
+@voice_api.route('/voice/ssml', methods=["POST"])
 @require_api_key
 def ssml_api():
     try:
@@ -370,7 +374,7 @@ def ssml_api():
     return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
 
-@voice_api.route('/dimension-emotion', methods=["POST"])
+@voice_api.route('/voice/dimension-emotion', methods=["POST"])
 @require_api_key
 def dimensional_emotion_api():
     if request.method == "POST":
@@ -388,9 +392,9 @@ def dimensional_emotion_api():
     return send_file(path_or_file=emotion_npy, mimetype=file_type, download_name=fname)
 
 
-@voice_api.route('/bert-vits2', methods=["GET", "POST"])
+@voice_api.route('/<model_id>/voice/bert-vits2', methods=["GET", "POST"])
 @require_api_key
-def voice_bert_vits2_api():
+def voice_bert_vits2_api(model_id):
     try:
         if request.method == "GET":
             request_data = request.args
@@ -427,8 +431,13 @@ def voice_bert_vits2_api():
     #     f"[{ModelType.BERT_VITS2.value}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size}"
     #     f" length_zh:{length_zh} length_ja:{length_ja} length_en:{length_en}")
 
+    # logger.info(
+    #     f"[{ModelType.BERT_VITS2.value}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size}")
+
     logger.info(
-        f"[{ModelType.BERT_VITS2.value}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size}")
+        f"[{ModelType.BERT_VITS2.value}] model_id:{model_id} id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size}")
+
+
     if reference_audio:
         logger.info(f"[{ModelType.BERT_VITS2.value}] reference_audio:{reference_audio.filename}")
     elif emotion:
@@ -447,7 +456,7 @@ def voice_bert_vits2_api():
         logger.info(f"[{ModelType.BERT_VITS2.value}] speaker id is empty")
         return make_response(jsonify({"status": "error", "message": "speaker id is empty"}), 400)
 
-    if id < 0 or id >= model_manager.bert_vits2_speakers_count:
+    if id < 0 or id >= model_manager.bert_vits2_speakers_count(model_id):
         logger.info(f"[{ModelType.BERT_VITS2.value}] speaker id {id} does not exist")
         return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
 
@@ -456,7 +465,7 @@ def voice_bert_vits2_api():
         return make_response(jsonify({"status": "error", "message": f"emotion {emotion} out of the range 0-9"}), 400)
 
     # 校验模型是否支持输入的语言
-    speaker_lang = model_manager.voice_speakers[ModelType.BERT_VITS2.value][id].get('lang')
+    speaker_lang = model_manager.voice_speakers[ModelType.BERT_VITS2.value][model_id][id].get('lang')
     if lang not in ["auto", "mix"] and len(speaker_lang) != 1 and lang not in speaker_lang:
         logger.info(f"[{ModelType.BERT_VITS2.value}] lang \"{lang}\" is not in {speaker_lang}")
         return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}),
@@ -472,7 +481,8 @@ def voice_bert_vits2_api():
 
     fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
-    state = {"text": text,
+    state = {"model_id": str(model_id),
+             "text": text,
              "id": id,
              "format": format,
              "length": length,
@@ -514,7 +524,7 @@ def voice_bert_vits2_api():
     return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 
 
-@voice_api.route('/check', methods=["GET", "POST"])
+@voice_api.route('/voice/check', methods=["GET", "POST"])
 def check():
     try:
         if request.method == "GET":

@@ -1,5 +1,6 @@
 import gc
 import glob
+import hashlib
 import logging
 import os
 import traceback
@@ -43,16 +44,16 @@ class ModelManager(Subject):
             ModelType.BERT_VITS2: {}
         }
         self.sid2model = {  # [real_id, model, model_id]
-            ModelType.VITS: [],
-            ModelType.HUBERT_VITS: [],
-            ModelType.W2V2_VITS: [],
-            ModelType.BERT_VITS2: []
+            ModelType.VITS: {},
+            ModelType.HUBERT_VITS: {},
+            ModelType.W2V2_VITS: {},
+            ModelType.BERT_VITS2: {}
         }
         self.voice_speakers = {
-            ModelType.VITS.value: [],
-            ModelType.HUBERT_VITS.value: [],
-            ModelType.W2V2_VITS.value: [],
-            ModelType.BERT_VITS2.value: []
+            ModelType.VITS.value: {},
+            ModelType.HUBERT_VITS.value: {},
+            ModelType.W2V2_VITS.value: {},
+            ModelType.BERT_VITS2.value: {}
         }
 
         self.emotion_reference = None
@@ -80,6 +81,8 @@ class ModelManager(Subject):
 
         self.available_tts_model = set()
 
+        self.model_id2model_name = {}
+
     def model_init(self):
         if config.tts_config.auto_load:
             models = self.scan_path()
@@ -104,8 +107,12 @@ class ModelManager(Subject):
             f"[{ModelType.HUBERT_VITS.value}] {self.hubert_speakers_count} speakers")
         if self.w2v2_speakers_count != 0: self.logger.info(
             f"[{ModelType.W2V2_VITS.value}] {self.w2v2_speakers_count} speakers")
-        if self.bert_vits2_speakers_count != 0: self.logger.info(
-            f"[{ModelType.BERT_VITS2.value}] {self.bert_vits2_speakers_count} speakers")
+        # if self.bert_vits2_speakers_count != 0: self.logger.info(
+        #     f"[{ModelType.BERT_VITS2.value}] {self.bert_vits2_speakers_count} speakers")
+        for model_id in self.model_id2model_name.keys():
+            self.logger.info(
+                f"[{ModelType.BERT_VITS2.value}] model_id: {model_id} {self.bert_vits2_speakers_count(model_id)} speakers")
+
         self.logger.info(f"{self.speakers_count} speakers in total.")
         if self.speakers_count == 0:
             self.logger.warning(f"No model was loaded.")
@@ -116,7 +123,10 @@ class ModelManager(Subject):
 
     @property
     def speakers_count(self):
-        return self.vits_speakers_count + self.hubert_speakers_count + self.w2v2_speakers_count + self.bert_vits2_speakers_count
+        count = 0
+        for model_id in self.model_id2model_name.keys():
+            count += self.bert_vits2_speakers_count(model_id)
+        return self.vits_speakers_count + self.hubert_speakers_count + self.w2v2_speakers_count + count
 
     @property
     def vits_speakers_count(self):
@@ -134,9 +144,8 @@ class ModelManager(Subject):
     def w2v2_emotion_count(self):
         return len(self.emotion_reference) if self.emotion_reference is not None else 0
 
-    @property
-    def bert_vits2_speakers_count(self):
-        return len(self.voice_speakers[ModelType.BERT_VITS2.value])
+    def bert_vits2_speakers_count(self, model_id):
+        return len(self.voice_speakers[ModelType.BERT_VITS2.value][model_id])
 
     # 添加观察者
     def attach(self, observer):
@@ -228,14 +237,17 @@ class ModelManager(Subject):
             )
             self.available_tts_model.add(ModelType.BERT_VITS2.value)
 
+        folder_name = os.path.basename(os.path.dirname(os.path.dirname(model_path)))
+        # model_id = max([-1] + list(self.models[model_type].keys())) + 1
+        model_id = str(int(hashlib.md5(folder_name.encode()).hexdigest()[:8], 16))
+
         sid2model = []
         speakers = []
-        new_id = len(self.voice_speakers[model_type.value])
-        model_id = max([-1] + list(self.models[model_type].keys())) + 1
+        new_id = len(self.voice_speakers[model_type.value].get(model_id, []))
 
         for real_id, name in enumerate(model.speakers):
             sid2model.append({"real_id": real_id, "model": model, "model_id": model_id})
-            speakers.append({"id": new_id, "name": name, "lang": model.lang})
+            speakers.append({"id": new_id, "name": name, "lang": model.lang, "model_id": model_id})
             new_id += 1
 
         model_data = {
@@ -245,7 +257,8 @@ class ModelManager(Subject):
             "model_path": model_path,
             "config": hps,
             "sid2model": sid2model,
-            "speakers": speakers
+            "speakers": speakers,
+            "folder_name": folder_name
         }
 
         logging.info(
@@ -277,8 +290,15 @@ class ModelManager(Subject):
             self.models[model_type][model_id] = {"model_path": model_path, "config_path": config_path,
                                                  "model": model_data["model"],
                                                  "n_speakers": len(model_data["speakers"])}
-            self.sid2model[model_type].extend(sid2model)
-            self.voice_speakers[model_type.value].extend(model_data["speakers"])
+            if self.sid2model[model_type].get(model_id) is None:
+                self.sid2model[model_type][model_id] = []
+            self.sid2model[model_type][model_id].extend(sid2model)
+
+            if self.voice_speakers[model_type.value].get(model_id) is None:
+                self.voice_speakers[model_type.value][model_id] = []
+            self.voice_speakers[model_type.value][model_id].extend(model_data["speakers"])
+
+            self.model_id2model_name[model_id] = model_data["folder_name"]
 
             self.notify("model_loaded", model_manager=self)
             state = True

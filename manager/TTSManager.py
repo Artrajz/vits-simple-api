@@ -108,11 +108,17 @@ class TTSManager(Observer):
 
         return audio
 
-    def get_model(self, model_type, id):
-        return self.sid2model[model_type][id]["model"]
+    def get_model(self, model_type, id, model_id=None):
+        if model_id is not None:
+            return self.sid2model[model_type][model_id][id]["model"]
+        else:
+            return self.sid2model[model_type][id]["model"]
 
-    def get_real_id(self, model_type, id):
-        return self.sid2model[model_type][id]["real_id"]
+    def get_real_id(self, model_type, id, model_id=None):
+        if model_id is not None:
+            return self.sid2model[model_type][model_id][id]["real_id"]
+        else:
+            return self.sid2model[model_type][id]["real_id"]
 
     def get_model_id(self, model_type, id):
         return self.sid2model[model_type][id]["model_id"]
@@ -433,8 +439,8 @@ class TTSManager(Observer):
                     yield encoded_audio_chunk
 
     def bert_vits2_infer_v2(self, state, encode=True):
-        model = self.get_model(model_type=ModelType.BERT_VITS2, id=state["id"])
-        state["id"] = self.get_real_id(model_type=ModelType.BERT_VITS2, id=state["id"])
+        model = self.get_model(model_type=ModelType.BERT_VITS2, id=state["id"], model_id=state["model_id"])
+        state["id"] = self.get_real_id(model_type=ModelType.BERT_VITS2, id=state["id"], model_id=state["model_id"])
 
         # 去除所有多余的空白字符
         if state["text"] is not None:
