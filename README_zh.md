@@ -406,10 +406,10 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 | sdp噪声        | noisew          | false   | 从`config.yaml`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
 | 分段阈值       | segment_size    | false   | 从`config.yaml`中获取 | int   | 按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段。 |
 | SDP/DP混合比   | sdp_ratio       | false   | 从`config.yaml`中获取 | int   | SDP在合成时的占比，理论上此比率越高，合成的语音语调方差越大。 |
-| 情感控制       | emotion         | false   | None                 | int   | Bert-VITS2 v2.1可用，范围为0-9                               |
+| 情感控制       | emotion         | false   | 从`config.yaml`中获取 | int   | Bert-VITS2 v2.1可用，范围为0-9                               |
 | 情感参考音频   | reference_audio | false   | None                 |       | Bert-VITS2 v2.1 使用参考音频来控制合成音频的情感             |
-| 文本提示词     | text_prompt     | false   | None                 | str   | Bert-VITS2 v2.2 文本提示词，用于控制情感                     |
-| 文本提示词     | style_text      | false   | None                 | str   | Bert-VITS2 v2.3 文本提示词，用于控制情感                     |
+| 文本提示词     | text_prompt     | false   | 从`config.yaml`中获取 | str   | Bert-VITS2 v2.2 文本提示词，用于控制情感                     |
+| 文本提示词     | style_text      | false   | 从`config.yaml`中获取 | str   | Bert-VITS2 v2.3 文本提示词，用于控制情感                     |
 | 文本提示词权重 | style_weight    | false   | 从`config.yaml`中获取 | float | Bert-VITS2 v2.3 文本提示词，用于提示词权重                   |
 
 ## SSML语音合成标记语言

@@ -396,10 +396,10 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 | SDP noise        | noisew          | false   | From `config.yaml` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
 | Segment Size     | segment_size    | false   | From `config.yaml` | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds segment_size. If segment_size<=0, the text will not be divided into paragraphs. |
 | SDP/DP mix ratio | sdp_ratio       | false   | From `config.yaml` | int   | The theoretical proportion of SDP during synthesis, the higher the ratio, the larger the variance in synthesized voice tone. |
-| Emotion          | emotion         | false   | None              | int | Available for Bert-VITS2 v2.1, ranging from 0 to 9           |
+| Emotion          | emotion         | false   | From `config.yaml` | int | Available for Bert-VITS2 v2.1, ranging from 0 to 9           |
 | Emotion reference Audio | reference_audio | false   | None              |       | Bert-VITS2 v2.1 uses reference audio to control the synthesized audio's emotion |
-|Text Prompt|text_prompt|false|None|str|Bert-VITS2 v2.2 text prompt used for emotion control|
-|Style Text|style_text|false|None|str|Bert-VITS2 v2.3 text prompt used for emotion control|
+|Text Prompt|text_prompt|false|From `config.yaml`|str|Bert-VITS2 v2.2 text prompt used for emotion control|
+|Style Text|style_text|false|From `config.yaml`|str|Bert-VITS2 v2.3 text prompt used for emotion control|
 |Style Text Weight|style_weight|false|From `config.yaml`|float|Bert-VITS2 v2.3 text prompt weight used for prompt weighting|
 
 

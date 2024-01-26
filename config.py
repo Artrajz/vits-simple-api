@@ -139,7 +139,7 @@ class BertVits2Config(AsDictMixin):
     sdp_ratio: float = 0.2
     emotion: int = 0
     text_prompt: str = "Happy"
-    style_text: str = "Happy"
+    style_text: str = None
     style_weight: float = 0.7
     use_streaming: bool = False
     # Can be set to "float16"/"fp16" or "int8".
