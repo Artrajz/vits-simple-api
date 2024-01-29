@@ -169,7 +169,9 @@ class Bert_VITS2:
                 word2ph[i] = word2ph[i] * 2
             word2ph[0] += 1
 
-        style_text = None if style_text == "" else style_text
+        if style_text == "" or self.zh_bert_extra:
+            style_text = None
+
         bert = self.model_handler.get_bert_feature(norm_text, word2ph, bert_feature_lang_str,
                                                    self.bert_model_names[language_str], style_text, style_weight)
         del word2ph

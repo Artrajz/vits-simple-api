@@ -102,10 +102,17 @@ class ModelHandler:
         self.clap = None
         self.device = device
         if config.bert_vits2_config.torch_data_type != "":
-            if config.bert_vits2_config.torch_data_type.lower() in ["float16","fp16"]:
+            if config.bert_vits2_config.torch_data_type.lower() in ["float16", "fp16"]:
                 self.torch_dtype = torch.float16
             elif config.bert_vits2_config.torch_data_type.lower() in ["int8"]:
                 self.torch_dtype = torch.int8
+        else:
+            self.torch_dtype = None
+
+        if config.bert_vits2_config.torch_data_type.lower() in ["float16", "fp16"]:
+            self.torch_dtype = torch.float16
+        elif config.bert_vits2_config.torch_data_type.lower() in ["int8"]:
+            self.torch_dtype = torch.int8
         else:
             self.torch_dtype = None
 
@@ -205,8 +212,9 @@ class ModelHandler:
                 logging.info(f"Loading CLAP_HTSAT_FUSED: {model_path}")
                 try:
                     self.clap = {}
-                    self.clap["model"] = ClapModel.from_pretrained(model_path).to(self.device)
-                    self.clap["processor"] = ClapProcessor.from_pretrained(model_path)
+                    self.clap["model"] = ClapModel.from_pretrained(model_path, torch_dtype=self.torch_dtype).to(
+                        self.device)
+                    self.clap["processor"] = ClapProcessor.from_pretrained(model_path, torch_dtype=self.torch_dtype)
                     self.clap["reference_count"] = 1
                     logging.info(f"Success loading: {model_path}")
                     break

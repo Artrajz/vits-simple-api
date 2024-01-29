@@ -143,7 +143,7 @@ class BertVits2Config(AsDictMixin):
     style_weight: float = 0.7
     use_streaming: bool = False
     # Can be set to "float16"/"fp16" or "int8".
-    torch_data_type:str = ""
+    torch_data_type: str = ""
 
 
 @dataclass
@@ -228,7 +228,7 @@ class HttpService(AsDictMixin):
 class LogConfig(AsDictMixin):
     # Logs path
     logs_path: str = "logs"
-    # Set the number of backup log files to keep. 
+    # Set the number of backup log files to keep.
     logs_backupcount: int = 30
     # logging_level:DEBUG/INFO/WARNING/ERROR/CRITICAL
     logging_level: str = "DEBUG"
@@ -350,7 +350,7 @@ class Config(AsDictMixin):
 
                 # If parameters are incomplete, they will be automatically filled in upon saving.
                 Config.save_config(config)
-                
+
                 return config
             except Exception as e:
                 ValueError(e)
