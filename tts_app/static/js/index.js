@@ -4,15 +4,18 @@ var vitsSpeakersCount = 0;
 var w2v2SpeakersCount = 0;
 var bertVits2SpeakersCount = 0;
 var selectedFile = null;
+var model_id = 0;
 
-function speakersInit() {
+function speakersInit(model_id) {
     $.ajax({
-        url: '/voice/speakers',
+        url: '/' + model_id + '/voice/speakers',
         type: 'GET',
         dataType: 'json',
         success: function (data) {
-            vitsSpeakersCount = data['VITS'].length;
-            w2v2SpeakersCount = data['W2V2-VITS'].length;
+            // vitsSpeakersCount = data['VITS'].length;
+            // w2v2SpeakersCount = data['W2V2-VITS'].length;
+            vitsSpeakersCount = 0;
+            w2v2SpeakersCount = 0;
             bertVits2SpeakersCount = data['BERT-VITS2'].length;
             showModelContentBasedOnStatus();
         },
@@ -43,8 +46,8 @@ function setBaseUrl() {
     let vits_link = document.getElementById("vits_link");
     let speakers_link = document.getElementById("speakers_link");
 
-    let vits_url = baseUrl + "/voice/vits?text=" + text + "&id=" + id;
-    let speakers_url = baseUrl + "/voice/speakers";
+    let vits_url = baseUrl + "/" + model_id + "/voice/vits?text=" + text + "&id=" + id;
+    let speakers_url = baseUrl + "/" + model_id + "/voice/speakers";
 
     vits_link.href = vits_url;
     vits_link.textContent = vits_url;
@@ -84,6 +87,7 @@ function getLink() {
         text_prompt = document.getElementById('input_text_prompt3').value;
         style_text = document.getElementById('input_style_text3').value;
         style_weight = document.getElementById('input_style_weight3').value;
+        url += "/" + model_id;
         url += "/voice/bert-vits2?id=" + id;
 
     } else {
@@ -228,7 +232,7 @@ function setAudioSourceByPost() {
         url = baseUrl + "/voice/w2v2-vits";
     } else if (currentModelPage == 3) {
         sdp_ratio = $("#input_sdp_ratio").val();
-        url = baseUrl + "/voice/bert-vits2";
+        url = baseUrl + "/" + model_id +"/voice/bert-vits2";
         streaming = $("#streaming3")[0];
         // length_zh = $("#input_length_zh3").val();
         // length_ja = $("#input_length_ja3").val();
@@ -421,7 +425,11 @@ function saveApiKey() {
 
 
 $(document).ready(function () {
-    speakersInit();
+    var currentUrl = window.location.href;
+    var modelIdIndex = currentUrl.lastIndexOf('/');
+    model_id = currentUrl.substring(modelIdIndex + 1);
+
+    speakersInit(model_id);
     setDefaultParameter();
     setBaseUrl();
 
