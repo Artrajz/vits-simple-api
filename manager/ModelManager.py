@@ -491,16 +491,19 @@ class ModelManager(Subject):
         all_paths = []
 
         for id, pth_file in enumerate(pth_files):
+            pth_name = os.path.basename(pth_file)
+            if pth_name.startswith(("D_", "DUR_")):
+                continue
             dir_name = os.path.dirname(pth_file)
-            json_file = glob.glob(dir_name + "/*.json", recursive=True)[0]
-            relative_pth_path = os.path.relpath(pth_file, folder_path)
-            relative_pth_path = f"{os.path.dirname(relative_pth_path)}/{os.path.basename(relative_pth_path)}"
-            relative_json_path = os.path.relpath(json_file, folder_path)
-            relative_json_path = f"{os.path.dirname(relative_json_path)}/{os.path.basename(relative_json_path)}"
+            json_files = glob.glob(dir_name + "/*.json", recursive=True)
+            if len(json_files) > 0:
+                json_file = json_files[0]
+            else:
+                continue
             info = {
                 'model_id': id,
-                'model_path': relative_pth_path,
-                'config_path': relative_json_path
+                'model_path': pth_file,
+                'config_path': json_file
             }
             all_paths.append(info)
 
@@ -508,29 +511,24 @@ class ModelManager(Subject):
 
     def scan_unload_path(self):
         folder_path = os.path.join(config.abs_path, config.system.data_path, config.tts_config.models_path)
-        pth_files = glob.glob(folder_path + "/**/*.pth", recursive=True)
-        all_paths = []
+        all_paths = self.scan_path()
         unload_paths = []
         loaded_paths = []
+
         for model in self.get_models_path():
             # 只取已加载的模型路径
             loaded_paths.append(model.get("model_path"))
 
-        for id, pth_file in enumerate(pth_files):
-            dir_name = os.path.dirname(pth_file)
-            json_file = glob.glob(dir_name + "/*.json", recursive=True)[0]
-            relative_pth_path = os.path.relpath(pth_file, folder_path)
-            relative_pth_path = f"{os.path.dirname(relative_pth_path)}/{os.path.basename(relative_pth_path)}"
-            relative_json_path = os.path.relpath(json_file, folder_path)
-            relative_json_path = f"{os.path.dirname(relative_json_path)}/{os.path.basename(relative_json_path)}"
-            info = {
-                'model_id': id,
-                'model_path': relative_pth_path,
-                'config_path': relative_json_path
-            }
-            all_paths.append(info)
+        for info in all_paths:
+            # 将绝对路径修改为相对路径，并将分隔符格式化为'/'
+            relative_pth_path = os.path.relpath(info.get("model_path"), folder_path)
+            formatted_pth_path = os.path.normpath(relative_pth_path).replace("\\", "/")
+            relative_json_path = os.path.relpath(info.get("config_path"), folder_path)
+            formatted_json_path = os.path.normpath(relative_json_path).replace("\\", "/")
 
-            if not self.is_path_loaded(pth_file, loaded_paths):
+
+            if not self.is_path_loaded(info.get("model_path"), loaded_paths):
+                info.update({"model_path": formatted_pth_path, "config_path": formatted_json_path})
                 unload_paths.append(info)
 
         return unload_paths
