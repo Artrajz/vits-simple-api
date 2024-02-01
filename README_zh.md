@@ -178,6 +178,8 @@ tts_config:
     model_path: D://model3/G_1000.pth
 ```
 
+- models_path:是相对于data目录下的模型文件夹，默认为models，auto_load为true时将会加载models_path目录下的所有模型。
+
 #### 其他模型
 
 bert模型以及情感模型下载之后放在`data/bert`文件夹和`data/emotional`文件夹中，找到对应名字放入即可。

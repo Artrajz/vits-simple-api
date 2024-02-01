@@ -175,6 +175,8 @@ tts_config:
     model_path: D://model3/G_1000.pth
 ```
 
+- models_path: This is the models folder relative to the data directory, with the default value being "models". When auto_load is set to true, all models in the models_path directory will be loaded.
+
 #### Other Models
 
 After downloading the BERT model and emotion model, place them in the `data/bert` and `data/emotional` folders respectively. Find the corresponding names and insert them accordingly.
