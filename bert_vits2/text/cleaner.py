@@ -1,5 +1,5 @@
 from bert_vits2.text import chinese, japanese, english, cleaned_text_to_sequence, japanese_v111, chinese_v100, \
-    japanese_v200, english_v200, english_v230
+    japanese_v200, english_v200, english_v230, chinese_v240
 
 language_module_map = {
     'zh': chinese,
@@ -10,6 +10,7 @@ language_module_map = {
     'ja_v200': japanese_v200,
     'en_v200': english_v200,
     'en_v230': english_v230,
+    'zh_v240': chinese_v240,
 }
 
 
@@ -27,10 +28,10 @@ language_module_map = {
 #     return _loaded_modules[language]
 
 
-def clean_text(text, language, tokenizer):
+def clean_text(text, language, tokenizer, pinyinPlus=None):
     language_module = language_module_map[language]
     norm_text = language_module.text_normalize(text)
-    phones, tones, word2ph = language_module.g2p(norm_text, tokenizer=tokenizer)
+    phones, tones, word2ph = language_module.g2p(norm_text, tokenizer=tokenizer, pinyinPlus=pinyinPlus)
     return norm_text, phones, tones, word2ph
 
 

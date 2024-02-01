@@ -6,6 +6,7 @@
 **/pytorch_model.bin
 **/spm.model
 /**/*.pt
+/**/*.onnx
 phrases_dict.txt
 /config.yml
 /config.yaml

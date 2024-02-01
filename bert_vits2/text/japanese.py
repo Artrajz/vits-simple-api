@@ -381,7 +381,7 @@ def rearrange_tones(tones, phones):
     return res
 
 
-def g2p(norm_text, tokenizer):
+def g2p(norm_text, tokenizer, **kwargs):
     sep_text, sep_kata, acc = text2sep_kata(norm_text)
     sep_tokenized = []
     for i in sep_text:

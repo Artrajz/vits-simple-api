@@ -58,7 +58,12 @@ class ModelHandler:
             "Erlangshen_MegatronBert_1.3B_Chinese": [
                 "https://huggingface.co/IDEA-CCNL/Erlangshen-UniMC-MegatronBERT-1.3B-Chinese/resolve/main/pytorch_model.bin",
                 "https://hf-mirror.com/IDEA-CCNL/Erlangshen-UniMC-MegatronBERT-1.3B-Chinese/resolve/main/pytorch_model.bin",
-            ]
+            ],
+            "G2PWModel": [
+                # "https://storage.googleapis.com/esun-ai/g2pW/G2PWModel-v2-onnx.zip",
+                "https://huggingface.co/ADT109119/G2PWModel-v2-onnx/resolve/main/g2pw.onnx",
+                "https://hf-mirror.com/ADT109119/G2PWModel-v2-onnx/resolve/main/g2pw.onnx",
+            ],
         }
 
         self.SHA256 = {
@@ -72,6 +77,8 @@ class ModelHandler:
             "WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM": "176d9d1ce29a8bddbab44068b9c1c194c51624c7f1812905e01355da58b18816",
             "CLAP_HTSAT_FUSED": "1ed5d0215d887551ddd0a49ce7311b21429ebdf1e6a129d4e68f743357225253",
             "Erlangshen_MegatronBert_1.3B_Chinese": "3456bb8f2c7157985688a4cb5cecdb9e229cb1dcf785b01545c611462ffe3579",
+            # "G2PWModel": "bb40c8c7b5baa755b2acd317c6bc5a65e4af7b80c40a569247fbd76989299999",
+            "G2PWModel": "",
         }
         self.model_path = {
             "CHINESE_ROBERTA_WWM_EXT_LARGE": os.path.join(config.abs_path, config.system.data_path,
@@ -92,6 +99,7 @@ class ModelHandler:
                                              config.model_config.clap_htsat_fused),
             "Erlangshen_MegatronBert_1.3B_Chinese": os.path.join(config.abs_path, config.system.data_path,
                                                                  config.model_config.erlangshen_MegatronBert_1_3B_Chinese),
+            "G2PWModel": os.path.join(config.abs_path, config.system.data_path, config.model_config.g2pw_model)
         }
 
         self.lang_bert_func_map = {"zh": zh_bert, "en": en_bert, "ja": ja_bert, "ja_v111": ja_bert_v111,
@@ -100,6 +108,7 @@ class ModelHandler:
         self.bert_models = {}  # Value: (tokenizer, model, reference_count)
         self.emotion = None
         self.clap = None
+        self.pinyinPlus = None
         self.device = device
 
         if config.bert_vits2_config.torch_data_type.lower() in ["float16", "fp16"]:
@@ -230,6 +239,21 @@ class ModelHandler:
         bert_feature = self.lang_bert_func_map[language](norm_text, word2ph, tokenizer, model, self.device,
                                                          style_text=style_text, style_weight=style_weight)
         return bert_feature
+
+    def get_pinyinPlus(self):
+        if self.pinyinPlus is None:
+            from bert_vits2.g2pW.pypinyin_G2pW_bv2 import G2PWPinyin
+
+            logging.info(f"Loading G2PWModel: {self.model_path['G2PWModel']}")
+            self.pinyinPlus = G2PWPinyin(
+                model_dir=self.model_path["G2PWModel"],
+                model_source=self.model_path["Erlangshen_MegatronBert_1.3B_Chinese"],
+                v_to_u=False,
+                neutral_tone_with_five=True,
+            )
+            logging.info("Success loading G2PWModel")
+
+        return self.pinyinPlus
 
     def release_bert(self, bert_model_name):
         if bert_model_name in self.bert_models:

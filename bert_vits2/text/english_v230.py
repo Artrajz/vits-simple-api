@@ -417,7 +417,7 @@ def text_to_words(text, tokenizer):
     return words
 
 
-def g2p(text, tokenizer):
+def g2p(text, tokenizer, **kwargs):
     phones = []
     tones = []
     phone_len = []

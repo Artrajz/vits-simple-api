@@ -164,6 +164,7 @@ class ModelConfig(AsDictMixin):
     dimensional_emotion_npy: Union[str, List[str]] = "dimensional_emotion_npy"
     # w2v2-vits: Need to have both `models.onnx` and `models.yaml` files in the same path.
     dimensional_emotion_model: str = "dimensional_emotion_model/models.yaml"
+    g2pw_model: str = "G2PWModel"
 
 
 @dataclass
