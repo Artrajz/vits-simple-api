@@ -31,9 +31,10 @@ class Bert_VITS2:
         self.zh_bert_extra = False
         self.ja_bert_dim = 1024
         self.num_tones = num_tones
+        self.pinyinPlus = None
 
         # Compatible with legacy versions
-        self.version = process_legacy_versions(self.hps_ms)
+        self.version = process_legacy_versions(self.hps_ms).lower().replace("-", "_")
         self.text_extra_str_map = {"zh": "", "ja": "", "en": ""}
         self.bert_extra_str_map = {"zh": "", "ja": "", "en": ""}
         self.hps_ms.model.emotion_embedding = None
@@ -102,7 +103,7 @@ class Bert_VITS2:
             if "ja" in self.lang: self.bert_model_names.update({"ja": "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM"})
             if "en" in self.lang: self.bert_model_names.update({"en": "DEBERTA_V3_LARGE"})
 
-        elif self.version is not None and self.version.lower().replace("-", "_") in ["extra", "zh_clap"]:
+        elif self.version is not None and self.version in ["extra", "zh_clap"]:
             self.version = "extra"
             self.hps_ms.model.emotion_embedding = 2
             self.hps_ms.model.n_layers_trans_flow = 6
@@ -111,6 +112,17 @@ class Bert_VITS2:
             self.zh_bert_extra = True
             self.bert_model_names.update({"zh": "Erlangshen_MegatronBert_1.3B_Chinese"})
             self.bert_extra_str_map.update({"zh": "_extra"})
+
+        elif self.version is not None and self.version in ["extra_fix", "2.4", "2.4.0"]:
+            self.version = "2.4"
+            self.hps_ms.model.emotion_embedding = 2
+            self.hps_ms.model.n_layers_trans_flow = 6
+            self.lang = ["zh"]
+            self.num_tones = num_tones
+            self.zh_bert_extra = True
+            self.bert_model_names.update({"zh": "Erlangshen_MegatronBert_1.3B_Chinese"})
+            self.bert_extra_str_map.update({"zh": "_extra"})
+            self.text_extra_str_map.update({"zh": "_v240"})
 
         else:
             logging.debug("Version information not found. Loaded as the newest version: v2.3.")
@@ -131,10 +143,13 @@ class Bert_VITS2:
     def load_model(self, model_handler):
         self.model_handler = model_handler
 
-        if self.version in ["2.3", "extra"]:
+        if self.version in ["2.3", "extra", "2.4"]:
             Synthesizer = SynthesizerTrn_v230
         else:
             Synthesizer = SynthesizerTrn
+
+        if self.version == "2.4":
+            self.pinyinPlus = self.model_handler.get_pinyinPlus()
         self.net_g = Synthesizer(
             len(self.symbols),
             self.hps_ms.data.filter_length // 2 + 1,
@@ -157,7 +172,7 @@ class Bert_VITS2:
 
         tokenizer, _ = self.model_handler.get_bert_model(self.bert_model_names[language_str])
 
-        norm_text, phone, tone, word2ph = clean_text(text, clean_text_lang_str, tokenizer)
+        norm_text, phone, tone, word2ph = clean_text(text, clean_text_lang_str, tokenizer, self.pinyinPlus)
 
         phone, tone, language = cleaned_text_to_sequence(phone, tone, language_str, self._symbol_to_id)
 

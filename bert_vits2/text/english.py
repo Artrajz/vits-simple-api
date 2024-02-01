@@ -385,7 +385,7 @@ def sep_text(text):
     return words
 
 
-def g2p(text, tokenizer):
+def g2p(text, tokenizer, **kwargs):
     phones = []
     tones = []
     # word2ph = []

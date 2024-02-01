@@ -142,7 +142,7 @@ class BertVits2Config(AsDictMixin):
     style_text: str = None
     style_weight: float = 0.7
     use_streaming: bool = False
-    # Can be set to "float16"/"fp16" or "int8".
+    # Can be set to "float16"/"fp16".
     torch_data_type: str = ""
 
 
@@ -164,6 +164,7 @@ class ModelConfig(AsDictMixin):
     dimensional_emotion_npy: Union[str, List[str]] = "dimensional_emotion_npy"
     # w2v2-vits: Need to have both `models.onnx` and `models.yaml` files in the same path.
     dimensional_emotion_model: str = "dimensional_emotion_model/models.yaml"
+    g2pw_model: str = "G2PWModel"
 
 
 @dataclass

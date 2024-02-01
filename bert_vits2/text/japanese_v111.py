@@ -541,7 +541,7 @@ def distribute_phone(n_phone, n_word):
     return phones_per_word
 
 
-def g2p(norm_text, tokenizer):
+def g2p(norm_text, tokenizer, **kwargs):
     tokenized = tokenizer.tokenize(norm_text)
     phs = []
     ph_groups = []

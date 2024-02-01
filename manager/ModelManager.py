@@ -21,14 +21,6 @@ from vits import VITS
 from vits.hubert_vits import HuBert_VITS
 from vits.w2v2_vits import W2V2_VITS
 
-CHINESE_ROBERTA_WWM_EXT_LARGE = os.path.join(config.abs_path, "data/bert/chinese-roberta-wwm-ext-large")
-BERT_BASE_JAPANESE_V3 = os.path.join(config.abs_path, "data/bert/bert-base-japanese-v3")
-BERT_LARGE_JAPANESE_V2 = os.path.join(config.abs_path, "data/bert/bert-large-japanese-v2")
-DEBERTA_V2_LARGE_JAPANESE = os.path.join(config.abs_path, "data/bert/deberta-v2-large-japanese")
-DEBERTA_V3_LARGE = os.path.join(config.abs_path, "data/bert/deberta-v3-large")
-WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM = os.path.join(config.abs_path,
-                                                           "data/emotional/wav2vec2-large-robust-12-ft-emotion-msp-dim")
-
 
 class ModelManager(Subject):
     def __init__(self, device=config.system.device):
@@ -525,7 +517,6 @@ class ModelManager(Subject):
             formatted_pth_path = os.path.normpath(relative_pth_path).replace("\\", "/")
             relative_json_path = os.path.relpath(info.get("config_path"), folder_path)
             formatted_json_path = os.path.normpath(relative_json_path).replace("\\", "/")
-
 
             if not self.is_path_loaded(info.get("model_path"), loaded_paths):
                 info.update({"model_path": formatted_pth_path, "config_path": formatted_json_path})
