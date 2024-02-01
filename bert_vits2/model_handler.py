@@ -101,18 +101,9 @@ class ModelHandler:
         self.emotion = None
         self.clap = None
         self.device = device
-        if config.bert_vits2_config.torch_data_type != "":
-            if config.bert_vits2_config.torch_data_type.lower() in ["float16", "fp16"]:
-                self.torch_dtype = torch.float16
-            elif config.bert_vits2_config.torch_data_type.lower() in ["int8"]:
-                self.torch_dtype = torch.int8
-        else:
-            self.torch_dtype = None
 
         if config.bert_vits2_config.torch_data_type.lower() in ["float16", "fp16"]:
             self.torch_dtype = torch.float16
-        elif config.bert_vits2_config.torch_data_type.lower() in ["int8"]:
-            self.torch_dtype = torch.int8
         else:
             self.torch_dtype = None
 

@@ -142,7 +142,7 @@ class BertVits2Config(AsDictMixin):
     style_text: str = None
     style_weight: float = 0.7
     use_streaming: bool = False
-    # Can be set to "float16"/"fp16" or "int8".
+    # Can be set to "float16"/"fp16".
     torch_data_type: str = ""
 
 
