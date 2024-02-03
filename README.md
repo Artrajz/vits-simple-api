@@ -95,7 +95,9 @@ git clone https://github.com/Artrajz/vits-simple-api.git
 
 ### Step 2: Install Python Dependencies
 
-It's recommended to use a Python virtual environment. Run the following command to install the required Python dependencies:
+It is recommended to use a virtual environment with Python version 3.10 for this project. Run the following command to install the Python dependencies required for the project:
+
+If you encounter issues installing certain dependencies, please refer to the common problems outlined below.
 
 ```bash
 pip install -r requirements.txt

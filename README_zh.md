@@ -97,7 +97,9 @@ git clone https://github.com/Artrajz/vits-simple-api.git
 
 ### 步骤2: 下载 Python 依赖
 
-推荐使用 Python 虚拟环境。运行以下命令安装项目所需的 Python 依赖：
+推荐使用 Python  3.10版本的虚拟环境。运行以下命令安装项目所需的 Python 依赖：
+
+如果遇到某些无法安装的依赖，请看下面的常见问题。
 
 ```bash
 pip install -r requirements.txt
