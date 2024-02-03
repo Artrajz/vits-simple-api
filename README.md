@@ -295,6 +295,8 @@ To ensure compatibility with the Bert-VITS2 model, modify the config.json file b
     ...
 ```
 
+Please note that for the Chinese extra version, the version should be changed to `extra` or `zh-clap`, and for the extra fix version, the version should be `2.4` or `extra-fix`.
+
 # API
 
 ## GET

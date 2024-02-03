@@ -302,6 +302,8 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
     ...
 ```
 
+需要注意的是，中文特化版的版本号应改为`extra`或`zh-clap`，特化修复版的版本号为`2.4`或`extra-fix`。
+
 # API
 
 ## GET
