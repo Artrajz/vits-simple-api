@@ -36,7 +36,8 @@ jaconv
 
 # Machine Learning and Deep Learning
 torch
-audonnx
+onnx==1.12.0
+audonnx==0.7.0
 vector_quantize_pytorch==1.12.12
 
 # Web and API services

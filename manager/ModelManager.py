@@ -151,14 +151,13 @@ class ModelManager(Subject):
             if cuda_available:
                 device_name = torch.cuda.get_device_name(self.device.index)
                 gpu_memory_info = round(torch.cuda.get_device_properties(self.device).total_memory / 1024 ** 3)  # GB
-                gpu_memory_info = round(torch.cuda.get_device_properties(self.device).total_memory / 1024 ** 3)  # GB
                 self.logger.info(
                     f"Using GPU on {device_name} {gpu_memory_info}GB, GPU Device Index: {self.device.index}")
             else:
                 self.logger.warning("GPU device specified, but CUDA is not available.")
         else:
             cpu_info = cpuinfo.get_cpu_info()
-            cpu_name = cpu_info['brand_raw']
+            cpu_name = cpu_info.get("brand_raw")
             cpu_count = psutil.cpu_count(logical=False)
             thread_count = psutil.cpu_count(logical=True)
             memory_info = psutil.virtual_memory()
