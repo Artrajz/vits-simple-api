@@ -417,6 +417,7 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 | 文本提示词     | text_prompt     | false   | 从`config.yaml`中获取 | str   | Bert-VITS2 v2.2 文本提示词，用于控制情感                     |
 | 文本提示词     | style_text      | false   | 从`config.yaml`中获取 | str   | Bert-VITS2 v2.3 文本提示词，用于控制情感                     |
 | 文本提示词权重 | style_weight    | false   | 从`config.yaml`中获取 | float | Bert-VITS2 v2.3 文本提示词，用于提示词权重                   |
+| 流式响应      | streaming    | false   | false                | bool  | 流式合成语音，更快的首包响应。                               |
 
 ## SSML语音合成标记语言
 目前支持的元素与属性

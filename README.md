@@ -407,6 +407,8 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 |Text Prompt|text_prompt|false|From `config.yaml`|str|Bert-VITS2 v2.2 text prompt used for emotion control|
 |Style Text|style_text|false|From `config.yaml`|str|Bert-VITS2 v2.3 text prompt used for emotion control|
 |Style Text Weight|style_weight|false|From `config.yaml`|float|Bert-VITS2 v2.3 text prompt weight used for prompt weighting|
+| Streaming response | streaming    | false   | false             | bool  | Streamed synthesized speech with faster initial response.    |
+
 
 
 ## SSML (Speech Synthesis Markup Language)
