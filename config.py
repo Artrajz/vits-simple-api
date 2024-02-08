@@ -14,7 +14,7 @@ import shutil
 import string
 import sys
 from dataclasses import dataclass, field, asdict, fields, is_dataclass
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Dict
 
 import torch
 import yaml
@@ -58,6 +58,10 @@ class AsDictMixin:
                 data[attr] = []
                 for item in value:
                     data[attr].append(item.asdict())
+            elif isinstance(value, dict):
+                data[attr] = {}
+                for k, v in value.items():
+                    data[attr].update({k: v.asdict()})
             else:
                 data[attr] = value
         return data
@@ -73,7 +77,6 @@ class AsDictMixin:
 
             if field_name in new_config_dict:
                 new_value = new_config_dict[field_name]
-
                 if is_dataclass(field_type):
                     if isinstance(new_value, list):
                         # If the field type is a dataclass and the new value is a list
@@ -84,6 +87,7 @@ class AsDictMixin:
                         # If the field type is a dataclass but not a list, recursively update the dataclass
                         nested_config = getattr(self, field_name)
                         nested_config.update_config(new_value)
+                        setattr(self, field_name, nested_config)
                 else:
                     if field_type == bool:
                         new_value = str(new_value).lower() == "true"
@@ -157,6 +161,13 @@ class BertVits2Config(AsDictMixin):
 
 
 @dataclass
+class GPTSoVitsPreset(AsDictMixin):
+    refer_wav_path: str = None
+    prompt_text: str = None
+    prompt_lang: str = "auto"
+
+
+@dataclass
 class GPTSoVitsConfig(AsDictMixin):
     hz: int = 50
     is_half: bool = False
@@ -164,9 +175,48 @@ class GPTSoVitsConfig(AsDictMixin):
     lang: str = "auto"
     format: str = "wav"
     segment_size: int = 50
-    refer_wav_path: str = ""
-    prompt_text: str = ""
-    prompt_lang: str = "auto"
+    presets: Dict[str, GPTSoVitsPreset] = field(default_factory=lambda: {"default": GPTSoVitsPreset()})
+
+    def update_config(self, new_config_dict):
+        for field in fields(self):
+            field_name = field.name
+            field_type = field.type
+
+            if field_name in new_config_dict:
+                new_value = new_config_dict[field_name]
+
+                if is_dataclass(field_type):
+                    if isinstance(new_value, list):
+                        # If the field type is a dataclass and the new value is a list
+                        # Convert each element of the list to the corresponding class object
+                        new_value = [field_type(**item) for item in new_value]
+                        setattr(self, field_name, new_value)
+                    else:
+                        # If the field type is a dataclass but not a list, recursively update the dataclass
+                        nested_config = getattr(self, field_name)
+                        nested_config.update_config(new_value)
+                else:
+                    if field_type == Dict[str, GPTSoVitsPreset]:
+                        new_dict = {}
+                        for k, v in new_value.items():
+                            refer_wav_path = v.get("refer_wav_path")
+                            prompt_text = v.get("prompt_text")
+                            prompt_lang = v.get("prompt_lang")
+                            new_dict.update({k: GPTSoVitsPreset(refer_wav_path, prompt_text, prompt_lang)})
+                            new_value = new_dict
+
+                    elif field_type == bool:
+                        new_value = str(new_value).lower() == "true"
+                    elif field_type == int:
+                        new_value = int(new_value)
+                    elif field_type == float:
+                        new_value = float(new_value)
+                    elif field_type == str:
+                        new_value = str(new_value)
+                    elif field_type == torch.device:
+                        new_value = torch.device(new_value)
+
+                    setattr(self, field_name, new_value)
 
 
 @dataclass

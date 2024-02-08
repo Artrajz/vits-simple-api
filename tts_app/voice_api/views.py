@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 import uuid
@@ -536,9 +537,13 @@ def voice_gpt_sovits_api():
         format = get_param(request_data, "format", config.gpt_sovits_config.format, str)
         segment_size = get_param(request_data, "segment_size", config.gpt_sovits_config.segment_size, int)
         reference_audio = request.files.get("reference_audio", None)
-        refer_wav_path = get_param(request_data, "refer_wav_path", config.gpt_sovits_config.refer_wav_path, str)
-        prompt_text = get_param(request_data, "prompt_text", config.gpt_sovits_config.prompt_text, str)
-        prompt_lang = get_param(request_data, "prompt_lang", config.gpt_sovits_config.prompt_lang, str)
+        preset = get_param(request_data, "preset", "default", str)
+        refer_wav_path = get_param(request_data, "refer_wav_path",
+                                   config.gpt_sovits_config.presets.get("default").refer_wav_path, str)
+        prompt_text = get_param(request_data, "prompt_text",
+                                config.gpt_sovits_config.presets.get("default").prompt_text, str)
+        prompt_lang = get_param(request_data, "prompt_lang",
+                                config.gpt_sovits_config.presets.get("default").prompt_lang, str)
         # use_streaming = get_param(request_data, 'streaming', config.gpt_sovits_config.use_streaming, bool)
     except Exception as e:
         logger.error(f"[{ModelType.GPT_SOVITS.value}] {e}")
@@ -572,20 +577,27 @@ def voice_gpt_sovits_api():
 
     # 检查参考音频
     if check_is_none(reference_audio):
-        if not check_is_none(refer_wav_path):
-            reference_audio = load_audio(config.gpt_sovits_config.refer_wav_path)
-            prompt_text, prompt_lang = (
-                config.gpt_sovits_config.prompt_text,
-                config.gpt_sovits_config.prompt_lang,
-            )
-        else:
-            reference_audio, reference_audio_sr = load_audio(config.gpt_sovits_config.refer_wav_path)
+        if preset != "default":
+            refer_preset = config.gpt_sovits_config.presets.get(preset)
+
+            if check_is_none(refer_wav_path):
+                refer_wav_path = refer_preset.refer_wav_path
+
+            prompt_text, prompt_lang = refer_preset.prompt_text, refer_preset.prompt_lang
+
+        try:
+            reference_audio, reference_audio_sr = load_audio(refer_wav_path)
+        except Exception as e:
+            logging.error(e)
+            return make_response(jsonify({"status": "error", "message": "Loading refer_wav_path error."}), 400)
+
+
     reference_audio, reference_audio_sr = librosa.load(reference_audio, sr=None, dtype=np.float32)
     reference_audio = reference_audio.flatten()
 
-    if check_is_none(reference_audio, prompt_text, prompt_lang):
-
+    if check_is_none(reference_audio, prompt_text):
         # 未指定参考音频且配置文件无预设
+        logging.error("No reference audio specified, and no default setting in the config.")
         return make_response(jsonify(
             {"status": "error", "message": "No reference audio specified, and no default setting in the config."}),
             400)
