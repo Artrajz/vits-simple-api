@@ -15,7 +15,7 @@ function speakersInit() {
             vitsSpeakersCount = data['VITS'].length;
             w2v2SpeakersCount = data['W2V2-VITS'].length;
             bertVits2SpeakersCount = data['BERT-VITS2'].length;
-            GPTSoVitsSpeakersCount = data['GPT-SoVITS'].length;
+            GPTSoVitsSpeakersCount = data['GPT-SOVITS'].length;
             showModelContentBasedOnStatus();
         },
         error: function (xhr, status, error) {
@@ -335,7 +335,7 @@ function setAudioSourceByPost() {
         },
         error: function (error) {
             console.error('Error:', error);
-            alert("无法获取音频数据");
+            alert("无法获取音频数据，请查看日志！");
             downloadButton.disabled = true;
         }
     });

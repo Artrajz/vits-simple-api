@@ -41,8 +41,18 @@ def load_model():
 
     model_path = request_data.get("model_path")
     config_path = request_data.get("config_path")
-    logging.info(f"Loading model model_path: {model_path} config_path: {config_path}")
-    state = model_manager.load_model(model_path, config_path)
+    sovits_path = request_data.get("sovits_path")
+    gpt_path = request_data.get("gpt_path")
+
+    if model_path is not None and config_path is not None:
+        logging.info(f"Loading model model_path: {model_path} config_path: {config_path}")
+    else:
+        logging.info(f"Loading model sovits_path: {sovits_path} gpt_path: {gpt_path}")
+
+    state = model_manager.load_model(model_path=model_path,
+                                     config_path=config_path,
+                                     sovits_path=sovits_path,
+                                     gpt_path=gpt_path)
     if state:
         status = "success"
         response_code = 200

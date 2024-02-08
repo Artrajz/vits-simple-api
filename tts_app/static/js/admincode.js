@@ -28,7 +28,8 @@ var modelTypes = {
     'VITS': $('#VITS'),
     'HUBERT-VITS': $('#HUBERT-VITS'),
     'W2V2-VITS': $('#W2V2-VITS'),
-    'BERT-VITS2': $('#BERT-VITS2')
+    'BERT-VITS2': $('#BERT-VITS2'),
+    'GPT-SOVITS': $('#GPT-SOVITS')
 };
 
 
@@ -55,6 +56,8 @@ function renderModelCard(model_data, model_type) {
     var id = String(model_data["model_id"]);
     var model_path = String(model_data["model_path"]);
     var n_speakers = String(model_data["n_speakers"]);
+    var sovits_path = String(model_data["sovits_path"]);
+    var gpt_path = String(model_data["gpt_path"]);
 
     var card = $('<div></div>').addClass("card model-card " + model_type).attr({
         "data-model-type": model_type,
@@ -64,9 +67,16 @@ function renderModelCard(model_data, model_type) {
     var wrap = $('<div></div>').addClass("wrap");
 
     // $('<div></div>').text("id: " + id).appendTo(wrap);
-    $('<div></div>').text(model_path).addClass("model-path").appendTo(wrap);
-    $('<div></div>').text("n_speakers: " + n_speakers).addClass("n-speakers").appendTo(wrap);
-    $('<div></div>').text("x").addClass("unload-model").appendTo(wrap);
+    if (model_type == "GPT-SOVITS") {
+        $('<div></div>').text(sovits_path).addClass("model-card-info1").appendTo(wrap);
+        $('<div></div>').text(gpt_path).addClass("model-card-info3").appendTo(wrap);
+        $('<div></div>').text("x").addClass("unload-model").appendTo(wrap);
+    } else {
+        $('<div></div>').text(model_path).addClass("model-card-info1").appendTo(wrap);
+        $('<div></div>').text("n_speakers: " + n_speakers).addClass("model-card-info2").appendTo(wrap);
+        $('<div></div>').text("x").addClass("unload-model").appendTo(wrap);
+    }
+
 
     card.append(wrap);
 
@@ -93,16 +103,39 @@ function renderModelLoadCards(data) {
     $.each(data, function (index, model) {
         var card = $('<div></div>').addClass('model-load-item flex');
         var model_id = model.model_id;
+        var model_type = model.model_type;
         var model_path = model.model_path;
         var config_path = model.config_path;
-        var folder = model_path.split("/")[0];
-        var filename = model_path.split("/")[1];
-        var config = config_path.split("/")[1];
+        var sovits_path = model.sovits_path;
+        var gpt_path = model.gpt_path;
+
+        var folder = null;
+        var model_name = null;
+        var config_name = null;
+        var sovits_name = null;
+        var gpt_name = null;
 
         $('<div></div>').text(model_id.toString()).addClass("unload-model-id").appendTo(card);
-        $('<div></div>').text(folder).addClass("unload-model-folder").appendTo(card);
-        $('<div></div>').text(filename).addClass("unload-model-path").appendTo(card);
-        $('<div></div>').text(config).addClass("unload-model-config").appendTo(card);
+
+
+        if (model_path != null && config_path != null) {
+            folder = model_path.split("/")[0];
+            model_name = model_path.split("/")[1];
+            config_name = config_path.split("/")[1];
+            $('<div></div>').text(folder).addClass("unload-model-folder").appendTo(card);
+            $('<div></div>').text(model_name).addClass("unload-model-path model1").appendTo(card);
+            $('<div></div>').text(config_name).addClass("unload-model-config model2").appendTo(card);
+        } else {
+            folder = sovits_path.split("/")[0];
+            sovits_name = sovits_path.split("/")[1];
+            gpt_name = gpt_path.split("/")[1];
+            $('<div></div>').text(folder).addClass("unload-model-folder").appendTo(card);
+            $('<div></div>').text(sovits_name).addClass("unload-sovits-path model1").appendTo(card);
+            $('<div></div>').text(gpt_name).addClass("unload-gpt-config model2").appendTo(card);
+        }
+
+
+        // $('<div></div>').text(model_type).addClass("model-type").appendTo(card);
 
 
         // var formattedString = folder + " | " + filename + " | " + config_path;
@@ -111,10 +144,11 @@ function renderModelLoadCards(data) {
         card.on('click', function () {
             if (!isRequestInProgress) {
                 isRequestInProgress = true;
-                loadModel(card, model_path, config_path);
+                loadModel(card, model_path, config_path, sovits_path, gpt_path);
             }
 
         });
+
 
         modelLoadContent.append(card);
     });
@@ -125,7 +159,7 @@ function renderModelLoadCards(data) {
 /*
 * 加载模型
 * */
-function loadModel(card, modelPath, configPath) {
+function loadModel(card, model_path, config_path, sovits_path, gpt_path) {
     var csrftoken = $('meta[name="csrf-token"]').attr('content');
 
     $.ajax({
@@ -136,8 +170,10 @@ function loadModel(card, modelPath, configPath) {
             'X-CSRFToken': csrftoken
         },
         data: JSON.stringify({
-            model_path: modelPath,
-            config_path: configPath
+            model_path: model_path,
+            config_path: config_path,
+            sovits_path: sovits_path,
+            gpt_path: gpt_path
         }),
         success: function (response) {
             card.fadeOut();

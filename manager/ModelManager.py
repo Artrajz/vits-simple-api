@@ -97,14 +97,16 @@ class ModelManager(Subject):
 
         self.log_device_info()
 
-        if self.vits_speakers_count != 0: self.logger.info(
-            f"[{ModelType.VITS.value}] {self.vits_speakers_count} speakers")
-        if self.hubert_speakers_count != 0: self.logger.info(
-            f"[{ModelType.HUBERT_VITS.value}] {self.hubert_speakers_count} speakers")
-        if self.w2v2_speakers_count != 0: self.logger.info(
-            f"[{ModelType.W2V2_VITS.value}] {self.w2v2_speakers_count} speakers")
-        if self.bert_vits2_speakers_count != 0: self.logger.info(
-            f"[{ModelType.BERT_VITS2.value}] {self.bert_vits2_speakers_count} speakers")
+        if self.vits_speakers_count != 0:
+            self.logger.info(f"[{ModelType.VITS.value}] {self.vits_speakers_count} speakers")
+        if self.hubert_speakers_count != 0:
+            self.logger.info(f"[{ModelType.HUBERT_VITS.value}] {self.hubert_speakers_count} speakers")
+        if self.w2v2_speakers_count != 0:
+            self.logger.info(f"[{ModelType.W2V2_VITS.value}] {self.w2v2_speakers_count} speakers")
+        if self.bert_vits2_speakers_count != 0:
+            self.logger.info(f"[{ModelType.BERT_VITS2.value}] {self.bert_vits2_speakers_count} speakers")
+        if self.gpt_sovits_speakers_count != 0:
+            self.logger.info(f"[{ModelType.GPT_SOVITS.value}] {self.gpt_sovits_speakers_count} speakers")
         self.logger.info(f"{self.speakers_count} speakers in total.")
         if self.speakers_count == 0:
             self.logger.warning(f"No model was loaded.")
@@ -176,6 +178,37 @@ class ModelManager(Subject):
             self.logger.info(
                 f"Using CPU on {cpu_name} with {cpu_count} cores and {thread_count} threads. Total memory: {total_memory}GB")
 
+    def relative_to_absolute_path(self, *paths):
+        absolute_paths = []
+
+        for path in paths:
+            if path is None:
+                return None
+            path = os.path.normpath(path)
+            if path.startswith('models'):
+                path = os.path.join(config.abs_path, config.system.data_path, path)
+            else:
+                path = os.path.join(config.abs_path, config.system.data_path, config.tts_config.models_path,
+                                    path)
+            absolute_paths.append(path)
+
+        return absolute_paths
+
+    def absolute_to_relative_path(self, *paths):
+        relative_paths = []
+        for path in paths:
+            if path is None:
+                relative_paths.append(None)
+                continue
+
+            # 获取models目录下的相对路径
+            relative_path = os.path.relpath(path, os.path.join(config.abs_path, config.system.data_path,
+                                                               config.tts_config.models_path))
+
+            relative_paths.append(relative_path)
+
+        return relative_paths
+
     def _load_model_from_path(self, model_path, config_path, sovits_path, gpt_path):
         if check_is_none(sovits_path, gpt_path):
             hps = utils.get_hparams_from_file(config_path)
@@ -185,6 +218,7 @@ class ModelManager(Subject):
             model_type = ModelType.GPT_SOVITS
 
         model_args = {
+            "model_type": model_type,
             "model_path": model_path,
             "config_path": config_path,
             "sovits_path": sovits_path,
@@ -268,33 +302,26 @@ class ModelManager(Subject):
 
         return model_data
 
-    def normpath(self, *paths):
-        for path in paths:
-            if path is None:
-                return None
-            path = os.path.normpath(path)
-            if path.startswith('models'):
-                path = os.path.join(config.abs_path, config.system.data_path, path)
-            else:
-                path = os.path.join(config.abs_path, config.system.data_path, config.tts_config.models_path,
-                                    path)
-            return path
-
     def load_model(self, model_path: str, config_path: str, sovits_path: str, gpt_path: str):
         try:
-            model_path = self.normpath(model_path)
-            config_path = self.normpath(config_path)
-            sovits_path = self.normpath(sovits_path)
-            gpt_path = self.normpath(gpt_path)
+            if not check_is_none(model_path, config_path):
+                model_path, config_path = self.relative_to_absolute_path(model_path, config_path)
+            else:
+                sovits_path, gpt_path = self.relative_to_absolute_path(sovits_path, gpt_path)
 
             model_data = self._load_model_from_path(model_path, config_path, sovits_path, gpt_path)
             model_id = model_data["model_id"]
             sid2model = model_data["sid2model"]
             model_type = model_data["model_type"]
 
-            self.models[model_type][model_id] = {"model_path": model_path, "config_path": config_path,
-                                                 "model": model_data["model"],
-                                                 "n_speakers": len(model_data["speakers"])}
+            self.models[model_type][model_id] = {
+                "model_type": model_data.get("model_type"),
+                "model_path": model_path,
+                "config_path": config_path,
+                "sovits_path": sovits_path,
+                "gpt_path": gpt_path,
+                "model": model_data.get("model"),
+                "n_speakers": len(model_data["speakers"])}
             self.sid2model[model_type].extend(sid2model)
             self.voice_speakers[model_type.value].extend(model_data["speakers"])
 
@@ -392,8 +419,13 @@ class ModelManager(Subject):
         info = []
         for models in self.models.values():
             for model in models.values():
-                info.append({"model_path": model.get("model_path"),
-                             "config_path": model.get("config_path")})
+                info.append({
+                    "model_type": model.get("model_type"),
+                    "model_path": model.get("model_path"),
+                    "config_path": model.get("config_path"),
+                    "sovits_path": model.get("sovits_path"),
+                    "gpt_path": model.get("gpt_path"),
+                })
 
         return info
 
@@ -403,7 +435,8 @@ class ModelManager(Subject):
             ModelType.VITS.value: [],
             ModelType.HUBERT_VITS.value: [],
             ModelType.W2V2_VITS.value: [],
-            ModelType.BERT_VITS2.value: []
+            ModelType.BERT_VITS2.value: [],
+            ModelType.GPT_SOVITS.value: [],
         }
         for model_type, models in self.models.items():
             for values in models.values():
@@ -417,17 +450,36 @@ class ModelManager(Subject):
             ModelType.VITS.value: [],
             ModelType.HUBERT_VITS.value: [],
             ModelType.W2V2_VITS.value: [],
-            ModelType.BERT_VITS2.value: []
+            ModelType.BERT_VITS2.value: [],
+            ModelType.GPT_SOVITS.value: [],
         }
         for model_type, model_data in self.models.items():
-            for model_id, model in model_data.items():
-                info[model_type.value].append(
-                    {"model_id": model_id,
-                     "model_path": os.path.basename(os.path.dirname(model.get("model_path"))) + "/" + os.path.basename(
-                         model.get("model_path")),
-                     "config_path": os.path.basename(
-                         os.path.dirname(model.get("config_path"))) + "/" + os.path.basename(model.get("config_path")),
-                     "n_speakers": model.get("n_speakers")})
+            if model_type != ModelType.GPT_SOVITS:
+                for model_id, model in model_data.items():
+                    model_path = model.get("model_path")
+                    config_path = model.get("config_path")
+
+                    model_path = self.absolute_to_relative_path(model_path)[0].replace("\\", "/")
+                    config_path = self.absolute_to_relative_path(config_path)[0].replace("\\", "/")
+
+                    info[model_type.value].append(
+                        {"model_id": model_id,
+                         "model_path": model_path,
+                         "config_path": config_path,
+                         "n_speakers": model.get("n_speakers")})
+            else:
+                for model_id, model in model_data.items():
+                    sovits_path = model.get("sovits_path")
+                    gpt_path = model.get("gpt_path")
+
+                    sovits_path = self.absolute_to_relative_path(sovits_path)[0].replace("\\", "/")
+                    gpt_path = self.absolute_to_relative_path(gpt_path)[0].replace("\\", "/")
+
+                    info[model_type.value].append(
+                        {"model_id": model_id,
+                         "sovits_path": sovits_path,
+                         "gpt_path": gpt_path,
+                         "n_speakers": model.get("n_speakers")})
 
         return info
 
@@ -496,57 +548,90 @@ class ModelManager(Subject):
 
     def scan_path(self):
         folder_path = os.path.join(config.abs_path, config.system.data_path, config.tts_config.models_path)
-        pth_files = glob.glob(folder_path + "/**/*.pth", recursive=True)
+        model_paths = glob.glob(folder_path + "/**/*.pth", recursive=True)
+        gpt_paths = glob.glob(folder_path + "/**/*.ckpt", recursive=True)
         all_paths = []
 
-        for id, pth_file in enumerate(pth_files):
-            pth_name = os.path.basename(pth_file)
+        for id, pth_path in enumerate(model_paths):
+            pth_name = os.path.basename(pth_path)
             if pth_name.startswith(("D_", "DUR_")):
                 continue
-            dir_name = os.path.dirname(pth_file)
-            json_files = glob.glob(dir_name + "/*.json", recursive=True)
-            if len(json_files) > 0:
-                json_file = json_files[0]
+            dir_name = os.path.dirname(pth_path)
+            config_paths = glob.glob(dir_name + "/*.json", recursive=True)
+            sovits_paths = glob.glob(dir_name + "/*.ckpt", recursive=True)
+            model_path, config_path, sovits_path, gpt_path, model_type = (None,) * 5
+            if len(config_paths) > 0:
+                model_path = pth_path
+                config_path = config_paths[0]
+            elif len(sovits_paths) > 0:
+                gpt_path = gpt_paths[0]
+                sovits_path = pth_path
+                model_type = ModelType.GPT_SOVITS
             else:
                 continue
+
             info = {
-                'model_id': id,
-                'model_path': pth_file,
-                'config_path': json_file
+                "model_id": id,
+                "model_type": model_type,
+                "model_path": model_path,
+                "config_path": config_path,
+                "sovits_path": sovits_path,
+                "gpt_path": gpt_path,
             }
             all_paths.append(info)
 
         return all_paths
 
     def scan_unload_path(self):
-        folder_path = os.path.join(config.abs_path, config.system.data_path, config.tts_config.models_path)
         all_paths = self.scan_path()
         unload_paths = []
         loaded_paths = []
+        loaded_paths_2 = []
 
         for model in self.get_models_path():
             # 只取已加载的模型路径
-            loaded_paths.append(model.get("model_path"))
+            if model.get("model_type") == ModelType.GPT_SOVITS:
+                loaded_paths_2.append((model.get("sovits_path"), model.get("gpt_path")))
+            else:
+                loaded_paths.append(model.get("model_path"))
 
         for info in all_paths:
             # 将绝对路径修改为相对路径，并将分隔符格式化为'/'
-            relative_pth_path = os.path.relpath(info.get("model_path"), folder_path)
-            formatted_pth_path = os.path.normpath(relative_pth_path).replace("\\", "/")
-            relative_json_path = os.path.relpath(info.get("config_path"), folder_path)
-            formatted_json_path = os.path.normpath(relative_json_path).replace("\\", "/")
+            if info.get("model_type") == ModelType.GPT_SOVITS:
+                sovits_path, gpt_path = self.absolute_to_relative_path(info.get("sovits_path"),
+                                                                       info.get("gpt_path"))
+                sovits_path, gpt_path = sovits_path.replace("\\", "/"), gpt_path.replace("\\", "/")
+                if not self.is_path_loaded((sovits_path, gpt_path), loaded_paths_2):
+                    info.update(
+                        {"model_type": info.get("model_type").value, "sovits_path": sovits_path, "gpt_path": gpt_path})
+                    unload_paths.append(info)
+            else:
+                model_path, config_path = self.absolute_to_relative_path(info.get("model_path"),
+                                                                         info.get("config_path"))
+                model_path, config_path = model_path.replace("\\", "/"), config_path.replace("\\", "/")
 
-            if not self.is_path_loaded(info.get("model_path"), loaded_paths):
-                info.update({"model_path": formatted_pth_path, "config_path": formatted_json_path})
-                unload_paths.append(info)
+                if not self.is_path_loaded(info.get("model_path"), loaded_paths):
+                    info.update({"model_path": model_path, "config_path": config_path})
+                    unload_paths.append(info)
 
         return unload_paths
 
-    def is_path_loaded(self, path, loaded_paths):
-        normalized_path = os.path.normpath(path)
+    def is_path_loaded(self, paths, loaded_paths):
+        if len(paths) == 1:
+            path = paths
+            normalized_path = os.path.normpath(path)
 
-        for loaded_path in loaded_paths:
-            normalized_loaded_path = os.path.normpath(loaded_path)
-            if normalized_path == normalized_loaded_path:
-                return True
+            for loaded_path in loaded_paths:
+                normalized_loaded_path = os.path.normpath(loaded_path)
+                if normalized_path == normalized_loaded_path:
+                    return True
+        elif len(paths) == 2:
+            sovits_path, gpt_path = paths
+            sovits_path, gpt_path = os.path.normpath(sovits_path), os.path.normpath(gpt_path)
+            for loaded_path in loaded_paths:
+                normalized_sovits_path = os.path.normpath(self.absolute_to_relative_path(loaded_path[0])[0])
+                normalized_gpt_path = os.path.normpath(self.absolute_to_relative_path(loaded_path[1])[0])
+                if sovits_path == normalized_sovits_path and gpt_path == normalized_gpt_path:
+                    return True
 
         return False
