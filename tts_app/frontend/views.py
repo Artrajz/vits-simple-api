@@ -13,6 +13,7 @@ def index():
         "vits_speakers_count": model_manager.vits_speakers_count,
         "w2v2_speakers_count": model_manager.w2v2_speakers_count,
         "w2v2_emotion_count": model_manager.w2v2_emotion_count,
-        "bert_vits2_speakers_count": model_manager.bert_vits2_speakers_count
+        "bert_vits2_speakers_count": model_manager.bert_vits2_speakers_count,
+        "gpt_sovits_speakers_count": model_manager.gpt_sovits_speakers_count,
     }
     return render_template("pages/index.html", **kwargs)

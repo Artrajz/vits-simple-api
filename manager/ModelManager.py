@@ -14,9 +14,10 @@ from contants import config
 import utils
 from bert_vits2 import Bert_VITS2
 from contants import ModelType
+from gpt_sovits.gpt_sovits import GPT_SoVITS
 from logger import logger
 from manager.observer import Subject
-from utils.data_utils import HParams
+from utils.data_utils import HParams, check_is_none
 from vits import VITS
 from vits.hubert_vits import HuBert_VITS
 from vits.w2v2_vits import W2V2_VITS
@@ -32,19 +33,22 @@ class ModelManager(Subject):
             ModelType.VITS: {},
             ModelType.HUBERT_VITS: {},
             ModelType.W2V2_VITS: {},
-            ModelType.BERT_VITS2: {}
+            ModelType.BERT_VITS2: {},
+            ModelType.GPT_SOVITS: {},
         }
         self.sid2model = {  # [real_id, model, model_id]
             ModelType.VITS: [],
             ModelType.HUBERT_VITS: [],
             ModelType.W2V2_VITS: [],
-            ModelType.BERT_VITS2: []
+            ModelType.BERT_VITS2: [],
+            ModelType.GPT_SOVITS: [],
         }
         self.voice_speakers = {
             ModelType.VITS.value: [],
             ModelType.HUBERT_VITS.value: [],
             ModelType.W2V2_VITS.value: [],
-            ModelType.BERT_VITS2.value: []
+            ModelType.BERT_VITS2.value: [],
+            ModelType.GPT_SOVITS.value: [],
         }
 
         self.emotion_reference = None
@@ -67,7 +71,8 @@ class ModelManager(Subject):
             ModelType.VITS: VITS,
             ModelType.HUBERT_VITS: HuBert_VITS,
             ModelType.W2V2_VITS: W2V2_VITS,
-            ModelType.BERT_VITS2: Bert_VITS2
+            ModelType.BERT_VITS2: Bert_VITS2,
+            ModelType.GPT_SOVITS: GPT_SoVITS,
         }
 
         self.available_tts_model = set()
@@ -75,12 +80,14 @@ class ModelManager(Subject):
     def model_init(self):
         if config.tts_config.auto_load:
             models = self.scan_path()
-            for model in models:
-                self.load_model(model.get("model_path"), model.get("config_path"))
         else:
-            models = config.tts_config.asdict()["models"]
-            for model_path, config_path in models:
-                self.load_model(model_path, config_path)
+            models = config.tts_config.asdict().get("models")
+
+        for model in models:
+            self.load_model(model_path=model.get("model_path"),
+                            config_path=model.get("config_path"),
+                            sovits_path=model.get("sovits_path"),
+                            gpt_path=model.get("gpt_path"))
 
         dimensional_emotion_model_path = os.path.join(config.abs_path, config.system.data_path,
                                                       config.model_config.dimensional_emotion_model)
@@ -108,7 +115,7 @@ class ModelManager(Subject):
 
     @property
     def speakers_count(self):
-        return self.vits_speakers_count + self.hubert_speakers_count + self.w2v2_speakers_count + self.bert_vits2_speakers_count
+        return self.vits_speakers_count + self.hubert_speakers_count + self.w2v2_speakers_count + self.bert_vits2_speakers_count + self.gpt_sovits_speakers_count
 
     @property
     def vits_speakers_count(self):
@@ -129,6 +136,10 @@ class ModelManager(Subject):
     @property
     def bert_vits2_speakers_count(self):
         return len(self.voice_speakers[ModelType.BERT_VITS2.value])
+
+    @property
+    def gpt_sovits_speakers_count(self):
+        return len(self.voice_speakers[ModelType.GPT_SOVITS.value])
 
     # 添加观察者
     def attach(self, observer):
@@ -165,13 +176,19 @@ class ModelManager(Subject):
             self.logger.info(
                 f"Using CPU on {cpu_name} with {cpu_count} cores and {thread_count} threads. Total memory: {total_memory}GB")
 
-    def _load_model_from_path(self, model_path, config_path):
-        hps = utils.get_hparams_from_file(config_path)
-        model_type = self.recognition_model_type(hps)
+    def _load_model_from_path(self, model_path, config_path, sovits_path, gpt_path):
+        if check_is_none(sovits_path, gpt_path):
+            hps = utils.get_hparams_from_file(config_path)
+            model_type = self.recognition_model_type(hps)
+        else:
+            hps = None
+            model_type = ModelType.GPT_SOVITS
 
         model_args = {
             "model_path": model_path,
             "config_path": config_path,
+            "sovits_path": sovits_path,
+            "gpt_path": gpt_path,
             "config": hps,
             "device": self.device
         }
@@ -188,7 +205,7 @@ class ModelManager(Subject):
                 model.load_model()
             self.available_tts_model.add(ModelType.VITS.value)
 
-        if model_type == ModelType.W2V2_VITS:
+        elif model_type == ModelType.W2V2_VITS:
             if self.emotion_reference is None:
                 self.emotion_reference = self.load_npy(
                     os.path.join(config.abs_path, config.system.data_path, config.model_config.dimensional_emotion_npy))
@@ -196,17 +213,17 @@ class ModelManager(Subject):
                              dimensional_emotion_model=self.dimensional_emotion_model)
             self.available_tts_model.add(ModelType.W2V2_VITS.value)
 
-        if model_type == ModelType.HUBERT_VITS:
+        elif model_type == ModelType.HUBERT_VITS:
             if self.hubert is None:
                 self.hubert = self.load_hubert_model(
                     os.path.join(config.abs_path, config.system.data_path, config.model_config.hubert_soft_0d54a1f4))
             model.load_model(hubert=self.hubert)
 
-        if model_type == ModelType.BERT_VITS2:
+        elif model_type == ModelType.BERT_VITS2:
             bert_model_names = model.bert_model_names
             for bert_model_name in bert_model_names.values():
                 if self.model_handler is None:
-                    from bert_vits2.model_handler import ModelHandler
+                    from manager.model_handler import ModelHandler
                     self.model_handler = ModelHandler(self.device)
                 self.model_handler.load_bert(bert_model_name)
             if model.hps_ms.model.emotion_embedding == 1:
@@ -214,10 +231,17 @@ class ModelManager(Subject):
             elif model.hps_ms.model.emotion_embedding == 2:
                 self.model_handler.load_clap()
 
-            model.load_model(
-                self.model_handler
-            )
+            model.load_model(self.model_handler)
+
             self.available_tts_model.add(ModelType.BERT_VITS2.value)
+
+        elif model_type == ModelType.GPT_SOVITS:
+            if self.model_handler is None:
+                from manager.model_handler import ModelHandler
+                self.model_handler = ModelHandler(self.device)
+            self.model_handler.load_ssl()
+            self.model_handler.load_bert("CHINESE_ROBERTA_WWM_EXT_LARGE")
+            model.load_model(self.model_handler)
 
         sid2model = []
         speakers = []
@@ -244,23 +268,26 @@ class ModelManager(Subject):
 
         return model_data
 
-    def load_model(self, model_path: str, config_path: str):
+    def normpath(self, *paths):
+        for path in paths:
+            if path is None:
+                return None
+            path = os.path.normpath(path)
+            if path.startswith('models'):
+                path = os.path.join(config.abs_path, config.system.data_path, path)
+            else:
+                path = os.path.join(config.abs_path, config.system.data_path, config.tts_config.models_path,
+                                    path)
+            return path
+
+    def load_model(self, model_path: str, config_path: str, sovits_path: str, gpt_path: str):
         try:
-            model_path = os.path.normpath(model_path)
-            if model_path.startswith('models'):
-                model_path = os.path.join(config.abs_path, config.system.data_path, model_path)
-            else:
-                model_path = os.path.join(config.abs_path, config.system.data_path, config.tts_config.models_path,
-                                          model_path)
+            model_path = self.normpath(model_path)
+            config_path = self.normpath(config_path)
+            sovits_path = self.normpath(sovits_path)
+            gpt_path = self.normpath(gpt_path)
 
-            config_path = os.path.normpath(config_path)
-            if config_path.startswith('models'):
-                config_path = os.path.join(config.abs_path, config.system.data_path, config_path)
-            else:
-                config_path = os.path.join(config.abs_path, config.system.data_path, config.tts_config.models_path,
-                                           config_path)
-
-            model_data = self._load_model_from_path(model_path, config_path)
+            model_data = self._load_model_from_path(model_path, config_path, sovits_path, gpt_path)
             model_id = model_data["model_id"]
             sid2model = model_data["sid2model"]
             model_type = model_data["model_type"]
@@ -346,15 +373,6 @@ class ModelManager(Subject):
     def unload_hubert_model(self):
         self.hubert = None
         self.notify("model_unloaded", model_manager=self)
-
-    # def load_bert_model(self, bert_model_name):
-    #     """"Bert-VITS2"""
-    #     if bert_model_name not in self.BERT_MODELS:
-    #         raise ValueError(f"Unknown BERT model name: {bert_model_name}")
-    #     model_path = self.BERT_MODELS[bert_model_name]
-    #     tokenizer = AutoTokenizer.from_pretrained(model_path)
-    #     model = AutoModelForMaskedLM.from_pretrained(model_path).to(self.device)
-    #     return tokenizer, model
 
     def load_VITS_PinYin_model(self, bert_path):
         """"vits_chinese"""

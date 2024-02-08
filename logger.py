@@ -1,9 +1,35 @@
 import os
+import re
 import sys
 import logging
 import logzero
+import warnings
 from contants import config
 from logging.handlers import TimedRotatingFileHandler
+
+
+# 过滤警告
+class SpecificWarningFilter(logging.Filter):
+    def __init__(self, warning_messages):
+        super().__init__()
+        self.warning_messages = warning_messages
+
+    def filter(self, record):
+        return all(msg not in record.getMessage() for msg in self.warning_messages)
+
+# 过滤警告
+ignore_warning_messages = ["stft with return_complex=False is deprecated",
+                           "1Torch was not compiled with flash attention",
+                           "torch.nn.utils.weight_norm is deprecated",
+                           "Some weights of the model checkpoint.*were not used.*initializing.*from the checkpoint.*",
+                           ]
+
+for message in ignore_warning_messages:
+    warnings.filterwarnings(action="ignore", message=message)
+
+class WarningFilter(logging.Filter):
+    def filter(self, record):
+        return record.levelno != logging.WARNING
 
 logzero.loglevel(logging.WARNING)
 logger = logging.getLogger("vits-simple-api")
@@ -26,6 +52,7 @@ handler.setFormatter(formatter)
 
 # remove all handlers (remove StreamHandler handle)
 logging.getLogger().handlers = []
+
 logging.getLogger().addHandler(handler)
 
 console_handler = logging.StreamHandler(sys.stdout)
@@ -35,6 +62,7 @@ logging.getLogger().addHandler(console_handler)
 logging.getLogger('numba').setLevel(logging.WARNING)
 logging.getLogger("langid.langid").setLevel(logging.INFO)
 logging.getLogger("apscheduler.scheduler").setLevel(logging.INFO)
+logging.getLogger("transformers.modeling_utils").addFilter(WarningFilter())
 
 
 # Custom function to handle uncaught exceptions

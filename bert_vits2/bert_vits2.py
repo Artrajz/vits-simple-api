@@ -39,6 +39,9 @@ class Bert_VITS2:
         self.bert_extra_str_map = {"zh": "", "ja": "", "en": ""}
         self.hps_ms.model.emotion_embedding = None
         if self.version in ["1.0", "1.0.0", "1.0.1"]:
+            """
+            chinese-roberta-wwm-ext-large
+            """
             self.version = "1.0"
             self.symbols = symbols_legacy
             self.hps_ms.model.n_layers_trans_flow = 3
@@ -48,6 +51,9 @@ class Bert_VITS2:
             self.text_extra_str_map.update({"zh": "_v100"})
 
         elif self.version in ["1.1.0-transition"]:
+            """
+            chinese-roberta-wwm-ext-large
+            """
             self.version = "1.1.0-transition"
             self.hps_ms.model.n_layers_trans_flow = 3
             self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja"])
@@ -58,6 +64,10 @@ class Bert_VITS2:
             self.bert_extra_str_map.update({"ja": "_v111"})
 
         elif self.version in ["1.1", "1.1.0", "1.1.1"]:
+            """
+            chinese-roberta-wwm-ext-large
+            bert-base-japanese-v3
+            """
             self.version = "1.1"
             self.hps_ms.model.n_layers_trans_flow = 6
             self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja"])
@@ -68,6 +78,11 @@ class Bert_VITS2:
             self.bert_extra_str_map.update({"ja": "_v111"})
 
         elif self.version in ["2.0", "2.0.0", "2.0.1", "2.0.2"]:
+            """
+            chinese-roberta-wwm-ext-large
+            deberta-v2-large-japanese
+            deberta-v3-large
+            """
             self.version = "2.0"
             self.hps_ms.model.n_layers_trans_flow = 4
             self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja", "en"])
@@ -78,6 +93,12 @@ class Bert_VITS2:
             self.bert_extra_str_map.update({"ja": "_v200", "en": "_v200"})
 
         elif self.version in ["2.1", "2.1.0"]:
+            """
+            chinese-roberta-wwm-ext-large
+            deberta-v2-large-japanese-char-wwm
+            deberta-v3-large
+            clap-htsat-fused
+            """
             self.version = "2.1"
             self.hps_ms.model.n_layers_trans_flow = 4
             self.hps_ms.model.emotion_embedding = 1
@@ -87,6 +108,11 @@ class Bert_VITS2:
             if "en" in self.lang: self.bert_model_names.update({"en": "DEBERTA_V3_LARGE"})
 
         elif self.version in ["2.2", "2.2.0"]:
+            """
+            chinese-roberta-wwm-ext-large
+            deberta-v2-large-japanese-char-wwm
+            deberta-v3-large
+            """
             self.version = "2.2"
             self.hps_ms.model.n_layers_trans_flow = 4
             self.hps_ms.model.emotion_embedding = 2
@@ -96,6 +122,12 @@ class Bert_VITS2:
             if "en" in self.lang: self.bert_model_names.update({"en": "DEBERTA_V3_LARGE"})
 
         elif self.version in ["2.3", "2.3.0"]:
+            """
+            chinese-roberta-wwm-ext-large
+            deberta-v2-large-japanese-char-wwm
+            deberta-v3-large
+            clap-htsat-fused
+            """
             self.version = "2.3"
             self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja", "en"])
             self.num_tones = num_tones
@@ -104,6 +136,10 @@ class Bert_VITS2:
             if "en" in self.lang: self.bert_model_names.update({"en": "DEBERTA_V3_LARGE"})
 
         elif self.version is not None and self.version in ["extra", "zh_clap"]:
+            """
+            Erlangshen-MegatronBert-1.3B-Chinese
+            clap-htsat-fused
+            """
             self.version = "extra"
             self.hps_ms.model.emotion_embedding = 2
             self.hps_ms.model.n_layers_trans_flow = 6
@@ -114,6 +150,10 @@ class Bert_VITS2:
             self.bert_extra_str_map.update({"zh": "_extra"})
 
         elif self.version is not None and self.version in ["extra_fix", "2.4", "2.4.0"]:
+            """
+            Erlangshen-MegatronBert-1.3B-Chinese
+            clap-htsat-fused
+            """
             self.version = "2.4"
             self.hps_ms.model.emotion_embedding = 2
             self.hps_ms.model.n_layers_trans_flow = 6

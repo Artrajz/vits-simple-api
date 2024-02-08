@@ -3,6 +3,7 @@ var currentModelPage = 1;
 var vitsSpeakersCount = 0;
 var w2v2SpeakersCount = 0;
 var bertVits2SpeakersCount = 0;
+var GPTSoVitsSpeakersCount = 0
 var selectedFile = null;
 
 function speakersInit() {
@@ -14,6 +15,7 @@ function speakersInit() {
             vitsSpeakersCount = data['VITS'].length;
             w2v2SpeakersCount = data['W2V2-VITS'].length;
             bertVits2SpeakersCount = data['BERT-VITS2'].length;
+            GPTSoVitsSpeakersCount = data['GPT-SoVITS'].length;
             showModelContentBasedOnStatus();
         },
         error: function (xhr, status, error) {
@@ -58,19 +60,28 @@ function getLink() {
     let id = document.getElementById("input_id" + currentModelPage).value;
     let format = document.getElementById("input_format" + currentModelPage).value;
     let lang = document.getElementById("input_lang" + currentModelPage).value;
-    let length = document.getElementById("input_length" + currentModelPage).value;
-    let noise = document.getElementById("input_noise" + currentModelPage).value;
-    let noisew = document.getElementById("input_noisew" + currentModelPage).value;
-    let segment_size = document.getElementById("input_segment_size" + currentModelPage).value;
     let api_key = document.getElementById("apiKey").value;
+    let segment_size = document.getElementById("input_segment_size" + currentModelPage).value;
 
-    let url = baseUrl
+
+    let url = baseUrl;
+    let length = null;
+    let noise = null;
+    let noisew = null;
     let streaming = null;
     let sdp_ratio = null;
     let emotion = null;
     let text_prompt = "";
     let style_text = "";
     let style_weight = "";
+    let prompt_text = ""
+
+    if (currentModelPage == 1 || currentModelPage == 2 || currentModelPage == 3) {
+        length = document.getElementById("input_length" + currentModelPage).value;
+        noise = document.getElementById("input_noise" + currentModelPage).value;
+        noisew = document.getElementById("input_noisew" + currentModelPage).value;
+    }
+
     if (currentModelPage == 1) {
         streaming = document.getElementById('streaming1');
         url += "/voice/vits?id=" + id;
@@ -85,27 +96,30 @@ function getLink() {
         style_text = document.getElementById('input_style_text3').value;
         style_weight = document.getElementById('input_style_weight3').value;
         url += "/voice/bert-vits2?id=" + id;
+    } else if (currentModelPage == 4) {
+        prompt_text = document.getElementById('input_prompt_text4').value;
+        url += "/voice/gpt-sovits?id=" + id;
 
     } else {
         console.error("Invalid model page: ", currentModelPage);
         return null;
     }
-    if (format != "") {
+    if (format != "" && format != null) {
         url += "&format=" + format;
     }
-    if (lang != "") {
+    if (lang != "" && lang != null) {
         url += "&lang=" + lang;
     }
-    if (length != "") {
+    if (length != "" && length != null) {
         url += "&length=" + length;
     }
-    if (noise != "") {
+    if (noise != "" && noise != null) {
         url += "&noise=" + noise;
     }
-    if (noisew != "") {
+    if (noisew != "" && noisew != null) {
         url += "&noisew=" + noisew;
     }
-    if (segment_size != "") {
+    if (segment_size != "" && segment_size != null) {
         url += "&segment_size=" + segment_size;
     }
 
@@ -193,9 +207,7 @@ function setAudioSourceByPost() {
     let id = $("#input_id" + currentModelPage).val();
     let format = $("#input_format" + currentModelPage).val();
     let lang = $("#input_lang" + currentModelPage).val();
-    let length = $("#input_length" + currentModelPage).val();
-    let noise = $("#input_noise" + currentModelPage).val();
-    let noisew = $("#input_noisew" + currentModelPage).val();
+
     let segment_size = $("#input_segment_size" + currentModelPage).val();
     let api_key = $("#apiKey").val();
 
@@ -204,12 +216,12 @@ function setAudioSourceByPost() {
     formData.append('id', id);
     formData.append('format', format);
     formData.append('lang', lang);
-    formData.append('length', length);
-    formData.append('noise', noise);
-    formData.append('noisew', noisew);
     formData.append('segment_size', segment_size);
 
     let url = "";
+    let length = null;
+    let noise = null;
+    let noisew = null;
     let streaming = null;
     let sdp_ratio = null;
     // let length_zh = 0;
@@ -219,6 +231,17 @@ function setAudioSourceByPost() {
     let text_prompt = "";
     let style_text = "";
     let style_weight = "";
+    let prompt_text = null;
+    let prompt_lang = null;
+
+    if (currentModelPage == 1 || currentModelPage == 2 || currentModelPage == 3) {
+        length = $("#input_length" + currentModelPage).val();
+        noise = $("#input_noise" + currentModelPage).val();
+        noisew = $("#input_noisew" + currentModelPage).val();
+        formData.append('length', length);
+        formData.append('noise', noise);
+        formData.append('noisew', noisew);
+    }
 
     if (currentModelPage == 1) {
         url = baseUrl + "/voice/vits";
@@ -237,7 +260,12 @@ function setAudioSourceByPost() {
         text_prompt = $("#input_text_prompt3").val();
         style_text = $("#input_style_text3").val();
         style_weight = $("#input_style_weight3").val();
+    } else if (currentModelPage == 4) {
+        url = baseUrl + "/voice/gpt-sovits";
+        prompt_text = $("#input_prompt_text4").val()
+        prompt_lang = $("#input_prompt_lang4").val()
     }
+
 
     // 添加其他配置参数到 FormData
     if ((currentModelPage == 1 || currentModelPage == 3) && streaming.checked) {
@@ -258,7 +286,7 @@ function setAudioSourceByPost() {
     if ((currentModelPage == 2 || currentModelPage == 3) && emotion != null && emotion != "") {
         formData.append('emotion', emotion);
     }
-    if (currentModelPage == 3 && selectedFile) {
+    if ((currentModelPage == 3 || currentModelPage == 4) && selectedFile) {
         formData.append('reference_audio', selectedFile);
     }
     if (currentModelPage == 3 && text_prompt) {
@@ -272,6 +300,13 @@ function setAudioSourceByPost() {
     }
     if (api_key != "") {
         formData.append('api_key', api_key);
+    }
+    if (currentModelPage == 4 && prompt_text) {
+        formData.append('prompt_text', prompt_text);
+    }
+
+    if (currentModelPage == 4 && prompt_lang) {
+        formData.append('prompt_lang', prompt_lang);
     }
 
     let downloadButton = document.getElementById("downloadButton" + currentModelPage);
@@ -353,6 +388,8 @@ function showModelContentBasedOnStatus() {
         showContent(1);
     } else if (bertVits2SpeakersCount > 0) {
         showContent(2);
+    } else if (GPTSoVitsSpeakersCount > 0) {
+        showContent(3);
     } else {
         showContent(0);
     }

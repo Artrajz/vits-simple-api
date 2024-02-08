@@ -1,7 +1,7 @@
 import regex as re
 
 try:
-    from  contants import config
+    from contants import config
 except:
     pass
 
@@ -20,19 +20,23 @@ langid_languages = ["af", "am", "an", "ar", "as", "az", "be", "bg", "bn", "br", 
 
 def classify_language(text: str, target_languages: list = None) -> str:
     try:
-        module = global_config["LANGUAGE_IDENTIFICATION_LIBRARY"].lower()
+        module = config.language_identification.language_identification_library.lower()
     except:
         module = "langid"
+
+    if not target_languages:
+        target_languages = None
+
     if module == "fastlid" or module == "fasttext":
         from fastlid import fastlid, supported_langs
         classifier = fastlid
-        if target_languages != None:
+        if target_languages is not None:
             target_languages = [lang for lang in target_languages if lang in supported_langs]
             fastlid.set_languages = target_languages
     elif module == "langid":
         import langid
         classifier = langid.classify
-        if target_languages != None:
+        if target_languages is not None:
             target_languages = [lang for lang in target_languages if lang in langid_languages]
             langid.set_languages(target_languages)
     else:

@@ -21,7 +21,7 @@ eng_to_ipa
 ko_pron
 indic_transliteration
 num_thai
-opencc
+opencc==1.1.7
 fasttext
 fastlid
 langid
@@ -35,10 +35,12 @@ sentencepiece==0.1.99
 jaconv
 
 # Machine Learning and Deep Learning
-torch
+torch==2.2.0 # Fixed to 2.2.0 because GPT-SOVITS does not support lower versions of Torch.
 onnx==1.12.0
 audonnx==0.7.0
 vector_quantize_pytorch==1.12.12
+pytorch_lightning
+torchmetrics
 
 # Web and API services
 flask==2.2.3

@@ -3,10 +3,13 @@ import time
 import uuid
 from io import BytesIO
 
+import librosa
+import numpy as np
 from flask import request, jsonify, make_response, send_file, Blueprint
 from werkzeug.utils import secure_filename
 
 from contants import config
+from gpt_sovits.utils import load_audio
 from logger import logger
 from contants import ModelType
 from tts_app.voice_api.auth import require_api_key
@@ -508,6 +511,110 @@ def voice_bert_vits2_api():
 
     if config.system.cache_audio:
         logger.debug(f"[{ModelType.BERT_VITS2.value}] {fname}")
+        path = os.path.join(config.system.cache_path, fname)
+        save_audio(audio.getvalue(), path)
+
+    return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
+
+
+@voice_api.route('/gpt-sovits', methods=["GET", "POST"])
+@require_api_key
+def voice_gpt_sovits_api():
+    try:
+        if request.method == "GET":
+            request_data = request.args
+        elif request.method == "POST":
+            content_type = request.headers.get('Content-Type')
+            if content_type == 'application/json':
+                request_data = request.get_json()
+            else:
+                request_data = request.form
+
+        text = get_param(request_data, "text", "", str)
+        id = get_param(request_data, "id", config.gpt_sovits_config.id, int)
+        lang = get_param(request_data, "lang", config.gpt_sovits_config.lang, str)
+        format = get_param(request_data, "format", config.gpt_sovits_config.format, str)
+        segment_size = get_param(request_data, "segment_size", config.gpt_sovits_config.segment_size, int)
+        reference_audio = request.files.get("reference_audio", None)
+        refer_wav_path = get_param(request_data, "refer_wav_path", config.gpt_sovits_config.refer_wav_path, str)
+        prompt_text = get_param(request_data, "prompt_text", config.gpt_sovits_config.prompt_text, str)
+        prompt_lang = get_param(request_data, "prompt_lang", config.gpt_sovits_config.prompt_lang, str)
+        # use_streaming = get_param(request_data, 'streaming', config.gpt_sovits_config.use_streaming, bool)
+    except Exception as e:
+        logger.error(f"[{ModelType.GPT_SOVITS.value}] {e}")
+        return make_response("parameter error", 400)
+
+    logger.info(
+        f"[{ModelType.GPT_SOVITS.value}] id:{id} format:{format} lang:{lang} segment_size:{segment_size} prompt_text:{prompt_text} prompt_lang:{prompt_lang}")
+
+    if check_is_none(text):
+        logger.info(f"[{ModelType.GPT_SOVITS.value}] text is empty")
+        return make_response(jsonify({"status": "error", "message": "text is empty"}), 400)
+
+    if check_is_none(id):
+        logger.info(f"[{ModelType.GPT_SOVITS.value}] speaker id is empty")
+        return make_response(jsonify({"status": "error", "message": "speaker id is empty"}), 400)
+
+    if id < 0 or id >= model_manager.gpt_sovits_speakers_count:
+        logger.info(f"[{ModelType.GPT_SOVITS.value}] speaker id {id} does not exist")
+        return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
+
+    # 校验模型是否支持输入的语言
+    speaker_lang = model_manager.voice_speakers[ModelType.GPT_SOVITS.value][id].get('lang')
+    if lang not in ["auto", "mix"] and len(speaker_lang) != 1 and lang not in speaker_lang:
+        logger.info(f"[{ModelType.GPT_SOVITS.value}] lang \"{lang}\" is not in {speaker_lang}")
+        return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}),
+                             400)
+
+    # 如果配置文件中设置了LANGUAGE_AUTOMATIC_DETECT则强制将speaker_lang设置为LANGUAGE_AUTOMATIC_DETECT
+    if (lang_detect := config.language_identification.language_automatic_detect) and isinstance(lang_detect, list):
+        speaker_lang = lang_detect
+
+    # 检查参考音频
+    if check_is_none(reference_audio):
+        if not check_is_none(refer_wav_path):
+            reference_audio = load_audio(config.gpt_sovits_config.refer_wav_path)
+            prompt_text, prompt_lang = (
+                config.gpt_sovits_config.prompt_text,
+                config.gpt_sovits_config.prompt_lang,
+            )
+        else:
+            reference_audio, reference_audio_sr = load_audio(config.gpt_sovits_config.refer_wav_path)
+    reference_audio, reference_audio_sr = librosa.load(reference_audio, sr=None, dtype=np.float32)
+    reference_audio = reference_audio.flatten()
+
+    if check_is_none(reference_audio, prompt_text, prompt_lang):
+
+        # 未指定参考音频且配置文件无预设
+        return make_response(jsonify(
+            {"status": "error", "message": "No reference audio specified, and no default setting in the config."}),
+            400)
+
+    # if use_streaming and format.upper() != "MP3":
+    #     format = "mp3"
+    #     logger.warning("Streaming response only supports MP3 format.")
+
+    fname = f"{str(uuid.uuid1())}.{format}"
+    file_type = f"audio/{format}"
+    state = {"text": text,
+             "id": id,
+             "format": format,
+             "segment_size": segment_size,
+             "lang": lang,
+             "speaker_lang": speaker_lang,
+             "reference_audio": reference_audio,
+             "reference_audio_sr": reference_audio_sr,
+             "prompt_text": prompt_text,
+             "prompt_lang": prompt_lang,
+             }
+
+    t1 = time.time()
+    audio = tts_manager.gpt_sovits_infer(state)
+    t2 = time.time()
+    logger.info(f"[{ModelType.GPT_SOVITS.value}] finish in {(t2 - t1):.2f}s")
+
+    if config.system.cache_audio:
+        logger.debug(f"[{ModelType.GPT_SOVITS.value}] {fname}")
         path = os.path.join(config.system.cache_path, fname)
         save_audio(audio.getvalue(), path)
 
