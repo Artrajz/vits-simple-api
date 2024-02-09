@@ -97,7 +97,7 @@ class Bert_VITS2:
             chinese-roberta-wwm-ext-large
             deberta-v2-large-japanese-char-wwm
             deberta-v3-large
-            clap-htsat-fused
+            wav2vec2-large-robust-12-ft-emotion-msp-dim
             """
             self.version = "2.1"
             self.hps_ms.model.n_layers_trans_flow = 4
@@ -112,6 +112,7 @@ class Bert_VITS2:
             chinese-roberta-wwm-ext-large
             deberta-v2-large-japanese-char-wwm
             deberta-v3-large
+            clap-htsat-fused
             """
             self.version = "2.2"
             self.hps_ms.model.n_layers_trans_flow = 4
@@ -126,7 +127,6 @@ class Bert_VITS2:
             chinese-roberta-wwm-ext-large
             deberta-v2-large-japanese-char-wwm
             deberta-v3-large
-            clap-htsat-fused
             """
             self.version = "2.3"
             self.lang = getattr(self.hps_ms.data, "lang", ["zh", "ja", "en"])

@@ -261,11 +261,11 @@ class TTSModelConfig(AsDictMixin):
 class TTSConfig(AsDictMixin):
     # Directory name for models under the data folder
     models_path: str = "models"
-    # List to store configurations of Text-to-Speech models
-    models: List[TTSModelConfig] = field(default_factory=list)
     # If set to True (default), models under the specified models_path will be automatically loaded.
     # When set to False, you can manually specify the models to load.
     auto_load: bool = True
+    # List to store configurations of Text-to-Speech models
+    models: List[TTSModelConfig] = field(default_factory=list)
 
     def asdict(self):
         data = {}

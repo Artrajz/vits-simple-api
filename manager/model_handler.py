@@ -215,6 +215,16 @@ class ModelHandler:
         else:
             self.emotion["reference_count"] += 1
 
+    def release_emotion(self):
+        if self.emotion is not None:
+            self.emotion["reference_count"] -= 1
+            if self.emotion["reference_count"] <= 0:
+                del self.emotion
+                self.emotion = None
+                gc.collect()
+                torch.cuda.empty_cache()
+                logging.info(f"Emotion model has been released.")
+
     def load_clap(self, max_retries=3):
         """Bert-VITS2 v2.2 ClapModel"""
         if self.clap is None:
@@ -239,6 +249,16 @@ class ModelHandler:
                 logging.error(f"Failed to load {model_path} after {max_retries} retries.")
         else:
             self.clap["reference_count"] += 1
+
+    def release_clap(self):
+        if self.clap is not None:
+            self.clap["reference_count"] -= 1
+            if self.clap["reference_count"] <= 0:
+                del self.clap
+                self.clap = None
+                gc.collect()
+                torch.cuda.empty_cache()
+                logging.info(f"Clap model has been released.")
 
     def get_bert_model(self, bert_model_name):
         if bert_model_name not in self.bert_models:
@@ -318,6 +338,16 @@ class ModelHandler:
             self.load_ssl()
 
         return self.ssl_model.get("model")
+
+    def release_ssl_model(self):
+        if self.ssl_model is not None:
+            self.ssl_model["reference_count"] -= 1
+            if self.ssl_model["reference_count"] <= 0:
+                del self.ssl_model
+                self.ssl_model = None
+                gc.collect()
+                torch.cuda.empty_cache()
+                logging.info(f"SSL model has been released.")
 
     def is_model_loaded(self, bert_model_name):
         return bert_model_name in self.bert_models

@@ -339,8 +339,9 @@ class ModelManager(Subject):
         model_id = int(model_id)
         try:
             if model_id in self.models[model_type].keys():
-
-                model_path, config_path, model, n_speakers = self.models[model_type][model_id].values()
+                model_data = self.models[model_type][model_id]
+                model = model_data.get("model")
+                n_speakers = model_data.get("n_speakers")
                 start = 0
 
                 for key, value in self.models[model_type].items():
@@ -349,8 +350,15 @@ class ModelManager(Subject):
                     start += value.get("n_speakers")
 
                 if model_type == ModelType.BERT_VITS2:
-                    for bert_model_name in self.models[model_type][model_id]["model"].bert_model_names.values():
+                    for bert_model_name in model.bert_model_names.values():
                         self.model_handler.release_bert(bert_model_name)
+                    if model.version == "2.1":
+                        self.model_handler.release_emotion()
+                    elif model.version in ["2.2", "extra", "2.4"]:
+                        self.model_handler.release_clap()
+                elif model_type == ModelType.GPT_SOVITS:
+                    self.model_handler.release_bert("CHINESE_ROBERTA_WWM_EXT_LARGE")
+                    self.model_handler.release_ssl_model()
 
                 del self.sid2model[model_type][start:start + n_speakers]
                 del self.voice_speakers[model_type.value][start:start + n_speakers]

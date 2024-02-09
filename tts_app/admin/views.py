@@ -1,4 +1,5 @@
 import logging
+import os
 
 from flask import Blueprint, request, render_template, make_response, jsonify
 from flask_login import login_required
@@ -7,6 +8,16 @@ from contants import config
 from tts_app.model_manager import model_manager
 
 admin = Blueprint('admin', __name__)
+
+
+def extract_filename_and_directory(path):
+    filename = os.path.basename(path)
+    directory = os.path.dirname(path)
+    directory_name = os.path.basename(directory)
+    if not directory:  # 如果文件所在文件夹为空（即在根目录）
+        return filename
+    else:
+        return directory_name + "/" + filename
 
 
 @admin.route('/')
@@ -24,7 +35,22 @@ def setting():
 @admin.route('/get_models_info', methods=["GET", "POST"])
 @login_required
 def get_models_info():
-    return model_manager.get_models_info()
+    loaded_models_info = model_manager.get_models_info()
+    for models in loaded_models_info.values():
+        for model in models:
+            if model.get("model_path") is not None:
+                model["model_path"] = extract_filename_and_directory(model["model_path"])
+
+            if model.get("config_path") is not None:
+                model["config_path"] = extract_filename_and_directory(model["config_path"])
+
+            if model.get("sovits_path") is not None:
+                model["sovits_path"] = extract_filename_and_directory(model["sovits_path"])
+
+            if model.get("gpt_path") is not None:
+                model["gpt_path"] = extract_filename_and_directory(model["gpt_path"])
+
+    return loaded_models_info
 
 
 @admin.route('/load_model', methods=["GET", "POST"])
