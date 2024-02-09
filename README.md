@@ -254,6 +254,29 @@ Create and open phrases_dict.txt in the project's root directory to add polyphon
 }
 ```
 
+## GPT-SoVITS Reference Audio Presets
+
+Find the configuration for GPT-SoVITS in the config.yaml file. Add presets under the presets section. Multiple presets can be added, with keys serving as preset names. Below are two default presets, default and default2:
+
+```
+yamlCopy codegpt_sovits_config:
+  hz: 50
+  is_half: false
+  id: 0
+  lang: auto
+  format: wav
+  segment_size: 50
+  presets:
+    default:
+      refer_wav_path: null
+      prompt_text: null
+      prompt_lang: auto
+    default2:
+      refer_wav_path: null
+      prompt_text: null
+      prompt_lang: auto
+```
+
 # Frequently Asked Questions
 
 ## Installation Issues with fastText Dependency
@@ -488,6 +511,7 @@ Learning and communication,now there is only Chinese [QQ group](https://qm.qq.co
 - vits-uma-genshin-honkai:https://huggingface.co/spaces/zomehwh/vits-uma-genshin-honkai
 - vits_chinese:https://github.com/PlayVoice/vits_chinese
 - Bert_VITS2:https://github.com/fishaudio/Bert-VITS2
+- GPT-SoVITS:https://github.com/RVC-Boss/GPT-SoVITS
 
 # Thank You to All Contributors
 

@@ -263,6 +263,31 @@ http://127.0.0.1:23456
 }
 ```
 
+## GPT-SoVITS参考音频预设
+
+在config.yaml中找到gpt_sovits的配置，在presets下添加预设，预设可添加多个，其中key作为预设名称，如下有两个默认的预设default和default2：
+
+```
+gpt_sovits_config:
+  hz: 50
+  is_half: false
+  id: 0
+  lang: auto
+  format: wav
+  segment_size: 50
+  presets:
+    default:
+      refer_wav_path: null
+      prompt_text: null
+      prompt_lang: auto
+    default2:
+      refer_wav_path: null
+      prompt_text: null
+      prompt_lang: auto
+```
+
+
+
 # 常见问题
 
 ## fasttext依赖安装问题
@@ -498,6 +523,7 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 - vits-uma-genshin-honkai:https://huggingface.co/spaces/zomehwh/vits-uma-genshin-honkai
 - vits_chinese:https://github.com/PlayVoice/vits_chinese
 - Bert_VITS2:https://github.com/fishaudio/Bert-VITS2
+- GPT-SoVITS:https://github.com/RVC-Boss/GPT-SoVITS
 
 # 感谢所有的贡献者
 
