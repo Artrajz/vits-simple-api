@@ -75,12 +75,12 @@ model load
     margin-right: 5px;
 }
 
-.unload-model-path {
+.model1 {
     min-width: 250px;
     margin-right: 5px;
 }
 
-.unload-model-config {
+.model2 {
     min-width: 100px;
     margin-right: 5px;
 }
@@ -117,12 +117,12 @@ model list
     flex: 1;
 }
 
-.model-path {
+.model-card-info1 {
     font-size: 24px;
 }
 
-.n-speakers {
-
+.model-card-info3 {
+    font-size: 24px;
 }
 
 #VITS .card {

@@ -13,8 +13,9 @@ import secrets
 import shutil
 import string
 import sys
+import traceback
 from dataclasses import dataclass, field, asdict, fields, is_dataclass
-from typing import List, Union
+from typing import List, Union, Optional, Dict
 
 import torch
 import yaml
@@ -50,7 +51,21 @@ model_list = [
 @dataclass
 class AsDictMixin:
     def asdict(self):
-        return asdict(self)
+        data = {}
+        for attr, value in vars(self).items():
+            if isinstance(value, AsDictMixin):
+                data[attr] = value.asdict()
+            elif isinstance(value, list):
+                data[attr] = []
+                for item in value:
+                    data[attr].append(item.asdict())
+            elif isinstance(value, dict):
+                data[attr] = {}
+                for k, v in value.items():
+                    data[attr].update({k: v.asdict()})
+            else:
+                data[attr] = value
+        return data
 
     def __iter__(self):
         for key, value in self.asdict().items():
@@ -63,7 +78,6 @@ class AsDictMixin:
 
             if field_name in new_config_dict:
                 new_value = new_config_dict[field_name]
-
                 if is_dataclass(field_type):
                     if isinstance(new_value, list):
                         # If the field type is a dataclass and the new value is a list
@@ -74,6 +88,7 @@ class AsDictMixin:
                         # If the field type is a dataclass but not a list, recursively update the dataclass
                         nested_config = getattr(self, field_name)
                         nested_config.update_config(new_value)
+                        setattr(self, field_name, nested_config)
                 else:
                     if field_type == bool:
                         new_value = str(new_value).lower() == "true"
@@ -147,6 +162,65 @@ class BertVits2Config(AsDictMixin):
 
 
 @dataclass
+class GPTSoVitsPreset(AsDictMixin):
+    refer_wav_path: str = None
+    prompt_text: str = None
+    prompt_lang: str = "auto"
+
+
+@dataclass
+class GPTSoVitsConfig(AsDictMixin):
+    hz: int = 50
+    is_half: bool = False
+    id: int = 0
+    lang: str = "auto"
+    format: str = "wav"
+    segment_size: int = 50
+    presets: Dict[str, GPTSoVitsPreset] = field(default_factory=lambda: {"default": GPTSoVitsPreset(),
+                                                                         "default2": GPTSoVitsPreset()})
+
+    def update_config(self, new_config_dict):
+        for field in fields(self):
+            field_name = field.name
+            field_type = field.type
+            if field_name in new_config_dict:
+                new_value = new_config_dict[field_name]
+                if is_dataclass(field_type):
+                    if isinstance(new_value, list):
+                        # If the field type is a dataclass and the new value is a list
+                        # Convert each element of the list to the corresponding class object
+                        new_value = [field_type(**item) for item in new_value]
+                        setattr(self, field_name, new_value)
+                    else:
+                        # If the field type is a dataclass but not a list, recursively update the dataclass
+                        nested_config = getattr(self, field_name)
+                        nested_config.update_config(new_value)
+                else:
+                    if field_type == Dict[str, GPTSoVitsPreset]:
+                        new_dict = {}
+
+                        for k, v in new_value.items():
+                            refer_wav_path = v.get("refer_wav_path")
+                            prompt_text = v.get("prompt_text")
+                            prompt_lang = v.get("prompt_lang")
+                            new_dict.update({k: GPTSoVitsPreset(refer_wav_path, prompt_text, prompt_lang)})
+                            new_value = new_dict
+
+                    elif field_type == bool:
+                        new_value = str(new_value).lower() == "true"
+                    elif field_type == int:
+                        new_value = int(new_value)
+                    elif field_type == float:
+                        new_value = float(new_value)
+                    elif field_type == str:
+                        new_value = str(new_value)
+                    elif field_type == torch.device:
+                        new_value = torch.device(new_value)
+
+                    setattr(self, field_name, new_value)
+
+
+@dataclass
 class ModelConfig(AsDictMixin):
     chinese_roberta_wwm_ext_large: str = "bert/chinese-roberta-wwm-ext-large"
     bert_base_japanese_v3: str = "bert/bert-base-japanese-v3"
@@ -159,34 +233,49 @@ class ModelConfig(AsDictMixin):
     erlangshen_MegatronBert_1_3B_Chinese: str = "bert/Erlangshen-MegatronBert-1.3B-Chinese"
     vits_chinese_bert: str = "bert/vits_chinese_bert"
     # hubert-vits
-    hubert_soft_0d54a1f4: str = "hubert_soft/hubert-soft-0d54a1f4.pt"
+    hubert_soft_0d54a1f4: str = "hubert/hubert_soft/hubert-soft-0d54a1f4.pt"
     # w2v2-vits: .npy file or folder are alvailable
     dimensional_emotion_npy: Union[str, List[str]] = "dimensional_emotion_npy"
     # w2v2-vits: Need to have both `models.onnx` and `models.yaml` files in the same path.
     dimensional_emotion_model: str = "dimensional_emotion_model/models.yaml"
     g2pw_model: str = "G2PWModel"
+    chinese_hubert_base: str = "hubert/chinese_hubert_base"
 
 
 @dataclass
 class TTSModelConfig(AsDictMixin):
-    model_path: str
-    config_path: str
+    model_path: Optional[str] = None
+    config_path: Optional[str] = None
+    sovits_path: Optional[str] = None
+    gpt_path: Optional[str] = None
+
+    def asdict(self):
+        data = {}
+        for attr, value in vars(self).items():
+            if value is not None:
+                data[attr] = value
+        return data
 
 
 @dataclass
 class TTSConfig(AsDictMixin):
     # Directory name for models under the data folder
     models_path: str = "models"
-    # List to store configurations of Text-to-Speech models
-    models: List[TTSModelConfig] = field(default_factory=list)
     # If set to True (default), models under the specified models_path will be automatically loaded.
     # When set to False, you can manually specify the models to load.
     auto_load: bool = True
+    # List to store configurations of Text-to-Speech models
+    models: List[TTSModelConfig] = field(default_factory=list)
 
     def asdict(self):
-        config_copy = copy.deepcopy(self)
-        config_copy.models = [[tts_model.model_path, tts_model.config_path] for tts_model in self.models]
-        data = asdict(config_copy)
+        data = {}
+        for attr, value in vars(self).items():
+            if isinstance(value, list):
+                data[attr] = []
+                for item in value:
+                    data[attr].append(item.asdict())
+            else:
+                data[attr] = value
         return data
 
     def update_config(self, new_config_dict):
@@ -212,7 +301,10 @@ class TTSConfig(AsDictMixin):
                     elif field_type == torch.device:
                         new_value = torch.device(new_value)
                     elif field_type == List[TTSModelConfig]:
-                        new_value = [TTSModelConfig(model.get("model_path"), model.get("config_path")) for model in
+                        new_value = [TTSModelConfig(model.get("model_path"),
+                                                    model.get("config_path"),
+                                                    model.get("sovits_path"),
+                                                    model.get("gpt_path")) for model in
                                      new_value]
 
                     setattr(self, field_name, new_value)
@@ -237,7 +329,8 @@ class LogConfig(AsDictMixin):
 
 @dataclass
 class System(AsDictMixin):
-    device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device: torch.device = torch.device(
+        "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
     # Upload path
     upload_folder: str = "upload"
     # Cahce path
@@ -258,8 +351,13 @@ class System(AsDictMixin):
     data_path: str = "data"
 
     def asdict(self):
-        self.models = [[tts_model.model_path, tts_model.config_path] for tts_model in self.models]
-        return asdict(self)
+        data = {}
+        for attr, value in vars(self).items():
+            if attr == "device":
+                data[attr] = str(value)
+            else:
+                data[attr] = value
+        return data
 
 
 @dataclass
@@ -297,21 +395,25 @@ class User(AsDictMixin):
 class Config(AsDictMixin):
     abs_path: str = ABS_PATH
     http_service: HttpService = HttpService()
-    log_config: LogConfig = LogConfig()
+    model_config: ModelConfig = ModelConfig()
+    tts_config: TTSConfig = TTSConfig()
+    admin: User = User()
     system: System = System()
+    log_config: LogConfig = LogConfig()
     language_identification: LanguageIdentification = LanguageIdentification()
     vits_config: VitsConfig = VitsConfig()
     w2v2_vits_config: W2V2VitsConfig = W2V2VitsConfig()
     hubert_vits_config: HuBertVitsConfig = HuBertVitsConfig()
     bert_vits2_config: BertVits2Config = BertVits2Config()
-    model_config: ModelConfig = ModelConfig()
-    tts_config: TTSConfig = TTSConfig()
-    admin: User = User()
+    gpt_sovits_config: GPTSoVitsConfig = GPTSoVitsConfig()
 
     def asdict(self):
-        self.system.device = str(self.system.device)
-        data = asdict(self)
-        self.system.device = torch.device(self.system.device)
+        data = {}
+        for attr, value in vars(self).items():
+            if isinstance(value, AsDictMixin):
+                data[attr] = value.asdict()
+            else:
+                data[attr] = value
         return data
 
     @staticmethod
@@ -336,7 +438,7 @@ class Config(AsDictMixin):
         else:
             try:
                 logging.info("Loading config...")
-                with open(config_path, 'r') as f:
+                with open(config_path, 'r', encoding='utf-8') as f:
                     loaded_config = yaml.safe_load(f)
                 config = Config()
 
@@ -354,12 +456,13 @@ class Config(AsDictMixin):
 
                 return config
             except Exception as e:
+                logging.error(traceback.print_exc())
                 ValueError(e)
 
     @staticmethod
     def save_config(config):
         temp_filename = os.path.join(Config.abs_path, "config.yaml.tmp")
-        with open(temp_filename, 'w') as f:
-            yaml.safe_dump(config.asdict(), f, default_style=None)
+        with open(temp_filename, 'w', encoding='utf-8') as f:
+            yaml.dump(config.asdict(), f, allow_unicode=True, default_style='', sort_keys=False)
         shutil.move(temp_filename, os.path.join(Config.abs_path, "config.yaml"))
         logging.info(f"Config is saved.")

@@ -488,3 +488,16 @@ class TTSManager(Observer):
 
             for encoded_audio_chunk in self.generate_audio_chunks(encoded_audio):
                 yield encoded_audio_chunk
+
+    def gpt_sovits_infer(self, state, encode=True):
+
+        model = self.get_model(ModelType.GPT_SOVITS, state["id"])
+        audio = model.infer(text=state.get("text"),
+                            lang=state.get("lang"),
+                            reference_audio=state.get("reference_audio"),
+                            reference_audio_sr=state.get("reference_audio_sr"),
+                            prompt_text=state.get("prompt_text"),
+                            prompt_lang=state.get("prompt_lang"))
+        sampling_rate = model.sampling_rate
+
+        return self.encode(sampling_rate, audio, state["format"]) if encode else audio

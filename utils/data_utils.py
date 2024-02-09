@@ -4,7 +4,7 @@ import logging
 from contants import config
 
 
-class HParams():
+class HParams:
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
             if type(v) == dict:
@@ -81,9 +81,20 @@ def load_audio_to_torch(full_path, target_sampling_rate):
     return FloatTensor(audio.astype(float32))
 
 
-def check_is_none(item) -> bool:
-    # none -> True, not none -> False
-    return item is None or (isinstance(item, str) and str(item).isspace()) or str(item) == ""
+def check_is_none(*items) -> bool:
+    """
+    Check if any item is None or an empty string.
+
+    Args:
+        *items: Variable number of items to check.
+
+    Returns:
+        bool: True if any item is None or an empty string, False otherwise.
+    """
+    for item in items:
+        if item is None or (isinstance(item, str) and str(item).isspace()) or str(item) == "":
+            return True
+    return False
 
 
 def clean_folder(folder_path):

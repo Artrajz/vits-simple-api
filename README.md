@@ -409,6 +409,18 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 |Style Text Weight|style_weight|false|From `config.yaml`|float|Bert-VITS2 v2.3 text prompt weight used for prompt weighting|
 | Streaming response | streaming    | false   | false             | bool  | Streamed synthesized speech with faster initial response.    |
 
+## GPT-SoVITS Speech Synthesis
+
+| Name         | Parameter       | Is must | Default               | Type  | Instruction                                                  |
+| ------------ | --------------- | ------- | --------------------- | ----- | ------------------------------------------------------------ |
+| Synthesized text     | text            | true    |                       | str   | Text needed for voice synthesis.                                         |
+| Speaker ID       | id              | false   | From `config.yaml` | int   | Speaker ID. In GPT-SoVITS, each model serves as a Speaker ID, and the voice is switched by reference audio presets. |
+| Audio format     | format          | false   | From `config.yaml` | str   | Support for wav, ogg, silk, mp3, flac                                    |
+| Text language     | lang            | false   | From `config.yaml` | str   | "auto" is the automatic language detection mode, which is also the default mode. However, it currently only supports recognizing the language of the entire text passage, and cannot distinguish each sentence. |
+| Reference Audio     | reference_audio | false   | None                  |       | reference_audio is required, but it can be replaced by preset. |
+| Reference Audio Text | prompt_text     | false   | From `config.yaml` | float | Need to be consistent with the actual text of the reference audio.       |
+| Reference Audio Language | prompt_lang     | false   | From `config.yaml` | str   | Defaults to auto for automatic text language recognition. If recognition fails, manually fill in, zh for Chinese, ja for Japanese, en for English. |
+| Reference Audio Preset | preset          | false   | default               | str   | Replace the reference audio with pre-set presets, multiple presets can be set.           |
 
 
 ## SSML (Speech Synthesis Markup Language)

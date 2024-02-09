@@ -419,7 +419,22 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 | 文本提示词权重 | style_weight    | false   | 从`config.yaml`中获取 | float | Bert-VITS2 v2.3 文本提示词，用于提示词权重                   |
 | 流式响应      | streaming    | false   | false                | bool  | 流式合成语音，更快的首包响应。                               |
 
+## GPT-SoVITS语音合成
+
+| Name         | Parameter       | Is must | Default               | Type  | Instruction                                                  |
+| ------------ | --------------- | ------- | --------------------- | ----- | ------------------------------------------------------------ |
+| 合成文本     | text            | true    |                       | str   | 需要合成语音的文本。                                         |
+| 角色id       | id              | false   | 从`config.yaml`中获取 | int   | 即说话人id。在GPT-SoVITS中，每一个模型作为一个角色id，音色通过参考音频预设来切换。 |
+| 音频格式     | format          | false   | 从`config.yaml`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
+| 文本语言     | lang            | false   | 从`config.yaml`中获取 | str   | auto为自动识别语言模式，也是默认模式，但目前只支持识别整段文本的语言，无法细分到每个句子。 |
+| 参考音频     | reference_audio | false   | None                  |       | 参考音频是必须的，但是可以被预设代替                         |
+| 参考音频文本 | prompt_text     | false   | 从`config.yaml`中获取 | float | 需要和参考音频实际文本保持一致。                             |
+| 参考音频语言 | prompt_lang     | false   | 从`config.yaml`中获取 | str   | 默认为auto，自动识别文本语言。如果识别失败则手动填写，中文就是zh，日文是ja，英文是en。 |
+| 参考音频预设 | preset          | false   | default               | str   | 通过提前设置好的预设代替参考音频，可设置多个预设。           |
+
+
 ## SSML语音合成标记语言
+
 目前支持的元素与属性
 
 `speak`元素

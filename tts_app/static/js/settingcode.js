@@ -107,7 +107,7 @@ function show_config(configData) {
 
     $.each(configData.system, function (key, value) {
         var formattedKey = key.replace(/_/g, '-');
-        if (formattedKey == 'api-key-enable' || formattedKey == 'cache-audio') {
+        if (formattedKey == 'api-key-enabled' || formattedKey == 'cache-audio') {
             $('#' + formattedKey).prop('checked', value);
         } else {
             $('#' + formattedKey).val(value);
@@ -132,12 +132,20 @@ function set_config() {
         $('#' + labelId).find('.item').each(function () {
             var itemId = $(this).find('input, select').attr('id').replace(/-/g, '_');
 
-            if (labelId == 'vits-config' || labelId == 'w2v2-vits-config' || labelId == 'hubert-vits-config' || labelId == 'bert-vits2-config') {
-                //还原组合key
-                itemId = itemId.replace(labelId.replace(/-/g, '_') + "_", "");
+            //还原组合key
+            itemId = itemId.replace(labelId.replace(/-/g, '_') + "_", "");
+
+            if ($(this).find('input').is(':checkbox')) {
+                // 如果是复选框，获取复选框的状态
+                itemValue = $(this).find('input').prop('checked');
+            } else {
+                // 如果不是复选框，获取输入框或选择框的值
+                itemValue = $(this).find('input, select').val();
             }
-            var itemValue = $(this).find('input, select').val();
+
             nestedDict[itemId] = itemValue;
+            if (labelId == "system")
+                console.log(itemId)
         });
 
         configData[labelId.replace(/-/g, '_')] = nestedDict;
@@ -156,7 +164,7 @@ function set_config() {
             location.reload();
         },
         error: function (error) {
-            alert("保存配置时出错");
+            alert("保存配置时出错，请查看日志！");
         }
     });
 

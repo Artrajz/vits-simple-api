@@ -24,6 +24,8 @@
             <button class="tab-button px-4 pb-2 pt-2" onclick="showContent(1)" id="w2v2-vits-button">W2V2-VITS</button>
             <button class="tab-button px-4 pb-2 pt-2" onclick="showContent(2)" id="bert-vits2-button">Bert-VITS2
             </button>
+            <button class="tab-button px-4 pb-2 pt-2" onclick="showContent(3)" id="gpt-sovits-button">GPT-SoVITS
+            </button>
         </div>
 
         <div class="content w-100 border-lr-2 border-b-2" id="component-3">
@@ -39,7 +41,8 @@
                         <select class="form-control input_id" id="input_id1" oninput="updateLink()">
                             {% for speaker in speakers["VITS"] %}
                                 <option value="{{ speaker["id"] }}">{{ speaker["id"] }} | {{ speaker["name"] }}
-                                    | {{ speaker["lang"] }}</option>
+                                    {% if speaker["lang"] != [] and speaker["lang"] != None %} |
+                                        {{ speaker["lang"] }} {% endif %}</option>
                             {% endfor %}
                             {% if vits_speakers_count <=0 %}
                                 <option value="" disabled selected hidden>未加载模型</option>
@@ -125,6 +128,7 @@
 
                 </div>
             </div>
+
             <div class="content-pane w-100 flex-wrap" id="w2v2-vits-page">
                 <form class="w-100">
                     <div class="mb-3">
@@ -137,7 +141,8 @@
                         <select class="form-control input_id" id="input_id2" oninput="updateLink()">
                             {% for speaker in speakers["W2V2-VITS"] %}
                                 <option value="{{ speaker["id"] }}">{{ speaker["id"] }} | {{ speaker["name"] }}
-                                    | {{ speaker["lang"] }}</option>
+                                    {% if speaker["lang"] != [] and speaker["lang"] != None %} |
+                                        {{ speaker["lang"] }} {% endif %}</option>
                             {% endfor %}
                             {% if w2v2_speakers_count <=0 %}
                                 <option value="" disabled selected hidden>未加载模型</option>
@@ -228,6 +233,7 @@
                     </button>
                 </div>
             </div>
+
             <div class="content-pane w-100 flex-wrap" id="bert-vits2-page">
                 <form class="w-100">
                     <div class="mb-3">
@@ -240,7 +246,8 @@
                         <select class="form-control input_id" id="input_id3" oninput="updateLink()">
                             {% for speaker in speakers["BERT-VITS2"] %}
                                 <option value="{{ speaker["id"] }}">{{ speaker["id"] }} | {{ speaker["name"] }}
-                                    | {{ speaker["lang"] }}</option>
+                                    {% if speaker["lang"] != [] and speaker["lang"] != None %} |
+                                        {{ speaker["lang"] }} {% endif %}</option>
                             {% endfor %}
                             {% if bert_vits2_speakers_count <=0 %}
                                 <option value="" disabled selected hidden>未加载模型</option>
@@ -405,6 +412,119 @@
                                title="按照segment_size分段推理文本，推理好一段即输出，无需等待所有文本都推理完毕">流式响应</label>
                     </div>
                 </div>
+            </div>
+
+            <div class="content-pane w-100 flex-wrap" id="gpt-sovits-page">
+                <form class="w-100">
+                    <div class="mb-3">
+                        <label>text</label>
+                        <textarea class="form-control input_text" id="input_text4" rows="3"
+                                  oninput="updateLink()">你好</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label>id</label>
+                        <select class="form-control input_id" id="input_id4" oninput="updateLink()">
+                            {% for speaker in speakers["GPT-SOVITS"] %}
+                                <option value="{{ speaker["id"] }}">{{ speaker["id"] }} | {{ speaker["name"] }}
+                                    {% if speaker["lang"] != [] and speaker["lang"] != None %} |
+                                        {{ speaker["lang"] }} {% endif %}</option>
+                            {% endfor %}
+                            {% if gpt_sovits_speakers_count <=0 %}
+                                <option value="" disabled selected hidden>未加载模型</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </form>
+                <form class="w-100">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="默认为wav">format</label>
+                            <select class="form-control input_format" id="input_format4" oninput="updateLink()">
+                                <option></option>
+                                <option>wav</option>
+                                <option>mp3</option>
+                                <option>ogg</option>
+                                <option>silk</option>
+                                <option>flac</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="自动识别语言auto：可识别的语言根据不同speaker而不同，方言无法自动识别。方言模型需要手动指定语言，比如粤语Cantonese要指定参数lang=gd">lang</label>
+                            <input type="text" class="form-control input_lang" id="input_lang4" oninput="updateLink()"
+                                   value=""
+                                   placeholder="auto"/>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段。">segment_size</label>
+                            <input type="number" class="form-control input_segment_size" id="input_segment_size4"
+                                   oninput="updateLink()"
+                                   value=""
+                                   placeholder="50" step="1"/>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="reference_audio" data-toggle="tooltip" data-placement="top"
+                                   title="">reference_audio</label>
+                            <input type="file" class="reference_audio" id="reference_audio4" multiple>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="prompt_text" data-toggle="tooltip" data-placement="top"
+                                   title="">prompt_text</label>
+                            <input type="text" class="form-control prompt_text" id="input_prompt_text4"
+                                   oninput="updateLink()"
+                                   value=""
+                                   placeholder=""/>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="prompt_lang" data-toggle="tooltip" data-placement="top"
+                                   title="">prompt_lang</label>
+                            <input type="text" class="form-control prompt_text" id="input_prompt_lang4"
+                                   oninput="updateLink()"
+                                   value=""
+                                   placeholder="auto"/>
+                        </div>
+
+                    </div>
+                    <!--  presets  -->
+                    <div class="row">
+                        <div class="mb-3">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="preset">preset</label>
+                            <select class="form-control input_preset" id="input_preset4" oninput="updateLink()">
+                            </select>
+                        </div>
+                    </div>
+
+                </form>
+
+
+                <div class="player flex flex-wrap  w-100">
+                    <audio id="audioPlayer4" controls>
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+
+                <div class="play-button">
+                    <button type="button" class="btn btn-outline-secondary" onclick="setAudioSourceByPost()"
+                            style="margin-right: 10px">
+                        播放器生成
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="downloadAudio()"
+                            id="downloadButton4" disabled>
+                        下载音频
+                    </button>
+                    <div class="form-check">
+                        <input type="checkbox" id="streaming4" onchange="updateLink()">
+                        <label class="form-check-label" data-toggle="tooltip" data-placement="top"
+                               title="按照segment_size分段推理文本，推理好一段即输出，无需等待所有文本都推理完毕">流式响应</label>
+                    </div>
+                </div>
+
 
             </div>
         </div>
@@ -437,11 +557,11 @@
 <div class="floating-icon" id="apiKeyIcon">
     <label data-toggle="tooltip" data-placement="left" data-bs-original-title="api_key">
             <span class="settings-icon"><svg xmlns="http://www.w3.org/2000/svg" width="13px"
-                                                               height="13px" viewBox="0 0 24 24" fill="none"
-                                                               stroke="currentColor" stroke-width="2"
-                                                               stroke-linecap="round" stroke-linejoin="round"
-                                                               class="feather feather-settings" data-original-title=""
-                                                               title=""><circle cx="12" cy="12" r="3"></circle><path
+                                             height="13px" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor" stroke-width="2"
+                                             stroke-linecap="round" stroke-linejoin="round"
+                                             class="feather feather-settings" data-original-title=""
+                                             title=""><circle cx="12" cy="12" r="3"></circle><path
                     d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span>
     </label>
     <div class="api-key-input" id="apiKeyInput">
