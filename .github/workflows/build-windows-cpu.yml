@@ -28,7 +28,7 @@ jobs:
       - name: Activate Conda environment and Install Dependencies
         run: |
           call C:\programs\miniconda3\Scripts\activate C:\programs\miniconda3\envs\py310
-          pip install --no-cache-dir torch==1.13.1 --extra-index-url https://download.pytorch.org/whl/cpu
+          pip install --no-cache-dir torch==2.2.0 --extra-index-url https://download.pytorch.org/whl/cpu
           pip install --extra-index-url https://pypi.artrajz.cn/simple -r requirements.txt
         shell: cmd
 
