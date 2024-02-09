@@ -17,6 +17,7 @@ class SpecificWarningFilter(logging.Filter):
     def filter(self, record):
         return all(msg not in record.getMessage() for msg in self.warning_messages)
 
+
 # 过滤警告
 ignore_warning_messages = ["stft with return_complex=False is deprecated",
                            "1Torch was not compiled with flash attention",
@@ -27,20 +28,34 @@ ignore_warning_messages = ["stft with return_complex=False is deprecated",
 for message in ignore_warning_messages:
     warnings.filterwarnings(action="ignore", message=message)
 
+
 class WarningFilter(logging.Filter):
     def filter(self, record):
         return record.levelno != logging.WARNING
 
+
 logzero.loglevel(logging.WARNING)
 logger = logging.getLogger("vits-simple-api")
-level = getattr(config, "LOGGING_LEVEL", "DEBUG")
+level = config.log_config.logging_level.upper()
 level_dict = {'DEBUG': logging.DEBUG, 'INFO': logging.INFO, 'WARNING': logging.WARNING, 'ERROR': logging.ERROR,
               'CRITICAL': logging.CRITICAL}
 logging.getLogger().setLevel(level_dict[level])
 
 # formatter = logging.Formatter('%(levelname)s:%(name)s %(message)s')
-formatter = logging.Formatter('%(asctime)s [%(levelname)s] [%(module)s.%(funcName)s:%(lineno)d] %(message)s',
-                              datefmt='%Y-%m-%d %H:%M:%S')
+# formatter = logging.Formatter('%(asctime)s [%(levelname)s] [%(module)s.%(funcName)s:%(lineno)d] %(message)s',
+#                               datefmt='%Y-%m-%d %H:%M:%S')
+
+# 根据日志级别选择日志格式
+if level == "DEBUG":
+    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s [in %(module)s.%(funcName)s:%(lineno)d]',
+                                  datefmt='%Y-%m-%d %H:%M:%S')
+elif level == "INFO":
+    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s',
+                                  datefmt='%Y-%m-%d %H:%M:%S')
+else:
+    # 如果日志级别既不是DEBUG也不是INFO，则使用默认的日志格式
+    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s [in %(module)s.%(funcName)s:%(lineno)d]',
+                                  datefmt='%Y-%m-%d %H:%M:%S')
 
 logs_path = os.path.join(config.abs_path, config.log_config.logs_path)
 os.makedirs(logs_path, exist_ok=True)

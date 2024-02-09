@@ -74,7 +74,9 @@ function getLink() {
     let text_prompt = "";
     let style_text = "";
     let style_weight = "";
-    let prompt_text = ""
+    let prompt_text = null;
+    let prompt_lang = null;
+    let preset = null;
 
     if (currentModelPage == 1 || currentModelPage == 2 || currentModelPage == 3) {
         length = document.getElementById("input_length" + currentModelPage).value;
@@ -98,6 +100,8 @@ function getLink() {
         url += "/voice/bert-vits2?id=" + id;
     } else if (currentModelPage == 4) {
         prompt_text = document.getElementById('input_prompt_text4').value;
+        prompt_lang = document.getElementById('input_prompt_lang4').value;
+        preset = document.getElementById('input_preset4').value;
         url += "/voice/gpt-sovits?id=" + id;
 
     } else {
@@ -148,6 +152,15 @@ function getLink() {
             url += "&style_text=" + style_text;
         if (style_weight !== null && style_weight !== "")
             url += "&style_weight=" + style_weight;
+    } else if (currentModelPage == 4) {
+        if (prompt_lang !== null && prompt_lang !== "")
+            url += "&prompt_lang=" + prompt_lang;
+        if (prompt_text !== null && prompt_text !== "")
+            url += "&prompt_text=" + prompt_text;
+        if (preset !== null && preset !== "")
+            url += "&preset=" + preset;
+
+
     }
 
     if (api_key != "") {
@@ -233,6 +246,7 @@ function setAudioSourceByPost() {
     let style_weight = "";
     let prompt_text = null;
     let prompt_lang = null;
+    let preset = null;
 
     if (currentModelPage == 1 || currentModelPage == 2 || currentModelPage == 3) {
         length = $("#input_length" + currentModelPage).val();
@@ -264,6 +278,7 @@ function setAudioSourceByPost() {
         url = baseUrl + "/voice/gpt-sovits";
         prompt_text = $("#input_prompt_text4").val()
         prompt_lang = $("#input_prompt_lang4").val()
+        preset = $("#input_preset4").val()
     }
 
 
@@ -308,6 +323,9 @@ function setAudioSourceByPost() {
     if (currentModelPage == 4 && prompt_lang) {
         formData.append('prompt_lang', prompt_lang);
     }
+    if (currentModelPage == 4 && preset) {
+        formData.append('preset', preset);
+    }
 
     let downloadButton = document.getElementById("downloadButton" + currentModelPage);
 
@@ -334,8 +352,10 @@ function setAudioSourceByPost() {
             downloadButton.disabled = false;
         },
         error: function (error) {
-            console.error('Error:', error);
-            alert("无法获取音频数据，请查看日志！");
+            // console.error('Error:', error);
+            let message = "无法获取音频数据，请查看日志！";
+            console.log(message)
+            alert(message);
             downloadButton.disabled = true;
         }
     });
@@ -396,10 +416,37 @@ function showModelContentBasedOnStatus() {
 }
 
 function updatePlaceholders(config, page) {
-    for (var key in config) {
-        $("#input_" + key + page).attr("placeholder", config[key]);
+    for (let key in config) {
+        if (key == "presets") {
+            let data = config[key];
+            let selectElement = $("#input_preset" + page);
+            selectElement.empty(); // 清除现有的选项
+            for (let name in data) {
+                let preset_value = data[name];
+                let preset = `[${name}] audio: ${preset_value["refer_wav_path"]}`;
+                // 创建preset
+                let option = $("<option>", {
+                    value: name,
+                    text: preset,
+                    'data-prompt-lang': preset_value["prompt_lang"],
+                    'data-prompt-text': preset_value["prompt_text"]
+                });
+                selectElement.append(option);
+            }
+            // 当选择改变时更新输入预设的值
+            selectElement.change(function () {
+                let selectedOption = $(this).find(":selected");
+                let promptLang = selectedOption.data("prompt-lang");
+                let promptText = selectedOption.data("prompt-text");
+                $("#input_prompt_lang" + page).val(promptLang);
+                $("#input_prompt_text" + page).val(promptText);
+            });
+        } else {
+            $("#input_" + key + page).attr("placeholder", config[key]);
+        }
     }
 }
+
 
 function setDefaultParameter() {
     $.ajax({
@@ -411,6 +458,7 @@ function setDefaultParameter() {
             updatePlaceholders(default_parameter.vits_config, 1);
             updatePlaceholders(default_parameter.w2v2_vits_config, 2);
             updatePlaceholders(default_parameter.bert_vits2_config, 3);
+            updatePlaceholders(default_parameter.gpt_sovits_config, 4);
         },
         error: function (error) {
         }

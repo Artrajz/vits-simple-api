@@ -1,6 +1,8 @@
+import copy
 import logging
 import os
 import time
+import traceback
 import uuid
 from io import BytesIO
 
@@ -10,7 +12,7 @@ from flask import request, jsonify, make_response, send_file, Blueprint
 from werkzeug.utils import secure_filename
 
 from contants import config
-from gpt_sovits.utils import load_audio
+# from gpt_sovits.utils import load_audio
 from logger import logger
 from contants import ModelType
 from tts_app.voice_api.auth import require_api_key
@@ -41,12 +43,29 @@ def get_param(request_data, key, default, data_type=None):
     return value
 
 
+def extract_filename_and_directory(path):
+    filename = os.path.basename(path)
+    directory = os.path.dirname(path)
+    directory_name = os.path.basename(directory)
+    if not directory:  # 如果文件所在文件夹为空（即在根目录）
+        return filename
+    else:
+        return directory_name + "/" + filename
+
+
 @voice_api.route('/default_parameter', methods=["GET", "POST"])
 def default_parameter():
+    gpt_sovits_config = copy.deepcopy(config.gpt_sovits_config.asdict())
+    for preset_name, preset in gpt_sovits_config["presets"].items():
+        if not check_is_none(preset["refer_wav_path"]):
+            preset["refer_wav_path"] = extract_filename_and_directory(preset["refer_wav_path"])
+
     data = {"vits_config": config.vits_config.asdict(),
             "w2v2_vits_config": config.w2v2_vits_config.asdict(),
             "hubert_vits_config": config.hubert_vits_config.asdict(),
-            "bert_vits2_config": config.bert_vits2_config.asdict()}
+            "bert_vits2_config": config.bert_vits2_config.asdict(),
+            "gpt_sovits_config": gpt_sovits_config
+            }
     return jsonify(data)
 
 
@@ -579,28 +598,28 @@ def voice_gpt_sovits_api():
     if check_is_none(reference_audio):
         if preset != "default":
             refer_preset = config.gpt_sovits_config.presets.get(preset)
-
             if check_is_none(refer_wav_path):
                 refer_wav_path = refer_preset.refer_wav_path
 
             prompt_text, prompt_lang = refer_preset.prompt_text, refer_preset.prompt_lang
 
         try:
-            reference_audio, reference_audio_sr = load_audio(refer_wav_path)
+            reference_audio = refer_wav_path
         except Exception as e:
             logging.error(e)
+            traceback.print_exc()
             return make_response(jsonify({"status": "error", "message": "Loading refer_wav_path error."}), 400)
-
-
-    reference_audio, reference_audio_sr = librosa.load(reference_audio, sr=None, dtype=np.float32)
-    reference_audio = reference_audio.flatten()
 
     if check_is_none(reference_audio, prompt_text):
         # 未指定参考音频且配置文件无预设
-        logging.error("No reference audio specified, and no default setting in the config.")
+        message = "No reference audio specified, and no default setting in the config. 未指定参考音频且配置文件无预设"
+        logging.error(message)
         return make_response(jsonify(
-            {"status": "error", "message": "No reference audio specified, and no default setting in the config."}),
+            {"status": "error", "message": message}),
             400)
+
+    reference_audio, reference_audio_sr = librosa.load(reference_audio, sr=None, dtype=np.float32)
+    reference_audio = reference_audio.flatten()
 
     # if use_streaming and format.upper() != "MP3":
     #     format = "mp3"

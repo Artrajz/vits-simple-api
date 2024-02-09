@@ -301,6 +301,7 @@ class ModelHandler:
                         self.ssl_model["model"] = self.ssl_model["model"].half()
 
                     self.ssl_model["model"] = self.ssl_model["model"].to(self.device)
+                    self.ssl_model["reference_count"] = 1
                     logging.info(f"Success loading: {model_path}")
                     break
                 except Exception as e:

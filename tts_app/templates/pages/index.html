@@ -424,7 +424,7 @@
                     <div class="mb-3">
                         <label>id</label>
                         <select class="form-control input_id" id="input_id4" oninput="updateLink()">
-                            {% for speaker in speakers["GPT-SoVITS"] %}
+                            {% for speaker in speakers["GPT-SOVITS"] %}
                                 <option value="{{ speaker["id"] }}">{{ speaker["id"] }} | {{ speaker["name"] }}
                                     {% if speaker["lang"] != [] and speaker["lang"] != None %} |
                                         {{ speaker["lang"] }} {% endif %}</option>
@@ -489,6 +489,15 @@
                                    placeholder="auto"/>
                         </div>
 
+                    </div>
+                    <!--  presets  -->
+                    <div class="row">
+                        <div class="mb-3">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="preset">preset</label>
+                            <select class="form-control input_preset" id="input_preset4" oninput="updateLink()">
+                            </select>
+                        </div>
                     </div>
 
                 </form>

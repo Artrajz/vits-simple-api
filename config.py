@@ -13,6 +13,7 @@ import secrets
 import shutil
 import string
 import sys
+import traceback
 from dataclasses import dataclass, field, asdict, fields, is_dataclass
 from typing import List, Union, Optional, Dict
 
@@ -175,16 +176,15 @@ class GPTSoVitsConfig(AsDictMixin):
     lang: str = "auto"
     format: str = "wav"
     segment_size: int = 50
-    presets: Dict[str, GPTSoVitsPreset] = field(default_factory=lambda: {"default": GPTSoVitsPreset()})
+    presets: Dict[str, GPTSoVitsPreset] = field(default_factory=lambda: {"default": GPTSoVitsPreset(),
+                                                                         "default2": GPTSoVitsPreset()})
 
     def update_config(self, new_config_dict):
         for field in fields(self):
             field_name = field.name
             field_type = field.type
-
             if field_name in new_config_dict:
                 new_value = new_config_dict[field_name]
-
                 if is_dataclass(field_type):
                     if isinstance(new_value, list):
                         # If the field type is a dataclass and the new value is a list
@@ -198,6 +198,7 @@ class GPTSoVitsConfig(AsDictMixin):
                 else:
                     if field_type == Dict[str, GPTSoVitsPreset]:
                         new_dict = {}
+
                         for k, v in new_value.items():
                             refer_wav_path = v.get("refer_wav_path")
                             prompt_text = v.get("prompt_text")
@@ -394,17 +395,17 @@ class User(AsDictMixin):
 class Config(AsDictMixin):
     abs_path: str = ABS_PATH
     http_service: HttpService = HttpService()
-    log_config: LogConfig = LogConfig()
+    model_config: ModelConfig = ModelConfig()
+    tts_config: TTSConfig = TTSConfig()
+    admin: User = User()
     system: System = System()
+    log_config: LogConfig = LogConfig()
     language_identification: LanguageIdentification = LanguageIdentification()
     vits_config: VitsConfig = VitsConfig()
     w2v2_vits_config: W2V2VitsConfig = W2V2VitsConfig()
     hubert_vits_config: HuBertVitsConfig = HuBertVitsConfig()
     bert_vits2_config: BertVits2Config = BertVits2Config()
     gpt_sovits_config: GPTSoVitsConfig = GPTSoVitsConfig()
-    model_config: ModelConfig = ModelConfig()
-    tts_config: TTSConfig = TTSConfig()
-    admin: User = User()
 
     def asdict(self):
         data = {}
@@ -437,7 +438,7 @@ class Config(AsDictMixin):
         else:
             try:
                 logging.info("Loading config...")
-                with open(config_path, 'r') as f:
+                with open(config_path, 'r', encoding='utf-8') as f:
                     loaded_config = yaml.safe_load(f)
                 config = Config()
 
@@ -455,12 +456,13 @@ class Config(AsDictMixin):
 
                 return config
             except Exception as e:
+                logging.error(traceback.print_exc())
                 ValueError(e)
 
     @staticmethod
     def save_config(config):
         temp_filename = os.path.join(Config.abs_path, "config.yaml.tmp")
-        with open(temp_filename, 'w') as f:
-            yaml.safe_dump(config.asdict(), f, default_style=None)
+        with open(temp_filename, 'w', encoding='utf-8') as f:
+            yaml.dump(config.asdict(), f, allow_unicode=True, default_style='', sort_keys=False)
         shutil.move(temp_filename, os.path.join(Config.abs_path, "config.yaml"))
         logging.info(f"Config is saved.")

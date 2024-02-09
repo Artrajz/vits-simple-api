@@ -36,13 +36,13 @@ class DictToAttrRecursive(dict):
             raise AttributeError(f"Attribute {item} not found")
 
 
-def load_audio(file, sr=16000):
-    try:
-        y, sr = librosa.load(file, sr=sr, dtype=np.float32)
-    except Exception as e:
-        raise RuntimeError(f"Failed to load audio: {e}")
-
-    return y.flatten(), sr
+# def load_audio(file, sr=16000):
+#     try:
+#         y, sr = librosa.load(file, sr=sr, dtype=np.float32)
+#     except Exception as e:
+#         raise RuntimeError(f"Failed to load audio: {e}")
+#
+#     return y.flatten(), sr
 
 # import ffmpeg
 # import numpy as np

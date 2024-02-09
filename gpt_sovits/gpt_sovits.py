@@ -1,4 +1,5 @@
 import logging
+import os.path
 import re
 
 import librosa
@@ -61,12 +62,13 @@ class GPT_SoVITS:
 
     def load_sovits(self, sovits_path):
         # self.n_semantic = 1024
-
+        logging.info(f"Loaded checkpoint '{sovits_path}'")
         dict_s2 = torch.load(sovits_path, map_location=self.device)
         self.hps = dict_s2["config"]
         self.hps = DictToAttrRecursive(self.hps)
         self.hps.model.semantic_frame_rate = "25hz"
-        self.speakers = [self.hps.get("name")]
+        # self.speakers = [self.hps.get("name")] # 从模型配置中获取名字
+        self.speakers = [os.path.basename(os.path.dirname(self.sovits_path))]  # 用模型文件夹作为名字
 
         self.vq_model = SynthesizerTrn(
             self.hps.data.filter_length // 2 + 1,
@@ -83,6 +85,7 @@ class GPT_SoVITS:
         self.load_weight(dict_s2['weight'], self.vq_model)
 
     def load_gpt(self, gpt_path):
+        logging.info(f"Loaded checkpoint '{gpt_path}'")
         dict_s1 = torch.load(gpt_path, map_location=self.device)
 
         self.gpt_config = dict_s1["config"]
@@ -98,7 +101,7 @@ class GPT_SoVITS:
         self.t2s_model.eval()
 
         total = sum([param.nelement() for param in self.t2s_model.parameters()])
-        logging.info("Number of parameter: %.2fM" % (total / 1e6))
+        logging.info(f"Number of parameter: {total / 1e6:.2f}M")
 
     def get_speakers(self):
         return self.speakers
@@ -149,7 +152,6 @@ class GPT_SoVITS:
         pattern = "[" + "".join(re.escape(sep) for sep in splits) + "]"
         text = re.split(pattern, text)[0].strip()
         return text
-
 
     def infer(self, text, lang, reference_audio, reference_audio_sr, prompt_text, prompt_lang):
         # t0 = ttime()

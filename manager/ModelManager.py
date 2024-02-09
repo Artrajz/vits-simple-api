@@ -366,7 +366,8 @@ class ModelManager(Subject):
                 self.notify("model_unloaded", model_manager=self)
                 self.logger.info(f"Unloading success.")
         except Exception as e:
-            self.logger.info(f"Unloading failed. {e}")
+            logging.error(traceback.print_exc())
+            logging.error(f"Unloading failed. {e}")
             state = False
 
         return state
@@ -591,9 +592,13 @@ class ModelManager(Subject):
         for model in self.get_models_path():
             # 只取已加载的模型路径
             if model.get("model_type") == ModelType.GPT_SOVITS:
-                loaded_paths_2.append((model.get("sovits_path"), model.get("gpt_path")))
+                sovits_path, gpt_path = self.absolute_to_relative_path(model.get("sovits_path"),
+                                                                       model.get("gpt_path"))
+                sovits_path, gpt_path = sovits_path.replace("\\", "/"), gpt_path.replace("\\", "/")
+                loaded_paths_2.append((sovits_path, gpt_path))
             else:
-                loaded_paths.append(model.get("model_path"))
+                model_path = self.absolute_to_relative_path(model.get("model_path"))[0].replace("\\", "/")
+                loaded_paths.append(model_path)
 
         for info in all_paths:
             # 将绝对路径修改为相对路径，并将分隔符格式化为'/'
@@ -609,29 +614,23 @@ class ModelManager(Subject):
                 model_path, config_path = self.absolute_to_relative_path(info.get("model_path"),
                                                                          info.get("config_path"))
                 model_path, config_path = model_path.replace("\\", "/"), config_path.replace("\\", "/")
-
-                if not self.is_path_loaded(info.get("model_path"), loaded_paths):
+                if not self.is_path_loaded(model_path, loaded_paths):
                     info.update({"model_path": model_path, "config_path": config_path})
                     unload_paths.append(info)
 
         return unload_paths
 
     def is_path_loaded(self, paths, loaded_paths):
-        if len(paths) == 1:
+        if len(paths) == 2:
+            sovits_path, gpt_path = paths
+            for loaded_path in loaded_paths:
+                if sovits_path == loaded_path[0] and gpt_path == loaded_path[1]:
+                    return True
+        else:
             path = paths
-            normalized_path = os.path.normpath(path)
 
             for loaded_path in loaded_paths:
-                normalized_loaded_path = os.path.normpath(loaded_path)
-                if normalized_path == normalized_loaded_path:
-                    return True
-        elif len(paths) == 2:
-            sovits_path, gpt_path = paths
-            sovits_path, gpt_path = os.path.normpath(sovits_path), os.path.normpath(gpt_path)
-            for loaded_path in loaded_paths:
-                normalized_sovits_path = os.path.normpath(self.absolute_to_relative_path(loaded_path[0])[0])
-                normalized_gpt_path = os.path.normpath(self.absolute_to_relative_path(loaded_path[1])[0])
-                if sovits_path == normalized_sovits_path and gpt_path == normalized_gpt_path:
+                if path == loaded_path:
                     return True
 
         return False
