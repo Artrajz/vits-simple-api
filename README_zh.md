@@ -24,6 +24,7 @@
 - [x] W2V2 VITS / [emotional-vits](https://github.com/innnky/emotional-vits)维度情感模型
 - [x] [vits_chinese](https://github.com/PlayVoice/vits_chinese)
 - [x] [Bert-VITS2](https://github.com/Stardust-minus/Bert-VITS2)
+- [x] [GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS)
 - [x] 加载多模型
 - [x] 自动识别语言并处理，根据模型的cleaner设置语言类型识别的范围，支持自定义语言类型范围
 - [x] 自定义默认参数

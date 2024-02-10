@@ -24,6 +24,7 @@
 - [x] [vits_chinese](https://github.com/PlayVoice/vits_chinese)
 - [x] [Bert-VITS2](https://github.com/Stardust-minus/Bert-VITS2)
 - [x] W2V2 VITS / [emotional-vits](https://github.com/innnky/emotional-vits) dimensional emotion model
+- [x] [GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS)
 - [x] Support for loading multiple models
 - [x] Automatic language recognition and processing,set the scope of language type recognition according to model's cleaner,support for custom language type range
 - [x] Customize default parameters
