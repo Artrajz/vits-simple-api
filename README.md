@@ -164,6 +164,11 @@ tts_config:
     model_path: model1/G_1000.pth
   - config_path: model2/config.json
     model_path: model2/G_1000.pth
+	# GPT-SoVITS
+  - sovits_path: gpt_sovits1/model1_e8_s11536.pth
+    gpt_path: gpt_sovits1/model1-e15.ckpt
+  - sovits_path: gpt_sovits2/model2_e8_s11536.pth
+    gpt_path: gpt_sovits2/model2-e15.ckpt
 ```
 
 Loading models through the admin panel is convenient, but if you want to load models outside the `data/models` folder, you can only do so by modifying the config.yaml configuration file. The method is to directly provide the absolute path.

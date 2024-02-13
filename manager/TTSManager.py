@@ -497,7 +497,11 @@ class TTSManager(Observer):
                             reference_audio=state.get("reference_audio"),
                             reference_audio_sr=state.get("reference_audio_sr"),
                             prompt_text=state.get("prompt_text"),
-                            prompt_lang=state.get("prompt_lang"))
+                            prompt_lang=state.get("prompt_lang"),
+                            top_k=state.get("top_k"),
+                            top_p=state.get("top_p"),
+                            temperature=state.get("temperature"),
+                            )
         sampling_rate = model.sampling_rate
 
         return self.encode(sampling_rate, audio, state["format"]) if encode else audio

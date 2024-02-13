@@ -563,13 +563,16 @@ def voice_gpt_sovits_api():
                                 config.gpt_sovits_config.presets.get("default").prompt_text, str)
         prompt_lang = get_param(request_data, "prompt_lang",
                                 config.gpt_sovits_config.presets.get("default").prompt_lang, str)
+        top_k = get_param(request_data, "top_k", config.gpt_sovits_config.top_k, float)
+        top_p = get_param(request_data, "top_p", config.gpt_sovits_config.top_p, float)
+        temperature = get_param(request_data, "temperature", config.gpt_sovits_config.temperature, int)
         # use_streaming = get_param(request_data, 'streaming', config.gpt_sovits_config.use_streaming, bool)
     except Exception as e:
         logger.error(f"[{ModelType.GPT_SOVITS.value}] {e}")
         return make_response("parameter error", 400)
 
     logger.info(
-        f"[{ModelType.GPT_SOVITS.value}] id:{id} format:{format} lang:{lang} segment_size:{segment_size} prompt_text:{prompt_text} prompt_lang:{prompt_lang}")
+        f"[{ModelType.GPT_SOVITS.value}] id:{id} format:{format} lang:{lang} segment_size:{segment_size} top_k:{top_k} top_k:{top_k} temperature:{temperature}")
 
     if check_is_none(text):
         logger.info(f"[{ModelType.GPT_SOVITS.value}] text is empty")
@@ -621,6 +624,9 @@ def voice_gpt_sovits_api():
     reference_audio, reference_audio_sr = librosa.load(reference_audio, sr=None, dtype=np.float32)
     reference_audio = reference_audio.flatten()
 
+    logger.info(
+        f"[{ModelType.GPT_SOVITS.value}] prompt_text:{prompt_text} prompt_lang:{prompt_lang} ")
+
     # if use_streaming and format.upper() != "MP3":
     #     format = "mp3"
     #     logger.warning("Streaming response only supports MP3 format.")
@@ -637,6 +643,9 @@ def voice_gpt_sovits_api():
              "reference_audio_sr": reference_audio_sr,
              "prompt_text": prompt_text,
              "prompt_lang": prompt_lang,
+             "top_k": top_k,
+             "top_p": top_p,
+             "temperature": temperature,
              }
 
     t1 = time.time()

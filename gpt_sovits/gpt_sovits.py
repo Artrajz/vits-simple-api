@@ -153,7 +153,8 @@ class GPT_SoVITS:
         text = re.split(pattern, text)[0].strip()
         return text
 
-    def infer(self, text, lang, reference_audio, reference_audio_sr, prompt_text, prompt_lang):
+    def infer(self, text, lang, reference_audio, reference_audio_sr, prompt_text, prompt_lang, top_k, top_p,
+              temperature, **kwargs):
         # t0 = ttime()
 
         if lang.lower() == "auto":
@@ -223,29 +224,31 @@ class GPT_SoVITS:
                 bert,
                 # prompt_phone_len=ph_offset,
                 top_k=self.gpt_config["inference"]["top_k"],
+                top_p=top_p,
+                temperature=temperature,
                 early_stop_num=self.hz * self.max_sec,
             )
-        # t3 = ttime()
-        # print(pred_semantic.shape,idx)
-        pred_semantic = pred_semantic[:, -idx:].unsqueeze(
-            0
-        )  # .unsqueeze(0)#mq要多unsqueeze一次
-        refer = self.get_spepc(reference_audio, orig_sr=reference_audio_sr)  # .to(device)
-        if self.is_half:
-            refer = refer.half()
-        refer = refer.to(self.device)
-        # audio = vq_model.decode(pred_semantic, all_phoneme_ids, refer).detach().cpu().numpy()[0, 0]
+            # t3 = ttime()
+            # print(pred_semantic.shape,idx)
+            pred_semantic = pred_semantic[:, -idx:].unsqueeze(
+                0
+            )  # .unsqueeze(0)#mq要多unsqueeze一次
+            refer = self.get_spepc(reference_audio, orig_sr=reference_audio_sr)  # .to(device)
+            if self.is_half:
+                refer = refer.half()
+            refer = refer.to(self.device)
+            # audio = vq_model.decode(pred_semantic, all_phoneme_ids, refer).detach().cpu().numpy()[0, 0]
 
-        audio = (
-            self.vq_model.decode(pred_semantic, torch.LongTensor(phones2).to(self.device).unsqueeze(0),
-                                 refer).detach().cpu().numpy()[0, 0]
-        )  ###试试重建不带上prompt部分
-        max_audio = np.abs(audio).max()  # 简单防止16bit爆音
-        if max_audio > 1: audio /= max_audio
-        audios.append(audio)
-        audios.append(zero_wav)
-        # t4 = ttime()
+            audio = (
+                self.vq_model.decode(pred_semantic, torch.LongTensor(phones2).to(self.device).unsqueeze(0),
+                                     refer).detach().cpu().numpy()[0, 0]
+            )  ###试试重建不带上prompt部分
+            max_audio = np.abs(audio).max()  # 简单防止16bit爆音
+            if max_audio > 1: audio /= max_audio
+            audios.append(audio)
+            audios.append(zero_wav)
+            # t4 = ttime()
 
-        # logging.debug(f"{t1 - t0:.3f}\t{t2 - t1:.3f}\t{t3 - t2:.3f}\t{t4 - t3:.3f}")
-        audio = (np.concatenate(audios, 0) * 32768).astype(np.int16)
-        return audio
+            # logging.debug(f"{t1 - t0:.3f}\t{t2 - t1:.3f}\t{t3 - t2:.3f}\t{t4 - t3:.3f}")
+            audio = (np.concatenate(audios, 0) * 32768).astype(np.int16)
+            return audio

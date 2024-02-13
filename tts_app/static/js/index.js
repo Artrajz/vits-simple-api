@@ -77,6 +77,9 @@ function getLink() {
     let prompt_text = null;
     let prompt_lang = null;
     let preset = null;
+    let top_k = null;
+    let top_p = null;
+    let temperature = null;
 
     if (currentModelPage == 1 || currentModelPage == 2 || currentModelPage == 3) {
         length = document.getElementById("input_length" + currentModelPage).value;
@@ -102,6 +105,9 @@ function getLink() {
         prompt_text = document.getElementById('input_prompt_text4').value;
         prompt_lang = document.getElementById('input_prompt_lang4').value;
         preset = document.getElementById('input_preset4').value;
+        top_k = document.getElementById('input_top_k4').value;
+        top_p = document.getElementById('input_top_p4').value;
+        temperature = document.getElementById('input_temperature4').value;
         url += "/voice/gpt-sovits?id=" + id;
 
     } else {
@@ -159,6 +165,12 @@ function getLink() {
             url += "&prompt_text=" + prompt_text;
         if (preset !== null && preset !== "")
             url += "&preset=" + preset;
+        if (top_k !== null && top_k !== "")
+            url += "&top_k=" + top_k;
+        if (top_p !== null && top_p !== "")
+            url += "&top_p=" + top_p;
+        if (temperature !== null && temperature !== "")
+            url += "&temperature=" + temperature;
 
 
     }
@@ -247,6 +259,9 @@ function setAudioSourceByPost() {
     let prompt_text = null;
     let prompt_lang = null;
     let preset = null;
+    let top_k = null;
+    let top_p = null;
+    let temperature = null;
 
     if (currentModelPage == 1 || currentModelPage == 2 || currentModelPage == 3) {
         length = $("#input_length" + currentModelPage).val();
@@ -276,9 +291,12 @@ function setAudioSourceByPost() {
         style_weight = $("#input_style_weight3").val();
     } else if (currentModelPage == 4) {
         url = baseUrl + "/voice/gpt-sovits";
-        prompt_text = $("#input_prompt_text4").val()
-        prompt_lang = $("#input_prompt_lang4").val()
-        preset = $("#input_preset4").val()
+        prompt_text = $("#input_prompt_text4").val();
+        prompt_lang = $("#input_prompt_lang4").val();
+        preset = $("#input_preset4").val();
+        top_k = $("#input_top_k4").val();
+        top_p = $("#input_top_p4").val();
+        temperature = $("#input_temperature4").val();
     }
 
 
@@ -325,6 +343,15 @@ function setAudioSourceByPost() {
     }
     if (currentModelPage == 4 && preset) {
         formData.append('preset', preset);
+    }
+    if (currentModelPage == 4 && top_k) {
+        formData.append('top_k', top_k);
+    }
+    if (currentModelPage == 4 && top_p) {
+        formData.append('top_p', top_p);
+    }
+    if (currentModelPage == 4 && temperature) {
+        formData.append('temperature', temperature);
     }
 
     let downloadButton = document.getElementById("downloadButton" + currentModelPage);

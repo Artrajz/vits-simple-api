@@ -176,6 +176,9 @@ class GPTSoVitsConfig(AsDictMixin):
     lang: str = "auto"
     format: str = "wav"
     segment_size: int = 50
+    top_k: float = 20
+    top_p: float = 0.6
+    temperature: float = 0.6
     presets: Dict[str, GPTSoVitsPreset] = field(default_factory=lambda: {"default": GPTSoVitsPreset(),
                                                                          "default2": GPTSoVitsPreset()})
 

@@ -134,7 +134,7 @@ python app.py
 
 #### 自动加载模型
 
-v0.6.6版本之后默认会自动加载`data/models`文件夹下的所有模型，方便小白使用。
+v0.6.6版本之后默认会**自动加载**`data/models`文件夹下的所有模型，方便新手使用。
 
 #### 手动加载模型
 
@@ -167,6 +167,12 @@ tts_config:
     model_path: model1/G_1000.pth
   - config_path: model2/config.json
     model_path: model2/G_1000.pth
+	# GPT-SoVITS则为
+  - sovits_path: gpt_sovits1/model1_e8_s11536.pth
+    gpt_path: gpt_sovits1/model1-e15.ckpt
+  - sovits_path: gpt_sovits2/model2_e8_s11536.pth
+    gpt_path: gpt_sovits2/model2-e15.ckpt
+
 ```
 
 在管理员后台加载模型比较方便，但如果想加载`data/models`文件夹之外的模型，则只能通过修改config.yaml配置文件来加载，方法是直接填写绝对路径。
