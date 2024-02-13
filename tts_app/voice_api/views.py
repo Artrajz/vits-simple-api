@@ -572,7 +572,7 @@ def voice_gpt_sovits_api():
         return make_response("parameter error", 400)
 
     logger.info(
-        f"[{ModelType.GPT_SOVITS.value}] id:{id} format:{format} lang:{lang} segment_size:{segment_size} top_k:{top_k} top_k:{top_k} temperature:{temperature}")
+        f"[{ModelType.GPT_SOVITS.value}] id:{id} format:{format} lang:{lang} segment_size:{segment_size} top_k:{top_k} top_p:{top_p} temperature:{temperature}")
 
     if check_is_none(text):
         logger.info(f"[{ModelType.GPT_SOVITS.value}] text is empty")

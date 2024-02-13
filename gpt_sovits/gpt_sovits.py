@@ -161,7 +161,7 @@ class GPT_SoVITS:
             lang = classify_language(text, target_languages=self.lang)
 
         if prompt_lang.lower() == "auto":
-            prompt_lang = classify_language(text)
+            prompt_lang = classify_language(prompt_text)
 
         if (prompt_text[-1] not in splits): prompt_text += "。" if prompt_lang != "en" else "."
 
@@ -223,7 +223,7 @@ class GPT_SoVITS:
                 prompt,
                 bert,
                 # prompt_phone_len=ph_offset,
-                top_k=self.gpt_config["inference"]["top_k"],
+                top_k=top_k,
                 top_p=top_p,
                 temperature=temperature,
                 early_stop_num=self.hz * self.max_sec,
