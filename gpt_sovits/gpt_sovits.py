@@ -113,7 +113,7 @@ class GPT_SoVITS:
         return phones, word2ph, norm_text
 
     def get_cleaned_text_multilang(self, text):
-        sentences = split_languages(text, expand_abbreviations=True)
+        sentences = split_languages(text, expand_abbreviations=True, expand_hyphens=True)
         phones, word2ph, norm_text = [], [], []
         for sentence, lang in sentences:
             lang = classify_language(sentence)
@@ -146,7 +146,7 @@ class GPT_SoVITS:
         return bert
 
     def get_bert_and_cleaned_text_multilang(self, text):
-        sentences = split_languages(text, expand_abbreviations=True)
+        sentences = split_languages(text, expand_abbreviations=True, expand_hyphens=True)
         phones, word2ph, norm_text, bert = [], [], [], []
 
         for sentence, lang in sentences:

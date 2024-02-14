@@ -11,6 +11,12 @@ def _expand_abbreviations(text):
     return re.sub(pattern, ' ', text)
 
 
+def _expand_hyphens(text):
+    pattern = r'(?<=[a-zA-Z])-(?=[a-zA-Z])'
+    expanded_text = re.sub(pattern, ' ', text)
+    return expanded_text
+
+
 def markup_language(text: str, target_languages: list = None) -> str:
     pattern = r'[\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\>\=\?\@\[\]\{\}\\\\\^\_\`' \
               r'\！？。＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」' \
@@ -44,7 +50,7 @@ def markup_language(text: str, target_languages: list = None) -> str:
 
 
 def split_languages(text: str, target_languages: list = None, segment_size: int = 50,
-                    expand_abbreviations: bool = False) -> list:
+                    expand_abbreviations: bool = False, expand_hyphens: bool = False) -> list:
     pattern = r'[\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\>\=\?\@\[\]\{\}\\\\\^\_\`' \
               r'\！？\。＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」' \
               r'『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘\'\‛\“\”\„\‟…‧﹏.]+'
@@ -69,8 +75,12 @@ def split_languages(text: str, target_languages: list = None, segment_size: int 
         end += text[end:].index(sentence)
         if pre_lang != "" and pre_lang != lang:
             _text = text[start:end]
-            if pre_lang == "en" and expand_abbreviations:
-                _text = _expand_abbreviations(_text)
+            if pre_lang == "en":
+                if expand_abbreviations:
+                    _text = _expand_abbreviations(_text)
+                if _expand_hyphens:
+                    _text = _expand_hyphens(_text)
+
             if len(_text) >= segment_size:
                 for i in sentence_split(_text, segment_size):
                     sentences_list.append((i, pre_lang))
@@ -81,8 +91,11 @@ def split_languages(text: str, target_languages: list = None, segment_size: int 
         pre_lang = lang
 
     _text = text[start:]
-    if pre_lang == "en" and expand_abbreviations:
-        _text = _expand_abbreviations(_text)
+    if pre_lang == "en":
+        if expand_abbreviations:
+            _text = _expand_abbreviations(_text)
+        if _expand_hyphens:
+            _text = _expand_hyphens(_text)
     if len(_text) >= segment_size:
         for i in sentence_split(_text, segment_size):
             sentences_list.append((i, pre_lang))
