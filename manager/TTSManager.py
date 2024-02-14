@@ -364,7 +364,8 @@ class TTSManager(Observer):
         # if state["lang"] == "auto":
         # state["lang"] = classify_language(state["text"], target_languages=model.lang)
         if state["lang"] == "auto":
-            sentences_list = split_languages(state["text"], state["speaker_lang"])
+            sentences_list = split_languages(state["text"], state["speaker_lang"], expand_abbreviations=True,
+                                             expand_hyphens=True)
         else:
             sentences_list = [(state["text"], state["lang"])]
         audios = []
@@ -404,7 +405,8 @@ class TTSManager(Observer):
             state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
         sampling_rate = model.sampling_rate
 
-        sentences_list = split_languages(state["text"], state["speaker_lang"])
+        sentences_list = split_languages(state["text"], state["speaker_lang"], expand_abbreviations=True,
+                                         expand_hyphens=True)
 
         # audios = []
 
@@ -499,15 +501,15 @@ class TTSManager(Observer):
             infer_func = model.infer
 
         audio = infer_func(text=state.get("text"),
-                            lang=state.get("lang"),
-                            reference_audio=state.get("reference_audio"),
-                            reference_audio_sr=state.get("reference_audio_sr"),
-                            prompt_text=state.get("prompt_text"),
-                            prompt_lang=state.get("prompt_lang"),
-                            top_k=state.get("top_k"),
-                            top_p=state.get("top_p"),
-                            temperature=state.get("temperature"),
-                            )
+                           lang=state.get("lang"),
+                           reference_audio=state.get("reference_audio"),
+                           reference_audio_sr=state.get("reference_audio_sr"),
+                           prompt_text=state.get("prompt_text"),
+                           prompt_lang=state.get("prompt_lang"),
+                           top_k=state.get("top_k"),
+                           top_p=state.get("top_p"),
+                           temperature=state.get("temperature"),
+                           )
         sampling_rate = model.sampling_rate
 
         return self.encode(sampling_rate, audio, state["format"]) if encode else audio

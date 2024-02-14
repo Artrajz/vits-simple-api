@@ -327,7 +327,7 @@ class Bert_VITS2:
 
     def infer_multilang(self, text, id, lang, sdp_ratio, noise, noisew, length, reference_audio=None, emotion=None,
                         text_prompt=None, style_text=None, style_weigth=0.7, **kwargs):
-        sentences_list = split_languages(text, self.lang)
+        sentences_list = split_languages(text, self.lang, expand_abbreviations=True, expand_hyphens=True)
 
         emo = None
         if self.hps_ms.model.emotion_embedding == 1:
