@@ -563,7 +563,7 @@ def voice_gpt_sovits_api():
                                 config.gpt_sovits_config.presets.get("default").prompt_text, str)
         prompt_lang = get_param(request_data, "prompt_lang",
                                 config.gpt_sovits_config.presets.get("default").prompt_lang, str)
-        top_k = get_param(request_data, "top_k", config.gpt_sovits_config.top_k, float)
+        top_k = get_param(request_data, "top_k", config.gpt_sovits_config.top_k, int)
         top_p = get_param(request_data, "top_p", config.gpt_sovits_config.top_p, float)
         temperature = get_param(request_data, "temperature", config.gpt_sovits_config.temperature, int)
         # use_streaming = get_param(request_data, 'streaming', config.gpt_sovits_config.use_streaming, bool)
