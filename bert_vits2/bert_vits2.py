@@ -14,7 +14,7 @@ from bert_vits2.text.cleaner import clean_text
 from bert_vits2.utils import process_legacy_versions
 from contants import config
 from utils import get_hparams_from_file
-from utils.sentence import split_by_language
+from utils.sentence import split_languages
 
 
 class Bert_VITS2:
@@ -327,7 +327,7 @@ class Bert_VITS2:
 
     def infer_multilang(self, text, id, lang, sdp_ratio, noise, noisew, length, reference_audio=None, emotion=None,
                         text_prompt=None, style_text=None, style_weigth=0.7, **kwargs):
-        sentences_list = split_by_language(text, self.lang)
+        sentences_list = split_languages(text, self.lang)
 
         emo = None
         if self.hps_ms.model.emotion_embedding == 1:

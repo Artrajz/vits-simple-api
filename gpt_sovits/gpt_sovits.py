@@ -15,7 +15,7 @@ from gpt_sovits.utils import DictToAttrRecursive
 from gpt_sovits.text import cleaned_text_to_sequence
 from gpt_sovits.text.cleaner import clean_text
 from utils.classify_language import classify_language
-from utils.sentence import split_by_language
+from utils.sentence import split_languages
 
 splits = {"，", "。", "？", "！", ",", ".", "?", "!", "~", ":", "：", "—", "…", }
 
@@ -113,7 +113,7 @@ class GPT_SoVITS:
         return phones, word2ph, norm_text
 
     def get_cleaned_text_multilang(self, text):
-        sentences = split_by_language(text)
+        sentences = split_languages(text, expand_abbreviations=True)
         phones, word2ph, norm_text = [], [], []
         for sentence, lang in sentences:
             lang = classify_language(sentence)
@@ -146,7 +146,7 @@ class GPT_SoVITS:
         return bert
 
     def get_bert_and_cleaned_text_multilang(self, text):
-        sentences = split_by_language(text)
+        sentences = split_languages(text, expand_abbreviations=True)
         phones, word2ph, norm_text, bert = [], [], [], []
 
         for sentence, lang in sentences:

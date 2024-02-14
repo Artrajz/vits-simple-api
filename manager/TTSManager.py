@@ -12,7 +12,7 @@ from scipy.signal import resample_poly
 
 from logger import logger
 from manager.observer import Observer
-from utils.sentence import sentence_split_and_markup, split_by_language, sentence_split
+from utils.sentence import sentence_split_and_markup, split_languages, sentence_split
 
 
 class TTSManager(Observer):
@@ -364,7 +364,7 @@ class TTSManager(Observer):
         # if state["lang"] == "auto":
         # state["lang"] = classify_language(state["text"], target_languages=model.lang)
         if state["lang"] == "auto":
-            sentences_list = split_by_language(state["text"], state["speaker_lang"])
+            sentences_list = split_languages(state["text"], state["speaker_lang"])
         else:
             sentences_list = [(state["text"], state["lang"])]
         audios = []
@@ -404,7 +404,7 @@ class TTSManager(Observer):
             state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
         sampling_rate = model.sampling_rate
 
-        sentences_list = split_by_language(state["text"], state["speaker_lang"])
+        sentences_list = split_languages(state["text"], state["speaker_lang"])
 
         # audios = []
 
