@@ -47,23 +47,23 @@ def classify_language(text: str, target_languages: list = None) -> str:
     return lang
 
 
-def classify_zh_ja(text: str) -> str:
-    for idx, char in enumerate(text):
-        unicode_val = ord(char)
-
-        # 检测日语字符
-        if 0x3040 <= unicode_val <= 0x309F or 0x30A0 <= unicode_val <= 0x30FF:
-            return "ja"
-
-        # 检测汉字字符
-        if 0x4E00 <= unicode_val <= 0x9FFF:
-            # 检查周围的字符
-            next_char = text[idx + 1] if idx + 1 < len(text) else None
-
-            if next_char and (0x3040 <= ord(next_char) <= 0x309F or 0x30A0 <= ord(next_char) <= 0x30FF):
-                return "ja"
-
-    return "zh"
+# def classify_zh_ja(text: str) -> str:
+#     for idx, char in enumerate(text):
+#         unicode_val = ord(char)
+#
+#         # 检测日语字符
+#         if 0x3040 <= unicode_val <= 0x309F or 0x30A0 <= unicode_val <= 0x30FF:
+#             return "ja"
+#
+#         # 检测汉字字符
+#         if 0x4E00 <= unicode_val <= 0x9FFF:
+#             # 检查周围的字符
+#             next_char = text[idx + 1] if idx + 1 < len(text) else None
+#
+#             if next_char and (0x3040 <= ord(next_char) <= 0x309F or 0x30A0 <= ord(next_char) <= 0x30FF):
+#                 return "ja"
+#
+#     return "zh"
 
 
 def split_alpha_nonalpha(text, mode=1):
@@ -92,8 +92,8 @@ def split_alpha_nonalpha(text, mode=1):
 if __name__ == "__main__":
     text = "这是一个测试文本"
     print(classify_language(text))
-    print(classify_zh_ja(text))  # "zh"
+    # print(classify_zh_ja(text))  # "zh"
 
     text = "これはテストテキストです"
     print(classify_language(text))
-    print(classify_zh_ja(text))  # "ja"
+    # print(classify_zh_ja(text))  # "ja"

@@ -51,14 +51,11 @@ def split_by_language(text: str, target_languages: list = None) -> list:
     start = 0
     end = 0
     sentences_list = []
-    
-    if target_languages is not None:
-        sorted_target_languages = sorted(target_languages)
-        if sorted_target_languages in [['en', 'zh'], ['en', 'ja'], ['en', 'ja', 'zh']]:
-            new_sentences = []
-            for sentence in sentences:
-                new_sentences.extend(split_alpha_nonalpha(sentence))
-            sentences = new_sentences
+
+    new_sentences = []
+    for sentence in sentences:
+        new_sentences.extend(split_alpha_nonalpha(sentence))
+    sentences = new_sentences
 
     for sentence in sentences:
         if check_is_none(sentence): continue

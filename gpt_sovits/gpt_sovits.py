@@ -15,6 +15,7 @@ from gpt_sovits.utils import DictToAttrRecursive
 from gpt_sovits.text import cleaned_text_to_sequence
 from gpt_sovits.text.cleaner import clean_text
 from utils.classify_language import classify_language
+from utils.sentence import split_by_language
 
 splits = {"，", "。", "？", "！", ",", ".", "?", "!", "~", ":", "：", "—", "…", }
 
@@ -111,6 +112,18 @@ class GPT_SoVITS:
         phones = cleaned_text_to_sequence(phones)
         return phones, word2ph, norm_text
 
+    def get_cleaned_text_multilang(self, text):
+        sentences = split_by_language(text)
+        phones, word2ph, norm_text = [], [], []
+        for sentence, lang in sentences:
+            lang = classify_language(sentence)
+            _phones, _word2ph, _norm_text = self.get_cleaned_text(sentence, lang)
+            phones.extend(_phones)
+            word2ph.extend(_word2ph)
+            norm_text.extend(_norm_text)
+
+        return phones, word2ph, norm_text
+
     def get_bert_feature(self, text, phones, word2ph, language):
         if language == "zh":
             with torch.no_grad():
@@ -130,7 +143,24 @@ class GPT_SoVITS:
         else:
             bert = torch.zeros((1024, len(phones)), dtype=self.torch_dtype)
 
-        return bert.to(self.device)
+        return bert
+
+    def get_bert_and_cleaned_text_multilang(self, text):
+        sentences = split_by_language(text)
+        phones, word2ph, norm_text, bert = [], [], [], []
+
+        for sentence, lang in sentences:
+            _phones, _word2ph, _norm_text = self.get_cleaned_text(sentence, lang)
+            _bert = self.get_bert_feature(sentence, _phones, _word2ph, _norm_text)
+            phones.extend(_phones)
+            if _word2ph is not None:
+                word2ph.extend(_word2ph)
+            norm_text.extend(_norm_text)
+            bert.append(_bert)
+
+        bert = torch.cat(bert, dim=1).to(self.device, dtype=self.torch_dtype)
+
+        return phones, word2ph, norm_text, bert
 
     def get_spepc(self, audio, orig_sr):
         """audio的sampling_rate与模型相同"""
@@ -201,10 +231,11 @@ class GPT_SoVITS:
 
         phones1, word2ph1, norm_text1 = self.get_cleaned_text(prompt_text, prompt_lang)
 
-        bert1 = self.get_bert_feature(norm_text1, phones1, word2ph1, prompt_lang).to(dtype=self.torch_dtype)
+        bert1 = self.get_bert_feature(norm_text1, phones1, word2ph1, prompt_lang).to(self.device,
+                                                                                     dtype=self.torch_dtype)
 
         phones2, word2ph2, norm_text2 = self.get_cleaned_text(text, lang)
-        bert2 = self.get_bert_feature(norm_text2, phones2, word2ph2, lang).to(dtype=self.torch_dtype)
+        bert2 = self.get_bert_feature(norm_text2, phones2, word2ph2, lang).to(self.device, dtype=self.torch_dtype)
 
         bert = torch.cat([bert1, bert2], 1)
 
@@ -251,4 +282,107 @@ class GPT_SoVITS:
 
             # logging.debug(f"{t1 - t0:.3f}\t{t2 - t1:.3f}\t{t3 - t2:.3f}\t{t4 - t3:.3f}")
             audio = (np.concatenate(audios, 0) * 32768).astype(np.int16)
-            return audio
+        return audio
+
+    def infer_multilang(self, text, lang, reference_audio, reference_audio_sr, prompt_text, prompt_lang, top_k, top_p,
+                        temperature, **kwargs):
+        # t0 = ttime()
+
+        # if lang.lower() == "auto":
+        #     lang = classify_language(text, target_languages=self.lang)
+
+        if prompt_lang.lower() == "auto":
+            prompt_lang = classify_language(prompt_text)
+
+        if (prompt_text[-1] not in splits): prompt_text += "。" if prompt_lang != "en" else "."
+
+        # 应该是文本太短需要加符号补短
+        if (text[0] not in splits and len(self.get_first(text)) < 4):
+            text = "。" + text if lang == "zh" else "." + text
+
+        if (text[-1] not in splits):
+            text += "。" if lang != "en" else "."
+
+        zero_wav = np.zeros(int(self.hps.data.sampling_rate * 0.3), dtype=self.np_dtype)
+        wav16k = librosa.resample(reference_audio, orig_sr=reference_audio_sr, target_sr=16000)
+
+        with torch.no_grad():
+            if (wav16k.shape[0] > 160000 or wav16k.shape[0] < 48000):
+                raise OSError("参考音频在3~10秒范围外，请更换！")
+            wav16k = torch.from_numpy(wav16k)
+            zero_wav_torch = torch.from_numpy(zero_wav)
+
+            if self.is_half == True:
+                wav16k = wav16k.half()
+                zero_wav_torch = zero_wav_torch.half()
+
+            wav16k = wav16k.to(self.device)
+            zero_wav_torch = zero_wav_torch.to(self.device)
+
+            wav16k = torch.cat([wav16k, zero_wav_torch]).unsqueeze(0)
+
+            ssl_content = self.ssl_model.model(wav16k)[
+                "last_hidden_state"
+            ].transpose(
+                1, 2
+            )  # .float()
+            codes = self.vq_model.extract_latent(ssl_content)
+            prompt_semantic = codes[0, 0]
+        # t1 = ttime()
+
+        phones1, word2ph1, norm_text1 = self.get_cleaned_text(prompt_text, prompt_lang)
+
+        bert1 = self.get_bert_feature(norm_text1, phones1, word2ph1, prompt_lang).to(self.device,
+                                                                                     dtype=self.torch_dtype)
+
+        # phones2, word2ph2, norm_text2 = self.get_cleaned_text(text, lang)
+        # bert2 = self.get_bert_feature(norm_text2, phones2, word2ph2, lang).to(dtype=self.torch_dtype)
+
+        phones2, word2ph2, norm_text2, bert2 = self.get_bert_and_cleaned_text_multilang(text)
+
+        bert = torch.cat([bert1, bert2], 1)
+
+        all_phoneme_ids = torch.LongTensor(phones1 + phones2).to(self.device).unsqueeze(0)
+        bert = bert.to(self.device).unsqueeze(0)
+        all_phoneme_len = torch.tensor([all_phoneme_ids.shape[-1]]).to(self.device)
+        prompt = prompt_semantic.unsqueeze(0).to(self.device)
+        # t2 = ttime()
+
+        audios = []
+        with torch.no_grad():
+            # pred_semantic = t2s_model.model.infer(
+            pred_semantic, idx = self.t2s_model.model.infer_panel(
+                all_phoneme_ids,
+                all_phoneme_len,
+                prompt,
+                bert,
+                # prompt_phone_len=ph_offset,
+                top_k=top_k,
+                top_p=top_p,
+                temperature=temperature,
+                early_stop_num=self.hz * self.max_sec,
+            )
+            # t3 = ttime()
+            # print(pred_semantic.shape,idx)
+            pred_semantic = pred_semantic[:, -idx:].unsqueeze(
+                0
+            )  # .unsqueeze(0)#mq要多unsqueeze一次
+            refer = self.get_spepc(reference_audio, orig_sr=reference_audio_sr)  # .to(device)
+            if self.is_half:
+                refer = refer.half()
+            refer = refer.to(self.device)
+            # audio = vq_model.decode(pred_semantic, all_phoneme_ids, refer).detach().cpu().numpy()[0, 0]
+
+            audio = (
+                self.vq_model.decode(pred_semantic, torch.LongTensor(phones2).to(self.device).unsqueeze(0),
+                                     refer).detach().cpu().numpy()[0, 0]
+            )  ###试试重建不带上prompt部分
+            max_audio = np.abs(audio).max()  # 简单防止16bit爆音
+            if max_audio > 1: audio /= max_audio
+            audios.append(audio)
+            audios.append(zero_wav)
+            # t4 = ttime()
+
+            # logging.debug(f"{t1 - t0:.3f}\t{t2 - t1:.3f}\t{t3 - t2:.3f}\t{t4 - t3:.3f}")
+            audio = (np.concatenate(audios, 0) * 32768).astype(np.int16)
+        return audio

@@ -416,7 +416,7 @@ class Text2SemanticDecoder(nn.Module):
                 if prompts.shape[1] == y.shape[1]:
                     y = torch.concat([y, torch.zeros_like(samples)], dim=1)
                     print("bad zero prediction")
-                print(f"T2S Decoding EOS [{prefix_len} -> {y.shape[1]}]")
+                # print(f"T2S Decoding EOS [{prefix_len} -> {y.shape[1]}]")
                 break
             # 本次生成的 semantic_ids 和之前的 y 构成新的 y
             # print(samples.shape)#[1,1]#第一个1是bs

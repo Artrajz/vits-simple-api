@@ -492,7 +492,13 @@ class TTSManager(Observer):
     def gpt_sovits_infer(self, state, encode=True):
 
         model = self.get_model(ModelType.GPT_SOVITS, state["id"])
-        audio = model.infer(text=state.get("text"),
+
+        if state.get("lang").lower() == "auto":
+            infer_func = model.infer_multilang
+        else:
+            infer_func = model.infer
+
+        audio = infer_func(text=state.get("text"),
                             lang=state.get("lang"),
                             reference_audio=state.get("reference_audio"),
                             reference_audio_sr=state.get("reference_audio_sr"),

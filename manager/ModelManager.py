@@ -568,7 +568,7 @@ class ModelManager(Subject):
             dir_name = os.path.dirname(pth_path)
             config_paths = glob.glob(dir_name + "/*.json", recursive=True)
             sovits_paths = glob.glob(dir_name + "/*.ckpt", recursive=True)
-            model_path, config_path, sovits_path, gpt_path, model_type = (None,) * 5
+            model_path, config_path, sovits_path, gpt_path, model_type = None, None, None, None, None
             if len(config_paths) > 0:
                 model_path = pth_path
                 config_path = config_paths[0]
