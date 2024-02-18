@@ -497,12 +497,12 @@
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label for="reference_audio" data-toggle="tooltip" data-placement="top"
-                                   title="">reference_audio</label>
+                                   title="参考音频，上传或者使用预设preset">reference_audio</label>
                             <input type="file" class="reference_audio" id="reference_audio4" multiple>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="prompt_text" data-toggle="tooltip" data-placement="top"
-                                   title="">prompt_text</label>
+                                   title="上传参考音频时填写（非预设），可以不填参考文本，但会降低生成效果">prompt_text</label>
                             <input type="text" class="form-control prompt_text" id="input_prompt_text4"
                                    oninput="updateLink()"
                                    value=""
@@ -522,7 +522,7 @@
                     <div class="row">
                         <div class="mb-3">
                             <label data-toggle="tooltip" data-placement="top"
-                                   title="preset">preset</label>
+                                   title="在config.yaml中设置的参考音频预设">preset</label>
                             <select class="form-control input_preset" id="input_preset4" oninput="updateLink()">
                             </select>
                         </div>

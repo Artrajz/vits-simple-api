@@ -452,6 +452,7 @@ def voice_bert_vits2_api():
 
     logger.info(
         f"[{ModelType.BERT_VITS2.value}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size}")
+    logger.info(f"[{ModelType.BERT_VITS2.value}] len:{len(text)} text：{text}")
     if reference_audio:
         logger.info(f"[{ModelType.BERT_VITS2.value}] reference_audio:{reference_audio.filename}")
     elif emotion:
@@ -573,6 +574,7 @@ def voice_gpt_sovits_api():
 
     logger.info(
         f"[{ModelType.GPT_SOVITS.value}] id:{id} format:{format} lang:{lang} segment_size:{segment_size} top_k:{top_k} top_p:{top_p} temperature:{temperature}")
+    logger.info(f"[{ModelType.GPT_SOVITS.value}] len:{len(text)} text：{text}")
 
     if check_is_none(text):
         logger.info(f"[{ModelType.GPT_SOVITS.value}] text is empty")
@@ -598,7 +600,8 @@ def voice_gpt_sovits_api():
         speaker_lang = lang_detect
 
     # 检查参考音频
-    if check_is_none(reference_audio):
+    if check_is_none(reference_audio):  # 无参考音频
+        # 已选择预设
         if preset != "default":
             refer_preset = config.gpt_sovits_config.presets.get(preset)
             if check_is_none(refer_wav_path):
@@ -606,23 +609,20 @@ def voice_gpt_sovits_api():
 
             prompt_text, prompt_lang = refer_preset.prompt_text, refer_preset.prompt_lang
 
-        try:
-            reference_audio = refer_wav_path
-        except Exception as e:
-            logging.error(e)
-            traceback.print_exc()
-            return make_response(jsonify({"status": "error", "message": "Loading refer_wav_path error."}), 400)
-
-    if check_is_none(reference_audio, prompt_text):
-        # 未指定参考音频且配置文件无预设
-        message = "No reference audio specified, and no default setting in the config. 未指定参考音频且配置文件无预设"
-        logging.error(message)
-        return make_response(jsonify(
-            {"status": "error", "message": message}),
-            400)
+        # 未选择预设，使用预设default
+        reference_audio = refer_wav_path
 
     reference_audio, reference_audio_sr = librosa.load(reference_audio, sr=None, dtype=np.float32)
     reference_audio = reference_audio.flatten()
+
+    # 检查修改后的参考音频，如果既没有上传参考音频且没设置预设，就会报错
+    # if check_is_none(reference_audio, prompt_text):
+    #     # 未指定参考音频且配置文件无预设
+    #     message = "No reference audio specified, and no default setting in the config. 未指定参考音频且配置文件无预设"
+    #     logging.error(message)
+    #     return make_response(jsonify(
+    #         {"status": "error", "message": message}),
+    #         400)
 
     logger.info(
         f"[{ModelType.GPT_SOVITS.value}] prompt_text:{prompt_text} prompt_lang:{prompt_lang} ")

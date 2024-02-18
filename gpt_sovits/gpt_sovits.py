@@ -15,6 +15,7 @@ from gpt_sovits.utils import DictToAttrRecursive
 from gpt_sovits.text import cleaned_text_to_sequence
 from gpt_sovits.text.cleaner import clean_text
 from utils.classify_language import classify_language
+from utils.data_utils import check_is_none
 from utils.sentence import split_languages
 
 splits = {"，", "。", "？", "！", ",", ".", "?", "!", "~", ":", "：", "—", "…", }
@@ -190,10 +191,11 @@ class GPT_SoVITS:
         if lang.lower() == "auto":
             lang = classify_language(text, target_languages=self.lang)
 
-        if prompt_lang.lower() == "auto":
-            prompt_lang = classify_language(prompt_text)
+        if not check_is_none(prompt_text):
+            if prompt_lang.lower() == "auto":
+                prompt_lang = classify_language(prompt_text)
 
-        if (prompt_text[-1] not in splits): prompt_text += "。" if prompt_lang != "en" else "."
+            if (prompt_text[-1] not in splits): prompt_text += "。" if prompt_lang != "en" else "."
 
         # 应该是文本太短需要加符号补短
         if (text[0] not in splits and len(self.get_first(text)) < 4):
@@ -229,20 +231,27 @@ class GPT_SoVITS:
             prompt_semantic = codes[0, 0]
         # t1 = ttime()
 
-        phones1, word2ph1, norm_text1 = self.get_cleaned_text(prompt_text, prompt_lang)
-
-        bert1 = self.get_bert_feature(norm_text1, phones1, word2ph1, prompt_lang).to(self.device,
-                                                                                     dtype=self.torch_dtype)
-
         phones2, word2ph2, norm_text2 = self.get_cleaned_text(text, lang)
         bert2 = self.get_bert_feature(norm_text2, phones2, word2ph2, lang).to(self.device, dtype=self.torch_dtype)
 
-        bert = torch.cat([bert1, bert2], 1)
+        if not check_is_none(prompt_text):
+            phones1, word2ph1, norm_text1 = self.get_cleaned_text(prompt_text, prompt_lang)
 
-        all_phoneme_ids = torch.LongTensor(phones1 + phones2).to(self.device).unsqueeze(0)
+            bert1 = self.get_bert_feature(norm_text1, phones1, word2ph1, prompt_lang).to(self.device,
+                                                                                         dtype=self.torch_dtype)
+
+            bert = torch.cat([bert1, bert2], 1)
+            all_phoneme_ids = torch.LongTensor(phones1 + phones2).to(self.device).unsqueeze(0)
+        else:
+            bert = bert2
+            all_phoneme_ids = torch.LongTensor(phones2).to(self.device).unsqueeze(0)
+
         bert = bert.to(self.device).unsqueeze(0)
         all_phoneme_len = torch.tensor([all_phoneme_ids.shape[-1]]).to(self.device)
-        prompt = prompt_semantic.unsqueeze(0).to(self.device)
+        if check_is_none(prompt_text):
+            prompt = None
+        else:
+            prompt = prompt_semantic.unsqueeze(0).to(self.device)
         # t2 = ttime()
 
         audios = []
@@ -291,10 +300,11 @@ class GPT_SoVITS:
         # if lang.lower() == "auto":
         #     lang = classify_language(text, target_languages=self.lang)
 
-        if prompt_lang.lower() == "auto":
-            prompt_lang = classify_language(prompt_text)
+        if not check_is_none(prompt_text):
+            if prompt_lang.lower() == "auto":
+                prompt_lang = classify_language(prompt_text)
 
-        if (prompt_text[-1] not in splits): prompt_text += "。" if prompt_lang != "en" else "."
+            if (prompt_text[-1] not in splits): prompt_text += "。" if prompt_lang != "en" else "."
 
         # 应该是文本太短需要加符号补短
         if (text[0] not in splits and len(self.get_first(text)) < 4):
@@ -330,22 +340,28 @@ class GPT_SoVITS:
             prompt_semantic = codes[0, 0]
         # t1 = ttime()
 
-        phones1, word2ph1, norm_text1 = self.get_cleaned_text(prompt_text, prompt_lang)
-
-        bert1 = self.get_bert_feature(norm_text1, phones1, word2ph1, prompt_lang).to(self.device,
-                                                                                     dtype=self.torch_dtype)
-
         # phones2, word2ph2, norm_text2 = self.get_cleaned_text(text, lang)
         # bert2 = self.get_bert_feature(norm_text2, phones2, word2ph2, lang).to(dtype=self.torch_dtype)
 
         phones2, word2ph2, norm_text2, bert2 = self.get_bert_and_cleaned_text_multilang(text)
 
-        bert = torch.cat([bert1, bert2], 1)
+        if not check_is_none(prompt_text):
+            phones1, word2ph1, norm_text1 = self.get_cleaned_text(prompt_text, prompt_lang)
 
-        all_phoneme_ids = torch.LongTensor(phones1 + phones2).to(self.device).unsqueeze(0)
+            bert1 = self.get_bert_feature(norm_text1, phones1, word2ph1, prompt_lang).to(self.device,
+                                                                                         dtype=self.torch_dtype)
+            bert = torch.cat([bert1, bert2], 1)
+            all_phoneme_ids = torch.LongTensor(phones1 + phones2).to(self.device).unsqueeze(0)
+        else:
+            bert = bert2
+            all_phoneme_ids = torch.LongTensor(phones2).to(self.device).unsqueeze(0)
+
         bert = bert.to(self.device).unsqueeze(0)
         all_phoneme_len = torch.tensor([all_phoneme_ids.shape[-1]]).to(self.device)
-        prompt = prompt_semantic.unsqueeze(0).to(self.device)
+        if check_is_none(prompt_text):
+            prompt = None
+        else:
+            prompt = prompt_semantic.unsqueeze(0).to(self.device)
         # t2 = ttime()
 
         audios = []
