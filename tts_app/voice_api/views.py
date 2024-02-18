@@ -119,7 +119,7 @@ def voice_vits_api():
 
     # 校验模型是否支持输入的语言
     speaker_lang = model_manager.voice_speakers[ModelType.VITS.value][id].get('lang')
-    if lang not in ["auto", "mix"] and len(speaker_lang) != 1 and lang not in speaker_lang:
+    if lang not in ["auto", "mix"] and len(speaker_lang) > 1 and lang not in speaker_lang:
         logger.info(f"[{ModelType.VITS.value}] lang \"{lang}\" is not in {speaker_lang}")
         return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}),
                              400)
@@ -268,7 +268,7 @@ def voice_w2v2_api():
 
     # 校验模型是否支持输入的语言
     speaker_lang = model_manager.voice_speakers[ModelType.W2V2_VITS.value][id].get('lang')
-    if lang not in ["auto", "mix"] and len(speaker_lang) != 1 and lang not in speaker_lang:
+    if lang not in ["auto", "mix"] and len(speaker_lang) > 1 and lang not in speaker_lang:
         logger.info(f"[{ModelType.W2V2_VITS.value}] lang \"{lang}\" is not in {speaker_lang}")
         return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}),
                              400)
@@ -480,7 +480,7 @@ def voice_bert_vits2_api():
 
     # 校验模型是否支持输入的语言
     speaker_lang = model_manager.voice_speakers[ModelType.BERT_VITS2.value][id].get('lang')
-    if lang not in ["auto", "mix"] and len(speaker_lang) != 1 and lang not in speaker_lang:
+    if lang not in ["auto", "mix"] and len(speaker_lang) > 1 and lang not in speaker_lang:
         logger.info(f"[{ModelType.BERT_VITS2.value}] lang \"{lang}\" is not in {speaker_lang}")
         return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}),
                              400)
@@ -588,7 +588,7 @@ def voice_gpt_sovits_api():
 
     # 校验模型是否支持输入的语言
     speaker_lang = model_manager.voice_speakers[ModelType.GPT_SOVITS.value][id].get('lang')
-    if lang not in ["auto", "mix"] and len(speaker_lang) != 1 and lang not in speaker_lang:
+    if lang not in ["auto", "mix"] and len(speaker_lang) > 1 and lang not in speaker_lang:
         logger.info(f"[{ModelType.GPT_SOVITS.value}] lang \"{lang}\" is not in {speaker_lang}")
         return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}),
                              400)
