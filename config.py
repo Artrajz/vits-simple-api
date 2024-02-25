@@ -238,9 +238,9 @@ class ModelConfig(AsDictMixin):
     # hubert-vits
     hubert_soft_0d54a1f4: str = "hubert/hubert_soft/hubert-soft-0d54a1f4.pt"
     # w2v2-vits: .npy file or folder are alvailable
-    dimensional_emotion_npy: Union[str, List[str]] = "dimensional_emotion_npy"
+    dimensional_emotion_npy: Union[str, List[str]] = "emotional/dimensional_emotion_npy"
     # w2v2-vits: Need to have both `models.onnx` and `models.yaml` files in the same path.
-    dimensional_emotion_model: str = "dimensional_emotion_model/models.yaml"
+    dimensional_emotion_model: str = "emotional/dimensional_emotion_model/models.yaml"
     g2pw_model: str = "G2PWModel"
     chinese_hubert_base: str = "hubert/chinese_hubert_base"
 
