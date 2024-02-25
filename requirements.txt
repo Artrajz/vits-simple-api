@@ -10,7 +10,7 @@ graiax-silkcoder[libsndfile]
 
 # Natural Language Processing and Text Conversion
 unidecode
-pyopenjtalk==0.3.2
+pyopenjtalk
 jamo
 pypinyin
 pypinyin-dict
@@ -35,7 +35,7 @@ sentencepiece==0.1.99
 jaconv
 
 # Machine Learning and Deep Learning
-torch==2.2.0 # Fixed to 2.2.0 because GPT-SOVITS does not support lower versions of Torch.
+torch==2.2.1 # Fixed to 2.2.0 because GPT-SOVITS does not support lower versions of Torch.
 onnx==1.12.0
 audonnx==0.7.0
 vector_quantize_pytorch==1.12.12
