@@ -15,3 +15,5 @@ phrases_dict.txt
 /data/emotional/dimensional_emotion_npy/
 /data/bert/vits_chinese_bert/prosody_model.pt
 /data/emotional/dimensional_emotion_npy/
+/data/models/
+/vits/text/
