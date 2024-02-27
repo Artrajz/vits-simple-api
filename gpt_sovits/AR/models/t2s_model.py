@@ -328,7 +328,7 @@ class Text2SemanticDecoder(nn.Module):
             prompts,  ####参考音频token
             bert_feature,
             top_k: int = -100,
-            top_p: int = 100,
+            top_p: float = 100,
             early_stop_num: int = -1,
             temperature: float = 1.0,
     ):

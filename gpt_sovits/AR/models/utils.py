@@ -111,7 +111,7 @@ def logits_to_probs(
     previous_tokens: Optional[torch.Tensor] = None,
     temperature: float = 1.0,
     top_k: Optional[int] = None,
-    top_p: Optional[int] = None,
+    top_p: Optional[float] = None,
     repetition_penalty: float = 1.0,
 ):
     if previous_tokens is not None:

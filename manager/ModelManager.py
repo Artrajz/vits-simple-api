@@ -293,12 +293,17 @@ class ModelManager(Subject):
             "model_id": model_id,
             "model_path": model_path,
             "config": hps,
+            "sovits_path": sovits_path,
+            "gpt_path": gpt_path,
             "sid2model": sid2model,
             "speakers": speakers
         }
-
-        logging.info(
-            f"model_type:{model_type.value} model_id:{model_id} n_speakers:{len(speakers)} model_path:{model_path}")
+        if model_type == ModelType.GPT_SOVITS:
+            logging.info(
+                f"model_type:{model_type.value} model_id:{model_id} sovits_path:{sovits_path} gpt_path:{gpt_path}")
+        else:
+            logging.info(
+                f"model_type:{model_type.value} model_id:{model_id} n_speakers:{len(speakers)} model_path:{model_path}")
 
         return model_data
 
@@ -558,7 +563,6 @@ class ModelManager(Subject):
     def scan_path(self):
         folder_path = os.path.join(config.abs_path, config.system.data_path, config.tts_config.models_path)
         model_paths = glob.glob(folder_path + "/**/*.pth", recursive=True)
-        gpt_paths = glob.glob(folder_path + "/**/*.ckpt", recursive=True)
         all_paths = []
 
         for id, pth_path in enumerate(model_paths):
@@ -567,12 +571,12 @@ class ModelManager(Subject):
                 continue
             dir_name = os.path.dirname(pth_path)
             config_paths = glob.glob(dir_name + "/*.json", recursive=True)
-            sovits_paths = glob.glob(dir_name + "/*.ckpt", recursive=True)
+            gpt_paths = glob.glob(dir_name + "/*.ckpt", recursive=True)
             model_path, config_path, sovits_path, gpt_path, model_type = None, None, None, None, None
             if len(config_paths) > 0:
                 model_path = pth_path
                 config_path = config_paths[0]
-            elif len(sovits_paths) > 0:
+            elif len(gpt_paths) > 0:
                 gpt_path = gpt_paths[0]
                 sovits_path = pth_path
                 model_type = ModelType.GPT_SOVITS
