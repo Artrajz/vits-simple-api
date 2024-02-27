@@ -263,6 +263,8 @@ function setAudioSourceByPost() {
     let top_p = null;
     let temperature = null;
 
+    let headers = {};
+
     if (currentModelPage == 1 || currentModelPage == 2 || currentModelPage == 3) {
         length = $("#input_length" + currentModelPage).val();
         noise = $("#input_noise" + currentModelPage).val();
@@ -331,8 +333,8 @@ function setAudioSourceByPost() {
     if (currentModelPage == 3 && style_weight) {
         formData.append('style_weight', style_weight);
     }
-    if (api_key != "") {
-        formData.append('api_key', api_key);
+    if (api_key !== "") {
+        headers['X-API-KEY'] = api_key;
     }
     if (currentModelPage == 4 && prompt_text) {
         formData.append('prompt_text', prompt_text);
@@ -367,6 +369,7 @@ function setAudioSourceByPost() {
         xhrFields: {
             responseType: 'blob'
         },
+        headers: headers,
         success: function (response, status, xhr) {
             let blob = new Blob([response], {type: 'audio/wav'});
             let audioPlayer = document.getElementById("audioPlayer" + currentModelPage);
