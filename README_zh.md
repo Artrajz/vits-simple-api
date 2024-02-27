@@ -372,7 +372,7 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 
 ## API KEY
 
-在config.py中设置`API_KEY_ENABLED = True`以启用，api key填写：`API_KEY = "api-key"`。
+在config.yaml中设置`api_key_enabled: true`以启用，api key填写：`api_key: api-key`。
 
 启用后，GET请求中使用需要增加参数api_key，POST请求中使用需要在header中添加参数`X-API-KEY`。
 

@@ -360,7 +360,7 @@ Please note that for the Chinese extra version, the version should be changed to
 
 ## API KEY
 
-Set `API_KEY_ENABLED = True` in `config.py` to enable API key authentication. The API key is `API_KEY = "api-key"`.
+Set `api_key_enabled: true` in `config.yaml` to enable API key authentication. The API key is `api_key: api-key`.
 After enabling it, you need to add the `api_key` parameter in GET requests and add the `X-API-KEY` parameter in the header for POST requests.
 
 # Parameter
