@@ -220,7 +220,7 @@ The installation process is similar, but I don't have the environment to test it
 
 The default address is http://127.0.0.1:23456/admin.
 
-**The initial username and password can be found at the bottom of the config.yaml file after the first startup.**
+**The initial username and password can be found by searching for 'admin' in the config.yaml file after the first startup.**
 
 # Function Options Explanation
 
