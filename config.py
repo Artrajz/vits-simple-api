@@ -175,7 +175,7 @@ class GPTSoVitsConfig(AsDictMixin):
     id: int = 0
     lang: str = "auto"
     format: str = "wav"
-    segment_size: int = 50
+    segment_size: int = 17
     top_k: int = 5
     top_p: float = 1.0
     temperature: float = 1.0
