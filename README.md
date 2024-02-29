@@ -265,7 +265,7 @@ Create and open phrases_dict.txt in the project's root directory to add polyphon
 Find the configuration for GPT-SoVITS in the config.yaml file. Add presets under the presets section. Multiple presets can be added, with keys serving as preset names. Below are two default presets, default and default2:
 
 ```
-yamlCopy codegpt_sovits_config:
+gpt_sovits_config:
   hz: 50
   is_half: false
   id: 0
