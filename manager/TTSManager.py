@@ -150,6 +150,10 @@ class TTSManager(Observer):
                 # 不填写则默认从已加载的模型中选择
                 model_type = element.attrib.get("model_type", root.attrib.get("model_type", list(
                     self.model_manager.available_tts_model)[0]))
+                if model_type is None:
+                    raise ValueError(f"None model_type was specified")
+                else:
+                    model_type = model_type.upper()
                 # logging.debug(f"Default model:{list(self.model_manager.available_tts_model)[0]}")
                 # id = int(element.attrib.get("id", root.attrib.get("id", default_parameter.id)))
                 # lang = element.attrib.get("lang", root.attrib.get("lang", default_parameter.lang))
@@ -200,7 +204,10 @@ class TTSManager(Observer):
                             "speaker_lang": self.speaker_lang,
                             "text": match,
                         }
-                        task.update(params.get(model_type))  # 默认参数
+                        try:
+                            task.update(params.get(model_type))  # 默认参数
+                        except Exception as e:
+                            raise ValueError(f"Invalid model_type:{model_type}")
                         task.update(root.attrib)  # 所有参数都放进去，推理函数会选出需要的参数
                         task = self.normalize(task)
                         voice_tasks.append(task)
