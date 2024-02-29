@@ -25,7 +25,8 @@ def voice_speakers():
 
 
 # 语音合成 voice vits
-def voice_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, segment_size=50, save_audio=True,
+def voice_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, segment_size=50,
+               save_audio=True,
                save_path=None):
     fields = {
         "text": text,
@@ -192,7 +193,8 @@ def voice_hubert_vits(upload_path, id, format="wav", length=1, noise=0.667, nois
 
 
 # 维度情感模型 w2v2-vits
-def voice_w2v2_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, segment_size=50, emotion=0,
+def voice_w2v2_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, segment_size=50,
+                    emotion=0,
                     save_audio=True, save_path=None):
     fields = {
         "text": text,
@@ -342,7 +344,8 @@ def vits_json(text, id=0, format="wav", lang="auto", length=1, noise=0.667, nois
 
 
 # Bert_vits2
-def voice_bert_vits2(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, segment_size=50, sdp_ratio=0.2,
+def voice_bert_vits2(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, segment_size=50,
+                     sdp_ratio=0.2,
                      save_audio=True, save_path=None):
     fields = {
         "text": text,
@@ -391,6 +394,8 @@ def test_interface(text):
 
 
 if __name__ == '__main__':
+    cache_path = os.path.join(os.path.curdir, "cache")
+
     text = "你好,こんにちは"
 
     ssml = """
@@ -415,15 +420,13 @@ if __name__ == '__main__':
         </speak>
     """
 
-    from config import CACHE_PATH
-
-    path = voice_vits(text, save_path=CACHE_PATH)
-    voice_vits_streaming(text, save_path=CACHE_PATH)
-    voice_w2v2_vits(text, save_path=CACHE_PATH)
-    voice_conversion(path, 1, 3, save_path=CACHE_PATH)
-    voice_hubert_vits(path, 0, save_path=CACHE_PATH)
-    voice_dimensional_emotion(path, save_path=CACHE_PATH)
-    voice_ssml(ssml, save_path=CACHE_PATH)
-    voice_bert_vits2("你好",lang="zh", save_path=CACHE_PATH)
-    voice_bert_vits2("こんにちは", lang="ja", save_path=CACHE_PATH)
+    path = voice_vits(text, save_path=cache_path)
+    voice_vits_streaming(text, save_path=cache_path)
+    voice_w2v2_vits(text, save_path=cache_path)
+    voice_conversion(path, 1, 3, save_path=cache_path)
+    voice_hubert_vits(path, 0, save_path=cache_path)
+    voice_dimensional_emotion(path, save_path=cache_path)
+    voice_ssml(ssml, save_path=cache_path)
+    voice_bert_vits2("你好", lang="zh", save_path=cache_path)
+    voice_bert_vits2("こんにちは", lang="ja", save_path=cache_path)
     # os.system(path)

@@ -29,14 +29,17 @@ class ModelManager(Subject):
         self.logger = logger
 
         self.models = {
-            # "model_id": {"model_path": model_path, "config_path": config_path, "model": model, "n_speakers": n_speakers}
+            # ModelType:{model_id: {"model_path": model_path, "config_path": config_path, "model": model,
+            # "n_speakers": n_speakers}},
+            # model_id 类型为 int
             ModelType.VITS: {},
             ModelType.HUBERT_VITS: {},
             ModelType.W2V2_VITS: {},
             ModelType.BERT_VITS2: {},
             ModelType.GPT_SOVITS: {},
         }
-        self.sid2model = {  # [real_id, model, model_id]
+        self.sid2model = {
+            # ModelType:[{"real_id": real_id, "model": model, "model_id": model_id, "n_speakers": n_speakers}]
             ModelType.VITS: [],
             ModelType.HUBERT_VITS: [],
             ModelType.W2V2_VITS: [],

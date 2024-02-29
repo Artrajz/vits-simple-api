@@ -1,3 +1,5 @@
+import logging
+
 import librosa
 import re
 import numpy as np
@@ -117,6 +119,18 @@ class TTSManager(Observer):
     def get_model_id(self, model_type, id):
         return self.sid2model[model_type][id]["model_id"]
 
+    def normalize(self, state):
+        int_keys = ["id", "segement_size", "emotion", "top_k"]
+        float_keys = ["noise", "noisew", "length", "sdp_ratio", "style_weight", "top_p", "temperature"]
+
+        for key in state:
+            if key in int_keys and state[key] is not None:
+                state[key] = int(state[key])
+            elif key in float_keys and state[key] is not None:
+                state[key] = float(state[key])
+
+        return state
+
     def parse_ssml(self, ssml):
         root = ET.fromstring(ssml)
         format = root.attrib.get("format", "wav")
@@ -124,27 +138,36 @@ class TTSManager(Observer):
         brk_count = 0
         strength_dict = {"x-weak": 0.25, "weak": 0.5, "Medium": 0.75, "Strong": 1, "x-strong": 1.25}
 
+        params = {ModelType.VITS.value: config.vits_config.asdict(),
+                  ModelType.W2V2_VITS.value: config.w2v2_vits_config.asdict(),
+                  ModelType.HUBERT_VITS.value: config.hubert_vits_config.asdict(),
+                  ModelType.BERT_VITS2.value: config.bert_vits2_config.asdict(),
+                  ModelType.GPT_SOVITS.value: config.gpt_sovits_config.asdict(),
+                  }
+
         for element in root.iter():
             if element.tag == "voice":
-                id = int(element.attrib.get("id", root.attrib.get("id", config["default_parameter"]["id"])))
-                lang = element.attrib.get("lang", root.attrib.get("lang", config["default_parameter"]["lang"]))
-                length = float(
-                    element.attrib.get("length", root.attrib.get("length", config["default_parameter"]["length"])))
-                noise = float(
-                    element.attrib.get("noise", root.attrib.get("noise", config["default_parameter"]["noise"])))
-                noisew = float(
-                    element.attrib.get("noisew", root.attrib.get("noisew", config["default_parameter"]["noisew"])))
-                segment_size = int(element.attrib.get("segment_size", root.attrib.get("segment_size",
-                                                                                      config["default_parameter"][
-                                                                                          "segment_size"])))
                 # 不填写则默认从已加载的模型中选择
                 model_type = element.attrib.get("model_type", root.attrib.get("model_type", list(
                     self.model_manager.available_tts_model)[0]))
-                emotion = int(element.attrib.get("emotion", root.attrib.get("emotion", 0)))
+                # logging.debug(f"Default model:{list(self.model_manager.available_tts_model)[0]}")
+                # id = int(element.attrib.get("id", root.attrib.get("id", default_parameter.id)))
+                # lang = element.attrib.get("lang", root.attrib.get("lang", default_parameter.lang))
+                # length = float(
+                #     element.attrib.get("length", root.attrib.get("length", default_parameter.length)))
+                # noise = float(
+                #     element.attrib.get("noise", root.attrib.get("noise", default_parameter.noise)))
+                # noisew = float(
+                #     element.attrib.get("noisew", root.attrib.get("noisew", default_parameter.noisew)))
+                # segment_size = int(element.attrib.get("segment_size", root.attrib.get("segment_size",
+                #                                                                       config["default_parameter"][
+                #                                                                           "segment_size"])))
+
+                # emotion = int(element.attrib.get("emotion", root.attrib.get("emotion", 0)))
                 # Bert-VITS2的参数
-                sdp_ratio = int(element.attrib.get("sdp_ratio", root.attrib.get("sdp_ratio",
-                                                                                config["default_parameter"][
-                                                                                    "sdp_ratio"])))
+                # sdp_ratio = int(element.attrib.get("sdp_ratio", root.attrib.get("sdp_ratio",
+                #                                                                 config["default_parameter"][
+                #                                                                     "sdp_ratio"])))
 
                 voice_element = ET.tostring(element, encoding='unicode')
 
@@ -172,18 +195,15 @@ class TTSManager(Observer):
                         brk_count += 1
                     # voice标签中除了break剩下的就是文本
                     else:
-                        voice_tasks.append({"id": id,
-                                            "text": match,
-                                            "lang": lang,
-                                            "length": length,
-                                            "noise": noise,
-                                            "noisew": noisew,
-                                            "segment_size": segment_size,
-                                            "model_type": model_type,
-                                            "emotion": emotion,
-                                            "sdp_ratio": sdp_ratio,
-                                            "speaker_lang": self.speaker_lang
-                                            })
+                        task = {
+                            "model_type": model_type,
+                            "speaker_lang": self.speaker_lang,
+                            "text": match,
+                        }
+                        task.update(params.get(model_type))  # 默认参数
+                        task.update(root.attrib)  # 所有参数都放进去，推理函数会选出需要的参数
+                        task = self.normalize(task)
+                        voice_tasks.append(task)
 
                 # 分段末尾停顿0.75s
                 voice_tasks.append({"break": 0.75})
