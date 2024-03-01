@@ -557,13 +557,11 @@ def voice_gpt_sovits_api():
         format = get_param(request_data, "format", config.gpt_sovits_config.format, str)
         segment_size = get_param(request_data, "segment_size", config.gpt_sovits_config.segment_size, int)
         reference_audio = request.files.get("reference_audio", None)
-        preset = get_param(request_data, "preset", "default", str)
-        refer_wav_path = get_param(request_data, "refer_wav_path",
-                                   config.gpt_sovits_config.presets.get("default").refer_wav_path, str)
-        prompt_text = get_param(request_data, "prompt_text",
-                                config.gpt_sovits_config.presets.get("default").prompt_text, str)
-        prompt_lang = get_param(request_data, "prompt_lang",
-                                config.gpt_sovits_config.presets.get("default").prompt_lang, str)
+        preset = get_param(request_data, "preset", None, str)
+        # refer_wav_path = get_param(request_data, "refer_wav_path",
+        #                            config.gpt_sovits_config.presets.get("default").refer_wav_path, str)
+        prompt_text = get_param(request_data, "prompt_text", None, str)
+        prompt_lang = get_param(request_data, "prompt_lang", None, str)
         top_k = get_param(request_data, "top_k", config.gpt_sovits_config.top_k, int)
         top_p = get_param(request_data, "top_p", config.gpt_sovits_config.top_p, float)
         temperature = get_param(request_data, "temperature", config.gpt_sovits_config.temperature, float)
@@ -601,28 +599,30 @@ def voice_gpt_sovits_api():
 
     # 检查参考音频
     if check_is_none(reference_audio):  # 无参考音频
-        # 已选择预设
-        if preset != "default":
+        # 未选择预设
+        if check_is_none(preset):
+            presets = config.gpt_sovits_config.presets
+            refer_preset = presets.get(next(iter(presets)))
+        else:  # 已选择预设
             refer_preset = config.gpt_sovits_config.presets.get(preset)
-            if check_is_none(refer_wav_path):
-                refer_wav_path = os.path.join(config.abs_path, config.system.data_path, refer_preset.refer_wav_path)
+        refer_wav_path = refer_preset.refer_wav_path
+        if check_is_none(refer_wav_path):
+            raise ValueError(f"The refer_wav_path:{refer_wav_path} in preset:{preset} is None!")
+        refer_wav_path = os.path.join(config.abs_path, config.system.data_path, refer_wav_path)
+        prompt_text, prompt_lang = refer_preset.prompt_text, refer_preset.prompt_lang
 
-            prompt_text, prompt_lang = refer_preset.prompt_text, refer_preset.prompt_lang
-
-        # 未选择预设，使用预设default
+        # 将reference_audio换成指定预设里的参考音频
         reference_audio = refer_wav_path
+
+    if check_is_none(prompt_text):
+        raise ValueError(f"Error prompt_text:{prompt_text}")
+
+    if check_is_none(prompt_lang):
+        presets = config.gpt_sovits_config.presets
+        prompt_lang = presets.get(next(iter(presets)), "auto")
 
     reference_audio, reference_audio_sr = librosa.load(reference_audio, sr=None, dtype=np.float32)
     reference_audio = reference_audio.flatten()
-
-    # 检查修改后的参考音频，如果既没有上传参考音频且没设置预设，就会报错
-    # if check_is_none(reference_audio, prompt_text):
-    #     # 未指定参考音频且配置文件无预设
-    #     message = "No reference audio specified, and no default setting in the config. 未指定参考音频且配置文件无预设"
-    #     logging.error(message)
-    #     return make_response(jsonify(
-    #         {"status": "error", "message": message}),
-    #         400)
 
     logger.info(
         f"[{ModelType.GPT_SOVITS.value}] prompt_text:{prompt_text} prompt_lang:{prompt_lang} ")
