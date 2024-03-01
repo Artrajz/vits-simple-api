@@ -605,7 +605,7 @@ def voice_gpt_sovits_api():
         if preset != "default":
             refer_preset = config.gpt_sovits_config.presets.get(preset)
             if check_is_none(refer_wav_path):
-                refer_wav_path = refer_preset.refer_wav_path
+                refer_wav_path = os.path.join(config.abs_path, config.system.data_path, refer_preset.refer_wav_path)
 
             prompt_text, prompt_lang = refer_preset.prompt_text, refer_preset.prompt_lang
 
