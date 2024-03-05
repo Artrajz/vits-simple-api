@@ -231,6 +231,7 @@ class GPT_SoVITS:
             prompt_semantic = codes[0, 0]
         # t1 = ttime()
 
+        logging.debug(f"Infer text:{text}")
         phones2, word2ph2, norm_text2 = self.get_cleaned_text(text, lang)
         bert2 = self.get_bert_feature(norm_text2, phones2, word2ph2, lang).to(self.device, dtype=self.torch_dtype)
 
@@ -342,7 +343,7 @@ class GPT_SoVITS:
 
         # phones2, word2ph2, norm_text2 = self.get_cleaned_text(text, lang)
         # bert2 = self.get_bert_feature(norm_text2, phones2, word2ph2, lang).to(dtype=self.torch_dtype)
-
+        logging.debug(f"Infer text:{text}")
         phones2, word2ph2, norm_text2, bert2 = self.get_bert_and_cleaned_text_multilang(text)
 
         if not check_is_none(prompt_text):

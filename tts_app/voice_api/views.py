@@ -565,7 +565,7 @@ def voice_gpt_sovits_api():
         top_k = get_param(request_data, "top_k", config.gpt_sovits_config.top_k, int)
         top_p = get_param(request_data, "top_p", config.gpt_sovits_config.top_p, float)
         temperature = get_param(request_data, "temperature", config.gpt_sovits_config.temperature, float)
-        # use_streaming = get_param(request_data, 'streaming', config.gpt_sovits_config.use_streaming, bool)
+        use_streaming = get_param(request_data, 'streaming', config.gpt_sovits_config.use_streaming, bool)
     except Exception as e:
         logger.error(f"[{ModelType.GPT_SOVITS.value}] {e}")
         return make_response("parameter error", 400)
@@ -614,6 +614,10 @@ def voice_gpt_sovits_api():
         # 将reference_audio换成指定预设里的参考音频
         reference_audio = refer_wav_path
 
+    if use_streaming and format.upper() != "MP3":
+        format = "mp3"
+        logger.warning("Streaming response only supports MP3 format.")
+
     if check_is_none(prompt_text):
         raise ValueError(f"Error prompt_text:{prompt_text}")
 
@@ -648,10 +652,17 @@ def voice_gpt_sovits_api():
              "temperature": temperature,
              }
 
-    t1 = time.time()
-    audio = tts_manager.gpt_sovits_infer(state)
-    t2 = time.time()
-    logger.info(f"[{ModelType.GPT_SOVITS.value}] finish in {(t2 - t1):.2f}s")
+    if use_streaming:
+        audio = tts_manager.stream_gpt_sovits_infer((state))
+        response = make_response(audio)
+        response.headers['Content-Disposition'] = f'attachment; filename={fname}'
+        response.headers['Content-Type'] = file_type
+        return response
+    else:
+        t1 = time.time()
+        audio = tts_manager.gpt_sovits_infer(state)
+        t2 = time.time()
+        logger.info(f"[{ModelType.GPT_SOVITS.value}] finish in {(t2 - t1):.2f}s")
 
     if config.system.cache_audio:
         logger.debug(f"[{ModelType.GPT_SOVITS.value}] {fname}")

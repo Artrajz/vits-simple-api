@@ -159,6 +159,8 @@ function getLink() {
         if (style_weight !== null && style_weight !== "")
             url += "&style_weight=" + style_weight;
     } else if (currentModelPage == 4) {
+        if (streaming.checked)
+            url += '&streaming=true';
         if (prompt_lang !== null && prompt_lang !== "")
             url += "&prompt_lang=" + prompt_lang;
         if (prompt_text !== null && prompt_text !== "")
@@ -171,8 +173,6 @@ function getLink() {
             url += "&top_p=" + top_p;
         if (temperature !== null && temperature !== "")
             url += "&temperature=" + temperature;
-
-
     }
 
     if (api_key != "") {
@@ -293,6 +293,7 @@ function setAudioSourceByPost() {
         style_weight = $("#input_style_weight3").val();
     } else if (currentModelPage == 4) {
         url = baseUrl + "/voice/gpt-sovits";
+        streaming = $("#streaming4")[0];
         prompt_text = $("#input_prompt_text4").val();
         prompt_lang = $("#input_prompt_lang4").val();
         preset = $("#input_preset4").val();
@@ -303,7 +304,7 @@ function setAudioSourceByPost() {
 
 
     // 添加其他配置参数到 FormData
-    if ((currentModelPage == 1 || currentModelPage == 3) && streaming.checked) {
+    if ((currentModelPage == 1 || currentModelPage == 3 || currentModelPage == 4) && streaming.checked) {
         formData.append('streaming', true);
     }
     if (currentModelPage == 3 && sdp_ratio != "") {
