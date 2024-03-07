@@ -293,6 +293,34 @@ gpt_sovits_config:
       prompt_lang: auto
 ```
 
+## 阅读API
+
+在[开源阅读](https://gedoor.github.io/)中测试
+
+可使用多种模型朗读，包括VITS，Bert-VITS2，GPT-SoVITS，`in`开头的参数配置的是对话即引号中的文本的说话人，`nr`开头的参数配置的是旁白。
+
+使用GPT-SoVITS需要提前在`config.yaml`配置好`presets`里的参考音频，并修改下方url中的preset
+
+url中的IP可在API启动后找到，一般使用192.168开头的局域网IP。
+
+修改好后，选择朗读引擎-添加朗读引擎-粘贴源，并启用该朗读引擎。
+
+```js
+{
+  "concurrentRate": "1",
+  "contentType": "audio/wav",
+  "enabledCookieJar": false,
+  "header": "",
+  "id": 1709643305070,
+  "lastUpdateTime": 1709821070082,
+  "loginCheckJs": "",
+  "loginUi": "",
+  "loginUrl": "",
+  "name": "vits-simple-api",
+  "url": "http://192.168.xxx.xxx:23456/voice/reading?text={{java.encodeURI(speakText)}}&in_model_type=GPT-SOVITS&in_id=0&preset=default&nr_model_type=BERT-VITS2&nr_id=0&format=wav"
+}
+```
+
 
 
 # 常见问题
@@ -514,7 +542,24 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 | Strong   | 1000 毫秒         |
 | x-strong | 1250 毫秒         |
 
-示例
+## 阅读
+
+| Name             | Parameter     | Is must | Default               | Type | Instruction                                                  |
+| ---------------- | ------------- | ------- | --------------------- | ---- | ------------------------------------------------------------ |
+| 合成文本         | text          | true    |                       | str  | 需要合成语音的文本。                                         |
+| 对话角色模型类型 | in_model_type | false   | 从`config.yaml`中获取 | str  |                                                              |
+| 对话角色id       | in_id         | false   | 从`config.yaml`中获取 | int  |                                                              |
+| 旁白角色模型类型 | nr_model_type | false   | 从`config.yaml`中获取 | str  |                                                              |
+| 旁白角色id       | nr_id         | false   | 从`config.yaml`中获取 | int  |                                                              |
+| 音频格式         | format        | false   | 从`config.yaml`中获取 | str  | 支持wav,ogg,silk,mp3,flac                                    |
+| 文本语言         | lang          | false   | 从`config.yaml`中获取 | str  | auto为自动识别语言模式，也是默认模式，但目前只支持识别整段文本的语言，无法细分到每个句子。 |
+| 参考音频预设     | preset        | false   | default               | str  | 通过提前设置好的预设代替参考音频，可设置多个预设。           |
+
+模型的其他参数将使用config.yaml文件中对应模型的默认参数。
+
+
+
+## 示例
 
 见`api_test.py`
 

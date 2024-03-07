@@ -283,6 +283,36 @@ gpt_sovits_config:
       prompt_lang: auto
 ```
 
+## Reading API
+
+Tested in [legado](https://github.com/gedoor/legado)
+
+Multiple models can be used for reading, including VITS, Bert-VITS2, GPT-SoVITS. Parameters starting with `in` configure the speaker of the text in quotes, while parameters starting with `nr` configure the narrator.
+
+To use GPT-SoVITS, it is necessary to configure the reference audio in the `presets` section of the `config.yaml` file in advance and modify the preset in the URL below.
+
+The IP in the URL can be found after the API is started, generally using a local area network IP starting with 192.168.
+
+After modification, select the reading engine, add the reading engine, paste the source, and enable the reading engine.
+
+```js
+{
+  "concurrentRate": "1",
+  "contentType": "audio/wav",
+  "enabledCookieJar": false,
+  "header": "",
+  "id": 1709643305070,
+  "lastUpdateTime": 1709821070082,
+  "loginCheckJs": "",
+  "loginUi": "",
+  "loginUrl": "",
+  "name": "vits-simple-api",
+  "url": "http://192.168.xxx.xxx:23456/voice/reading?text={{java.encodeURI(speakText)}}&in_model_type=GPT-SOVITS&in_id=0&preset=default&nr_model_type=BERT-VITS2&nr_id=0&format=wav"
+}
+```
+
+
+
 # Frequently Asked Questions
 
 ## Installation Issues with fastText Dependency
@@ -501,7 +531,24 @@ Higher priority than `speak`.
 | strong   | 1000 ms           |
 | x-strong | 1250 ms           |
 
-Example
+## Reading
+
+| Name                     | Parameter     | Is must | Default                     | Type | Instruction                                                  |
+| ------------------------ | ------------- | ------- | --------------------------- | ---- | ------------------------------------------------------------ |
+| Synthesis Text           | text          | true    |                             | str  | The text to be synthesized into speech.                      |
+| Dialogue Role Model Type | in_model_type | false   | Obtained from `config.yaml` | str  |                                                              |
+| Dialogue Role ID         | in_id         | false   | Obtained from `config.yaml` | int  |                                                              |
+| Narrator Role Model Type | nr_model_type | false   | Obtained from `config.yaml` | str  |                                                              |
+| Narrator Role ID         | nr_id         | false   | Obtained from `config.yaml` | int  |                                                              |
+| Audio Format             | format        | false   | Obtained from `config.yaml` | str  | Supports wav, ogg, silk, mp3, flac                           |
+| Text Language            | lang          | false   | Obtained from `config.yaml` | str  | 'auto' for automatic language detection mode, which is also the default mode. However, currently, it only supports recognizing the language of the entire text and cannot distinguish each sentence. |
+| Reference Audio Preset   | preset        | false   | default                     | str  | Replace the reference audio with preset settings, which can be set to multiple presets in advance. |
+
+The other parameters of the model will use the default parameters of the corresponding model in the config.yaml file.
+
+
+
+## Example
 
 See `api_test.py`
 
