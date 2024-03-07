@@ -538,7 +538,7 @@ class TTSManager(Observer):
             if check_is_none(refer_wav_path):
                 raise ValueError(f"The refer_wav_path:{refer_wav_path} in preset:{state.get('preset')} is None!")
             refer_wav_path = os.path.join(config.abs_path, config.system.data_path, refer_wav_path)
-            prompt_text, prompt_lang = refer_preset.prompt_text, refer_preset.prompt_lang
+            state["prompt_text"], state["prompt_lang"] = refer_preset.prompt_text, refer_preset.prompt_lang
 
             # 将reference_audio换成指定预设里的参考音频
             state["reference_audio"] = refer_wav_path
@@ -550,7 +550,8 @@ class TTSManager(Observer):
             presets = config.gpt_sovits_config.presets
             state["prompt_lang"] = presets.get(next(iter(presets)), "auto")
 
-        state["reference_audio"], state["reference_audio_sr"] = librosa.load(state["reference_audio"], sr=None, dtype=np.float32)
+        state["reference_audio"], state["reference_audio_sr"] = librosa.load(state["reference_audio"], sr=None,
+                                                                             dtype=np.float32)
         state["reference_audio"] = state["reference_audio"].flatten()
 
         if state.get("lang").lower() == "auto":

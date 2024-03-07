@@ -658,7 +658,7 @@ def voice_gpt_sovits_api():
              "lang": lang,
              "speaker_lang": speaker_lang,
              "reference_audio": reference_audio,
-             "reference_audio_sr": reference_audio_sr,
+             # "reference_audio_sr": reference_audio_sr,
              "prompt_text": prompt_text,
              "prompt_lang": prompt_lang,
              "top_k": top_k,
