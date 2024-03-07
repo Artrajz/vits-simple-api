@@ -315,7 +315,7 @@ def voice_dimensional_emotion(upload_path, save_audio=True,
 
 
 def vits_json(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, segment_size=50,
-              save_path=None):
+              save_audio=True, save_path=None):
     fields = {
         "text": text,
         "id": str(id),
@@ -339,14 +339,18 @@ def vits_json(text, id=0, format="wav", lang="auto", length=1, noise=0.667, nois
 
     with open(path, "wb") as f:
         f.write(res.content)
-    print(path)
-    return path
+
+    if save_audio:
+        with open(path, "wb") as f:
+            f.write(res.content)
+        print(path)
+        return path
+    return None
 
 
 # Bert_vits2
 def voice_bert_vits2(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, segment_size=50,
-                     sdp_ratio=0.2,
-                     save_audio=True, save_path=None):
+                     sdp_ratio=0.2, save_audio=True, save_path=None):
     fields = {
         "text": text,
         "id": str(id),
@@ -363,6 +367,136 @@ def voice_bert_vits2(text, id=0, format="wav", lang="auto", length=1, noise=0.66
     m = MultipartEncoder(fields=fields, boundary=boundary)
     headers = {"Content-Type": m.content_type}
     url = f"{base_url}/voice/bert-vits2"
+
+    res = requests.post(url=url, data=m, headers=headers)
+    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
+    if save_path is not None:
+        path = os.path.join(save_path, fname)
+    else:
+        path = os.path.join(absolute_path, fname)
+    if save_audio:
+        with open(path, "wb") as f:
+            f.write(res.content)
+        print(path)
+        return path
+    return None
+
+
+# Bert_vits2
+def voice_gpt_sovits(text, id=0, format="wav", lang="auto", preset=None, prompt_text=None, prompt_lang="auto",
+                     segment_size=50, reference_audio=None, save_audio=True, save_path=None):
+    upload_name, upload_type, upload_file = None, None, None
+    if reference_audio is not None:
+        upload_name = os.path.basename(reference_audio)
+        upload_type = f'audio/{upload_name.split(".")[1]}'
+        with open(reference_audio, 'rb') as f:
+            upload_file = f.read()
+
+    fields = {
+        "text": text,
+        "id": str(id),
+        "format": format,
+        "lang": lang,
+        "segment_size": str(segment_size),
+        "preset": preset,
+        "reference_audio": (upload_name, upload_file, upload_type) if reference_audio else None,
+        "prompt_text": prompt_text,
+        "prompt_lang": prompt_lang
+    }
+    boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
+
+    m = MultipartEncoder(fields=fields, boundary=boundary)
+    headers = {"Content-Type": m.content_type}
+    url = f"{base_url}/voice/gpt-sovits"
+
+    res = requests.post(url=url, data=m, headers=headers)
+    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
+    if save_path is not None:
+        path = os.path.join(save_path, fname)
+    else:
+        path = os.path.join(absolute_path, fname)
+    if save_audio:
+        with open(path, "wb") as f:
+            f.write(res.content)
+        print(path)
+        return path
+    return None
+
+
+# Reading
+def voice_reading_get(text, in_model_type, in_id, nr_model_type, nr_id, format="wav", lang="auto", preset=None,
+                      save_audio=True, save_path=None):
+    res = requests.get(
+        url=f"{base_url}/voice/reading?text={text}&in_model_type={in_model_type}&in_id={in_id}&preset={preset}&nr_model_type={nr_model_type}&nr_id={nr_id}&lang={lang}&format={format}")
+
+    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
+    if save_path is not None:
+        path = os.path.join(save_path, fname)
+    else:
+        path = os.path.join(absolute_path, fname)
+
+    with open(path, "wb") as f:
+        f.write(res.content)
+
+    if save_audio:
+        with open(path, "wb") as f:
+            f.write(res.content)
+        print(path)
+        return path
+    return None
+
+
+# Reading
+def voice_reading_json(text, in_model_type, in_id, nr_model_type, nr_id, format="wav", lang="auto", preset=None,
+                       save_audio=True, save_path=None):
+    fields = {
+        "text": text,
+        "in_model_type": in_model_type,
+        "in_id": str(in_id),
+        "nr_model_type": nr_model_type,
+        "nr_id": str(nr_id),
+        "format": format,
+        "lang": lang,
+    }
+    f = json.dumps(fields)
+    url = f"{base_url}/voice/reading"
+    header = {"Content-Type": 'application/json'}
+    res = requests.post(url=url, data=f, headers=header)
+
+    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
+    if save_path is not None:
+        path = os.path.join(save_path, fname)
+    else:
+        path = os.path.join(absolute_path, fname)
+
+    with open(path, "wb") as f:
+        f.write(res.content)
+
+    if save_audio:
+        with open(path, "wb") as f:
+            f.write(res.content)
+        print(path)
+        return path
+    return None
+
+
+# Reading
+def voice_reading(text, in_model_type, in_id, nr_model_type, nr_id, format="wav", lang="auto", preset=None,
+                  save_audio=True, save_path=None):
+    fields = {
+        "text": text,
+        "in_model_type": in_model_type,
+        "in_id": str(in_id),
+        "nr_model_type": nr_model_type,
+        "nr_id": str(nr_id),
+        "format": format,
+        "lang": lang,
+    }
+    boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
+
+    m = MultipartEncoder(fields=fields, boundary=boundary)
+    headers = {"Content-Type": m.content_type}
+    url = f"{base_url}/voice/reading"
 
     res = requests.post(url=url, data=m, headers=headers)
     fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
@@ -400,7 +534,7 @@ if __name__ == '__main__':
 
     ssml = """
     <speak lang="zh" format="mp3" length="1.2">
-            <voice id="92" >这几天心里颇不宁静。</voice>
+            <voice id="0" model_type="GPT-SOVITS" preset="default">这几天心里颇不宁静。</voice>
             <voice id="0" model_type="Bert-VITS2">今晚在院子里坐着乘凉，忽然想起日日走过的荷塘，在这满月的光里，总该另有一番样子吧。</voice>
             <voice id="142">月亮渐渐地升高了，墙外马路上孩子们的欢笑，已经听不见了；</voice>
             <voice id="0" model_type="Bert-VITS2">妻在屋里拍着闰儿，迷迷糊糊地哼着眠歌。</voice>
@@ -420,13 +554,22 @@ if __name__ == '__main__':
         </speak>
     """
 
-    path = voice_vits(text, save_path=cache_path)
-    voice_vits_streaming(text, save_path=cache_path)
-    voice_w2v2_vits(text, save_path=cache_path)
-    voice_conversion(path, 1, 3, save_path=cache_path)
-    voice_hubert_vits(path, 0, save_path=cache_path)
-    voice_dimensional_emotion(path, save_path=cache_path)
-    voice_ssml(ssml, save_path=cache_path)
-    voice_bert_vits2("你好", lang="zh", save_path=cache_path)
-    voice_bert_vits2("こんにちは", lang="ja", save_path=cache_path)
+    # path = voice_vits(text, save_path=cache_path)
+    # path =voice_vits_streaming(text, save_path=cache_path)
+    # path = voice_w2v2_vits(text, save_path=cache_path)
+    # path = voice_conversion(path, 1, 3, save_path=cache_path)
+    # path = voice_hubert_vits(path, 0, save_path=cache_path)
+    # path = voice_dimensional_emotion(path, save_path=cache_path)
+    # path = voice_ssml(ssml, save_path=cache_path)
+    # path = voice_bert_vits2("你好", lang="zh", save_path=cache_path)
+    # path = voice_bert_vits2("こんにちは", lang="ja", save_path=cache_path)
+    # path = voice_gpt_sovits(text=text, id=2, preset="wz")
+    # path = voice_gpt_sovits(text=text, id=2, reference_audio=r"H:\git\vits-simple-api\data\reference_audio\wz_10068.wav",prompt_text="……嗯……大概、快上课的时候开始的。到这个程度的话，……半个小时吧？")
+
+    # os.system(path)
+
+    # text = "你好“你的修炼速度有些出乎我的意料”"
+    # path = voice_reading_json(text=text, in_model_type="GPT-SOVITS", preset="wz", in_id=2, nr_model_type="BERT-VITS2",
+    #                           nr_id=0)
+
     # os.system(path)

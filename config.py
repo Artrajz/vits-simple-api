@@ -225,6 +225,18 @@ class GPTSoVitsConfig(AsDictMixin):
 
 
 @dataclass
+class Reader(AsDictMixin):
+    model_type: str = "VITS"
+    id: int = 0
+
+
+@dataclass
+class ReadingConfig(AsDictMixin):
+    interlocutor: Reader = Reader()
+    narrator: Reader = Reader()
+
+
+@dataclass
 class ModelConfig(AsDictMixin):
     chinese_roberta_wwm_ext_large: str = "bert/chinese-roberta-wwm-ext-large"
     bert_base_japanese_v3: str = "bert/bert-base-japanese-v3"
@@ -405,6 +417,7 @@ class Config(AsDictMixin):
     system: System = System()
     log_config: LogConfig = LogConfig()
     language_identification: LanguageIdentification = LanguageIdentification()
+    reading_config: ReadingConfig = ReadingConfig()
     vits_config: VitsConfig = VitsConfig()
     w2v2_vits_config: W2V2VitsConfig = W2V2VitsConfig()
     hubert_vits_config: HuBertVitsConfig = HuBertVitsConfig()
@@ -453,7 +466,7 @@ class Config(AsDictMixin):
                     logging.info("config.yaml is empty, initializing config.yaml...")
 
                 # Load default models from config.py.
-                config.update_config(model_list)
+                # config.update_config(model_list)
 
                 # If parameters are incomplete, they will be automatically filled in upon saving.
                 Config.save_config(config)

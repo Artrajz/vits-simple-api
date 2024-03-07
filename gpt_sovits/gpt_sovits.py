@@ -291,7 +291,7 @@ class GPT_SoVITS:
             # t4 = ttime()
 
             # logging.debug(f"{t1 - t0:.3f}\t{t2 - t1:.3f}\t{t3 - t2:.3f}\t{t4 - t3:.3f}")
-            audio = (np.concatenate(audios, 0) * 32768).astype(np.int16)
+            audio = np.concatenate(audios, 0)
         return audio
 
     def infer_multilang(self, text, lang, reference_audio, reference_audio_sr, prompt_text, prompt_lang, top_k, top_p,
@@ -401,5 +401,5 @@ class GPT_SoVITS:
             # t4 = ttime()
 
             # logging.debug(f"{t1 - t0:.3f}\t{t2 - t1:.3f}\t{t3 - t2:.3f}\t{t4 - t3:.3f}")
-            audio = (np.concatenate(audios, 0) * 32768).astype(np.int16)
+            audio = np.concatenate(audios, 0)
         return audio

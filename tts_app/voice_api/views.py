@@ -53,6 +53,25 @@ def extract_filename_and_directory(path):
         return directory_name + "/" + filename
 
 
+def update_default_params(state):
+    model_type = state["model_type"]
+    if model_type == ModelType.VITS:
+        config_dict = config.vits_config.asdict()
+    elif model_type == ModelType.W2V2_VITS:
+        config_dict = config.w2v2_vits_config.asdict()
+    elif model_type == ModelType.HUBERT_VITS:
+        config_dict = config.hubert_vits_config.asdict()
+    elif model_type == ModelType.BERT_VITS2:
+        config_dict = config.bert_vits2_config.asdict()
+    elif model_type == ModelType.GPT_SOVITS:
+        config_dict = config.gpt_sovits_config.asdict()
+
+    for key, value in config_dict.items():
+        if key not in state or value is None:
+            state[key] = value
+    return state
+
+
 @voice_api.route('/default_parameter', methods=["GET", "POST"])
 def default_parameter():
     gpt_sovits_config = copy.deepcopy(config.gpt_sovits_config.asdict())
@@ -461,7 +480,6 @@ def voice_bert_vits2_api():
         logger.info(f"[{ModelType.BERT_VITS2.value}] text_prompt:{text_prompt}")
     elif style_text:
         logger.info(f"[{ModelType.BERT_VITS2.value}] style_text:{style_text} style_weight:{style_weight}")
-    logger.info(f"[{ModelType.BERT_VITS2.value}] len:{len(text)} text：{text}")
 
     if check_is_none(text):
         logger.info(f"[{ModelType.BERT_VITS2.value}] text is empty")
@@ -597,43 +615,39 @@ def voice_gpt_sovits_api():
     if (lang_detect := config.language_identification.language_automatic_detect) and isinstance(lang_detect, list):
         speaker_lang = lang_detect
 
-    # 检查参考音频
-    if check_is_none(reference_audio):  # 无参考音频
-        # 未选择预设
-        if check_is_none(preset):
-            presets = config.gpt_sovits_config.presets
-            refer_preset = presets.get(next(iter(presets)))
-        else:  # 已选择预设
-            refer_preset = config.gpt_sovits_config.presets.get(preset)
-        refer_wav_path = refer_preset.refer_wav_path
-        if check_is_none(refer_wav_path):
-            raise ValueError(f"The refer_wav_path:{refer_wav_path} in preset:{preset} is None!")
-        refer_wav_path = os.path.join(config.abs_path, config.system.data_path, refer_wav_path)
-        prompt_text, prompt_lang = refer_preset.prompt_text, refer_preset.prompt_lang
-
-        # 将reference_audio换成指定预设里的参考音频
-        reference_audio = refer_wav_path
-
-    if use_streaming and format.upper() != "MP3":
-        format = "mp3"
-        logger.warning("Streaming response only supports MP3 format.")
-
-    if check_is_none(prompt_text):
-        raise ValueError(f"Error prompt_text:{prompt_text}")
-
-    if check_is_none(prompt_lang):
-        presets = config.gpt_sovits_config.presets
-        prompt_lang = presets.get(next(iter(presets)), "auto")
-
-    reference_audio, reference_audio_sr = librosa.load(reference_audio, sr=None, dtype=np.float32)
-    reference_audio = reference_audio.flatten()
+    # # 检查参考音频
+    # if check_is_none(reference_audio):  # 无参考音频
+    #     # 未选择预设
+    #     if check_is_none(preset):
+    #         presets = config.gpt_sovits_config.presets
+    #         refer_preset = presets.get(next(iter(presets)))
+    #     else:  # 已选择预设
+    #         refer_preset = config.gpt_sovits_config.presets.get(preset)
+    #     refer_wav_path = refer_preset.refer_wav_path
+    #     if check_is_none(refer_wav_path):
+    #         raise ValueError(f"The refer_wav_path:{refer_wav_path} in preset:{preset} is None!")
+    #     refer_wav_path = os.path.join(config.abs_path, config.system.data_path, refer_wav_path)
+    #     prompt_text, prompt_lang = refer_preset.prompt_text, refer_preset.prompt_lang
+    #
+    #     # 将reference_audio换成指定预设里的参考音频
+    #     reference_audio = refer_wav_path
+    #
+    # if check_is_none(prompt_text):
+    #     raise ValueError(f"Error prompt_text:{prompt_text}")
+    #
+    # if check_is_none(prompt_lang):
+    #     presets = config.gpt_sovits_config.presets
+    #     prompt_lang = presets.get(next(iter(presets)), "auto")
+    #
+    # reference_audio, reference_audio_sr = librosa.load(reference_audio, sr=None, dtype=np.float32)
+    # reference_audio = reference_audio.flatten()
 
     logger.info(
         f"[{ModelType.GPT_SOVITS.value}] prompt_text:{prompt_text} prompt_lang:{prompt_lang} ")
 
-    # if use_streaming and format.upper() != "MP3":
-    #     format = "mp3"
-    #     logger.warning("Streaming response only supports MP3 format.")
+    if use_streaming and format.upper() != "MP3":
+        format = "mp3"
+        logger.warning("Streaming response only supports MP3 format.")
 
     fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
@@ -653,7 +667,7 @@ def voice_gpt_sovits_api():
              }
 
     if use_streaming:
-        audio = tts_manager.stream_gpt_sovits_infer((state))
+        audio = tts_manager.stream_gpt_sovits_infer(state)
         response = make_response(audio)
         response.headers['Content-Disposition'] = f'attachment; filename={fname}'
         response.headers['Content-Type'] = file_type
@@ -668,6 +682,85 @@ def voice_gpt_sovits_api():
         logger.debug(f"[{ModelType.GPT_SOVITS.value}] {fname}")
         path = os.path.join(config.system.cache_path, fname)
         save_audio(audio.getvalue(), path)
+
+    return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
+
+
+@voice_api.route('/reading', methods=["GET", "POST"])
+@require_api_key
+def voice_reading_api():
+    in_state = {}  # interlocutor
+    nr_state = {}  # narrator
+    state = {}
+    try:
+        if request.method == "GET":
+            request_data = request.args
+        elif request.method == "POST":
+            content_type = request.headers.get('Content-Type')
+            if content_type == 'application/json':
+                request_data = request.get_json()
+            else:
+                request_data = request.form
+
+        in_state["model_type"] = ModelType(
+            get_param(request_data, "in_model_type", config.reading_config.interlocutor.model_type, str))
+        in_state["id"] = get_param(request_data, "in_id", config.reading_config.interlocutor.id, int)
+
+        # narrator
+        nr_state["model_type"] = ModelType(
+            get_param(request_data, "nr_model_type", config.reading_config.narrator.model_type, str))
+        nr_state["id"] = get_param(request_data, "nr_id", config.reading_config.narrator.model_type, int)
+
+        state["text"] = get_param(request_data, "text", "", str)
+        state["lang"] = get_param(request_data, "lang", "auto", str)
+        state["format"] = get_param(request_data, "format", "wav", str)
+        state["preset"] = get_param(request_data, "preset", None, str)
+
+    except Exception as e:
+        logger.error(f"[Reading] {e}")
+        return make_response("parameter error", 400)
+
+    in_state.update(state)
+    nr_state.update(state)
+
+    in_state = update_default_params(in_state)
+    nr_state = update_default_params(nr_state)
+
+    if in_state["model_type"] == ModelType.GPT_SOVITS:
+        gsv_state = in_state
+    elif nr_state["model_type"] == ModelType.GPT_SOVITS:
+        gsv_state = nr_state
+    else:
+        gsv_state = None
+
+    # if gsv_state is not None:
+    #     # 未选择预设
+    #     if check_is_none(gsv_state["preset"]):
+    #         presets = config.gpt_sovits_config.presets
+    #         refer_preset = presets.get(next(iter(presets)))
+    #     else:  # 已选择预设
+    #         refer_preset = config.gpt_sovits_config.presets.get(gsv_state["preset"])
+    #
+    #     refer_wav_path = refer_preset.refer_wav_path
+    #     if check_is_none(refer_wav_path):
+    #         raise ValueError(f"The refer_wav_path:{refer_wav_path} in preset:{gsv_state['preset']} is None!")
+    #     refer_wav_path = os.path.join(config.abs_path, config.system.data_path, refer_wav_path)
+    #     gsv_state["prompt_text"], gsv_state["prompt_lang"] = refer_preset.prompt_text, refer_preset.prompt_lang
+    #
+    #     # 将reference_audio换成指定预设里的参考音频
+    #     reference_audio = refer_wav_path
+    #
+    #     gsv_state["reference_audio"], gsv_state["reference_audio_sr"] = librosa.load(reference_audio, sr=None,
+    #                                                                                  dtype=np.float32)
+    #     gsv_state["reference_audio"] = gsv_state["reference_audio"].flatten()
+
+    file_type = f'audio/{state["format"]}'
+    fname = f"{str(uuid.uuid1())}.{state['format']}"
+
+    t1 = time.time()
+    audio = tts_manager.reading(in_state=in_state, nr_state=nr_state)
+    t2 = time.time()
+    logger.info(f"[Reading] finish in {(t2 - t1):.2f}s")
 
     return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
 

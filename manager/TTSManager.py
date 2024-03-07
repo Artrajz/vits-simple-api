@@ -1,4 +1,6 @@
 import logging
+import os
+import traceback
 
 import librosa
 import re
@@ -14,7 +16,8 @@ from scipy.signal import resample_poly
 
 from logger import logger
 from manager.observer import Observer
-from utils.sentence import sentence_split_and_markup, split_languages, sentence_split
+from utils.data_utils import check_is_none
+from utils.sentence import sentence_split_and_markup, split_languages, sentence_split, sentence_split_reading
 
 
 class TTSManager(Observer):
@@ -27,6 +30,7 @@ class TTSManager(Observer):
             ModelType.W2V2_VITS: self.w2v2_vits_infer,
             ModelType.HUBERT_VITS: self.hubert_vits_infer,
             ModelType.BERT_VITS2: self.bert_vits2_infer_v2,
+            ModelType.GPT_SOVITS: self.gpt_sovits_infer
         }
         self.speaker_lang = None
         if getattr(config, "LANGUAGE_AUTOMATIC_DETECT", []) != []:
@@ -238,7 +242,8 @@ class TTSManager(Observer):
                 sampling_rates.append(last_sampling_rate)
             else:
                 model_type_str = task.get("model_type").upper()
-                if model_type_str not in [ModelType.VITS.value, ModelType.W2V2_VITS.value, ModelType.BERT_VITS2.value]:
+                if model_type_str not in [ModelType.VITS.value, ModelType.W2V2_VITS.value, ModelType.BERT_VITS2.value,
+                                          ModelType.GPT_SOVITS.value]:
                     raise ValueError(f"Unsupported model type: {task.get('model_type')}")
                 model_type = ModelType(model_type_str)
                 model = self.get_model(model_type, task.get("id"))
@@ -266,7 +271,7 @@ class TTSManager(Observer):
         sampling_rate = model.sampling_rate
 
         sentences_list = sentence_split_and_markup(state["text"], state["segment_size"], state["lang"],
-                                                   state["speaker_lang"])
+                                                   model.lang)
         # 停顿0.5s，避免语音分段合成再拼接后的连接突兀
         brk = np.zeros(int(0.5 * sampling_rate), dtype=np.int16)
 
@@ -294,7 +299,7 @@ class TTSManager(Observer):
         sampling_rate = model.sampling_rate
 
         sentences_list = sentence_split_and_markup(state["text"], state["segment_size"], state["lang"],
-                                                   state["speaker_lang"])
+                                                   model.lang)
         # 停顿0.5s，避免语音分段合成再拼接后的连接突兀
         brk = np.zeros(int(0.5 * sampling_rate), dtype=np.int16)
 
@@ -337,7 +342,7 @@ class TTSManager(Observer):
         sampling_rate = model.sampling_rate
 
         sentences_list = sentence_split_and_markup(state["text"], state["segment_size"], state["lang"],
-                                                   state["speaker_lang"])
+                                                   model.lang)
         # 停顿0.5s，避免语音分段合成再拼接后的连接突兀
         brk = np.zeros(int(0.5 * sampling_rate), dtype=np.int16)
 
@@ -391,7 +396,7 @@ class TTSManager(Observer):
     #     # if state["lang"] == "auto":
     #     # state["lang"] = classify_language(state["text"], target_languages=model.lang)
     #     if state["lang"] == "auto":
-    #         sentences_list = split_languages(state["text"], state["speaker_lang"], expand_abbreviations=True,
+    #         sentences_list = split_languages(state["text"], model.lang, expand_abbreviations=True,
     #                                          expand_hyphens=True)
     #     else:
     #         sentences_list = [(state["text"], state["lang"])]
@@ -432,7 +437,7 @@ class TTSManager(Observer):
     #         state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
     #     sampling_rate = model.sampling_rate
     #
-    #     sentences_list = split_languages(state["text"], state["speaker_lang"], expand_abbreviations=True,
+    #     sentences_list = split_languages(state["text"], model.lang, expand_abbreviations=True,
     #                                      expand_hyphens=True)
     #
     #     # audios = []
@@ -521,6 +526,33 @@ class TTSManager(Observer):
     def gpt_sovits_infer(self, state, encode=True):
         model = self.get_model(ModelType.GPT_SOVITS, state["id"])
 
+        # 检查参考音频
+        if check_is_none(state.get("reference_audio")):  # 无参考音频
+            # 未选择预设
+            if check_is_none(state.get("preset")):
+                presets = config.gpt_sovits_config.presets
+                refer_preset = presets.get(next(iter(presets)))
+            else:  # 已选择预设
+                refer_preset = config.gpt_sovits_config.presets.get(state.get("preset"))
+            refer_wav_path = refer_preset.refer_wav_path
+            if check_is_none(refer_wav_path):
+                raise ValueError(f"The refer_wav_path:{refer_wav_path} in preset:{state.get('preset')} is None!")
+            refer_wav_path = os.path.join(config.abs_path, config.system.data_path, refer_wav_path)
+            prompt_text, prompt_lang = refer_preset.prompt_text, refer_preset.prompt_lang
+
+            # 将reference_audio换成指定预设里的参考音频
+            state["reference_audio"] = refer_wav_path
+
+        # if check_is_none(state.get("prompt_text")):
+        #     raise ValueError(f"Error prompt_text:{state.get('prompt_text')}")
+
+        if check_is_none(state.get("prompt_lang")):
+            presets = config.gpt_sovits_config.presets
+            state["prompt_lang"] = presets.get(next(iter(presets)), "auto")
+
+        state["reference_audio"], state["reference_audio_sr"] = librosa.load(state["reference_audio"], sr=None, dtype=np.float32)
+        state["reference_audio"] = state["reference_audio"].flatten()
+
         if state.get("lang").lower() == "auto":
             infer_func = model.infer_multilang
         else:
@@ -569,3 +601,41 @@ class TTSManager(Observer):
 
             for encoded_audio_chunk in self.generate_audio_chunks(encoded_audio):
                 yield encoded_audio_chunk
+
+    def reading(self, in_state, nr_state):
+        in_model = self.get_model(in_state["model_type"], in_state["id"])
+        nr_model = self.get_model(nr_state["model_type"], nr_state["id"])
+
+        infer_func = {ModelType.VITS: self.vits_infer,
+                      ModelType.W2V2_VITS: self.w2v2_vits_infer,
+                      ModelType.BERT_VITS2: self.bert_vits2_infer_v2,
+                      ModelType.GPT_SOVITS: self.gpt_sovits_infer
+                      }
+
+        sentences_list = sentence_split_reading(in_state["text"])
+        audios = []
+        sampling_rates = []
+        for sentence, is_quote in sentences_list:
+            try:
+                if is_quote:
+                    in_state["text"] = sentence
+                    audio = infer_func[in_state["model_type"]](in_state, encode=False)
+                    sampling_rates.append(in_model.sampling_rate)
+                else:
+                    nr_state["text"] = sentence
+                    audio = infer_func[nr_state["model_type"]](nr_state, encode=False)
+                    sampling_rates.append(nr_model.sampling_rate)
+                audios.append(audio)
+            except Exception as e:
+                logging.error(traceback.print_exc())
+                logging.error(e)
+
+        # 得到最高的采样率
+        target_sr = max(sampling_rates)
+        # 所有音频要与最高采样率保持一致
+        resampled_audios = [self.resample_audio(audio, sr, target_sr) for audio, sr in
+                            zip(audios, sampling_rates)]
+        audio = np.concatenate(resampled_audios, axis=0)
+        encoded_audio = self.encode(target_sr, audio, in_state["format"])
+
+        return encoded_audio

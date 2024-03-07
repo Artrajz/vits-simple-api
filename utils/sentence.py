@@ -136,6 +136,21 @@ def sentence_split(text: str, segment_size: int) -> list:
     return sentences_list
 
 
+def sentence_split_reading(text: str) -> list:
+    pattern = r'“[^“”]*”|[^\'\"“”]+'
+    parts = re.findall(pattern, text)
+
+    sentences_list = []
+    for part in parts:
+        part = part.strip()
+        if part:
+            is_quote = part.startswith("“") and part.endswith("”")
+            sentence = part.strip("“”")
+            sentences_list.append((sentence, is_quote))
+
+    return sentences_list
+
+
 def sentence_split_and_markup(text, segment_size=50, lang="auto", speaker_lang=None):
     # 如果该speaker只支持一种语言
     if speaker_lang is not None and len(speaker_lang) == 1:
