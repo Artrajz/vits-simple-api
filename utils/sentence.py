@@ -118,8 +118,8 @@ def sentence_split(text: str, segment_size: int) -> list:
         count, p = 0, 0
 
         # Iterate over the symbols by which it is split
-        for i, discarded_chars in enumerate(discarded_chars):
-            count += len(sentences[i]) + len(discarded_chars)
+        for i, discarded_char in enumerate(discarded_chars):
+            count += len(sentences[i]) + len(discarded_char)
             if count >= segment_size:
                 sentences_list.append(paragraph[p:p + count].strip())
                 p += count
@@ -140,16 +140,22 @@ def sentence_split(text: str, segment_size: int) -> list:
 
 
 def sentence_split_reading(text: str) -> list:
-    pattern = r'“[^“”]*”|[^\'\"“”]+'
+    pattern = r'“[^“”]*”|[^“”]+'
     parts = re.findall(pattern, text)
 
     sentences_list = []
     for part in parts:
-        part = part.strip()
         if part:
-            is_quote = part.startswith("“") and part.endswith("”")
-            sentence = part.strip("“”")
-            sentences_list.append((sentence, is_quote))
+            is_quote = part.startswith("“") and part.endswith("”") and part[-2] in "！！？。，；……?!.,;"
+
+            if is_quote:
+                sentence = part.strip("“”")
+                sentences_list.append((sentence, is_quote))
+            else:
+                if len(sentences_list) > 0 and not sentences_list[-1][1]:
+                    sentences_list[-1] = (sentences_list[-1][0] + part, sentences_list[-1][1])
+                else:
+                    sentences_list.append((part, is_quote))
 
     return sentences_list
 
