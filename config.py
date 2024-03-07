@@ -228,6 +228,7 @@ class GPTSoVitsConfig(AsDictMixin):
 class Reader(AsDictMixin):
     model_type: str = "VITS"
     id: int = 0
+    preset: str = "default"
 
 
 @dataclass

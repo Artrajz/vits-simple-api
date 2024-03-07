@@ -307,7 +307,7 @@ After modification, select the reading engine, add the reading engine, paste the
   "loginUi": "",
   "loginUrl": "",
   "name": "vits-simple-api",
-  "url": "http://192.168.xxx.xxx:23456/voice/reading?text={{java.encodeURI(speakText)}}&in_model_type=GPT-SOVITS&in_id=0&preset=default&nr_model_type=BERT-VITS2&nr_id=0&format=wav"
+  "url": "http://192.168.xxx.xxx:23456/voice/reading?text={{java.encodeURI(speakText)}}&in_model_type=GPT-SOVITS&in_id=0&in_preset=default&nr_model_type=BERT-VITS2&nr_id=0&nr_preset=default&format=wav&lang=zh"
 }
 ```
 
@@ -533,16 +533,18 @@ Higher priority than `speak`.
 
 ## Reading
 
-| Name                     | Parameter     | Is must | Default                     | Type | Instruction                                                  |
-| ------------------------ | ------------- | ------- | --------------------------- | ---- | ------------------------------------------------------------ |
-| Synthesis Text           | text          | true    |                             | str  | The text to be synthesized into speech.                      |
-| Dialogue Role Model Type | in_model_type | false   | Obtained from `config.yaml` | str  |                                                              |
-| Dialogue Role ID         | in_id         | false   | Obtained from `config.yaml` | int  |                                                              |
-| Narrator Role Model Type | nr_model_type | false   | Obtained from `config.yaml` | str  |                                                              |
-| Narrator Role ID         | nr_id         | false   | Obtained from `config.yaml` | int  |                                                              |
-| Audio Format             | format        | false   | Obtained from `config.yaml` | str  | Supports wav, ogg, silk, mp3, flac                           |
-| Text Language            | lang          | false   | Obtained from `config.yaml` | str  | 'auto' for automatic language detection mode, which is also the default mode. However, currently, it only supports recognizing the language of the entire text and cannot distinguish each sentence. |
-| Reference Audio Preset   | preset        | false   | default                     | str  | Replace the reference audio with preset settings, which can be set to multiple presets in advance. |
+| Name                                | Parameter     | Is must | Default                     | Type | Instruction                                                  |
+| ----------------------------------- | ------------- | ------- | --------------------------- | ---- | ------------------------------------------------------------ |
+| Synthesis Text                      | text          | true    |                             | str  | The text to be synthesized into speech.                      |
+| Interlocutor Model Type             | in_model_type | false   | Obtained from `config.yaml` | str  |                                                              |
+| Interlocutor ID                     | in_id         | false   | Obtained from `config.yaml` | int  |                                                              |
+| Interlocutor Reference Audio Preset | preset        | false   | default                     | str  | Replace the reference audio with preset settings, which can be set to multiple presets in advance. |
+| Narrator Model Type                 | nr_model_type | false   | Obtained from `config.yaml` | str  |                                                              |
+| Narrator ID                         | nr_id         | false   | Obtained from `config.yaml` | int  |                                                              |
+| Narrator Reference Audio Preset     | preset        | false   | default                     | str  | Replace the reference audio with preset settings, which can be set to multiple presets in advance. |
+| Audio Format                        | format        | false   | Obtained from `config.yaml` | str  | Supports wav, ogg, silk, mp3, flac                           |
+| Text Language                       | lang          | false   | Obtained from `config.yaml` | str  | 'auto' for automatic language detection mode, which is also the default mode. However, currently, it only supports recognizing the language of the entire text and cannot distinguish each sentence. |
+| Reference Audio Preset              | preset        | false   | default                     | str  | Replace the reference audio with preset settings, which can be set to multiple presets in advance. |
 
 The other parameters of the model will use the default parameters of the corresponding model in the config.yaml file.
 

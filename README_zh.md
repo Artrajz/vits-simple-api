@@ -317,7 +317,7 @@ url中的IP可在API启动后找到，一般使用192.168开头的局域网IP。
   "loginUi": "",
   "loginUrl": "",
   "name": "vits-simple-api",
-  "url": "http://192.168.xxx.xxx:23456/voice/reading?text={{java.encodeURI(speakText)}}&in_model_type=GPT-SOVITS&in_id=0&preset=default&nr_model_type=BERT-VITS2&nr_id=0&format=wav"
+  "url": "http://192.168.xxx.xxx:23456/voice/reading?text={{java.encodeURI(speakText)}}&in_model_type=GPT-SOVITS&in_id=0&in_preset=default&nr_model_type=BERT-VITS2&nr_id=0&nr_preset=default&format=wav&lang=zh"
 }
 ```
 
@@ -544,16 +544,17 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 
 ## 阅读
 
-| Name             | Parameter     | Is must | Default               | Type | Instruction                                                  |
-| ---------------- | ------------- | ------- | --------------------- | ---- | ------------------------------------------------------------ |
-| 合成文本         | text          | true    |                       | str  | 需要合成语音的文本。                                         |
-| 对话角色模型类型 | in_model_type | false   | 从`config.yaml`中获取 | str  |                                                              |
-| 对话角色id       | in_id         | false   | 从`config.yaml`中获取 | int  |                                                              |
-| 旁白角色模型类型 | nr_model_type | false   | 从`config.yaml`中获取 | str  |                                                              |
-| 旁白角色id       | nr_id         | false   | 从`config.yaml`中获取 | int  |                                                              |
-| 音频格式         | format        | false   | 从`config.yaml`中获取 | str  | 支持wav,ogg,silk,mp3,flac                                    |
-| 文本语言         | lang          | false   | 从`config.yaml`中获取 | str  | auto为自动识别语言模式，也是默认模式，但目前只支持识别整段文本的语言，无法细分到每个句子。 |
-| 参考音频预设     | preset        | false   | default               | str  | 通过提前设置好的预设代替参考音频，可设置多个预设。           |
+| Name                 | Parameter     | Is must | Default               | Type | Instruction                                                  |
+| -------------------- | ------------- | ------- | --------------------- | ---- | ------------------------------------------------------------ |
+| 合成文本             | text          | true    |                       | str  | 需要合成语音的文本。                                         |
+| 对话角色模型类型     | in_model_type | false   | 从`config.yaml`中获取 | str  |                                                              |
+| 对话角色id           | in_id         | false   | 从`config.yaml`中获取 | int  |                                                              |
+| 对话角色参考音频预设 | in_preset     | false   | default               | str  | 通过提前设置好的预设代替参考音频，可设置多个预设。           |
+| 旁白角色模型类型     | nr_model_type | false   | 从`config.yaml`中获取 | str  |                                                              |
+| 旁白角色id           | nr_id         | false   | 从`config.yaml`中获取 | int  |                                                              |
+| 旁白角色参考音频预设 | nr_preset     | false   | default               | str  | 通过提前设置好的预设代替参考音频，可设置多个预设。           |
+| 音频格式             | format        | false   | 从`config.yaml`中获取 | str  | 支持wav,ogg,silk,mp3,flac                                    |
+| 文本语言             | lang          | false   | 从`config.yaml`中获取 | str  | auto为自动识别语言模式，也是默认模式，但目前只支持识别整段文本的语言，无法细分到每个句子。 |
 
 模型的其他参数将使用config.yaml文件中对应模型的默认参数。
 

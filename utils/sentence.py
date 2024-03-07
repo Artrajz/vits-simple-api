@@ -126,8 +126,11 @@ def sentence_split(text: str, segment_size: int) -> list:
                 count = 0
 
         # Add the remaining text
-        if p < len(paragraph):
-            sentences_list.append(paragraph[p:])
+        if len(paragraph) - p > 0:
+            if len(paragraph) - p <= 4 and len(sentences_list) > 0:
+                sentences_list[-1] += paragraph[p:]
+            else:
+                sentences_list.append(paragraph[p:])
 
     # Uncomment the following lines if you want to log the sentences
     # for sentence in sentences_list:
