@@ -470,7 +470,7 @@ def voice_bert_vits2_api():
     #     f" length_zh:{length_zh} length_ja:{length_ja} length_en:{length_en}")
 
     logger.info(
-        f"[{ModelType.BERT_VITS2.value}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size}")
+        f"[{ModelType.BERT_VITS2.value}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size} streaming:{use_streaming}")
     logger.info(f"[{ModelType.BERT_VITS2.value}] len:{len(text)} text：{text}")
     if reference_audio:
         logger.info(f"[{ModelType.BERT_VITS2.value}] reference_audio:{reference_audio.filename}")
@@ -589,7 +589,7 @@ def voice_gpt_sovits_api():
         return make_response("parameter error", 400)
 
     logger.info(
-        f"[{ModelType.GPT_SOVITS.value}] id:{id} format:{format} lang:{lang} segment_size:{segment_size} top_k:{top_k} top_p:{top_p} temperature:{temperature}")
+        f"[{ModelType.GPT_SOVITS.value}] id:{id} format:{format} lang:{lang} segment_size:{segment_size} top_k:{top_k} top_p:{top_p} temperature:{temperature} streaming:{use_streaming}")
     logger.info(f"[{ModelType.GPT_SOVITS.value}] len:{len(text)} text：{text}")
 
     if check_is_none(text):
@@ -615,33 +615,6 @@ def voice_gpt_sovits_api():
     if (lang_detect := config.language_identification.language_automatic_detect) and isinstance(lang_detect, list):
         speaker_lang = lang_detect
 
-    # # 检查参考音频
-    # if check_is_none(reference_audio):  # 无参考音频
-    #     # 未选择预设
-    #     if check_is_none(preset):
-    #         presets = config.gpt_sovits_config.presets
-    #         refer_preset = presets.get(next(iter(presets)))
-    #     else:  # 已选择预设
-    #         refer_preset = config.gpt_sovits_config.presets.get(preset)
-    #     refer_wav_path = refer_preset.refer_wav_path
-    #     if check_is_none(refer_wav_path):
-    #         raise ValueError(f"The refer_wav_path:{refer_wav_path} in preset:{preset} is None!")
-    #     refer_wav_path = os.path.join(config.abs_path, config.system.data_path, refer_wav_path)
-    #     prompt_text, prompt_lang = refer_preset.prompt_text, refer_preset.prompt_lang
-    #
-    #     # 将reference_audio换成指定预设里的参考音频
-    #     reference_audio = refer_wav_path
-    #
-    # if check_is_none(prompt_text):
-    #     raise ValueError(f"Error prompt_text:{prompt_text}")
-    #
-    # if check_is_none(prompt_lang):
-    #     presets = config.gpt_sovits_config.presets
-    #     prompt_lang = presets.get(next(iter(presets)), "auto")
-    #
-    # reference_audio, reference_audio_sr = librosa.load(reference_audio, sr=None, dtype=np.float32)
-    # reference_audio = reference_audio.flatten()
-
     logger.info(
         f"[{ModelType.GPT_SOVITS.value}] prompt_text:{prompt_text} prompt_lang:{prompt_lang} ")
 
@@ -664,6 +637,7 @@ def voice_gpt_sovits_api():
              "top_k": top_k,
              "top_p": top_p,
              "temperature": temperature,
+             "preset": preset,
              }
 
     if use_streaming:

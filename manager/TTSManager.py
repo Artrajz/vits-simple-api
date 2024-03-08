@@ -550,9 +550,10 @@ class TTSManager(Observer):
             presets = config.gpt_sovits_config.presets
             state["prompt_lang"] = presets.get(next(iter(presets)), "auto")
 
-        state["reference_audio"], state["reference_audio_sr"] = librosa.load(state["reference_audio"], sr=None,
-                                                                             dtype=np.float32)
-        state["reference_audio"] = state["reference_audio"].flatten()
+        if isinstance(state["reference_audio"], str):
+            state["reference_audio"], state["reference_audio_sr"] = librosa.load(state["reference_audio"], sr=None,
+                                                                                 dtype=np.float32)
+            state["reference_audio"] = state["reference_audio"].flatten()
 
         if state.get("lang").lower() == "auto":
             infer_func = model.infer_multilang
@@ -580,12 +581,41 @@ class TTSManager(Observer):
     def stream_gpt_sovits_infer(self, state, encode=True):
         model = self.get_model(ModelType.GPT_SOVITS, state["id"])
 
+        # 检查参考音频
+        if check_is_none(state.get("reference_audio")):  # 无参考音频
+            # 未选择预设
+            if check_is_none(state.get("preset")):
+                presets = config.gpt_sovits_config.presets
+                refer_preset = presets.get(next(iter(presets)))
+            else:  # 已选择预设
+                refer_preset = config.gpt_sovits_config.presets.get(state.get("preset"))
+            refer_wav_path = refer_preset.refer_wav_path
+            if check_is_none(refer_wav_path):
+                raise ValueError(f"The refer_wav_path:{refer_wav_path} in preset:{state.get('preset')} is None!")
+            refer_wav_path = os.path.join(config.abs_path, config.system.data_path, refer_wav_path)
+            state["prompt_text"], state["prompt_lang"] = refer_preset.prompt_text, refer_preset.prompt_lang
+
+            # 将reference_audio换成指定预设里的参考音频
+            state["reference_audio"] = refer_wav_path
+
+        # if check_is_none(state.get("prompt_text")):
+        #     raise ValueError(f"Error prompt_text:{state.get('prompt_text')}")
+
+        if check_is_none(state.get("prompt_lang")):
+            presets = config.gpt_sovits_config.presets
+            state["prompt_lang"] = presets.get(next(iter(presets)), "auto")
+
+        if isinstance(state["reference_audio"], str):
+            state["reference_audio"], state["reference_audio_sr"] = librosa.load(state["reference_audio"], sr=None,
+                                                                                 dtype=np.float32)
+            state["reference_audio"] = state["reference_audio"].flatten()
+
         if state.get("lang").lower() == "auto":
             infer_func = model.infer_multilang
         else:
             infer_func = model.infer
         sentences_list = sentence_split(state["text"], state["segment_size"])
-        audios = []
+
         for sentence in sentences_list:
             audio = infer_func(text=sentence,
                                lang=state.get("lang"),
