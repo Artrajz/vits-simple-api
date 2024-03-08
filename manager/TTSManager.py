@@ -212,7 +212,8 @@ class TTSManager(Observer):
                             task.update(params.get(model_type))  # 默认参数
                         except Exception as e:
                             raise ValueError(f"Invalid model_type:{model_type}")
-                        task.update(root.attrib)  # 所有参数都放进去，推理函数会选出需要的参数
+                        task.update(root.attrib)
+                        task.update(element.attrib)  # 所有参数都放进去，推理函数会选出需要的参数
                         task = self.normalize(task)
                         voice_tasks.append(task)
 
@@ -534,6 +535,9 @@ class TTSManager(Observer):
                 refer_preset = presets.get(next(iter(presets)))
             else:  # 已选择预设
                 refer_preset = config.gpt_sovits_config.presets.get(state.get("preset"))
+                if refer_preset is None:
+                    raise ValueError(f"Error preset:{state.get('preset')}")
+
             refer_wav_path = refer_preset.refer_wav_path
             if check_is_none(refer_wav_path):
                 raise ValueError(f"The refer_wav_path:{refer_wav_path} in preset:{state.get('preset')} is None!")
@@ -589,6 +593,9 @@ class TTSManager(Observer):
                 refer_preset = presets.get(next(iter(presets)))
             else:  # 已选择预设
                 refer_preset = config.gpt_sovits_config.presets.get(state.get("preset"))
+                if refer_preset is None:
+                    raise ValueError(f"Error preset:{state.get('preset')}")
+
             refer_wav_path = refer_preset.refer_wav_path
             if check_is_none(refer_wav_path):
                 raise ValueError(f"The refer_wav_path:{refer_wav_path} in preset:{state.get('preset')} is None!")
