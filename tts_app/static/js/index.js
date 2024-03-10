@@ -452,6 +452,7 @@ function updatePlaceholders(config, page) {
             let data = config[key];
             let selectElement = $("#input_preset" + page);
             selectElement.empty(); // 清除现有的选项
+            let isFirst = true;
             for (let name in data) {
                 let preset_value = data[name];
                 let preset = `[${name}] audio: ${preset_value["refer_wav_path"]}`;
@@ -463,6 +464,12 @@ function updatePlaceholders(config, page) {
                     'data-prompt-text': preset_value["prompt_text"]
                 });
                 selectElement.append(option);
+                // 自动填入第一个preset的参考文本
+                if (isFirst) {
+                    $("#input_prompt_lang" + page).val(preset_value["prompt_lang"]);
+                    $("#input_prompt_text" + page).val(preset_value["prompt_text"]);
+                    isFirst = false;
+                }
             }
             // 当选择改变时更新输入预设的值
             selectElement.change(function () {
