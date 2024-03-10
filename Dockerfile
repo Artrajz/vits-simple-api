@@ -1,4 +1,4 @@
-FROM artrajz/pytorch:2.2.0-cpu-py3.10.11-ubuntu22.04
+FROM artrajz/pytorch:2.2.1-cpu-py3.10.11-ubuntu22.04
 
 RUN mkdir -p /app
 WORKDIR /app
