@@ -102,6 +102,7 @@ function getLink() {
         style_weight = document.getElementById('input_style_weight3').value;
         url += "/voice/bert-vits2?id=" + id;
     } else if (currentModelPage == 4) {
+        streaming = document.getElementById('streaming4');
         prompt_text = document.getElementById('input_prompt_text4').value;
         prompt_lang = document.getElementById('input_prompt_lang4').value;
         preset = document.getElementById('input_preset4').value;
