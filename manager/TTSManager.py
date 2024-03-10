@@ -554,10 +554,9 @@ class TTSManager(Observer):
             presets = config.gpt_sovits_config.presets
             state["prompt_lang"] = presets.get(next(iter(presets)), "auto")
 
-        if isinstance(state["reference_audio"], str):
-            state["reference_audio"], state["reference_audio_sr"] = librosa.load(state["reference_audio"], sr=None,
-                                                                                 dtype=np.float32)
-            state["reference_audio"] = state["reference_audio"].flatten()
+        state["reference_audio"], state["reference_audio_sr"] = librosa.load(state["reference_audio"], sr=None,
+                                                                             dtype=np.float32)
+        state["reference_audio"] = state["reference_audio"].flatten()
 
         if state.get("lang").lower() == "auto":
             infer_func = model.infer_multilang
