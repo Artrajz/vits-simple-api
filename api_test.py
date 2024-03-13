@@ -382,7 +382,7 @@ def voice_bert_vits2(text, id=0, format="wav", lang="auto", length=1, noise=0.66
     return None
 
 
-# Bert_vits2
+# gpt_sovits
 def voice_gpt_sovits(text, id=0, format="wav", lang="auto", preset=None, prompt_text=None, prompt_lang="auto",
                      segment_size=50, reference_audio=None, save_audio=True, save_path=None):
     upload_name, upload_type, upload_file = None, None, None

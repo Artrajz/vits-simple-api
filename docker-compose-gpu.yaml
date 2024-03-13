@@ -12,7 +12,7 @@ services:
     command: [ 'python', 'app.py' ] # 目前用不了gunicorn多进程
     volumes:
       - ./data:/app/data #挂载模型文件夹
-      - ./config.py:/app/config.py # 挂载配置文件
+#      - ./config.py:/app/config.py # 挂载配置文件
       - ./config.yaml:/app/config.yaml # 挂载配置文件
       - ./logs:/app/logs # logging logs
       - ./gunicorn_config.py:/app/gunicorn_config.py # gunicorn configuration
