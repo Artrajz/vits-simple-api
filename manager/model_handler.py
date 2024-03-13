@@ -18,6 +18,7 @@ from bert_vits2.text.japanese_bert_v111 import get_bert_feature as ja_bert_v111
 from bert_vits2.text.japanese_bert_v200 import get_bert_feature as ja_bert_v200
 from bert_vits2.text.english_bert_mock_v200 import get_bert_feature as en_bert_v200
 from bert_vits2.text.chinese_bert_extra import get_bert_feature as zh_bert_extra
+from bert_vits2.text.japanese_bert_extra import get_bert_feature as ja_bert_extra
 
 
 class ModelHandler:
@@ -114,7 +115,8 @@ class ModelHandler:
         }
 
         self.lang_bert_func_map = {"zh": zh_bert, "en": en_bert, "ja": ja_bert, "ja_v111": ja_bert_v111,
-                                   "ja_v200": ja_bert_v200, "en_v200": en_bert_v200, "zh_extra": zh_bert_extra}
+                                   "ja_v200": ja_bert_v200, "en_v200": en_bert_v200, "zh_extra": zh_bert_extra,
+                                   "ja_extra": ja_bert_extra}
 
         self.bert_models = {}  # Value: (tokenizer, model, reference_count)
         self.emotion = None

@@ -9,6 +9,7 @@ from bert_vits2.clap_wrapper import get_clap_audio_feature, get_clap_text_featur
 from bert_vits2.get_emo import get_emo
 from bert_vits2.models import SynthesizerTrn
 from bert_vits2.models_v230 import SynthesizerTrn as SynthesizerTrn_v230
+from bert_vits2.models_ja_extra import SynthesizerTrn as SynthesizerTrn_ja_extra
 from bert_vits2.text import *
 from bert_vits2.text.cleaner import clean_text
 from bert_vits2.utils import process_legacy_versions
@@ -29,6 +30,7 @@ class Bert_VITS2:
 
         self.bert_model_names = {}
         self.zh_bert_extra = False
+        self.ja_bert_extra = False
         self.ja_bert_dim = 1024
         self.num_tones = num_tones
         self.pinyinPlus = None
@@ -164,6 +166,20 @@ class Bert_VITS2:
             self.bert_extra_str_map.update({"zh": "_extra"})
             self.text_extra_str_map.update({"zh": "_v240"})
 
+        elif self.version is not None and self.version in ["ja_extra"]:
+            """
+            deberta-v2-large-japanese-char-wwm
+            """
+            self.version = "ja_extra"
+            self.hps_ms.model.emotion_embedding = 2
+            self.hps_ms.model.n_layers_trans_flow = 6
+            self.lang = ["ja"]
+            self.num_tones = num_tones
+            self.ja_bert_extra = True
+            self.bert_model_names.update({"ja": "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM"})
+            self.bert_extra_str_map.update({"ja": "_extra"})
+            self.text_extra_str_map.update({"ja": "_extra"})
+
         else:
             logging.debug("Version information not found. Loaded as the newest version: v2.3.")
             self.version = "2.3"
@@ -185,6 +201,8 @@ class Bert_VITS2:
 
         if self.version in ["2.3", "extra", "2.4"]:
             Synthesizer = SynthesizerTrn_v230
+        elif self.version == "ja_extra":
+            Synthesizer = SynthesizerTrn_ja_extra
         else:
             Synthesizer = SynthesizerTrn
 
@@ -235,6 +253,9 @@ class Bert_VITS2:
         if self.zh_bert_extra:
             zh_bert = bert
             ja_bert, en_bert = None, None
+        elif self.ja_bert_extra:
+            ja_bert = bert
+            zh_bert, en_bert = None, None
         elif language_str == "zh":
             zh_bert = bert
             ja_bert = torch.zeros(self.ja_bert_dim, len(phone))
@@ -287,8 +308,12 @@ class Bert_VITS2:
             x_tst = phones.to(self.device).unsqueeze(0)
             tones = tones.to(self.device).unsqueeze(0)
             lang_ids = lang_ids.to(self.device).unsqueeze(0)
-            zh_bert = zh_bert.to(self.device).unsqueeze(0)
-            if not self.zh_bert_extra:
+            if self.zh_bert_extra:
+                zh_bert = zh_bert.to(self.device).unsqueeze(0)
+            elif self.ja_bert_extra:
+                ja_bert = ja_bert.to(self.device).unsqueeze(0)
+            else:
+                zh_bert = zh_bert.to(self.device).unsqueeze(0)
                 ja_bert = ja_bert.to(self.device).unsqueeze(0)
                 en_bert = en_bert.to(self.device).unsqueeze(0)
             x_tst_lengths = torch.LongTensor([phones.size(0)]).to(self.device)

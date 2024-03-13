@@ -413,16 +413,16 @@ def g2p(norm_text, tokenizer, **kwargs):
 
 
 if __name__ == "__main__":
-    from transformers import AutoTokenizer
+    from manager import model_handler
 
-    tokenizer = AutoTokenizer.from_pretrained("./bert/deberta-v2-large-japanese")
+    tokenizer, _ = model_handler.get_bert_model("DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM")
     text = "hello,こんにちは、世界ー！……"
     from bert_vits2.text.japanese_bert import get_bert_feature
 
     text = text_normalize(text)
     print(text)
 
-    phones, tones, word2ph = g2p(text)
+    phones, tones, word2ph = g2p(text, tokenizer)
     bert = get_bert_feature(text, word2ph)
 
     print(phones, tones, word2ph, bert.shape)

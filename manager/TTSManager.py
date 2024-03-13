@@ -481,6 +481,9 @@ class TTSManager(Observer):
             if model.zh_bert_extra:
                 infer_func = model.infer
                 state["lang"] = "zh"
+            elif model.ja_bert_extra:
+                infer_func = model.infer
+                state["lang"] = "ja"
             elif state["lang"].lower() == "auto":
                 infer_func = model.infer_multilang
             else:

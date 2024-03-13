@@ -1,5 +1,5 @@
 from bert_vits2.text import chinese, japanese, english, cleaned_text_to_sequence, japanese_v111, chinese_v100, \
-    japanese_v200, english_v200, english_v230, chinese_v240
+    japanese_v200, english_v200, english_v230, chinese_v240, japanese_extra
 
 language_module_map = {
     'zh': chinese,
@@ -11,6 +11,7 @@ language_module_map = {
     'en_v200': english_v200,
     'en_v230': english_v230,
     'zh_v240': chinese_v240,
+    'ja_extra': japanese_extra,
 }
 
 
