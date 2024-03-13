@@ -31,6 +31,13 @@ jobs:
           pip install --no-cache-dir torch==2.2.1+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
           pip install --extra-index-url https://pypi.artrajz.cn/simple -r requirements.txt
         shell: cmd
+
+      - name: Pre download nltk data
+        run: |
+          curl -L -o nltk_data.zip https://github.com/Artrajz/archived/raw/main/nltk/nltk_data.zip
+          7z x -oC:\Programs\Miniconda3\envs\py310 nltk_data.zip
+          del nltk_data.zip
+        shell: cmd
         
       - name: Copy python environment
         run: |

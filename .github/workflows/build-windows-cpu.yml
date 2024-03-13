@@ -32,6 +32,13 @@ jobs:
           pip install --extra-index-url https://pypi.artrajz.cn/simple -r requirements.txt
         shell: cmd
 
+      - name: Pre download nltk data
+        run: |
+          curl -L -o nltk_data.zip https://github.com/Artrajz/archived/raw/main/nltk/nltk_data.zip
+          7z x -oC:\Programs\Miniconda3\envs\py310 nltk_data.zip
+          del nltk_data.zip
+        shell: cmd
+
       - name: Copy python environment
         run: |
           XCOPY C:\programs\miniconda3\envs\py310 py310\ /E /Y /F
