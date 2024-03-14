@@ -180,6 +180,8 @@ class GPTSoVitsConfig(AsDictMixin):
     top_p: float = 1.0
     temperature: float = 1.0
     use_streaming: bool = False
+    batch_size: int = 5
+    speed: float = 1.0
     presets: Dict[str, GPTSoVitsPreset] = field(default_factory=lambda: {"default": GPTSoVitsPreset(),
                                                                          "default2": GPTSoVitsPreset()})
 

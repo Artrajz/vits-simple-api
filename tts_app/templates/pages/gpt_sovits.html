@@ -1,0 +1,160 @@
+<!-- [ GPT-SoVITS ] start -->
+<div class="content-pane w-100 flex-wrap" id="gpt-sovits-page">
+    <form class="w-100">
+        <div class="mb-3">
+            <label>text</label>
+            <textarea class="form-control input_text" id="input_text4" rows="3"
+                      oninput="updateLink()">你好</textarea>
+        </div>
+        <div class="mb-3">
+            <label>id</label>
+            <select class="form-control input_id" id="input_id4" oninput="updateLink()">
+                {% for speaker in speakers["GPT-SOVITS"] %}
+                    <option value="{{ speaker["id"] }}">{{ speaker["id"] }} | {{ speaker["name"] }}
+                        {% if speaker["lang"] != [] and speaker["lang"] != None %} |
+                            {{ speaker["lang"] }} {% endif %}</option>
+                {% endfor %}
+                {% if gpt_sovits_speakers_count <=0 %}
+                    <option value="" disabled selected hidden>未加载模型</option>
+                {% endif %}
+            </select>
+        </div>
+    </form>
+    <form class="w-100">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label data-toggle="tooltip" data-placement="top"
+                       title="默认为wav">format</label>
+                <select class="form-control input_format" id="input_format4" oninput="updateLink()">
+                    <option></option>
+                    <option>wav</option>
+                    <option>mp3</option>
+                    <option>ogg</option>
+                    <option>silk</option>
+                    <option>flac</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label data-toggle="tooltip" data-placement="top"
+                       title="自动识别语言auto：可识别的语言根据不同speaker而不同，方言无法自动识别。方言模型需要手动指定语言，比如粤语Cantonese要指定参数lang=gd">lang</label>
+                <input type="text" class="form-control input_lang" id="input_lang4" oninput="updateLink()"
+                       value=""
+                       placeholder="auto"/>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label data-toggle="tooltip" data-placement="top"
+                       title="按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段。">segment_size</label>
+                <input type="number" class="form-control input_segment_size" id="input_segment_size4"
+                       oninput="updateLink()"
+                       value=""
+                       placeholder="50" step="1"/>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <label for="top_k" data-toggle="tooltip" data-placement="top"
+                       title="">top_k</label>
+                <input type="text" class="form-control prompt_text" id="input_top_k4"
+                       oninput="updateLink()"
+                       value=""
+                       placeholder="5"/>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="top_p" data-toggle="tooltip" data-placement="top"
+                       title="">top_p</label>
+                <input type="text" class="form-control prompt_text" id="input_top_p4"
+                       oninput="updateLink()"
+                       value=""
+                       placeholder="1"/>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="temperature" data-toggle="tooltip" data-placement="top"
+                       title="">temperature</label>
+                <input type="text" class="form-control temperature" id="input_temperature4"
+                       oninput="updateLink()"
+                       value=""
+                       placeholder="1"/>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="batch_size" data-toggle="tooltip" data-placement="top"
+                       title="并行推理的批量大小，batch_size越大推理速度越快，同时消耗显存更多，在长文本推理效果明显。">batch_size</label>
+                <input type="text" class="form-control batch_size" id="input_batch_size4"
+                       oninput="updateLink()"
+                       value=""
+                       placeholder="5"/>
+            </div>
+{#            <div class="col-md-2 mb-3">#}
+{#                <label for="speed" data-toggle="tooltip" data-placement="top"#}
+{#                       title="">speed</label>#}
+{#                <input type="text" class="form-control speed" id="input_speed4"#}
+{#                       oninput="updateLink()"#}
+{#                       value=""#}
+{#                       placeholder="1.0"/>#}
+{#            </div>#}
+
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="reference_audio" data-toggle="tooltip" data-placement="top"
+                       title="参考音频，上传或者使用预设preset">reference_audio</label>
+                <input type="file" class="reference_audio" id="reference_audio4" multiple>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="prompt_text" data-toggle="tooltip" data-placement="top"
+                       title="上传参考音频时填写（非预设），可以不填参考文本，但会降低生成效果">prompt_text</label>
+                <input type="text" class="form-control prompt_text" id="input_prompt_text4"
+                       oninput="updateLink()"
+                       value=""
+                       placeholder=""/>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="prompt_lang" data-toggle="tooltip" data-placement="top"
+                       title="">prompt_lang</label>
+                <input type="text" class="form-control prompt_text" id="input_prompt_lang4"
+                       oninput="updateLink()"
+                       value=""
+                       placeholder="auto"/>
+            </div>
+
+        </div>
+        <!--  presets  -->
+        <div class="row">
+            <div class="mb-3">
+                <label data-toggle="tooltip" data-placement="top"
+                       title="在config.yaml中设置的参考音频预设">preset</label>
+                <select class="form-control input_preset" id="input_preset4" oninput="updateLink()">
+                </select>
+            </div>
+        </div>
+
+    </form>
+
+
+    <div class="player flex flex-wrap  w-100">
+        <audio id="audioPlayer4" controls>
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+
+    <div class="play-button">
+        <button type="button" class="btn btn-outline-secondary" onclick="setAudioSourceByPost()"
+                style="margin-right: 10px">
+            播放器生成
+        </button>
+        <button type="button" class="btn btn-outline-secondary" onclick="downloadAudio()"
+                id="downloadButton4" disabled>
+            下载音频
+        </button>
+        <div class="form-check">
+            <input type="checkbox" id="streaming4" onchange="updateLink()">
+            <label class="form-check-label" data-toggle="tooltip" data-placement="top"
+                   title="按照segment_size分段推理文本，推理好一段即输出，无需等待所有文本都推理完毕">流式响应</label>
+        </div>
+    </div>
+
+
+</div>
+</div>
+<!-- [ GPT-SoVITS ] end -->

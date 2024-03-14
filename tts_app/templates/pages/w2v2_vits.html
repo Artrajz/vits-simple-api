@@ -1,0 +1,106 @@
+<!-- [ W2V2-VITS ] start -->
+<div class="content-pane w-100 flex-wrap" id="w2v2-vits-page">
+    <form class="w-100">
+        <div class="mb-3">
+            <label>text</label>
+            <textarea class="form-control input_text" id="input_text2" rows="3"
+                      oninput="updateLink()">你好,こんにちは</textarea>
+        </div>
+        <div class="mb-3">
+            <label>id</label>
+            <select class="form-control input_id" id="input_id2" oninput="updateLink()">
+                {% for speaker in speakers["W2V2-VITS"] %}
+                    <option value="{{ speaker["id"] }}">{{ speaker["id"] }} | {{ speaker["name"] }}
+                        {% if speaker["lang"] != [] and speaker["lang"] != None %} |
+                            {{ speaker["lang"] }} {% endif %}</option>
+                {% endfor %}
+                {% if w2v2_speakers_count <=0 %}
+                    <option value="" disabled selected hidden>未加载模型</option>
+                {% endif %}
+            </select>
+        </div>
+        <div class="mb-3 mb-3">
+            <label data-toggle="tooltip" data-placement="top"
+                   title="情感嵌入，{% if w2v2_emotion_count > 0 %}
+                                    可输入范围是0-{{ w2v2_emotion_count-1 }}
+                                {% else %}
+                                    未加载emotion
+                                {% endif %}">emotion</label>
+            <input type="number" class="form-control" min="0" max="{{ w2v2_emotion_count-1 }}" step="1"
+                   id="emotion" value="0" oninput="updateLink()">
+        </div>
+    </form>
+
+
+    <form class="w-100">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label data-toggle="tooltip" data-placement="top"
+                       title="默认为wav">format</label>
+                <select class="form-control input_format" id="input_format2" oninput="updateLink()">
+                    <option></option>
+                    <option>wav</option>
+                    <option>mp3</option>
+                    <option>ogg</option>
+                    <option>silk</option>
+                    <option>flac</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label data-toggle="tooltip" data-placement="top"
+                       title="自动识别语言auto：可识别的语言根据不同speaker而不同，方言无法自动识别。方言模型需要手动指定语言，比如粤语Cantonese要指定参数lang=gd">lang</label>
+                <input type="text" class="form-control input_lang" id="input_lang2" oninput="updateLink()"
+                       value=""
+                       placeholder="auto"/>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label data-toggle="tooltip" data-placement="top"
+                       title="调节语音长度，相当于调节语速，该数值越大语速越慢。">length</label>
+                <input type="number" class="form-control input_length" id="input_length2"
+                       oninput="updateLink()" value=""
+                       placeholder="1" min="0" step="0.001"/>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label data-toggle="tooltip" data-placement="top"
+                       title="样本噪声，控制合成的随机性。">noise</label>
+                <input type="number" class="form-control input_noise" id="input_noise2"
+                       oninput="updateLink()" value=""
+                       placeholder="0.33" min="0" step="0.001"/>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label data-toggle="tooltip" data-placement="top"
+                       title="随机时长预测器噪声，控制音素发音长度。">noisew</label>
+                <input type="number" class="form-control input_noisew" id="input_noisew2"
+                       oninput="updateLink()" value=""
+                       placeholder="0.4" min="0" step="0.001"/>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label data-toggle="tooltip" data-placement="top"
+                       title="按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段。">segment_size</label>
+                <input type="number" class="form-control input_segment_size" id="input_segment_size2"
+                       oninput="updateLink()"
+                       value=""
+                       placeholder="50" step="1"/>
+            </div>
+        </div>
+    </form>
+
+    <div class="player flex flex-wrap w-100">
+        <audio id="audioPlayer2" controls>
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+    <div class="play-button">
+        <button type="button" class="btn btn-outline-secondary" onclick="setAudioSourceByPost()"
+                style="margin-right: 10px">
+            播放器生成
+        </button>
+        <button type="button" class="btn btn-outline-secondary" onclick="downloadAudio()"
+                id="downloadButton2" disabled>
+            下载音频
+        </button>
+    </div>
+</div>
+<!-- [ W2V2-VITS ] end -->

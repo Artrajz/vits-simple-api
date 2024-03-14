@@ -3,6 +3,7 @@ import torch
 import torch.nn.functional as F
 from typing import Tuple
 
+
 def sequence_mask(length, max_length=None):
     if max_length is None:
         max_length = length.max()
@@ -40,7 +41,7 @@ def make_pad_mask(lengths: torch.Tensor, max_len: int = 0) -> torch.Tensor:
 
 # https://github.com/microsoft/unilm/blob/master/xtune/src/transformers/modeling_utils.py
 def top_k_top_p_filtering(
-    logits, top_k=0, top_p=1.0, filter_value=-float("Inf"), min_tokens_to_keep=1
+        logits, top_k=0, top_p=1.0, filter_value=-float("Inf"), min_tokens_to_keep=1
 ):
     """Filter a distribution of logits using top-k and/or nucleus (top-p) filtering
     Args:
@@ -100,31 +101,31 @@ from typing import Optional, Tuple
 
 
 def multinomial_sample_one_no_sync(
-    probs_sort,
+        probs_sort,
 ):  # Does multinomial sampling without a cuda synchronization
     q = torch.empty_like(probs_sort).exponential_(1)
     return torch.argmax(probs_sort / q, dim=-1, keepdim=True).to(dtype=torch.int)
 
 
 def logits_to_probs(
-    logits,
-    previous_tokens: Optional[torch.Tensor] = None,
-    temperature: float = 1.0,
-    top_k: Optional[int] = None,
-    top_p: Optional[float] = None,
-    repetition_penalty: float = 1.0,
+        logits,
+        previous_tokens: Optional[torch.Tensor] = None,
+        temperature: float = 1.0,
+        top_k: Optional[int] = None,
+        top_p: Optional[int] = None,
+        repetition_penalty: float = 1.0,
 ):
-    if previous_tokens is not None:
-        previous_tokens = previous_tokens.squeeze()
+    # if previous_tokens is not None:
+    #     previous_tokens = previous_tokens.squeeze()
     # print(logits.shape,previous_tokens.shape)
     # pdb.set_trace()
     if previous_tokens is not None and repetition_penalty != 1.0:
         previous_tokens = previous_tokens.long()
-        score = torch.gather(logits, dim=0, index=previous_tokens)
+        score = torch.gather(logits, dim=1, index=previous_tokens)
         score = torch.where(
             score < 0, score * repetition_penalty, score / repetition_penalty
         )
-        logits.scatter_(dim=0, index=previous_tokens, src=score)
+        logits.scatter_(dim=1, index=previous_tokens, src=score)
 
     if top_p is not None and top_p < 1.0:
         sorted_logits, sorted_indices = torch.sort(logits, descending=True)
@@ -132,9 +133,9 @@ def logits_to_probs(
             torch.nn.functional.softmax(sorted_logits, dim=-1), dim=-1
         )
         sorted_indices_to_remove = cum_probs > top_p
-        sorted_indices_to_remove[0] = False  # keep at least one option
+        sorted_indices_to_remove[:, 0] = False  # keep at least one option
         indices_to_remove = sorted_indices_to_remove.scatter(
-            dim=0, index=sorted_indices, src=sorted_indices_to_remove
+            dim=1, index=sorted_indices, src=sorted_indices_to_remove
         )
         logits = logits.masked_fill(indices_to_remove, -float("Inf"))
 
@@ -142,7 +143,7 @@ def logits_to_probs(
 
     if top_k is not None:
         v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
-        pivot = v.select(-1, -1).unsqueeze(-1)
+        pivot = v[: , -1].unsqueeze(-1)
         logits = torch.where(logits < pivot, -float("Inf"), logits)
 
     probs = torch.nn.functional.softmax(logits, dim=-1)
@@ -150,15 +151,16 @@ def logits_to_probs(
 
 
 def sample(
-    logits,
-    previous_tokens: Optional[torch.Tensor] = None,
-    **sampling_kwargs,
+        logits,
+        previous_tokens: Optional[torch.Tensor] = None,
+        **sampling_kwargs,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     probs = logits_to_probs(
         logits=logits, previous_tokens=previous_tokens, **sampling_kwargs
     )
     idx_next = multinomial_sample_one_no_sync(probs)
     return idx_next, probs
+
 
 def dpo_loss(policy_chosen_logps: torch.FloatTensor,
              policy_rejected_logps: torch.FloatTensor,
@@ -180,14 +182,19 @@ def dpo_loss(policy_chosen_logps: torch.FloatTensor,
 
     return losses.mean(), chosen_rewards, rejected_rewards
 
-def get_batch_logps(logits_target: torch.FloatTensor, logits_reject: torch.FloatTensor, labels_target: torch.LongTensor, labels_reject: torch.LongTensor, average_log_prob: bool = False) -> Tuple[torch.FloatTensor, torch.FloatTensor]:
 
+def get_batch_logps(logits_target: torch.FloatTensor, logits_reject: torch.FloatTensor, labels_target: torch.LongTensor,
+                    labels_reject: torch.LongTensor, average_log_prob: bool = False) -> Tuple[
+    torch.FloatTensor, torch.FloatTensor]:
     # dummy token; we'll ignore the losses on these tokens later
 
-    per_token_logps_target = torch.gather(logits_target.log_softmax(-1), dim=2, index=labels_target.unsqueeze(2)).squeeze(2)
-    per_token_logps_reject = torch.gather(logits_reject.log_softmax(-1), dim=2, index=labels_reject.unsqueeze(2)).squeeze(2)
+    per_token_logps_target = torch.gather(logits_target.log_softmax(-1), dim=2,
+                                          index=labels_target.unsqueeze(2)).squeeze(2)
+    per_token_logps_reject = torch.gather(logits_reject.log_softmax(-1), dim=2,
+                                          index=labels_reject.unsqueeze(2)).squeeze(2)
 
     return per_token_logps_target.sum(-1), per_token_logps_reject.sum(-1)
+
 
 def make_reject_y(y_o, y_lens):
     def repeat_P(y):
@@ -197,6 +204,7 @@ def make_reject_y(y_o, y_lens):
         range_text = y[range_idx[0]:range_idx[1]]
         new_y = torch.cat([pre, range_text, range_text, shf])
         return new_y
+
     def lost_P(y):
         range_idx, _ = torch.randint(0, len(y), size=(2,)).sort()
         pre = y[:range_idx[0]]
@@ -204,16 +212,17 @@ def make_reject_y(y_o, y_lens):
         range_text = y[range_idx[0]:range_idx[1]]
         new_y = torch.cat([pre, shf])
         return new_y
+
     bs = len(y_lens)
     reject_y = []
     reject_y_lens = []
     for b in range(bs):
-        process_item_idx = torch.randint(0, 1, size=(1, ))[0]
+        process_item_idx = torch.randint(0, 1, size=(1,))[0]
         if process_item_idx == 0:
             new_y = repeat_P(y_o[b])
             reject_y.append(new_y)
             reject_y_lens.append(len(new_y))
-        elif process_item_idx==1:
+        elif process_item_idx == 1:
             new_y = lost_P(y_o[b])
             reject_y.append(new_y)
             reject_y_lens.append(len(new_y))
@@ -222,7 +231,7 @@ def make_reject_y(y_o, y_lens):
         pad_length = max_length - reject_y_lens[b]
         reject_y[b] = torch.cat([reject_y[b], torch.zeros(pad_length, dtype=y_o.dtype, device=y_o.device)], dim=0)
 
-    reject_y = torch.stack(reject_y, dim = 0)
+    reject_y = torch.stack(reject_y, dim=0)
     reject_y_lens = torch.tensor(reject_y_lens, device=y_lens.device)
 
     return reject_y, reject_y_lens

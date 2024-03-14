@@ -584,12 +584,16 @@ def voice_gpt_sovits_api():
         top_p = get_param(request_data, "top_p", config.gpt_sovits_config.top_p, float)
         temperature = get_param(request_data, "temperature", config.gpt_sovits_config.temperature, float)
         use_streaming = get_param(request_data, 'streaming', config.gpt_sovits_config.use_streaming, bool)
+        batch_size = get_param(request_data, 'batch_size', config.gpt_sovits_config.batch_size, int)
+        speed_factor = get_param(request_data, 'speed', config.gpt_sovits_config.speed, float)
     except Exception as e:
         logger.error(f"[{ModelType.GPT_SOVITS.value}] {e}")
         return make_response("parameter error", 400)
 
     logger.info(
         f"[{ModelType.GPT_SOVITS.value}] id:{id} format:{format} lang:{lang} segment_size:{segment_size} top_k:{top_k} top_p:{top_p} temperature:{temperature} streaming:{use_streaming}")
+    logger.info(
+        f"[{ModelType.GPT_SOVITS.value}] batch_size:{batch_size} speed_factor:{speed_factor}")
     logger.info(f"[{ModelType.GPT_SOVITS.value}] len:{len(text)} text：{text}")
 
     if check_is_none(text):
@@ -638,6 +642,8 @@ def voice_gpt_sovits_api():
              "top_p": top_p,
              "temperature": temperature,
              "preset": preset,
+             "batch_size": batch_size,
+             "speed_factor": speed_factor
              }
 
     if use_streaming:

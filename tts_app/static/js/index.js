@@ -80,6 +80,8 @@ function getLink() {
     let top_k = null;
     let top_p = null;
     let temperature = null;
+    let batch_size = null;
+    let speed = null;
 
     if (currentModelPage == 1 || currentModelPage == 2 || currentModelPage == 3) {
         length = document.getElementById("input_length" + currentModelPage).value;
@@ -109,6 +111,8 @@ function getLink() {
         top_k = document.getElementById('input_top_k4').value;
         top_p = document.getElementById('input_top_p4').value;
         temperature = document.getElementById('input_temperature4').value;
+        batch_size = document.getElementById('input_batch_size4').value;
+        // speed = document.getElementById('input_speed4').value;
         url += "/voice/gpt-sovits?id=" + id;
 
     } else {
@@ -174,6 +178,10 @@ function getLink() {
             url += "&top_p=" + top_p;
         if (temperature !== null && temperature !== "")
             url += "&temperature=" + temperature;
+        if (batch_size !== null && batch_size !== "")
+            url += "&batch_size=" + batch_size;
+        if (speed !== null && speed !== "")
+            url += "&speed=" + speed;
     }
 
     if (api_key != "") {
@@ -263,6 +271,8 @@ function setAudioSourceByPost() {
     let top_k = null;
     let top_p = null;
     let temperature = null;
+    let batch_size = null;
+    let speed = null;
 
     let headers = {};
 
@@ -301,6 +311,8 @@ function setAudioSourceByPost() {
         top_k = $("#input_top_k4").val();
         top_p = $("#input_top_p4").val();
         temperature = $("#input_temperature4").val();
+        batch_size = $("#input_batch_size4").val();
+        // speed = $("#input_speed4").val();
     }
 
 
@@ -356,6 +368,12 @@ function setAudioSourceByPost() {
     }
     if (currentModelPage == 4 && temperature) {
         formData.append('temperature', temperature);
+    }
+    if (currentModelPage == 4 && batch_size) {
+        formData.append('batch_size', batch_size);
+    }
+    if (currentModelPage == 4 && speed) {
+        formData.append('speed', speed);
     }
 
     let downloadButton = document.getElementById("downloadButton" + currentModelPage);

@@ -561,28 +561,15 @@ class TTSManager(Observer):
                                                                              dtype=np.float32)
         state["reference_audio"] = state["reference_audio"].flatten()
 
-        if state.get("lang").lower() == "auto":
-            infer_func = model.infer_multilang
-        else:
-            infer_func = model.infer
-        sentences_list = sentence_split(state["text"], state["segment_size"])
-        audios = []
-        for sentence in sentences_list:
-            audio = infer_func(text=sentence,
-                               lang=state.get("lang"),
-                               reference_audio=state.get("reference_audio"),
-                               reference_audio_sr=state.get("reference_audio_sr"),
-                               prompt_text=state.get("prompt_text"),
-                               prompt_lang=state.get("prompt_lang"),
-                               top_k=state.get("top_k"),
-                               top_p=state.get("top_p"),
-                               temperature=state.get("temperature"),
-                               )
-            audios.append(audio)
+        # if state.get("lang").lower() == "auto":
+        #     infer_func = model.infer_multilang
+        # else:
+        #     infer_func = model.infer
+        infer_func = model.infer
+        audio = infer_func(**state)
         sampling_rate = model.sampling_rate
-        audio = np.concatenate(audios)
 
-        return self.encode(sampling_rate, audio, state["format"]) if encode else audio
+        return self.encode(sampling_rate, next(audio), state["format"]) if encode else audio
 
     def stream_gpt_sovits_infer(self, state, encode=True):
         model = self.get_model(ModelType.GPT_SOVITS, state["id"])

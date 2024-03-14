@@ -1,0 +1,181 @@
+<!-- [ Bert-VITS2 ] start -->
+<div class="content-pane w-100 flex-wrap" id="bert-vits2-page">
+    <form class="w-100">
+        <div class="mb-3">
+            <label>text</label>
+            <textarea class="form-control input_text" id="input_text3" rows="3"
+                      oninput="updateLink()">你好</textarea>
+        </div>
+        <div class="mb-3">
+            <label>id</label>
+            <select class="form-control input_id" id="input_id3" oninput="updateLink()">
+                {% for speaker in speakers["BERT-VITS2"] %}
+                    <option value="{{ speaker["id"] }}">{{ speaker["id"] }} | {{ speaker["name"] }}
+                        {% if speaker["lang"] != [] and speaker["lang"] != None %} |
+                            {{ speaker["lang"] }} {% endif %}</option>
+                {% endfor %}
+                {% if bert_vits2_speakers_count <=0 %}
+                    <option value="" disabled selected hidden>未加载模型</option>
+                {% endif %}
+            </select>
+        </div>
+    </form>
+    <form class="w-100">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label data-toggle="tooltip" data-placement="top"
+                       title="默认为wav">format</label>
+                <select class="form-control input_format" id="input_format3" oninput="updateLink()">
+                    <option></option>
+                    <option>wav</option>
+                    <option>mp3</option>
+                    <option>ogg</option>
+                    <option>silk</option>
+                    <option>flac</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label data-toggle="tooltip" data-placement="top"
+                       title="自动识别语言auto：可识别的语言根据不同speaker而不同，方言无法自动识别。方言模型需要手动指定语言，比如粤语Cantonese要指定参数lang=gd">lang</label>
+                <input type="text" class="form-control input_lang" id="input_lang3" oninput="updateLink()"
+                       value=""
+                       placeholder="auto"/>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label data-toggle="tooltip" data-placement="top"
+                       title="调节语音长度，相当于调节语速，该数值越大语速越慢。">length</label>
+                <input type="number" class="form-control input_length" id="input_length3"
+                       oninput="updateLink()" value=""
+                       placeholder="1" min="0" step="0.001"/>
+            </div>
+            {#                        <div class="col-md-1 mb-3">#}
+            {#                            <label data-toggle="tooltip" data-placement="top"#}
+            {#                                   title="调节语音长度，相当于调节语速，该数值越大语速越慢。">length</label>#}
+            {#                            <input type="number" class="form-control input_length" id="input_length3"#}
+            {#                                   oninput="updateLink()" value=""#}
+            {#                                   placeholder="1" min="0" step="0.001"/>#}
+            {#                        </div>#}
+            {#                        <div class="col-md-1 mb-3">#}
+            {#                            <label data-toggle="tooltip" data-placement="top"#}
+            {#                                   title="调节中文语音长度，相当于调节语速，该数值越大语速越慢。">length_zh</label>#}
+            {#                            <input type="number" class="form-control input_length_zh" id="input_length_zh3"#}
+            {#                                   oninput="updateLink()" value=""#}
+            {#                                   placeholder="0" min="0" step="0.001"/>#}
+            {#                        </div>#}
+            {#                        <div class="col-md-1 mb-3">#}
+            {#                            <label data-toggle="tooltip" data-placement="top"#}
+            {#                                   title="调节日语语音长度，相当于调节语速，该数值越大语速越慢。">length_ja</label>#}
+            {#                            <input type="number" class="form-control input_length_ja" id="input_length_ja3"#}
+            {#                                   oninput="updateLink()" value=""#}
+            {#                                   placeholder="0" min="0" step="0.001"/>#}
+            {#                        </div>#}
+            {#                        <div class="col-md-1 mb-3">#}
+            {#                            <label data-toggle="tooltip" data-placement="top"#}
+            {#                                   title="调节英文语音长度，相当于调节语速，该数值越大语速越慢。">length_en</label>#}
+            {#                            <input type="number" class="form-control input_length_en" id="input_length_en3"#}
+            {#                                   oninput="updateLink()" value=""#}
+            {#                                   placeholder="0" min="0" step="0.001"/>#}
+            {#                        </div>#}
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label data-toggle="tooltip" data-placement="top"
+                       title="样本噪声，控制合成的随机性。">noise</label>
+                <input type="number" class="form-control input_noise" id="input_noise3"
+                       oninput="updateLink()" value=""
+                       placeholder="0.5" min="0" step="0.001"/>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label data-toggle="tooltip" data-placement="top"
+                       title="随机时长预测器噪声，控制音素发音长度。">noisew</label>
+                <input type="number" class="form-control input_noisew" id="input_noisew3"
+                       oninput="updateLink()" value=""
+                       placeholder="0.6" min="0" step="0.001"/>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label data-toggle="tooltip" data-placement="top"
+                       title="按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段。">segment_size</label>
+                <input type="number" class="form-control input_segment_size" id="input_segment_size3"
+                       oninput="updateLink()"
+                       value=""
+                       placeholder="50" step="1"/>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label data-toggle="tooltip" data-placement="top"
+                       title="SDP/DP混合比：SDP在合成时的占比，理论上此比率越高，合成的语音语调方差越大。">sdp_radio</label>
+                <input type="number" class="form-control input_sdp_ratio" id="input_sdp_ratio"
+                       oninput="updateLink()"
+                       value=""
+                       placeholder="0.2" step="0.01" min="0" max="1"/>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label data-toggle="tooltip" data-placement="top"
+                       title="Bert-VITS2 v2.1: 情感控制，范围为0-9。">emotion</label>
+                <input type="number" class="form-control input_emotion" id="input_emotion3"
+                       oninput="updateLink()"
+                       value=""
+                       placeholder="0" step="1" min="0" max="9"/>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="reference_audio" data-toggle="tooltip" data-placement="top"
+                       title="Bert-VITS2 v2.1: 上传音频文件作为情感参考,emotion和reference_audio二选一。
+                                    v2.2: text_prompt和reference_audio二选一。">reference_audio</label>
+                <input type="file" class="reference_audio" id="reference_audio3" multiple>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="text_prompt" data-toggle="tooltip" data-placement="top"
+                       title="Bert-VITS2 v2.2: 融合文本语义">text_prompt</label>
+                <input type="text" class="form-control text_prompt" id="input_text_prompt3"
+                       oninput="updateLink()"
+                       value=""
+                       placeholder=""/>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="style_text" data-toggle="tooltip" data-placement="top"
+                       title="Bert-VITS2 v2.3: 融合文本语义">style_text</label>
+                <input type="text" class="form-control style_text" id="input_style_text3"
+                       oninput="updateLink()"
+                       value=""
+                       placeholder=""/>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label data-toggle="tooltip" data-placement="top"
+                       title="Bert-VITS2 v2.3: style_text文本语义权重">style_weight</label>
+                <input type="number" class="form-control style_weight" id="input_style_weight3"
+                       oninput="updateLink()"
+                       value=""
+                       placeholder="0" step="0.1" min="0" max="1"/>
+            </div>
+        </div>
+    </form>
+
+
+    <div class="player flex flex-wrap  w-100">
+        <audio id="audioPlayer3" controls>
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+
+    <div class="play-button">
+        <button type="button" class="btn btn-outline-secondary" onclick="setAudioSourceByPost()"
+                style="margin-right: 10px">
+            播放器生成
+        </button>
+        <button type="button" class="btn btn-outline-secondary" onclick="downloadAudio()"
+                id="downloadButton3" disabled>
+            下载音频
+        </button>
+        <div class="form-check">
+            <input type="checkbox" id="streaming3" onchange="updateLink()">
+            <label class="form-check-label" data-toggle="tooltip" data-placement="top"
+                   title="按照segment_size分段推理文本，推理好一段即输出，无需等待所有文本都推理完毕">流式响应</label>
+        </div>
+    </div>
+</div>
+<!-- [ Bert-VITS2 ] end -->
