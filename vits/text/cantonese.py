@@ -11,8 +11,8 @@ URLS = [
     "https://ghproxy.com/https://github.com/CjangCjengh/chinese-dialect-lexicons/releases/download/v1.0.3/chinese_dialects.7z",
 ]
 TARGET_PATH = os.path.join(config.abs_path, config.system.cache_path, "chinese_dialects.7z")
-EXTRACT_DESTINATION = os.path.join(config.abs_path, config.system.cache_path, "vits/text/chinese_dialect_lexicons/")
-OPENCC_FILE_PATH = os.path.join(config.abs_path, "vits/text/chinese_dialect_lexicons/jyutjyu.json")
+EXTRACT_DESTINATION = os.path.join(config.abs_path, config.system.cache_path, "data/chinese_dialect_lexicons/")
+OPENCC_FILE_PATH = os.path.join(config.abs_path, "data/chinese_dialect_lexicons/jyutjyu.json")
 
 if not os.path.exists(OPENCC_FILE_PATH):
     success, message = download_file(URLS, target_path=TARGET_PATH, extract_destination=EXTRACT_DESTINATION)

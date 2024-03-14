@@ -1,5 +1,7 @@
 import ast
+import json
 import logging
+import os.path
 
 import jieba
 import pypinyin
@@ -24,7 +26,12 @@ def load_phrases_from_file(file_path):
             phrases_dict.update(additional_phrases)
             logging.info(f"Additional phrases loaded from {file_path}")
     except FileNotFoundError:
-        logging.debug(f"File {file_path} not found. You can create {file_path} and write your phrases_dict.")
+        logging.debug(f"File {file_path} not found. Create phrases_dict to {file_path}.")
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.write("""{
+"一骑当千": [["yí"], ["jì"], ["dāng"], ["qiān"]],
+"藏起": [["cáng"], ["qǐ"]],
+}""")
     except Exception as e:
         logging.error(f"Error loading additional phrases from {file_path}: {str(e)}")
 
@@ -32,7 +39,7 @@ def load_phrases_from_file(file_path):
 def phrases_dict_init():
     logging.info("Loading phrases_dict")
     large_pinyin.load()
-    additional_phrases_file = config.abs_path + "/phrases_dict.txt"
+    additional_phrases_file = os.path.join(config.abs_path, config.system.data_path, "phrases_dict.txt")
     load_phrases_from_file(additional_phrases_file)
 
     for word in phrases_dict.keys():
