@@ -17,7 +17,7 @@ from scipy.signal import resample_poly
 from logger import logger
 from manager.observer import Observer
 from utils.data_utils import check_is_none
-from utils.sentence import sentence_split_and_markup, split_languages, sentence_split, sentence_split_reading
+from utils.sentence import sentence_split_and_markup, sentence_split, sentence_split_reading
 
 
 class TTSManager(Observer):
@@ -29,7 +29,7 @@ class TTSManager(Observer):
             ModelType.VITS: self.vits_infer,
             ModelType.W2V2_VITS: self.w2v2_vits_infer,
             ModelType.HUBERT_VITS: self.hubert_vits_infer,
-            ModelType.BERT_VITS2: self.bert_vits2_infer_v2,
+            ModelType.BERT_VITS2: self.bert_vits2_infer,
             ModelType.GPT_SOVITS: self.gpt_sovits_infer
         }
         self.speaker_lang = None
@@ -272,7 +272,7 @@ class TTSManager(Observer):
         sampling_rate = model.sampling_rate
 
         sentences_list = sentence_split_and_markup(state["text"], state["segment_size"], state["lang"],
-                                                   model.lang)
+                                                   speaker_lang=model.lang)
         # 停顿0.5s，避免语音分段合成再拼接后的连接突兀
         brk = np.zeros(int(0.5 * sampling_rate), dtype=np.int16)
 
@@ -300,7 +300,7 @@ class TTSManager(Observer):
         sampling_rate = model.sampling_rate
 
         sentences_list = sentence_split_and_markup(state["text"], state["segment_size"], state["lang"],
-                                                   model.lang)
+                                                   speaker_lang=model.lang)
         # 停顿0.5s，避免语音分段合成再拼接后的连接突兀
         brk = np.zeros(int(0.5 * sampling_rate), dtype=np.int16)
 
@@ -343,7 +343,7 @@ class TTSManager(Observer):
         sampling_rate = model.sampling_rate
 
         sentences_list = sentence_split_and_markup(state["text"], state["segment_size"], state["lang"],
-                                                   model.lang)
+                                                   speaker_lang=model.lang)
         # 停顿0.5s，避免语音分段合成再拼接后的连接突兀
         brk = np.zeros(int(0.5 * sampling_rate), dtype=np.int16)
 
@@ -385,89 +385,7 @@ class TTSManager(Observer):
 
         return emotion_npy
 
-    # def bert_vits2_infer(self, state, encode=True):
-    #     model = self.get_model(model_type=ModelType.BERT_VITS2, id=state["id"])
-    #     state["id"] = self.get_real_id(model_type=ModelType.BERT_VITS2, id=state["id"])
-    #
-    #     # 去除所有多余的空白字符
-    #     if state["text"] is not None:
-    #         state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
-    #     sampling_rate = model.sampling_rate
-    #
-    #     # if state["lang"] == "auto":
-    #     # state["lang"] = classify_language(state["text"], target_languages=model.lang)
-    #     if state["lang"] == "auto":
-    #         sentences_list = split_languages(state["text"], model.lang, expand_abbreviations=True,
-    #                                          expand_hyphens=True)
-    #     else:
-    #         sentences_list = [(state["text"], state["lang"])]
-    #     audios = []
-    #
-    #     for idx, (text, lang) in enumerate(sentences_list):
-    #         skip_start = idx != 0
-    #         skip_end = idx != len(sentences_list) - 1
-    #         sentences = sentence_split(text, state["segment_size"])
-    #         if lang == 'zh' and state["length_zh"] > 0:
-    #             length = state["length_zh"]
-    #         elif lang == 'ja' and state["length_ja"] > 0:
-    #             length = state["length_ja"]
-    #         elif lang == 'en' and state["length_en"] > 0:
-    #             length = state["length_en"]
-    #         else:
-    #             length = state["length"]
-    #         for _idx, sentence in enumerate(sentences):
-    #             _skip_start = (_idx != 0) or (skip_start and _idx == 0)
-    #             _skip_end = (_idx != len(sentences) - 1) or skip_end
-    #             audio = model.infer(sentence, state["id"], lang, state["sdp_ratio"], state["noise"],
-    #                                 state["noise"], length, emotion=state.get("emotion", None),
-    #                                 reference_audio=state.get("reference_audio", None),
-    #                                 text_prompt=state.get("text_prompt", None),
-    #                                 style_text=state.get("style_text", None),
-    #                                 style_weight=state.get("style_weight", 0.7))
-    #             audios.extend(audio)
-    #     audio = np.concatenate(audios)
-    #
-    #     return self.encode(sampling_rate, audio, state["format"]) if encode else audios
-
-    # def stream_bert_vits2_infer(self, state, fname=None):
-    #     model = self.get_model(ModelType.BERT_VITS2, state["id"])
-    #     state["id"] = self.get_real_id(ModelType.BERT_VITS2, state["id"])
-    #
-    #     # 去除所有多余的空白字符
-    #     if state["text"] is not None:
-    #         state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
-    #     sampling_rate = model.sampling_rate
-    #
-    #     sentences_list = split_languages(state["text"], model.lang, expand_abbreviations=True,
-    #                                      expand_hyphens=True)
-    #
-    #     # audios = []
-    #
-    #     for (text, lang) in sentences_list:
-    #         sentences = sentence_split(text, state["segment_size"])
-    #         if lang == 'zh' and state["length_zh"] > 0:
-    #             length = state["length_zh"]
-    #         elif lang == 'ja' and state["length_ja"] > 0:
-    #             length = state["length_ja"]
-    #         elif lang == 'en' and state["length_en"] > 0:
-    #             length = state["length_en"]
-    #         else:
-    #             length = state["length"]
-    #         for sentence in sentences:
-    #             audio = model.infer(sentence, state["id"], lang, state["sdp_ratio"], state["noise"],
-    #                                 state["noise"], emotion=state.get("emotion", None),
-    #                                 reference_audio=state.get("reference_audio", None),
-    #                                 text_prompt=state.get("text_prompt", None),
-    #                                 style_text=state.get("style_text", None),
-    #                                 style_weight=state.get("style_weight", 0.7))
-    #             # audios.append(audio)
-    #             # audio = np.concatenate(audios, axis=0)
-    #             encoded_audio = self.encode(sampling_rate, audio, state["format"])
-    #
-    #             for encoded_audio_chunk in self.generate_audio_chunks(encoded_audio):
-    #                 yield encoded_audio_chunk
-
-    def bert_vits2_infer_v2(self, state, encode=True):
+    def bert_vits2_infer(self, state, encode=True):
         model = self.get_model(model_type=ModelType.BERT_VITS2, id=state["id"])
         state["id"] = self.get_real_id(model_type=ModelType.BERT_VITS2, id=state["id"])
 
@@ -476,30 +394,29 @@ class TTSManager(Observer):
             state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
         sampling_rate = model.sampling_rate
         sentences_list = sentence_split(state["text"], state["segment_size"])
+        
+        if model.zh_bert_extra:
+            infer_func = model.infer
+            state["lang"] = "zh"
+        elif model.ja_bert_extra:
+            infer_func = model.infer
+            state["lang"] = "ja"
+        elif state["lang"].lower() == "auto":
+            infer_func = model.infer_multilang
+        else:
+            infer_func = model.infer
+
         audios = []
         for sentences in sentences_list:
-            if model.zh_bert_extra:
-                infer_func = model.infer
-                state["lang"] = "zh"
-            elif model.ja_bert_extra:
-                infer_func = model.infer
-                state["lang"] = "ja"
-            elif state["lang"].lower() == "auto":
-                infer_func = model.infer_multilang
-            else:
-                infer_func = model.infer
-            audio = infer_func(sentences, state["id"], state["lang"], state["sdp_ratio"], state["noise"],
-                               state["noise"], state["length"], emotion=state.get("emotion", None),
-                               reference_audio=state.get("reference_audio", None),
-                               text_prompt=state.get("text_prompt", None),
-                               style_text=state.get("style_text", None),
-                               style_weight=state.get("style_weight", 0.7))
+            state["text"] = sentences
+            audio = infer_func(**state)
             audios.append(audio)
+            
         audio = np.concatenate(audios)
 
         return self.encode(sampling_rate, audio, state["format"]) if encode else audio
 
-    def stream_bert_vits2_infer_v2(self, state, fname=None):
+    def stream_bert_vits2_infer(self, state, encode=True):
         model = self.get_model(ModelType.BERT_VITS2, state["id"])
         state["id"] = self.get_real_id(ModelType.BERT_VITS2, state["id"])
 
@@ -508,28 +425,22 @@ class TTSManager(Observer):
             state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
         sampling_rate = model.sampling_rate
         sentences_list = sentence_split(state["text"], state["segment_size"])
-        # audios = []
+
+        if state["lang"].lower() == "auto":
+            infer_func = model.infer_multilang
+        else:
+            infer_func = model.infer
+            
         for sentences in sentences_list:
-            if state["lang"].lower() == "auto":
-                infer_func = model.infer_multilang
-            else:
-                infer_func = model.infer
-            audio = infer_func(sentences, state["id"], state["lang"], state["sdp_ratio"], state["noise"],
-                               state["noise"], state["length"], emotion=state.get("emotion", None),
-                               reference_audio=state.get("reference_audio", None),
-                               text_prompt=state.get("text_prompt", None),
-                               style_text=state.get("style_text", None),
-                               style_weight=state.get("style_weight", 0.7))
-            # audios.append(audio)
-            # audio = np.concatenate(audios, axis=0)
-            encoded_audio = self.encode(sampling_rate, audio, state["format"])
+            state["text"] = sentences
+            audio = infer_func(**state)
 
-            for encoded_audio_chunk in self.generate_audio_chunks(encoded_audio):
-                yield encoded_audio_chunk
+            process_audio = self.encode(sampling_rate, audio, state["format"]) if encode else audio
 
-    def gpt_sovits_infer(self, state, encode=True):
-        model = self.get_model(ModelType.GPT_SOVITS, state["id"])
+            for audio_chunk in self.generate_audio_chunks(process_audio):
+                yield audio_chunk
 
+    def _set_reference_audio(self, state):
         # 检查参考音频
         if check_is_none(state.get("reference_audio")):  # 无参考音频
             # 未选择预设
@@ -549,9 +460,6 @@ class TTSManager(Observer):
 
             # 将reference_audio换成指定预设里的参考音频
             state["reference_audio"] = refer_wav_path
-
-        # if check_is_none(state.get("prompt_text")):
-        #     raise ValueError(f"Error prompt_text:{state.get('prompt_text')}")
 
         if check_is_none(state.get("prompt_lang")):
             presets = config.gpt_sovits_config.presets
@@ -561,72 +469,31 @@ class TTSManager(Observer):
                                                                              dtype=np.float32)
         state["reference_audio"] = state["reference_audio"].flatten()
 
-        # if state.get("lang").lower() == "auto":
-        #     infer_func = model.infer_multilang
-        # else:
-        #     infer_func = model.infer
-        infer_func = model.infer
-        audio = infer_func(**state)
+        return state
+
+    def gpt_sovits_infer(self, state, encode=True):
+        model = self.get_model(ModelType.GPT_SOVITS, state["id"])
+
+        state = self._set_reference_audio(state)
+
+        audio = next(model.infer(**state))
         sampling_rate = model.sampling_rate
 
-        return self.encode(sampling_rate, next(audio), state["format"]) if encode else audio
+        return self.encode(sampling_rate, audio, state["format"]) if encode else audio
 
     def stream_gpt_sovits_infer(self, state, encode=True):
         model = self.get_model(ModelType.GPT_SOVITS, state["id"])
 
-        # 检查参考音频
-        if check_is_none(state.get("reference_audio")):  # 无参考音频
-            # 未选择预设
-            if check_is_none(state.get("preset")):
-                presets = config.gpt_sovits_config.presets
-                refer_preset = presets.get(next(iter(presets)))
-            else:  # 已选择预设
-                refer_preset = config.gpt_sovits_config.presets.get(state.get("preset"))
-                if refer_preset is None:
-                    raise ValueError(f"Error preset:{state.get('preset')}")
+        state = self._set_reference_audio(state)
 
-            refer_wav_path = refer_preset.refer_wav_path
-            if check_is_none(refer_wav_path):
-                raise ValueError(f"The refer_wav_path:{refer_wav_path} in preset:{state.get('preset')} is None!")
-            refer_wav_path = os.path.join(config.abs_path, config.system.data_path, refer_wav_path)
-            state["prompt_text"], state["prompt_lang"] = refer_preset.prompt_text, refer_preset.prompt_lang
+        state["return_fragment"] = True
 
-            # 将reference_audio换成指定预设里的参考音频
-            state["reference_audio"] = refer_wav_path
-
-        # if check_is_none(state.get("prompt_text")):
-        #     raise ValueError(f"Error prompt_text:{state.get('prompt_text')}")
-
-        if check_is_none(state.get("prompt_lang")):
-            presets = config.gpt_sovits_config.presets
-            state["prompt_lang"] = presets.get(next(iter(presets)), "auto")
-
-        if isinstance(state["reference_audio"], str):
-            state["reference_audio"], state["reference_audio_sr"] = librosa.load(state["reference_audio"], sr=None,
-                                                                                 dtype=np.float32)
-            state["reference_audio"] = state["reference_audio"].flatten()
-
-        if state.get("lang").lower() == "auto":
-            infer_func = model.infer_multilang
-        else:
-            infer_func = model.infer
-        sentences_list = sentence_split(state["text"], state["segment_size"])
-
-        for sentence in sentences_list:
-            audio = infer_func(text=sentence,
-                               lang=state.get("lang"),
-                               reference_audio=state.get("reference_audio"),
-                               reference_audio_sr=state.get("reference_audio_sr"),
-                               prompt_text=state.get("prompt_text"),
-                               prompt_lang=state.get("prompt_lang"),
-                               top_k=state.get("top_k"),
-                               top_p=state.get("top_p"),
-                               temperature=state.get("temperature"),
-                               )
+        audio_generater = model.infer(**state)
+        for audio in audio_generater:
             sampling_rate = model.sampling_rate
-            encoded_audio = self.encode(sampling_rate, audio, state["format"])
+            process_audio = self.encode(sampling_rate, audio, state["format"]) if encode else audio
 
-            for encoded_audio_chunk in self.generate_audio_chunks(encoded_audio):
+            for encoded_audio_chunk in self.generate_audio_chunks(process_audio):
                 yield encoded_audio_chunk
 
     def reading(self, in_state, nr_state):
@@ -635,7 +502,7 @@ class TTSManager(Observer):
 
         infer_func = {ModelType.VITS: self.vits_infer,
                       ModelType.W2V2_VITS: self.w2v2_vits_infer,
-                      ModelType.BERT_VITS2: self.bert_vits2_infer_v2,
+                      ModelType.BERT_VITS2: self.bert_vits2_infer,
                       ModelType.GPT_SOVITS: self.gpt_sovits_infer
                       }
 

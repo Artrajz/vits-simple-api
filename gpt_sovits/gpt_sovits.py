@@ -440,6 +440,10 @@ class GPT_SoVITS:
               temperature, batch_size: int = 5, batch_threshold: float = 0.75, split_bucket: bool = True,
               return_fragment: bool = False, speed_factor: float = 1.0,
               segment_size: int = config.gpt_sovits_config.segment_size, **kwargs):
+
+        if return_fragment:
+            split_bucket = False
+
         data = self.preprocess_text(text, lang, segment_size)
 
         no_prompt_text = False

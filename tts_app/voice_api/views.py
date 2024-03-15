@@ -536,7 +536,7 @@ def voice_bert_vits2_api():
 
     if use_streaming:
         # audio = tts_manager.stream_bert_vits2_infer(state)
-        audio = tts_manager.stream_bert_vits2_infer_v2(state)
+        audio = tts_manager.stream_bert_vits2_infer(state)
         response = make_response(audio)
         response.headers['Content-Disposition'] = f'attachment; filename={fname}'
         response.headers['Content-Type'] = file_type
@@ -544,7 +544,7 @@ def voice_bert_vits2_api():
     else:
         t1 = time.time()
         # audio = tts_manager.bert_vits2_infer(state)
-        audio = tts_manager.bert_vits2_infer_v2(state)
+        audio = tts_manager.bert_vits2_infer(state)
         t2 = time.time()
         logger.info(f"[{ModelType.BERT_VITS2.value}] finish in {(t2 - t1):.2f}s")
 
