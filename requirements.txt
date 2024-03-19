@@ -49,6 +49,7 @@ pydantic==2.3.0
 werkzeug==2.3.6
 flask_login
 flask_wtf
+ngrok
 
 # Compression and Decompression
 py7zr
