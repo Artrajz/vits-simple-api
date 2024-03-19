@@ -411,9 +411,15 @@ class User(AsDictMixin):
 
 
 @dataclass
+class NgrokConfig(AsDictMixin):
+    auth_token: str = None
+
+
+@dataclass
 class Config(AsDictMixin):
     abs_path: str = ABS_PATH
     http_service: HttpService = HttpService()
+    ngrok_config: NgrokConfig = NgrokConfig()
     model_config: ModelConfig = ModelConfig()
     tts_config: TTSConfig = TTSConfig()
     admin: User = User()

@@ -1,11 +1,13 @@
+import logging
 import os.path
 
+import ngrok
 from flask import Flask
 from flask_apscheduler import APScheduler
 from flask_login import LoginManager
 from flask_wtf import CSRFProtect
 
-from utils.data_utils import clean_folder
+from utils.data_utils import clean_folder, check_is_none
 from utils.phrases_dict import phrases_dict_init
 from tts_app.frontend.views import frontend
 from tts_app.voice_api.views import voice_api
@@ -71,4 +73,9 @@ def clean_task():
 
 
 if __name__ == '__main__':
+    if not check_is_none(config.ngrok_config.auth_token):
+        listener = ngrok.forward(config.http_service.port, authtoken=config.ngrok_config.auth_token)
+
+        logging.info(f"Ingress established at {listener.url()}")
+
     app.run(host=config.http_service.host, port=config.http_service.port, debug=config.http_service.debug)
