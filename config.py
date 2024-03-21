@@ -90,16 +90,17 @@ class AsDictMixin:
                         nested_config.update_config(new_value)
                         setattr(self, field_name, nested_config)
                 else:
-                    if field_type == bool:
-                        new_value = str(new_value).lower() == "true"
-                    elif field_type == int:
-                        new_value = int(new_value)
-                    elif field_type == float:
-                        new_value = float(new_value)
-                    elif field_type == str:
-                        new_value = str(new_value)
-                    elif field_type == torch.device:
-                        new_value = torch.device(new_value)
+                    if new_value is not None:
+                        if field_type == bool:
+                            new_value = str(new_value).lower() == "true"
+                        elif field_type == int:
+                            new_value = int(new_value)
+                        elif field_type == float:
+                            new_value = float(new_value)
+                        elif field_type == str:
+                            new_value = str(new_value)
+                        elif field_type == torch.device:
+                            new_value = torch.device(new_value)
 
                     setattr(self, field_name, new_value)
 

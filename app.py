@@ -73,9 +73,14 @@ def clean_task():
 
 
 if __name__ == '__main__':
-    if not check_is_none(config.ngrok_config.auth_token):
-        listener = ngrok.forward(config.http_service.port, authtoken=config.ngrok_config.auth_token)
+    try:
+        if not check_is_none(config.ngrok_config.auth_token):
+            listener = ngrok.forward(config.http_service.port, authtoken=config.ngrok_config.auth_token)
 
-        logging.info(f"Ingress established at {listener.url()}")
+            logging.info(f"Ingress established at {listener.url()}")
+        else:
+            logging.info(f"Not using ngrok.")
+    except Exception as e:
+        logging.error(f"Not using ngrok. Authtoken error:{e}")
 
     app.run(host=config.http_service.host, port=config.http_service.port, debug=config.http_service.debug)
