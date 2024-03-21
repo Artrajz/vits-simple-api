@@ -2,8 +2,10 @@ import regex as re
 
 try:
     from contants import config
+
+    module = config.language_identification.language_identification_library.lower()
 except:
-    pass
+    module = "langid"
 
 langid_languages = ["af", "am", "an", "ar", "as", "az", "be", "bg", "bn", "br", "bs", "ca", "cs", "cy", "da", "de",
                     "dz", "el",
@@ -17,30 +19,50 @@ langid_languages = ["af", "am", "an", "ar", "as", "az", "be", "bg", "bn", "br", 
                     "ug", "uk",
                     "ur", "vi", "vo", "wa", "xh", "zh", "zu"]
 
+classifier = None
+
+
+def init_classifier():
+    global classifier
+
+    if module == "fastlid" or module == "fasttext":
+        from fastlid import fastlid
+        classifier = fastlid
+    elif module == "langid":
+        import langid
+        # init model
+        langid.langid.load_model()
+        classifier = langid.classify
+
+
+init_classifier()
+
+
+def set_languages(langs):
+    global classifier
+
+    if langs is None:
+        return
+
+    if module == "fastlid" or module == "fasttext":
+        from fastlid import fastlid, supported_langs
+        target_languages = [lang for lang in langs if lang in supported_langs]
+        fastlid.set_languages = target_languages
+    elif module == "langid":
+        import langid
+        target_languages = [lang for lang in langs if lang in langid_languages]
+        langid.set_languages(target_languages)
+    else:
+        raise ValueError(f"Wrong LANGUAGE_IDENTIFICATION_LIBRARY in config.yaml")
+
 
 def classify_language(text: str, target_languages: list = None) -> str:
-    try:
-        module = config.language_identification.language_identification_library.lower()
-    except:
-        module = "langid"
+    global classifier
 
     if not target_languages:
         target_languages = None
 
-    if module == "fastlid" or module == "fasttext":
-        from fastlid import fastlid, supported_langs
-        classifier = fastlid
-        if target_languages is not None:
-            target_languages = [lang for lang in target_languages if lang in supported_langs]
-            fastlid.set_languages = target_languages
-    elif module == "langid":
-        import langid
-        classifier = langid.classify
-        if target_languages is not None:
-            target_languages = [lang for lang in target_languages if lang in langid_languages]
-            langid.set_languages(target_languages)
-    else:
-        raise ValueError(f"Wrong LANGUAGE_IDENTIFICATION_LIBRARY in config.py")
+    set_languages(target_languages)
 
     lang = classifier(text)[0]
 
