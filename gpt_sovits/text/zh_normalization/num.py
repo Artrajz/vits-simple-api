@@ -172,7 +172,23 @@ def replace_range(match) -> str:
     return result
 
 
-def _get_value(value_string: str, use_zero: bool=True) -> List[str]:
+# ~至表达式
+RE_TO_RANGE = re.compile(
+    r'((-?)((\d+)(\.\d+)?)|(\.(\d+)))(%|°C|℃|度|摄氏度|cm2|cm²|cm3|cm³|cm|db|ds|kg|km|m2|m²|m³|m3|ml|m|mm|s)[~]((-?)((\d+)(\.\d+)?)|(\.(\d+)))(%|°C|℃|度|摄氏度|cm2|cm²|cm3|cm³|cm|db|ds|kg|km|m2|m²|m³|m3|ml|m|mm|s)')
+
+
+def replace_to_range(match) -> str:
+    """
+    Args:
+        match (re.Match)
+    Returns:
+        str
+    """
+    result = match.group(0).replace('~', '至')
+    return result
+
+
+def _get_value(value_string: str, use_zero: bool = True) -> List[str]:
     stripped = value_string.lstrip('0')
     if len(stripped) == 0:
         return []
@@ -202,7 +218,7 @@ def verbalize_cardinal(value_string: str) -> str:
     result_symbols = _get_value(value_string)
     # verbalized number starting with '一十*' is abbreviated as `十*`
     if len(result_symbols) >= 2 and result_symbols[0] == DIGITS[
-            '1'] and result_symbols[1] == UNITS[1]:
+        '1'] and result_symbols[1] == UNITS[1]:
         result_symbols = result_symbols[1:]
     return ''.join(result_symbols)
 
