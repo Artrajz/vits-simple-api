@@ -61,8 +61,8 @@ class ModelHandler:
                 "https://hf-mirror.com/laion/clap-htsat-fused/resolve/main/pytorch_model.bin?download=true",
             ],
             "Erlangshen_MegatronBert_1.3B_Chinese": [
-                "https://huggingface.co/IDEA-CCNL/Erlangshen-UniMC-MegatronBERT-1.3B-Chinese/resolve/main/pytorch_model.bin",
-                "https://hf-mirror.com/IDEA-CCNL/Erlangshen-UniMC-MegatronBERT-1.3B-Chinese/resolve/main/pytorch_model.bin",
+                "https://huggingface.co/IDEA-CCNL/Erlangshen-MegatronBert-1.3B/resolve/main/pytorch_model.bin",
+                "https://hf-mirror.com/IDEA-CCNL/Erlangshen-MegatronBert-1.3B/resolve/main/pytorch_model.bin",
             ],
             "G2PWModel": [
                 # "https://storage.googleapis.com/esun-ai/g2pW/G2PWModel-v2-onnx.zip",
