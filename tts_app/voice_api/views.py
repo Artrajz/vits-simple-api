@@ -1,22 +1,18 @@
 import copy
-import logging
 import os
 import time
-import traceback
 import uuid
 from io import BytesIO
 
-import librosa
-import numpy as np
 from flask import request, jsonify, make_response, send_file, Blueprint
 from werkzeug.utils import secure_filename
 
+from contants import ModelType
 from contants import config
 # from gpt_sovits.utils import load_audio
 from logger import logger
-from contants import ModelType
-from tts_app.voice_api.auth import require_api_key
 from tts_app.model_manager import model_manager, tts_manager
+from tts_app.voice_api.auth import require_api_key
 from tts_app.voice_api.utils import *
 from utils.data_utils import check_is_none
 
@@ -586,6 +582,7 @@ def voice_gpt_sovits_api():
         use_streaming = get_param(request_data, 'streaming', config.gpt_sovits_config.use_streaming, bool)
         batch_size = get_param(request_data, 'batch_size', config.gpt_sovits_config.batch_size, int)
         speed_factor = get_param(request_data, 'speed', config.gpt_sovits_config.speed, float)
+        seed = get_param(request_data, 'seed', config.gpt_sovits_config.seed, int)
     except Exception as e:
         logger.error(f"[{ModelType.GPT_SOVITS.value}] {e}")
         return make_response("parameter error", 400)
@@ -643,7 +640,8 @@ def voice_gpt_sovits_api():
              "temperature": temperature,
              "preset": preset,
              "batch_size": batch_size,
-             "speed_factor": speed_factor
+             "speed_factor": speed_factor,
+             "seed": seed
              }
 
     if use_streaming:

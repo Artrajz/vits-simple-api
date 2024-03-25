@@ -6,7 +6,6 @@
 After the initial launch that automatically generates the config.yaml file, any modifications to the configuration should be made directly in the config.yaml file, not in the config.py file.
 """
 
-import copy
 import logging
 import os
 import secrets
@@ -14,7 +13,7 @@ import shutil
 import string
 import sys
 import traceback
-from dataclasses import dataclass, field, asdict, fields, is_dataclass
+from dataclasses import dataclass, field, fields, is_dataclass
 from typing import List, Union, Optional, Dict
 
 import torch
@@ -183,6 +182,7 @@ class GPTSoVitsConfig(AsDictMixin):
     use_streaming: bool = False
     batch_size: int = 5
     speed: float = 1.0
+    seed: int = -1
     presets: Dict[str, GPTSoVitsPreset] = field(default_factory=lambda: {"default": GPTSoVitsPreset(),
                                                                          "default2": GPTSoVitsPreset()})
 

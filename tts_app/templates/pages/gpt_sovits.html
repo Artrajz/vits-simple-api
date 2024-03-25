@@ -22,7 +22,7 @@
     </form>
     <form class="w-100">
         <div class="row">
-            <div class="col-md-4 mb-3">
+            <div class="col-md-3 mb-3">
                 <label data-toggle="tooltip" data-placement="top"
                        title="默认为wav">format</label>
                 <select class="form-control input_format" id="input_format4" oninput="updateLink()">
@@ -34,14 +34,14 @@
                     <option>flac</option>
                 </select>
             </div>
-            <div class="col-md-4 mb-3">
+            <div class="col-md-3 mb-3">
                 <label data-toggle="tooltip" data-placement="top"
                        title="自动识别语言auto：可识别的语言根据不同speaker而不同，方言无法自动识别。方言模型需要手动指定语言，比如粤语Cantonese要指定参数lang=gd">lang</label>
                 <input type="text" class="form-control input_lang" id="input_lang4" oninput="updateLink()"
                        value=""
                        placeholder="auto"/>
             </div>
-            <div class="col-md-4 mb-3">
+            <div class="col-md-3 mb-3">
                 <label data-toggle="tooltip" data-placement="top"
                        title="按标点符号分段，加起来大于segment_size时为一段文本。segment_size<=0表示不分段。">segment_size</label>
                 <input type="number" class="form-control input_segment_size" id="input_segment_size4"
@@ -49,7 +49,14 @@
                        value=""
                        placeholder="50" step="1"/>
             </div>
-
+            <div class="col-md-3 mb-3">
+                <label for="seed" data-toggle="tooltip" data-placement="top"
+                       title="随机种子">seed</label>
+                <input type="text" class="form-control seed" id="input_seed4"
+                       oninput="updateLink()"
+                       value=""
+                       placeholder="5"/>
+            </div>
         </div>
 
         <div class="row">
@@ -85,14 +92,15 @@
                        value=""
                        placeholder="5"/>
             </div>
-{#            <div class="col-md-2 mb-3">#}
-{#                <label for="speed" data-toggle="tooltip" data-placement="top"#}
-{#                       title="">speed</label>#}
-{#                <input type="text" class="form-control speed" id="input_speed4"#}
-{#                       oninput="updateLink()"#}
-{#                       value=""#}
-{#                       placeholder="1.0"/>#}
-{#            </div>#}
+
+            {#            <div class="col-md-2 mb-3">#}
+            {#                <label for="speed" data-toggle="tooltip" data-placement="top"#}
+            {#                       title="">speed</label>#}
+            {#                <input type="text" class="form-control speed" id="input_speed4"#}
+            {#                       oninput="updateLink()"#}
+            {#                       value=""#}
+            {#                       placeholder="1.0"/>#}
+            {#            </div>#}
 
         </div>
         <div class="row">

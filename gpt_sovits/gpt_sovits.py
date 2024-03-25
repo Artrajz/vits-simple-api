@@ -1,21 +1,21 @@
 import logging
 import math
 import os.path
+import random
 import re
 from typing import List
 
 import librosa
 import numpy as np
 import torch
-from time import time as ttime
 
 from contants import config
 from gpt_sovits.AR.models.t2s_lightning_module import Text2SemanticLightningModule
 from gpt_sovits.module.mel_processing import spectrogram_torch
 from gpt_sovits.module.models import SynthesizerTrn
-from gpt_sovits.utils import DictToAttrRecursive
 from gpt_sovits.text import cleaned_text_to_sequence
 from gpt_sovits.text.cleaner import clean_text
+from gpt_sovits.utils import DictToAttrRecursive
 from utils.classify_language import classify_language
 from utils.data_utils import check_is_none
 from utils.sentence import split_languages, sentence_split
@@ -120,6 +120,25 @@ class GPT_SoVITS:
         total = sum([param.nelement() for param in self.t2s_model.parameters()])
         logging.info(f"Number of parameter: {total / 1e6:.2f}M")
 
+    def set_seed(self, seed: int):
+        seed = int(seed)
+        seed = seed if seed != -1 else random.randrange(1 << 32)
+        logging.debug(f"Set seed to {seed}")
+        os.environ['PYTHONHASHSEED'] = str(seed)
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        try:
+            if torch.cuda.is_available():
+                torch.cuda.manual_seed(seed)
+                torch.cuda.manual_seed_all(seed)
+                # torch.backends.cudnn.deterministic = True
+                # torch.backends.cudnn.benchmark = False
+                # torch.backends.cudnn.enabled = True
+        except:
+            pass
+        return seed
+
     def get_speakers(self):
         return self.speakers
 
@@ -165,20 +184,21 @@ class GPT_SoVITS:
     def get_bert_and_cleaned_text_multilang(self, text: list):
         sentences = split_languages(text, expand_abbreviations=True, expand_hyphens=True)
 
-        phones, word2ph, norm_text, bert = [], [], [], []
+        phones_list, word2ph_list, norm_text_list, bert_list = [], [], [], []
 
         for sentence, lang in sentences:
-            _phones, _word2ph, _norm_text = self.get_cleaned_text(sentence, lang)
-            _bert = self.get_bert_feature(sentence, _phones, _word2ph, _norm_text)
-            phones.extend(_phones)
-            if _word2ph is not None:
-                word2ph.extend(_word2ph)
-            norm_text.extend(_norm_text)
-            bert.append(_bert)
+            phones, word2ph, _norm_text = self.get_cleaned_text(sentence, lang)
+            bert = self.get_bert_feature(sentence, phones, word2ph, _norm_text)
+            phones_list.extend(phones)
+            if word2ph is not None:
+                word2ph_list.extend(word2ph)
+            norm_text_list.extend(_norm_text)
+            bert_list.append(bert)
 
-        bert = torch.cat(bert, dim=1).to(self.device, dtype=self.torch_dtype)
+        norm_text = ''.join(norm_text_list)
+        bert = torch.cat(bert_list, dim=1).to(self.device, dtype=self.torch_dtype)
 
-        return phones, word2ph, norm_text, bert
+        return phones_list, word2ph_list, norm_text, bert
 
     def get_spepc(self, audio, orig_sr):
         """audio的sampling_rate与模型相同"""
@@ -238,6 +258,11 @@ class GPT_SoVITS:
 
         result = []
         for text in texts:
+            text = text.strip("\n")
+            if (text[0] not in splits and len(self.get_first(text)) < 4):
+                text = "。" + text if lang != "en" else "." + text
+            if (text[-1] not in splits):
+                text += "。" if lang != "en" else "."
             phones, word2ph, norm_text, bert_features = self.get_bert_and_cleaned_text_multilang(text)
             res = {
                 "phones": phones,
@@ -251,7 +276,7 @@ class GPT_SoVITS:
         if self.prompt_cache.get("prompt_text") != prompt_text:
             if prompt_lang.lower() == "auto":
                 prompt_lang = classify_language(prompt_text)
-
+            prompt_text = prompt_text.strip("\n")
             if (prompt_text[-1] not in splits):
                 prompt_text += "。" if prompt_lang != "en" else "."
             phones, word2ph, norm_text = self.get_cleaned_text(prompt_text, prompt_lang)
@@ -438,8 +463,10 @@ class GPT_SoVITS:
 
     def infer(self, text, lang, reference_audio, reference_audio_sr, prompt_text, prompt_lang, top_k, top_p,
               temperature, batch_size: int = 5, batch_threshold: float = 0.75, split_bucket: bool = True,
-              return_fragment: bool = False, speed_factor: float = 1.0,
+              return_fragment: bool = False, speed_factor: float = 1.0, seed: int = -1,
               segment_size: int = config.gpt_sovits_config.segment_size, **kwargs):
+
+        self.set_seed(seed)
 
         if return_fragment:
             split_bucket = False
@@ -476,7 +503,7 @@ class GPT_SoVITS:
             if self.is_half:
                 all_bert_features = all_bert_features.half()
 
-            logging.debug(f"Infer text:{[''.join(text) for text in norm_text]}")
+            logging.debug(f"Infer text:{norm_text}")
             if no_prompt_text:
                 prompt = None
             else:

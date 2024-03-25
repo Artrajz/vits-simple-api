@@ -82,6 +82,7 @@ function getLink() {
     let temperature = null;
     let batch_size = null;
     let speed = null;
+    let seed = null;
 
     if (currentModelPage == 1 || currentModelPage == 2 || currentModelPage == 3) {
         length = document.getElementById("input_length" + currentModelPage).value;
@@ -112,6 +113,7 @@ function getLink() {
         top_p = document.getElementById('input_top_p4').value;
         temperature = document.getElementById('input_temperature4').value;
         batch_size = document.getElementById('input_batch_size4').value;
+        seed = document.getElementById('input_seed4').value;
         // speed = document.getElementById('input_speed4').value;
         url += "/voice/gpt-sovits?id=" + id;
 
@@ -182,6 +184,8 @@ function getLink() {
             url += "&batch_size=" + batch_size;
         if (speed !== null && speed !== "")
             url += "&speed=" + speed;
+        if (seed !== null && seed !== "")
+            url += "&seed=" + seed;
     }
 
     if (api_key != "") {
@@ -273,6 +277,7 @@ function setAudioSourceByPost() {
     let temperature = null;
     let batch_size = null;
     let speed = null;
+    let seed = null;
 
     let headers = {};
 
@@ -313,6 +318,8 @@ function setAudioSourceByPost() {
         temperature = $("#input_temperature4").val();
         batch_size = $("#input_batch_size4").val();
         // speed = $("#input_speed4").val();
+        seed = $("#input_seed4").val();
+
     }
 
 
@@ -374,6 +381,9 @@ function setAudioSourceByPost() {
     }
     if (currentModelPage == 4 && speed) {
         formData.append('speed', speed);
+    }
+    if (currentModelPage == 4 && seed) {
+        formData.append('seed', seed);
     }
 
     let downloadButton = document.getElementById("downloadButton" + currentModelPage);
