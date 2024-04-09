@@ -202,10 +202,10 @@ nvidia-smi
 Taking CUDA 11.7 as an example, download it from the [official website](https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Windows&amp;target_arch=x86_64&amp;target_version=10&amp;target_type=exe_local)
 ### Install GPU version of PyTorch
 
-1.13.1+cu117 is recommended, other versions may have memory instability issues.
+https://pytorch.org/
 
 ```
-pip install torch==1.13.1+cu117 --extra-index-url https://download.pytorch.org/whl/cu117
+pip install torch --index-url https://download.pytorch.org/whl/cu118
 ```
 ## Linux
 The installation process is similar, but I don't have the environment to test it.

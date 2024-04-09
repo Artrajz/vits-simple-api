@@ -211,10 +211,10 @@ nvidia-smi
 
 ### 安装GPU版pytorch
 
-CUDA11.7对应的pytorch是用这个命令安装，推荐使用1.13.1+cu117，其他版本可能存在内存不稳定的问题。
+https://pytorch.org/
 
 ```
-pip install torch==1.13.1+cu117 --extra-index-url https://download.pytorch.org/whl/cu117
+pip install torch --index-url https://download.pytorch.org/whl/cu118
 ```
 
 ## Linux
