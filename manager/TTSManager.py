@@ -1,19 +1,18 @@
 import logging
 import os
+import re
 import traceback
+import xml.etree.ElementTree as ET
+from io import BytesIO
 
 import librosa
-import re
 import numpy as np
-import xml.etree.ElementTree as ET
-
-from contants import config
 import soundfile as sf
-from io import BytesIO
 from graiax import silkcoder
-from contants import ModelType
 from scipy.signal import resample_poly
 
+from contants import ModelType
+from contants import config
 from logger import logger
 from manager.observer import Observer
 from utils.data_utils import check_is_none
@@ -248,9 +247,10 @@ class TTSManager(Observer):
                     raise ValueError(f"Unsupported model type: {task.get('model_type')}")
                 model_type = ModelType(model_type_str)
                 model = self.get_model(model_type, task.get("id"))
-                task["id"] = self.get_real_id(model_type, task.get("id"))
                 sampling_rates.append(model.sampling_rate)
                 last_sampling_rate = model.sampling_rate
+
+                # self.logger.debug(model, model.sampling_rate, task)
                 audio = self.infer_map[model_type](task, encode=False)
                 audios.append(audio)
         # 得到最高的采样率
@@ -394,7 +394,7 @@ class TTSManager(Observer):
             state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
         sampling_rate = model.sampling_rate
         sentences_list = sentence_split(state["text"], state["segment_size"])
-        
+
         if model.zh_bert_extra:
             infer_func = model.infer
             state["lang"] = "zh"
@@ -411,7 +411,7 @@ class TTSManager(Observer):
             state["text"] = sentences
             audio = infer_func(**state)
             audios.append(audio)
-            
+
         audio = np.concatenate(audios)
 
         return self.encode(sampling_rate, audio, state["format"]) if encode else audio
@@ -430,7 +430,7 @@ class TTSManager(Observer):
             infer_func = model.infer_multilang
         else:
             infer_func = model.infer
-            
+
         for sentences in sentences_list:
             state["text"] = sentences
             audio = infer_func(**state)
