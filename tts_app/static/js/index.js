@@ -114,7 +114,7 @@ function getLink() {
         temperature = document.getElementById('input_temperature4').value;
         batch_size = document.getElementById('input_batch_size4').value;
         seed = document.getElementById('input_seed4').value;
-        // speed = document.getElementById('input_speed4').value;
+        speed = document.getElementById('input_speed4').value;
         url += "/voice/gpt-sovits?id=" + id;
 
     } else {
@@ -317,7 +317,7 @@ function setAudioSourceByPost() {
         top_p = $("#input_top_p4").val();
         temperature = $("#input_temperature4").val();
         batch_size = $("#input_batch_size4").val();
-        // speed = $("#input_speed4").val();
+        speed = $("#input_speed4").val();
         seed = $("#input_seed4").val();
 
     }

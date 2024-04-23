@@ -449,17 +449,12 @@ class GPT_SoVITS:
 
         try:
             if speed_factor != 1.0:
-                audio = self.speed_change(audio, speed_factor=speed_factor, sr=int(sr))
+                from .utils import speed_change
+                audio = speed_change(audio, speed_factor=speed_factor, sr=int(sr))
         except Exception as e:
             logging.error(f"Failed to change speed of audio: \n{e}")
 
         return audio
-
-    def speed_change(self, input_audio: np.ndarray, speed_factor: float, sr: int):
-        # 变速处理
-        processed_audio = librosa.effects.time_stretch(input_audio, rate=speed_factor)
-
-        return processed_audio
 
     def infer(self, text, lang, reference_audio, reference_audio_sr, prompt_text, prompt_lang, top_k, top_p,
               temperature, batch_size: int = 5, batch_threshold: float = 0.75, split_bucket: bool = True,

@@ -1,11 +1,10 @@
-"""
-改用librosa。
-
-（不是ffmpeg不好用，而是少装一个软件更有性价比）
-"""
+import logging
+import subprocess
 
 import librosa
 import numpy as np
+
+import config
 
 
 class DictToAttrRecursive(dict):
@@ -65,3 +64,37 @@ class DictToAttrRecursive(dict):
 #         raise RuntimeError(f"Failed to load audio: {e}")
 #
 #     return np.frombuffer(out, np.float32).flatten()
+
+def speed_change(input_audio: np.ndarray, speed_factor: float, sr: int):
+    """这里修改为使用原数据float32变速，GPT-SoVITS官方为int16"""
+
+    raw_audio = input_audio.tobytes()
+
+    ffmpeg_command = [
+        # f'{config.abs_path}/bin/ffmpeg',
+        'ffmpeg',
+        '-f', 'f32le',
+        '-ar', str(sr),
+        '-ac', '1',
+        '-i', 'pipe:',
+        '-filter:a', f'atempo={speed_factor}',
+        '-f', 'f32le',
+        '-acodec', 'pcm_f32le',
+        'pipe:'
+    ]
+    try:
+        ffmpeg_process = subprocess.Popen(
+            ffmpeg_command,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        out, info = ffmpeg_process.communicate(input=raw_audio)
+    except Exception as e:
+        logging.error(e)
+        logging.error(info)
+
+    # 将管道输出解码为 NumPy 数组
+    processed_audio = np.frombuffer(out, np.float32)
+
+    return processed_audio
