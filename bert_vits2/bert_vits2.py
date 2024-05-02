@@ -52,9 +52,10 @@ class Bert_VITS2:
             self.num_tones = num_tones_v111
             self.text_extra_str_map.update({"zh": "_v100"})
 
-        elif self.version in ["1.1.0-transition"]:
+        elif self.version in ["1.1.0_transition"]:
             """
             chinese-roberta-wwm-ext-large
+            bert-base-japanese-v3
             """
             self.version = "1.1.0-transition"
             self.hps_ms.model.n_layers_trans_flow = 3
