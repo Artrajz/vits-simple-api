@@ -280,6 +280,8 @@ class ModelManager(Subject):
             self.model_handler.load_bert("CHINESE_ROBERTA_WWM_EXT_LARGE")
             model.load_model(self.model_handler)
 
+            self.available_tts_model.add(ModelType.GPT_SOVITS.value)
+
         sid2model = []
         speakers = []
         new_id = len(self.voice_speakers[model_type.value])
