@@ -6,6 +6,7 @@ from flask import Flask
 from flask_apscheduler import APScheduler
 from flask_login import LoginManager
 from flask_wtf import CSRFProtect
+from flask_cors import CORS
 
 from utils.data_utils import clean_folder, check_is_none
 from utils.phrases_dict import phrases_dict_init
@@ -27,6 +28,8 @@ phrases_dict_init()
 csrf = CSRFProtect(app)
 # 禁用tts api请求的CSRF防护
 csrf.exempt(voice_api)
+
+CORS(app, resources={r"/voice/*": {"origins": config.http_service.origins}})
 
 if config.system.is_admin_enabled:
     login_manager = LoginManager()
