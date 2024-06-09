@@ -304,11 +304,11 @@ class TTSManager(Observer):
         # 停顿0.5s，避免语音分段合成再拼接后的连接突兀
         brk = np.zeros(int(0.5 * sampling_rate), dtype=np.int16)
 
-        audios = []
         sentences_num = len(sentences_list)
 
         for i, sentence in enumerate(sentences_list):
             sentence_audio = model.infer(sentence, state["id"], state["noise"], state["noisew"], state["length"])
+            audios = []
             audios.append(sentence_audio)
             if i < sentences_num - 1:
                 audios.append(brk)
@@ -318,11 +318,6 @@ class TTSManager(Observer):
 
             for encoded_audio_chunk in self.generate_audio_chunks(encoded_audio):
                 yield encoded_audio_chunk
-        #     if getattr(config, "SAVE_AUDIO", False):
-        #         audio.write(encoded_audio.getvalue())
-        # if getattr(config, "SAVE_AUDIO", False):
-        #     path = f"{config.CACHE_PATH}/{fname}"
-        #     utils.save_audio(audio.getvalue(), path)
 
     def hubert_vits_infer(self, state, encode=True):
         model = self.get_model(ModelType.HUBERT_VITS, state["id"])
