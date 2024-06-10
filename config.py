@@ -335,6 +335,7 @@ class HttpService(AsDictMixin):
     host: str = "0.0.0.0"
     port: int = 23456
     debug: bool = False
+    origins: str = "*"
 
 
 @dataclass
