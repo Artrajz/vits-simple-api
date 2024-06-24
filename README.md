@@ -238,7 +238,7 @@ This extra measure helps ensure absolute security when making the admin backend 
 
 ## Bert-VITS2 Configuration and Language/Bert Model Usage
 
-Starting from Bert-VITS2 v2.0, a model requires loading three different language Bert models. If you only need to use one or two languages, you can add the `lang` parameter in the `config.json` file of the model's data section. The value `['zh']` indicates that the model only uses Chinese and will load Chinese Bert models. The value `['zh', 'ja']` indicates the usage of both Chinese and Japanese bilingual models, and only Chinese and Japanese Bert models will be loaded. Similarly, this pattern continues for other language combinations.
+Starting from Bert-VITS2 v2.0, a model requires loading three different language Bert models. If you only need to use one or two languages, you can add the `lang` parameter in the `config.json` file of the model's data section. The value `["zh"]` indicates that the model only uses Chinese and will load Chinese Bert models. The value `["zh", "ja"]` indicates the usage of both Chinese and Japanese bilingual models, and only Chinese and Japanese Bert models will be loaded. Similarly, this pattern continues for other language combinations.
 
 Example:
 
