@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/fileinput.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/plugins/select2.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/plugins/select2-bootstrap-5-theme.min.css') }}">
 </head>
 <body>
 <main class="main-container">
@@ -43,7 +45,8 @@
             {% block gpt_sovits %}
                 {% include 'pages/gpt_sovits.html' %}
             {% endblock gpt_sovits %}
-
+        </div>
+        <div>
             <div class="mt-2">
                 {% if speakers_count == 0 %}
                     <div style="color: red;">未加载任何模型</div>
@@ -57,7 +60,8 @@
                 </div>
                 <div>
                     <label>API调用：</label>
-                    <a id="vits_link" href="https://artrajz-vits-simple-api.hf.space/voice/vits?text=你好,こんにちは&id=164"
+                    <a id="vits_link"
+                       href="https://artrajz-vits-simple-api.hf.space/voice/vits?text=你好,こんにちは&id=164"
                        style="text-decoration: none; color: black">
                         https://artrajz-vits-simple-api.hf.space/voice/vits?text=你好,こんにちは&id=164
                     </a>
@@ -92,5 +96,19 @@
 
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 <script src="{{ url_for('static', filename='js/plugins/fileinput.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/plugins/select2.min.js') }}"></script>
+
+<script>
+    $(document).ready(function () {
+        $('.input_id').select2({
+            theme: 'bootstrap-5',
+        });
+
+        $('.input_preset').select2({
+            theme: 'bootstrap-5',
+        });
+    });
+</script>
+
 </body>
 </html>
