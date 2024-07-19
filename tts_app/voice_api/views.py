@@ -1,5 +1,6 @@
 import copy
 import os
+import re
 import time
 import uuid
 from io import BytesIO
@@ -605,10 +606,18 @@ def voice_gpt_sovits_api():
         logger.info(f"[{ModelType.GPT_SOVITS.value}] speaker id {id} does not exist")
         return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
 
+    lang_list = re.split(r'[,，\s]+', lang)
     # 校验模型是否支持输入的语言
     speaker_lang = model_manager.voice_speakers[ModelType.GPT_SOVITS.value][id].get('lang')
-    if lang not in ["auto", "mix"] and len(speaker_lang) > 1 and lang not in speaker_lang:
-        logger.info(f"[{ModelType.GPT_SOVITS.value}] lang \"{lang}\" is not in {speaker_lang}")
+    for idx in range(len(lang_list)):
+        lang_list[idx] = lang_list[idx].lower()
+        lang = lang_list[idx]
+        if lang not in ["auto", "mix"] and len(speaker_lang) > 1 and lang not in speaker_lang:
+            logger.info(f"[{ModelType.GPT_SOVITS.value}] lang \"{lang}\" is not in {speaker_lang}")
+            return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}),
+                                 400)
+
+    if "auto" in lang_list and len(lang_list) > 1:
         return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}),
                              400)
 
@@ -629,7 +638,7 @@ def voice_gpt_sovits_api():
              "id": id,
              "format": format,
              "segment_size": segment_size,
-             "lang": lang,
+             "lang": lang_list,
              "speaker_lang": speaker_lang,
              "reference_audio": reference_audio,
              # "reference_audio_sr": reference_audio_sr,

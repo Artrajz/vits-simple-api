@@ -181,8 +181,13 @@ class GPT_SoVITS:
 
         return bert
 
-    def get_bert_and_cleaned_text_multilang(self, text: list):
-        sentences = split_languages(text, expand_abbreviations=True, expand_hyphens=True)
+    def get_bert_and_cleaned_text_multilang(self, text: str, lang_list: list):
+        target_languages = lang_list
+        if len(lang_list) == 1 and lang_list[0] == "auto":
+            target_languages = self.lang
+
+        sentences = split_languages(text, expand_abbreviations=True, expand_hyphens=True,
+                                    target_languages=target_languages)
 
         phones_list, word2ph_list, norm_text_list, bert_list = [], [], [], []
 
@@ -253,8 +258,9 @@ class GPT_SoVITS:
         text = re.split(pattern, text)[0].strip()
         return text
 
-    def preprocess_text(self, text: str, lang: str, segment_size: int):
+    def preprocess_text(self, text: str, lang_list: list, segment_size: int):
         texts = sentence_split(text, segment_size)
+        lang = lang_list[0]  # main language
 
         result = []
         for text in texts:
@@ -264,11 +270,7 @@ class GPT_SoVITS:
             if (text[-1] not in splits):
                 text += "。" if lang != "en" else "."
 
-            if lang == "auto":
-                phones, word2ph, norm_text, bert_features = self.get_bert_and_cleaned_text_multilang(text)
-            else:
-                phones, word2ph, norm_text = self.get_cleaned_text(text, lang)
-                bert_features = self.get_bert_feature(text, phones, word2ph, norm_text).to(self.device)
+            phones, word2ph, norm_text, bert_features = self.get_bert_and_cleaned_text_multilang(text, lang_list)
 
             res = {
                 "phones": phones,
