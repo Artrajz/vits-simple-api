@@ -263,7 +263,13 @@ class GPT_SoVITS:
                 text = "。" + text if lang != "en" else "." + text
             if (text[-1] not in splits):
                 text += "。" if lang != "en" else "."
-            phones, word2ph, norm_text, bert_features = self.get_bert_and_cleaned_text_multilang(text)
+
+            if lang == "auto":
+                phones, word2ph, norm_text, bert_features = self.get_bert_and_cleaned_text_multilang(text)
+            else:
+                phones, word2ph, norm_text = self.get_cleaned_text(text, lang)
+                bert_features = self.get_bert_feature(text, phones, word2ph, norm_text).to(self.device)
+
             res = {
                 "phones": phones,
                 "bert_features": bert_features,
