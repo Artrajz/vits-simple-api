@@ -2,6 +2,7 @@ import logging
 
 import regex as re
 
+from contants import config
 from utils.data_utils import check_is_none
 from utils.classify_language import classify_language, split_alpha_nonalpha
 
@@ -18,9 +19,7 @@ def _expand_hyphens(text):
 
 
 def markup_language(text: str, target_languages: list = None) -> str:
-    pattern = r'[\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\>\=\?\@\[\]\{\}\\\\\^\_\`' \
-              r'\！？。＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」' \
-              r'『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘\'\‛\“\”\„\‟…‧﹏.]+'
+    pattern = config.LanguageIdentification.split_pattern
     sentences = re.split(pattern, text)
 
     pre_lang = ""
@@ -51,9 +50,7 @@ def markup_language(text: str, target_languages: list = None) -> str:
 
 def split_languages(text: str, target_languages: list = None, segment_size: int = 50,
                     expand_abbreviations: bool = False, expand_hyphens: bool = False) -> list:
-    pattern = r'[\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\>\=\?\@\[\]\{\}\\\\\^\_\`' \
-              r'\！？\。＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」' \
-              r'『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘\'\‛\“\”\„\‟…‧﹏.]+'
+    pattern = config.language_identification.split_pattern
     sentences = re.split(pattern, text)
 
     pre_lang = ""

@@ -42,10 +42,6 @@ the model paths specified here have the highest priority and will be loaded each
 it's recommended to specify model paths in config.yaml.
 """
 
-model_list = [
-    # {"model_path": "model_name/G_9000.pth", "config_path": "model_name/config.json"},
-]
-
 
 @dataclass
 class AsDictMixin:
@@ -391,6 +387,9 @@ class LanguageIdentification(AsDictMixin):
     espeak_library: str = r"C:/Program Files/eSpeak NG/libespeak-ng.dll" if "win" in sys.platform else ""
     # zh ja ko en... If it is empty, it will be read based on the text_cleaners specified in the config.json.
     language_automatic_detect: list = field(default_factory=list)
+    split_pattern: str = r'[\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\>\=\?\@\[\]\{\}\\\\\^\_\`' \
+                         r'\！？。＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」' \
+                         r'『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘\'\‛\“\”\„\‟…‧﹏.]+'
 
 
 @dataclass
@@ -475,9 +474,6 @@ class Config(AsDictMixin):
                     logging.info("Loading config success!")
                 else:
                     logging.info("config.yaml is empty, initializing config.yaml...")
-
-                # Load default models from config.py.
-                # config.update_config(model_list)
 
                 # If parameters are incomplete, they will be automatically filled in upon saving.
                 Config.save_config(config)
