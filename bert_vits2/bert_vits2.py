@@ -225,7 +225,7 @@ class Bert_VITS2:
     def get_speakers(self):
         return self.speakers
 
-    def get_text(self, text, language_str, hps, style_text=None, style_weight=0.7):
+    def get_text(self, text, language_str: str, hps, style_text=None, style_weight=0.7):
         clean_text_lang_str = language_str + self.text_extra_str_map.get(language_str, "")
         bert_feature_lang_str = language_str + self.bert_extra_str_map.get(language_str, "")
 
@@ -337,8 +337,9 @@ class Bert_VITS2:
         torch.cuda.empty_cache()
         return audio
 
-    def infer(self, text, id, lang, sdp_ratio, noise, noisew, length, reference_audio=None, emotion=None,
+    def infer(self, text, id, lang: list, sdp_ratio, noise, noisew, length, reference_audio=None, emotion=None,
               text_prompt=None, style_text=None, style_weigth=0.7, **kwargs):
+        lang = lang[0]
         zh_bert, ja_bert, en_bert, phones, tones, lang_ids = self.get_text(text, lang, self.hps_ms, style_text,
                                                                            style_weigth)
 
@@ -351,9 +352,15 @@ class Bert_VITS2:
         return self._infer(id, phones, tones, lang_ids, zh_bert, ja_bert, en_bert, sdp_ratio, noise, noisew, length,
                            emo)
 
-    def infer_multilang(self, text, id, lang, sdp_ratio, noise, noisew, length, reference_audio=None, emotion=None,
+    def infer_multilang(self, text, id, lang: list, sdp_ratio, noise, noisew, length, reference_audio=None,
+                        emotion=None,
                         text_prompt=None, style_text=None, style_weigth=0.7, **kwargs):
-        sentences_list = split_languages(text, self.lang, expand_abbreviations=True, expand_hyphens=True)
+        target_languages = lang
+        if len(lang) == 1 and lang[0] == "auto":
+            target_languages = self.lang
+
+        sentences_list = split_languages(text, target_languages=target_languages, expand_abbreviations=True,
+                                         expand_hyphens=True)
 
         emo = None
         if self.hps_ms.model.emotion_embedding == 1:

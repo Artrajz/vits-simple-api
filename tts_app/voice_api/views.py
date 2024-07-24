@@ -69,6 +69,32 @@ def update_default_params(state):
     return state
 
 
+def get_lang_list(lang, speaker_lang):
+    lang_list = re.split(r'[,，\s]+', lang)
+    new_lang_list = []
+
+    for idx in range(len(lang_list)):
+        if lang_list[idx].strip() == "":
+            continue
+        lang_list[idx] = lang_list[idx].lower()
+        lang = lang_list[idx]
+        if lang not in ["auto", "mix"] and len(speaker_lang) > 1 and lang not in speaker_lang:
+            logger.info(f"[{ModelType.BERT_VITS2.value}] lang \"{lang}\" is not in {speaker_lang}")
+            status = "error"
+            msg = f"lang '{lang}' is not in {speaker_lang}"
+            return new_lang_list, status, msg
+        new_lang_list.append(lang)
+
+    if "auto" in lang_list and len(lang_list) > 1:
+        status = "error"
+        msg = "Do not pass 'auto' along with other languages."
+        return new_lang_list, status, msg
+
+    status = ""
+    msg = ""
+    return new_lang_list, status, msg
+
+
 @voice_api.route('/default_parameter', methods=["GET", "POST"])
 def default_parameter():
     gpt_sovits_config = copy.deepcopy(config.gpt_sovits_config.asdict())
@@ -496,10 +522,9 @@ def voice_bert_vits2_api():
 
     # 校验模型是否支持输入的语言
     speaker_lang = model_manager.voice_speakers[ModelType.BERT_VITS2.value][id].get('lang')
-    if lang not in ["auto", "mix"] and len(speaker_lang) > 1 and lang not in speaker_lang:
-        logger.info(f"[{ModelType.BERT_VITS2.value}] lang \"{lang}\" is not in {speaker_lang}")
-        return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}),
-                             400)
+    lang_list, status, msg = get_lang_list(lang, speaker_lang)
+    if status == "error":
+        return make_response(jsonify({"status": status, "message": msg}), 400)
 
     # 如果配置文件中设置了LANGUAGE_AUTOMATIC_DETECT则强制将speaker_lang设置为LANGUAGE_AUTOMATIC_DETECT
     if (lang_detect := config.language_identification.language_automatic_detect) and isinstance(lang_detect, list):
@@ -522,7 +547,7 @@ def voice_bert_vits2_api():
              "noisew": noisew,
              "sdp_ratio": sdp_ratio,
              "segment_size": segment_size,
-             "lang": lang,
+             "lang": lang_list,
              "speaker_lang": speaker_lang,
              "emotion": emotion,
              "reference_audio": reference_audio,
@@ -606,20 +631,11 @@ def voice_gpt_sovits_api():
         logger.info(f"[{ModelType.GPT_SOVITS.value}] speaker id {id} does not exist")
         return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
 
-    lang_list = re.split(r'[,，\s]+', lang)
     # 校验模型是否支持输入的语言
     speaker_lang = model_manager.voice_speakers[ModelType.GPT_SOVITS.value][id].get('lang')
-    for idx in range(len(lang_list)):
-        lang_list[idx] = lang_list[idx].lower()
-        lang = lang_list[idx]
-        if lang not in ["auto", "mix"] and len(speaker_lang) > 1 and lang not in speaker_lang:
-            logger.info(f"[{ModelType.GPT_SOVITS.value}] lang \"{lang}\" is not in {speaker_lang}")
-            return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}),
-                                 400)
-
-    if "auto" in lang_list and len(lang_list) > 1:
-        return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}),
-                             400)
+    lang_list, status, msg = get_lang_list(lang, speaker_lang)
+    if status == "error":
+        return make_response(jsonify({"status": status, "message": msg}), 400)
 
     # 如果配置文件中设置了LANGUAGE_AUTOMATIC_DETECT则强制将speaker_lang设置为LANGUAGE_AUTOMATIC_DETECT
     if (lang_detect := config.language_identification.language_automatic_detect) and isinstance(lang_detect, list):

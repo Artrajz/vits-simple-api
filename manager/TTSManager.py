@@ -392,14 +392,14 @@ class TTSManager(Observer):
 
         if model.zh_bert_extra:
             infer_func = model.infer
-            state["lang"] = "zh"
+            state["lang"] = ["zh"]
         elif model.ja_bert_extra:
             infer_func = model.infer
-            state["lang"] = "ja"
-        elif state["lang"].lower() == "auto":
-            infer_func = model.infer_multilang
-        else:
+            state["lang"] = ["ja"]
+        elif len(state["lang"]) == 1 and "auto" not in state["lang"]:
             infer_func = model.infer
+        else:
+            infer_func = model.infer_multilang
 
         audios = []
         for sentences in sentences_list:
