@@ -82,10 +82,12 @@
                         <input class="form-check-input" type="checkbox" role="switch" id="api-key-enabled">
                         <label class="form-check-label" for="flexSwitchCheckDefault">api_key_enabled</label>
                     </div>
-                    <div class="input-group mb-3 item">
-                        <span class="input-group-text">api_key</span>
-                        <input type="text" class="form-control" type="text" id="api-key">
+                    <div id="api-keys">
+                    <!-- API keys will be dynamically inserted here -->
                     </div>
+
+                    <button class="btn btn-primary mt-3" id="add-api-key">Add API Key</button>
+
                     <div class="form-check form-switch item">
                         <input class="form-check-input" type="checkbox" role="switch" id="cache-audio">
                         <label class="form-check-label" for="flexSwitchCheckDefault">cache_audio</label>

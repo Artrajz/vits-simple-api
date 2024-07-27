@@ -7,7 +7,7 @@ import sys
 import torch
 import yaml
 from typing import List, Union, Optional, Dict, Type
-from pydantic import BaseModel, Field, validator, ValidationError
+from pydantic import BaseModel, Field, ValidationError
 
 from contants import TTSType
 
@@ -331,9 +331,6 @@ class Config(BaseModel):
 def save_config_to_yaml(config: Config):
     with open(CONFIG_PATH, 'w', encoding='utf-8') as file:
         yaml.safe_dump(config.model_dump(), file, allow_unicode=True, sort_keys=False)
-
-
-
 
 
 config = Config.load_config(CONFIG_PATH)
