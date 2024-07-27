@@ -11,8 +11,8 @@ import soundfile as sf
 from graiax import silkcoder
 from scipy.signal import resample_poly
 
-from contants import ModelType
-from contants import config
+from contants import TTSType
+from config import config, BASE_DIR
 from logger import logger
 from manager.observer import Observer
 from utils.data_utils import check_is_none
@@ -25,11 +25,11 @@ class TTSManager(Observer):
         self.strength_dict = {"x-weak": 0.25, "weak": 0.5, "Medium": 0.75, "Strong": 1, "x-strong": 1.25}
         self.logger = logger
         self.infer_map = {
-            ModelType.VITS: self.vits_infer,
-            ModelType.W2V2_VITS: self.w2v2_vits_infer,
-            ModelType.HUBERT_VITS: self.hubert_vits_infer,
-            ModelType.BERT_VITS2: self.bert_vits2_infer,
-            ModelType.GPT_SOVITS: self.gpt_sovits_infer
+            TTSType.VITS: self.vits_infer,
+            TTSType.W2V2_VITS: self.w2v2_vits_infer,
+            TTSType.HUBERT_VITS: self.hubert_vits_infer,
+            TTSType.BERT_VITS2: self.bert_vits2_infer,
+            TTSType.GPT_SOVITS: self.gpt_sovits_infer
         }
         self.speaker_lang = None
         if getattr(config, "LANGUAGE_AUTOMATIC_DETECT", []) != []:
@@ -141,11 +141,11 @@ class TTSManager(Observer):
         brk_count = 0
         strength_dict = {"x-weak": 0.25, "weak": 0.5, "Medium": 0.75, "Strong": 1, "x-strong": 1.25}
 
-        params = {ModelType.VITS.value: config.vits_config.asdict(),
-                  ModelType.W2V2_VITS.value: config.w2v2_vits_config.asdict(),
-                  ModelType.HUBERT_VITS.value: config.hubert_vits_config.asdict(),
-                  ModelType.BERT_VITS2.value: config.bert_vits2_config.asdict(),
-                  ModelType.GPT_SOVITS.value: config.gpt_sovits_config.asdict(),
+        params = {TTSType.VITS: config.vits_config.asdict(),
+                  TTSType.W2V2_VITS: config.w2v2_vits_config.asdict(),
+                  TTSType.HUBERT_VITS: config.hubert_vits_config.asdict(),
+                  TTSType.BERT_VITS2: config.bert_vits2_config.asdict(),
+                  TTSType.GPT_SOVITS: config.gpt_sovits_config.asdict(),
                   }
 
         for element in root.iter():
@@ -242,10 +242,10 @@ class TTSManager(Observer):
                 sampling_rates.append(last_sampling_rate)
             else:
                 model_type_str = task.get("model_type").upper()
-                if model_type_str not in [ModelType.VITS.value, ModelType.W2V2_VITS.value, ModelType.BERT_VITS2.value,
-                                          ModelType.GPT_SOVITS.value]:
+                if model_type_str not in [TTSType.VITS, TTSType.W2V2_VITS, TTSType.BERT_VITS2,
+                                          TTSType.GPT_SOVITS]:
                     raise ValueError(f"Unsupported model type: {task.get('model_type')}")
-                model_type = ModelType(model_type_str)
+                model_type = TTSType(model_type_str)
                 model = self.get_model(model_type, task.get("id"))
                 sampling_rates.append(model.sampling_rate)
                 last_sampling_rate = model.sampling_rate
@@ -262,10 +262,10 @@ class TTSManager(Observer):
         return encoded_audio
 
     def vits_infer(self, state, encode=True):
-        model = self.get_model(ModelType.VITS, state["id"])
+        model = self.get_model(TTSType.VITS, state["id"])
         if config.vits_config.dynamic_loading:
             model.load_model()
-        state["id"] = self.get_real_id(ModelType.VITS, state["id"])  # Change to real id
+        state["id"] = self.get_real_id(TTSType.VITS, state["id"])  # Change to real id
         # 去除所有多余的空白字符
         if state["text"] is not None:
             state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
@@ -291,8 +291,8 @@ class TTSManager(Observer):
         return self.encode(sampling_rate, audio, state["format"]) if encode else audio
 
     def stream_vits_infer(self, state, fname=None):
-        model = self.get_model(ModelType.VITS, state["id"])
-        state["id"] = self.get_real_id(ModelType.VITS, state["id"])
+        model = self.get_model(TTSType.VITS, state["id"])
+        state["id"] = self.get_real_id(TTSType.VITS, state["id"])
 
         # 去除所有多余的空白字符
         if state["text"] is not None:
@@ -320,16 +320,16 @@ class TTSManager(Observer):
                 yield encoded_audio_chunk
 
     def hubert_vits_infer(self, state, encode=True):
-        model = self.get_model(ModelType.HUBERT_VITS, state["id"])
-        state["id"] = self.get_real_id(ModelType.HUBERT_VITS, state["id"])
+        model = self.get_model(TTSType.HUBERT_VITS, state["id"])
+        state["id"] = self.get_real_id(TTSType.HUBERT_VITS, state["id"])
         sampling_rate = model.sampling_rate
         audio = model.infer(state["audio_path"], state["id"], state["noise"], state["noisew"], state["length"],
                             f0_scale=1)
         return self.encode(sampling_rate, audio, state["format"]) if encode else audio
 
     def w2v2_vits_infer(self, state, encode=True):
-        model = self.get_model(ModelType.W2V2_VITS, state["id"])
-        state["id"] = self.get_real_id(ModelType.W2V2_VITS, state["id"])
+        model = self.get_model(TTSType.W2V2_VITS, state["id"])
+        state["id"] = self.get_real_id(TTSType.W2V2_VITS, state["id"])
         # 去除所有多余的空白字符
         if state["text"] is not None:
             state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
@@ -356,15 +356,15 @@ class TTSManager(Observer):
         return self.encode(sampling_rate, audio, state["format"]) if encode else audio
 
     def vits_voice_conversion(self, state, encode=True):
-        original_model_id = int(self.get_model_id(ModelType.VITS, state["original_id"]))
-        target_model_id = int(self.get_model_id(ModelType.VITS, state["target_id"]))
+        original_model_id = int(self.get_model_id(TTSType.VITS, state["original_id"]))
+        target_model_id = int(self.get_model_id(TTSType.VITS, state["target_id"]))
 
         if original_model_id != target_model_id:
             raise ValueError(f"speakers are in diffrent VITS Model")
 
-        model = self.get_model(ModelType.VITS, state["original_id"])
-        state["original_id"] = int(self.get_real_id(ModelType.VITS, state["original_id"]))
-        state["target_id"] = int(self.get_real_id(ModelType.VITS, state["target_id"]))
+        model = self.get_model(TTSType.VITS, state["original_id"])
+        state["original_id"] = int(self.get_real_id(TTSType.VITS, state["original_id"]))
+        state["target_id"] = int(self.get_real_id(TTSType.VITS, state["target_id"]))
 
         sampling_rate = model.sampling_rate
 
@@ -381,8 +381,8 @@ class TTSManager(Observer):
         return emotion_npy
 
     def bert_vits2_infer(self, state, encode=True):
-        model = self.get_model(model_type=ModelType.BERT_VITS2, id=state["id"])
-        state["id"] = self.get_real_id(model_type=ModelType.BERT_VITS2, id=state["id"])
+        model = self.get_model(model_type=TTSType.BERT_VITS2, id=state["id"])
+        state["id"] = self.get_real_id(model_type=TTSType.BERT_VITS2, id=state["id"])
 
         # 去除所有多余的空白字符
         if state["text"] is not None:
@@ -412,8 +412,8 @@ class TTSManager(Observer):
         return self.encode(sampling_rate, audio, state["format"]) if encode else audio
 
     def stream_bert_vits2_infer(self, state, encode=True):
-        model = self.get_model(ModelType.BERT_VITS2, state["id"])
-        state["id"] = self.get_real_id(ModelType.BERT_VITS2, state["id"])
+        model = self.get_model(TTSType.BERT_VITS2, state["id"])
+        state["id"] = self.get_real_id(TTSType.BERT_VITS2, state["id"])
 
         # 去除所有多余的空白字符
         if state["text"] is not None:
@@ -450,7 +450,7 @@ class TTSManager(Observer):
             refer_wav_path = refer_preset.refer_wav_path
             if check_is_none(refer_wav_path):
                 raise ValueError(f"The refer_wav_path:{refer_wav_path} in preset:{state.get('preset')} is None!")
-            refer_wav_path = os.path.join(config.abs_path, config.system.data_path, refer_wav_path)
+            refer_wav_path = os.path.join(BASE_DIR, config.system.data_path, refer_wav_path)
             state["prompt_text"], state["prompt_lang"] = refer_preset.prompt_text, refer_preset.prompt_lang
 
             # 将reference_audio换成指定预设里的参考音频
@@ -467,7 +467,7 @@ class TTSManager(Observer):
         return state
 
     def gpt_sovits_infer(self, state, encode=True):
-        model = self.get_model(ModelType.GPT_SOVITS, state["id"])
+        model = self.get_model(TTSType.GPT_SOVITS, state["id"])
 
         state = self._set_reference_audio(state)
 
@@ -477,7 +477,7 @@ class TTSManager(Observer):
         return self.encode(sampling_rate, audio, state["format"]) if encode else audio
 
     def stream_gpt_sovits_infer(self, state, encode=True):
-        model = self.get_model(ModelType.GPT_SOVITS, state["id"])
+        model = self.get_model(TTSType.GPT_SOVITS, state["id"])
 
         state = self._set_reference_audio(state)
 
@@ -495,10 +495,10 @@ class TTSManager(Observer):
         in_model = self.get_model(in_state["model_type"], in_state["id"])
         nr_model = self.get_model(nr_state["model_type"], nr_state["id"])
 
-        infer_func = {ModelType.VITS: self.vits_infer,
-                      ModelType.W2V2_VITS: self.w2v2_vits_infer,
-                      ModelType.BERT_VITS2: self.bert_vits2_infer,
-                      ModelType.GPT_SOVITS: self.gpt_sovits_infer
+        infer_func = {TTSType.VITS: self.vits_infer,
+                      TTSType.W2V2_VITS: self.w2v2_vits_infer,
+                      TTSType.BERT_VITS2: self.bert_vits2_infer,
+                      TTSType.GPT_SOVITS: self.gpt_sovits_infer
                       }
 
         sentences_list = sentence_split_reading(in_state["text"])

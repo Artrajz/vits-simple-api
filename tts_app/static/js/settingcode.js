@@ -80,15 +80,17 @@ function show_config(configData) {
 
     });
 
-    $.each(configData.model_config, function (key, value) {
+    $.each(configData.tts_model_config, function (key, value) {
         var formattedKey = key.replace(/_/g, '-');
 
-        $('#model-config').append(`
+        if (formattedKey !== "tts-models") {
+            $('#tts-model-config').append(`
         <div class="input-group mb-3 item">
             <span class="input-group-text">${key}</span>
             <input type="text" class="form-control" id="${formattedKey}" value="${value}">
         </div>
         `);
+        }
     });
 
     $.each(configData.language_identification, function (key, value) {
@@ -141,11 +143,20 @@ function set_config() {
             } else {
                 // 如果不是复选框，获取输入框或选择框的值
                 itemValue = $(this).find('input, select').val();
+                if (itemId === "language_automatic_detect") {
+                    itemValue = itemValue.split(" ");
+                    if (itemValue.length === 1 && itemValue[0] === "") {
+                        itemValue = [];
+                    }
+                    if (itemValue === "")
+                        itemValue = [];
+                }
             }
 
             nestedDict[itemId] = itemValue;
             if (labelId == "system")
                 console.log(itemId)
+
         });
 
         configData[labelId.replace(/-/g, '_')] = nestedDict;

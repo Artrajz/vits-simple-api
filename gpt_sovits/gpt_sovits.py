@@ -9,7 +9,7 @@ import librosa
 import numpy as np
 import torch
 
-from contants import config
+from config import config
 from gpt_sovits.AR.models.t2s_lightning_module import Text2SemanticLightningModule
 from gpt_sovits.module.mel_processing import spectrogram_torch
 from gpt_sovits.module.models import SynthesizerTrn

@@ -1,6 +1,6 @@
 import torch
 
-from contants import config
+from config import config
 
 
 def get_bert_feature(text, word2ph, tokenizer, model, device=config.system.device, **kwargs):

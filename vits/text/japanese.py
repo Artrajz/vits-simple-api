@@ -3,7 +3,7 @@ import re
 from unidecode import unidecode
 import pyopenjtalk
 
-from contants import config
+from config import config, BASE_DIR
 from utils.download import download_file
 
 URLS = [
@@ -13,7 +13,7 @@ URLS = [
 ]
 install_path = os.path.dirname(pyopenjtalk.__file__)
 dict_path = os.path.join(install_path, "open_jtalk_dic_utf_8-1.11", "char.bin")
-TARGET_PATH = os.path.join(config.abs_path, config.system.cache_path, "open_jtalk_dic_utf_8-1.11.tar.gz")
+TARGET_PATH = os.path.join(BASE_DIR, config.system.cache_path, "open_jtalk_dic_utf_8-1.11.tar.gz")
 EXTRACT_DESTINATION = os.path.join(install_path, "")
 
 if not os.path.exists(dict_path):

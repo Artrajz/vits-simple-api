@@ -8,7 +8,7 @@ from transformers.models.wav2vec2.modeling_wav2vec2 import (
     Wav2Vec2PreTrainedModel,
 )
 
-from contants import config
+from config import config
 
 
 class RegressionHead(nn.Module):

@@ -2,7 +2,7 @@ import os.path
 import re
 import cn2an
 import opencc
-from contants import config
+from config import config, BASE_DIR
 from utils.download import download_file
 
 URLS = [
@@ -10,9 +10,9 @@ URLS = [
     "https://github.moeyy.xyz/https://github.com/CjangCjengh/chinese-dialect-lexicons/releases/download/v1.0.3/chinese_dialects.7z",
     "https://ghproxy.com/https://github.com/CjangCjengh/chinese-dialect-lexicons/releases/download/v1.0.3/chinese_dialects.7z",
 ]
-TARGET_PATH = os.path.join(config.abs_path, config.system.cache_path, "chinese_dialects.7z")
-EXTRACT_DESTINATION = os.path.join(config.abs_path, config.system.cache_path, "data/chinese_dialect_lexicons/")
-OPENCC_FILE_PATH = os.path.join(config.abs_path, "data/chinese_dialect_lexicons/jyutjyu.json")
+TARGET_PATH = os.path.join(BASE_DIR, config.system.cache_path, "chinese_dialects.7z")
+EXTRACT_DESTINATION = os.path.join(BASE_DIR, config.system.cache_path, "data/chinese_dialect_lexicons/")
+OPENCC_FILE_PATH = os.path.join(BASE_DIR, "data/chinese_dialect_lexicons/jyutjyu.json")
 
 if not os.path.exists(OPENCC_FILE_PATH):
     success, message = download_file(URLS, target_path=TARGET_PATH, extract_destination=EXTRACT_DESTINATION)

@@ -139,7 +139,7 @@ Starting from version 0.6.6, it is default behavior to automatically load all mo
 
 After the initial startup, a config.yaml configuration file will be generated. You need to change `tts_config.auto_load` to `false` in order to enable manual loading mode.
 
-You can modify the `tts_config.models` in the config.yaml or make modifications in the admin panel in the browser.
+You can modify the `tts_model_config.tts_modes` in the config.yaml or make modifications in the admin panel in the browser.
 
 **Note: After version 0.6.6, the model loading path has been modified. Please follow the steps below to configure the model path again!**
 

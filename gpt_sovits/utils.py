@@ -71,7 +71,7 @@ def speed_change(input_audio: np.ndarray, speed_factor: float, sr: int):
     raw_audio = input_audio.tobytes()
 
     ffmpeg_command = [
-        # f'{config.abs_path}/bin/ffmpeg',
+        # f'{BASE_DIR}/bin/ffmpeg',
         'ffmpeg',
         '-f', 'f32le',
         '-ar', str(sr),

@@ -9,7 +9,7 @@ import os
 import torch
 from transformers import AutoTokenizer, AutoModelForMaskedLM, BertTokenizer, MegatronBertModel
 
-from contants import config
+from config import config, BASE_DIR
 from utils.download import download_file
 from bert_vits2.text.chinese_bert import get_bert_feature as zh_bert
 from bert_vits2.text.english_bert_mock import get_bert_feature as en_bert
@@ -91,27 +91,27 @@ class ModelHandler:
             "CHINESE_HUBERT_BASE": "2fefccd26c2794a583b80f6f7210c721873cb7ebae2c1cde3baf9b27855e24d8",
         }
         self.model_path = {
-            "CHINESE_ROBERTA_WWM_EXT_LARGE": os.path.join(config.abs_path, config.system.data_path,
-                                                          config.model_config.chinese_roberta_wwm_ext_large),
-            "BERT_BASE_JAPANESE_V3": os.path.join(config.abs_path, config.system.data_path,
-                                                  config.model_config.bert_base_japanese_v3),
-            "BERT_LARGE_JAPANESE_V2": os.path.join(config.abs_path, config.system.data_path,
-                                                   config.model_config.bert_large_japanese_v2),
-            "DEBERTA_V2_LARGE_JAPANESE": os.path.join(config.abs_path, config.system.data_path,
-                                                      config.model_config.deberta_v2_large_japanese),
-            "DEBERTA_V3_LARGE": os.path.join(config.abs_path, config.system.data_path,
-                                             config.model_config.deberta_v3_large),
-            "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM": os.path.join(config.abs_path, config.system.data_path,
-                                                               config.model_config.deberta_v2_large_japanese_char_wwm),
-            "WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM": os.path.join(config.abs_path, config.system.data_path,
-                                                                        config.model_config.wav2vec2_large_robust_12_ft_emotion_msp_dim),
-            "CLAP_HTSAT_FUSED": os.path.join(config.abs_path, config.system.data_path,
-                                             config.model_config.clap_htsat_fused),
-            "Erlangshen_MegatronBert_1.3B_Chinese": os.path.join(config.abs_path, config.system.data_path,
-                                                                 config.model_config.erlangshen_MegatronBert_1_3B_Chinese),
-            "G2PWModel": os.path.join(config.abs_path, config.system.data_path, config.model_config.g2pw_model),
-            "CHINESE_HUBERT_BASE": os.path.join(config.abs_path, config.system.data_path,
-                                                config.model_config.chinese_hubert_base),
+            "CHINESE_ROBERTA_WWM_EXT_LARGE": os.path.join(BASE_DIR, config.system.data_path,
+                                                          config.resource_paths_config.chinese_roberta_wwm_ext_large),
+            "BERT_BASE_JAPANESE_V3": os.path.join(BASE_DIR, config.system.data_path,
+                                                  config.resource_paths_config.bert_base_japanese_v3),
+            "BERT_LARGE_JAPANESE_V2": os.path.join(BASE_DIR, config.system.data_path,
+                                                   config.resource_paths_config.bert_large_japanese_v2),
+            "DEBERTA_V2_LARGE_JAPANESE": os.path.join(BASE_DIR, config.system.data_path,
+                                                      config.resource_paths_config.deberta_v2_large_japanese),
+            "DEBERTA_V3_LARGE": os.path.join(BASE_DIR, config.system.data_path,
+                                             config.resource_paths_config.deberta_v3_large),
+            "DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM": os.path.join(BASE_DIR, config.system.data_path,
+                                                               config.resource_paths_config.deberta_v2_large_japanese_char_wwm),
+            "WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM": os.path.join(BASE_DIR, config.system.data_path,
+                                                                        config.resource_paths_config.wav2vec2_large_robust_12_ft_emotion_msp_dim),
+            "CLAP_HTSAT_FUSED": os.path.join(BASE_DIR, config.system.data_path,
+                                             config.resource_paths_config.clap_htsat_fused),
+            "Erlangshen_MegatronBert_1.3B_Chinese": os.path.join(BASE_DIR, config.system.data_path,
+                                                                 config.resource_paths_config.erlangshen_MegatronBert_1_3B_Chinese),
+            "G2PWModel": os.path.join(BASE_DIR, config.system.data_path, config.resource_paths_config.g2pw_model),
+            "CHINESE_HUBERT_BASE": os.path.join(BASE_DIR, config.system.data_path,
+                                                config.resource_paths_config.chinese_hubert_base),
         }
 
         self.lang_bert_func_map = {"zh": zh_bert, "en": en_bert, "ja": ja_bert, "ja_v111": ja_bert_v111,

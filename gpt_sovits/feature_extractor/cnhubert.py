@@ -12,11 +12,11 @@ import torch.nn as nn
 
 
 class CNHubert(nn.Module):
-    def __init__(self, cnhubert_base_path):
+    def __init__(self, cnhubert_BASE_DIR):
         super().__init__()
-        self.model = HubertModel.from_pretrained(cnhubert_base_path)
+        self.model = HubertModel.from_pretrained(cnhubert_BASE_DIR)
         self.feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(
-            cnhubert_base_path
+            cnhubert_BASE_DIR
         )
 
     def forward(self, x):

@@ -54,7 +54,7 @@ function show_model(model_list) {
 
 function renderModelCard(model_data, model_type) {
     var id = String(model_data["model_id"]);
-    var model_path = String(model_data["model_path"]);
+    var vits_path = String(model_data["vits_path"]);
     var n_speakers = String(model_data["n_speakers"]);
     var sovits_path = String(model_data["sovits_path"]);
     var gpt_path = String(model_data["gpt_path"]);
@@ -72,7 +72,7 @@ function renderModelCard(model_data, model_type) {
         $('<div></div>').text(gpt_path).addClass("model-card-info3").appendTo(wrap);
         $('<div></div>').text("x").addClass("unload-model").appendTo(wrap);
     } else {
-        $('<div></div>').text(model_path).addClass("model-card-info1").appendTo(wrap);
+        $('<div></div>').text(vits_path).addClass("model-card-info1").appendTo(wrap);
         $('<div></div>').text("n_speakers: " + n_speakers).addClass("model-card-info2").appendTo(wrap);
         $('<div></div>').text("x").addClass("unload-model").appendTo(wrap);
     }
@@ -103,8 +103,8 @@ function renderModelLoadCards(data) {
     $.each(data, function (index, model) {
         var card = $('<div></div>').addClass('model-load-item flex');
         var model_id = model.model_id;
-        var model_type = model.model_type;
-        var model_path = model.model_path;
+        var tts_type = model.tts_type;
+        var vits_path = model.vits_path;
         var config_path = model.config_path;
         var sovits_path = model.sovits_path;
         var gpt_path = model.gpt_path;
@@ -116,12 +116,13 @@ function renderModelLoadCards(data) {
         var gpt_name = null;
 
         $('<div></div>').text(model_id.toString()).addClass("unload-model-id").appendTo(card);
+        $('<div></div>').text(tts_type).addClass("unload-model-type").appendTo(card);
 
-
-        if (model_path != null && config_path != null) {
-            folder = model_path.split("/")[0];
-            model_name = model_path.split("/")[1];
+        if (vits_path != null && config_path != null) {
+            folder = vits_path.split("/")[0];
+            model_name = vits_path.split("/")[1];
             config_name = config_path.split("/")[1];
+
             $('<div></div>').text(folder).addClass("unload-model-folder").appendTo(card);
             $('<div></div>').text(model_name).addClass("unload-model-path model1").appendTo(card);
             $('<div></div>').text(config_name).addClass("unload-model-config model2").appendTo(card);
@@ -129,6 +130,7 @@ function renderModelLoadCards(data) {
             folder = sovits_path.split("/")[0];
             sovits_name = sovits_path.split("/")[1];
             gpt_name = gpt_path.split("/")[1];
+
             $('<div></div>').text(folder).addClass("unload-model-folder").appendTo(card);
             $('<div></div>').text(sovits_name).addClass("unload-sovits-path model1").appendTo(card);
             $('<div></div>').text(gpt_name).addClass("unload-gpt-config model2").appendTo(card);
@@ -144,7 +146,22 @@ function renderModelLoadCards(data) {
         card.on('click', function () {
             if (!isRequestInProgress) {
                 isRequestInProgress = true;
-                loadModel(card, model_path, config_path, sovits_path, gpt_path);
+                let tts_model = {};
+                if (tts_type == "GPT-SOVITS") {
+                    tts_model = {
+                        tts_type: tts_type,
+                        gpt_path: gpt_path,
+                        sovits_path: sovits_path
+                    }
+                } else {
+                    tts_model = {
+                        tts_type: tts_type,
+                        vits_path: vits_path,
+                        config_path: config_path
+                    }
+                }
+
+                loadModel(card, tts_model);
             }
 
         });
@@ -159,7 +176,7 @@ function renderModelLoadCards(data) {
 /*
 * 加载模型
 * */
-function loadModel(card, model_path, config_path, sovits_path, gpt_path) {
+function loadModel(card, tts_model) {
     var csrftoken = $('meta[name="csrf-token"]').attr('content');
 
     $.ajax({
@@ -169,12 +186,7 @@ function loadModel(card, model_path, config_path, sovits_path, gpt_path) {
         headers: {
             'X-CSRFToken': csrftoken
         },
-        data: JSON.stringify({
-            model_path: model_path,
-            config_path: config_path,
-            sovits_path: sovits_path,
-            gpt_path: gpt_path
-        }),
+        data: JSON.stringify(tts_model),
         success: function (response) {
             card.fadeOut();
             get_models_info();

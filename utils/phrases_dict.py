@@ -8,7 +8,7 @@ import pypinyin
 from pypinyin_dict.phrase_pinyin_data import large_pinyin
 from pypinyin_dict.pinyin_data import cc_cedict
 
-from contants import config
+from config import config, BASE_DIR
 
 phrases_dict = {
     "一骑当千": [["yí"], ["jì"], ["dāng"], ["qiān"]],
@@ -39,7 +39,7 @@ def load_phrases_from_file(file_path):
 def phrases_dict_init():
     logging.info("Loading phrases_dict")
     large_pinyin.load()
-    additional_phrases_file = os.path.join(config.abs_path, config.system.data_path, "phrases_dict.txt")
+    additional_phrases_file = os.path.join(BASE_DIR, config.system.data_path, "phrases_dict.txt")
     load_phrases_from_file(additional_phrases_file)
 
     for word in phrases_dict.keys():

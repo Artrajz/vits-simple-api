@@ -1,6 +1,6 @@
 from functools import wraps
 from flask import request, jsonify, make_response
-from contants import config
+from config import config
 
 
 def require_api_key(func):

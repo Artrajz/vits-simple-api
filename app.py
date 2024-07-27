@@ -1,3 +1,4 @@
+import logger
 import logging
 import os.path
 
@@ -15,7 +16,7 @@ from tts_app.voice_api.views import voice_api
 from tts_app.auth.views import auth
 from tts_app.admin.views import admin
 
-from contants import config
+from config import config, BASE_DIR
 
 app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), 'tts_app', 'templates'),
             static_folder=os.path.join(os.path.dirname(__file__), 'tts_app', 'static'))
@@ -63,16 +64,16 @@ def create_folders(paths):
             os.makedirs(path, exist_ok=True)
 
 
-create_folders([os.path.join(config.abs_path, config.system.upload_folder),
-                os.path.join(config.abs_path, config.system.cache_path), ])
+create_folders([os.path.join(BASE_DIR, config.system.upload_folder),
+                os.path.join(BASE_DIR, config.system.cache_path), ])
 
 
 # regular cleaning
 @scheduler.task('interval', id='clean_task', seconds=config.system.clean_interval_seconds,
                 misfire_grace_time=900)
 def clean_task():
-    clean_folder(os.path.join(config.abs_path, config.system.upload_folder))
-    clean_folder(os.path.join(config.abs_path, config.system.cache_path))
+    clean_folder(os.path.join(BASE_DIR, config.system.upload_folder))
+    clean_folder(os.path.join(BASE_DIR, config.system.cache_path))
 
 
 if __name__ == '__main__':

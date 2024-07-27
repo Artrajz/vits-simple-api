@@ -1,7 +1,7 @@
 import os
 import logging
 
-from contants import config
+from config import config
 
 
 class HParams:

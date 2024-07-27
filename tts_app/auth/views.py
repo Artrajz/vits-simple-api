@@ -1,7 +1,7 @@
 from flask import render_template, redirect, url_for, flash, Blueprint, current_app
 from flask_login import login_user, logout_user, login_required
 
-from contants import config
+from config import config
 from tts_app.auth.forms import LoginForm
 
 auth = Blueprint('auth', __name__)
