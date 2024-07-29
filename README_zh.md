@@ -166,9 +166,9 @@ tts_config:
   auto_load: false
   models:
   - config_path: model1/config.json
-    model_path: model1/G_1000.pth
+    vits_path: model1/G_1000.pth
   - config_path: model2/config.json
-    model_path: model2/G_1000.pth
+    vits_path: model2/G_1000.pth
 	# GPT-SoVITS则为
   - sovits_path: gpt_sovits1/model1_e8_s11536.pth
     gpt_path: gpt_sovits1/model1-e15.ckpt
@@ -186,7 +186,7 @@ tts_config:
   auto_load: false
   models:
   - config_path: D://model3/config.json
-    model_path: D://model3/G_1000.pth
+    vits_path: D://model3/G_1000.pth
 ```
 
 - models_path:是相对于data目录下的模型文件夹，默认为models，auto_load为true时将会加载models_path目录下的所有模型。
@@ -402,7 +402,7 @@ pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 
 ## API KEY
 
-在config.yaml中设置`api_key_enabled: true`以启用，api key填写：`api_key: api-key`。
+在config.yaml中设置`api_key_enabled: true`以启用。
 
 启用后，GET请求中使用需要增加参数api_key，POST请求中使用需要在header中添加参数`X-API-KEY`。
 
