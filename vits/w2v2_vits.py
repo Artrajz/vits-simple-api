@@ -11,7 +11,7 @@ from vits.models import SynthesizerTrn
 
 
 class W2V2_VITS:
-    def __init__(self, vits_path, config, device=torch.device("cpu"), **kwargs):
+    def __init__(self, vits_path, config, device="cpu", **kwargs):
         self.hps_ms = get_hparams_from_file(config) if isinstance(config, str) else config
         self.n_speakers = getattr(self.hps_ms.data, 'n_speakers', 0)
         self.n_symbols = len(getattr(self.hps_ms, 'symbols', []))
@@ -25,7 +25,7 @@ class W2V2_VITS:
 
         self.text_cleaners = getattr(self.hps_ms.data, 'text_cleaners', [None])[0]
         self.sampling_rate = self.hps_ms.data.sampling_rate
-        self.device = device
+        self.device = torch.device(device)
         self.vits_path = vits_path
 
         self.lang = lang_dict.get(self.text_cleaners, ["unknown"])

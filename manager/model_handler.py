@@ -22,7 +22,7 @@ from bert_vits2.text.japanese_bert_extra import get_bert_feature as ja_bert_extr
 
 
 class ModelHandler:
-    def __init__(self, device=config.system.device):
+    def __init__(self, device="cpu"):
         self.DOWNLOAD_PATHS = {
             "CHINESE_ROBERTA_WWM_EXT_LARGE": [
                 "https://huggingface.co/hfl/chinese-roberta-wwm-ext-large/resolve/main/pytorch_model.bin",
@@ -122,7 +122,7 @@ class ModelHandler:
         self.emotion = None
         self.clap = None
         self.pinyinPlus = None
-        self.device = device
+        self.device = torch.device(device)
         self.ssl_model = None
 
         if config.bert_vits2_config.torch_data_type.lower() in ["float16", "fp16"]:

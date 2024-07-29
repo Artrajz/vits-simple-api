@@ -21,7 +21,7 @@ class VITS:
         self.hps_ms.model.bert_embedding = self.bert_embedding
         self.text_cleaners = getattr(self.hps_ms.data, 'text_cleaners', [None])[0]
         self.sampling_rate = self.hps_ms.data.sampling_rate
-        self.device = device
+        self.device = torch.device(device)
         self.vits_path = vits_path
 
         # load checkpoint
