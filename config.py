@@ -288,23 +288,28 @@ class Config(BaseModel):
     @staticmethod
     def load_config(file_path: str):
         if not os.path.exists(file_path):
-            raise FileNotFoundError(f"{file_path} does not exist")
+            config = Config()
+            save_config_to_yaml(config)
+            return config
 
         with open(file_path, 'r', encoding='utf-8') as file:
             config_data = yaml.safe_load(file)
 
-        try:
-            config = Config(**config_data)
-        except ValidationError as e:
-            logging.error(f"Config validation error: {e}")
-            config = Config()  # Load defaults
-            for error in e.errors():
-                field = error['loc'][0]
-                if field in config.__annotations__:
-                    default_value = getattr(Config, field, None)
-                    if default_value is not None:
-                        # Apply default value
-                        setattr(config, field, default_value)
+        if config_data:
+            try:
+                config = Config(**config_data)
+            except ValidationError as e:
+                logging.error(f"Config validation error: {e}")
+                config = Config()  # Load defaults
+                for error in e.errors():
+                    field = error['loc'][0]
+                    if field in config.__annotations__:
+                        default_value = getattr(Config, field, None)
+                        if default_value is not None:
+                            # Apply default value
+                            setattr(config, field, default_value)
+        else:
+            config = Config()
 
         save_config_to_yaml(config)
 
