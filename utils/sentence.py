@@ -19,7 +19,7 @@ def _expand_hyphens(text):
 
 
 def markup_language(text: str, target_languages: list = None) -> str:
-    pattern = config.LanguageIdentification.split_pattern
+    pattern = config.language_identification.split_pattern
     sentences = re.split(pattern, text)
 
     pre_lang = ""
