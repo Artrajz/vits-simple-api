@@ -903,6 +903,7 @@ def voice_reading_api():
 
 
 @voice_api.route('/check', methods=["GET", "POST"])
+@require_api_key
 def check():
     try:
         if request.method == "GET":
