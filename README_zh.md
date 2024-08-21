@@ -327,29 +327,6 @@ url中的IP可在API启动后找到，一般使用192.168开头的局域网IP。
 
 # 常见问题
 
-## fasttext依赖安装问题
-
-windows下可能安装不了fasttext,可以用以下命令安装，附[wheels下载地址](https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext)
-
-```
-# python3.10 win_amd64
-pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp310-cp310-win_amd64.whl
-```
-
-或者
-
-```
-pip install fasttext -i https://pypi.artrajz.cn/simple
-```
-
-## pyopenjtalk依赖安装问题
-
-由于pypi.org没有pyopenjtalk的whl文件，通常需要从源代码来安装，这一过程对于一些人来说可能比较麻烦，所以你也可以使用我构建的whl来安装。
-
-```
-pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
-```
-
 ## Bert-VITS2版本兼容
 
 修改Bert-VITS2模型的config.json，加入版本号参数`"version": "x.x.x"`，比如模型版本为1.0.1时，配置文件应该写成：

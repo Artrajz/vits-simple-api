@@ -317,31 +317,6 @@ After modification, select the reading engine, add the reading engine, paste the
 
 # Frequently Asked Questions
 
-## Installation Issues with fastText Dependency
-
-Fasttext may not be installed on windows, you can install it with the following command,or download wheels [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext)
-
-```bash
-# For Python 3.10 on win_amd64
-pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp310-cp310-win_amd64.whl
-```
-
-or
-
-```bash
-pip install fasttext -i https://pypi.artrajz.cn/simple
-```
-
-## Installation Issues with pyopenjtalk Dependency
-
-Since pypi.org does not provide a wheel file for pyopenjtalk, you often need to install it from the source code. This process might be cumbersome for some users, so you can also install it using a pre-built wheel as follows:
-
-```bash
-pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
-```
-
-
-
 ## Bert-VITS2 Version Compatibility
 
 To ensure compatibility with the Bert-VITS2 model, modify the config.json file by adding a version parameter "version": "x.x.x". For instance, if the model version is 1.0.1, the configuration file should be written as:
