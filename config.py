@@ -1,3 +1,4 @@
+import io
 import logging
 import os
 import secrets
@@ -334,8 +335,16 @@ class Config(BaseModel):
 
 
 def save_config_to_yaml(config: Config):
+    temp_file = io.StringIO()
+
+    yaml.safe_dump(config.model_dump(), temp_file, allow_unicode=True, sort_keys=False)
+
+    data = temp_file.getvalue()
+    temp_file.close()
+
     with open(CONFIG_PATH, 'w', encoding='utf-8') as file:
-        yaml.safe_dump(config.model_dump(), file, allow_unicode=True, sort_keys=False)
+        file.write(data)
+
 
 
 config = Config.load_config(CONFIG_PATH)
