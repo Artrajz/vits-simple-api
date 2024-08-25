@@ -103,7 +103,7 @@ function renderModelLoadCards(data) {
     $.each(data, function (index, model) {
         var card = $('<div></div>').addClass('model-load-item flex');
         var model_id = model.model_id;
-        var tts_type = model.tts_type;
+        var model_type = model.model_type;
         var vits_path = model.vits_path;
         var config_path = model.config_path;
         var sovits_path = model.sovits_path;
@@ -116,7 +116,7 @@ function renderModelLoadCards(data) {
         var gpt_name = null;
 
         $('<div></div>').text(model_id.toString()).addClass("unload-model-id").appendTo(card);
-        $('<div></div>').text(tts_type).addClass("unload-model-type").appendTo(card);
+        $('<div></div>').text(model_type).addClass("unload-model-type").appendTo(card);
 
         if (vits_path != null && config_path != null) {
             folder = vits_path.split("/")[0];
@@ -147,15 +147,15 @@ function renderModelLoadCards(data) {
             if (!isRequestInProgress) {
                 isRequestInProgress = true;
                 let tts_model = {};
-                if (tts_type == "GPT-SOVITS") {
+                if (model_type == "GPT-SOVITS") {
                     tts_model = {
-                        tts_type: tts_type,
+                        model_type: model_type,
                         gpt_path: gpt_path,
                         sovits_path: sovits_path
                     }
                 } else {
                     tts_model = {
-                        tts_type: tts_type,
+                        model_type: model_type,
                         vits_path: vits_path,
                         config_path: config_path
                     }

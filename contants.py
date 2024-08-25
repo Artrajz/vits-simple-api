@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class TTSType(str, Enum):
+class ModelType(str, Enum):
     VITS = "VITS"
     HUBERT_VITS = "HUBERT-VITS"
     W2V2_VITS = "W2V2-VITS"

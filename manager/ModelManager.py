@@ -12,7 +12,7 @@ import torch
 from config import config, BASE_DIR
 import utils
 from bert_vits2 import Bert_VITS2
-from contants import TTSType
+from contants import ModelType
 from gpt_sovits.gpt_sovits import GPT_SoVITS
 from logger import logger
 from manager.observer import Subject
@@ -27,24 +27,24 @@ class ModelManager(Subject):
         self.device = torch.device(device)
         self.logger = logger
 
-        self.tts_models = {tts_type: {} for tts_type in TTSType}
-        self.sid2model = {tts_type: [] for tts_type in TTSType}
-        self.voice_speakers = {tts_type: [] for tts_type in TTSType}
+        self.tts_models = {model_type: {} for model_type in ModelType}
+        self.sid2model = {model_type: [] for model_type in ModelType}
+        self.voice_speakers = {model_type: [] for model_type in ModelType}
 
         """
         self.tts_models: {
-            TTSType: {model_id: {"vits_path": vits_path, "config_path": config_path, "model": model, "n_speakers": n_speakers}},
+            ModelType: {model_id: {"vits_path": vits_path, "config_path": config_path, "model": model, "n_speakers": n_speakers}},
             ...
         }
         model_id 类型为 int
 
         self.sid2model: {
-            TTSType: [{"real_id": real_id, "model": model, "model_id": model_id, "n_speakers": n_speakers}],
+            ModelType: [{"real_id": real_id, "model": model, "model_id": model_id, "n_speakers": n_speakers}],
             ...
         }
 
         self.voice_speakers: {
-            TTSType: [],
+            ModelType: [],
             ...
         }
         """
@@ -66,11 +66,11 @@ class ModelManager(Subject):
         self._observers = []
 
         self.model_class_map = {
-            TTSType.VITS: VITS,
-            TTSType.HUBERT_VITS: HuBert_VITS,
-            TTSType.W2V2_VITS: W2V2_VITS,
-            TTSType.BERT_VITS2: Bert_VITS2,
-            TTSType.GPT_SOVITS: GPT_SoVITS,
+            ModelType.VITS: VITS,
+            ModelType.HUBERT_VITS: HuBert_VITS,
+            ModelType.W2V2_VITS: W2V2_VITS,
+            ModelType.BERT_VITS2: Bert_VITS2,
+            ModelType.GPT_SOVITS: GPT_SoVITS,
         }
 
         self.available_tts_model = set()
@@ -94,22 +94,22 @@ class ModelManager(Subject):
         self.log_device_info()
 
         if self.vits_speakers_count != 0:
-            self.logger.info(f"[{TTSType.VITS}] {self.vits_speakers_count} speakers")
+            self.logger.info(f"[{ModelType.VITS}] {self.vits_speakers_count} speakers")
         if self.hubert_speakers_count != 0:
-            self.logger.info(f"[{TTSType.HUBERT_VITS}] {self.hubert_speakers_count} speakers")
+            self.logger.info(f"[{ModelType.HUBERT_VITS}] {self.hubert_speakers_count} speakers")
         if self.w2v2_speakers_count != 0:
-            self.logger.info(f"[{TTSType.W2V2_VITS}] {self.w2v2_speakers_count} speakers")
+            self.logger.info(f"[{ModelType.W2V2_VITS}] {self.w2v2_speakers_count} speakers")
         if self.bert_vits2_speakers_count != 0:
-            self.logger.info(f"[{TTSType.BERT_VITS2}] {self.bert_vits2_speakers_count} speakers")
+            self.logger.info(f"[{ModelType.BERT_VITS2}] {self.bert_vits2_speakers_count} speakers")
         if self.gpt_sovits_speakers_count != 0:
-            self.logger.info(f"[{TTSType.GPT_SOVITS}] {self.gpt_sovits_speakers_count} speakers")
+            self.logger.info(f"[{ModelType.GPT_SOVITS}] {self.gpt_sovits_speakers_count} speakers")
         self.logger.info(f"{self.speakers_count} speakers in total.")
         if self.speakers_count == 0:
             self.logger.warning(f"No model was loaded.")
 
     @property
     def vits_speakers(self):
-        return self.voice_speakers[TTSType.VITS]
+        return self.voice_speakers[ModelType.VITS]
 
     @property
     def speakers_count(self):
@@ -117,15 +117,15 @@ class ModelManager(Subject):
 
     @property
     def vits_speakers_count(self):
-        return len(self.voice_speakers[TTSType.VITS])
+        return len(self.voice_speakers[ModelType.VITS])
 
     @property
     def hubert_speakers_count(self):
-        return len(self.voice_speakers[TTSType.HUBERT_VITS])
+        return len(self.voice_speakers[ModelType.HUBERT_VITS])
 
     @property
     def w2v2_speakers_count(self):
-        return len(self.voice_speakers[TTSType.W2V2_VITS])
+        return len(self.voice_speakers[ModelType.W2V2_VITS])
 
     @property
     def w2v2_emotion_count(self):
@@ -133,11 +133,11 @@ class ModelManager(Subject):
 
     @property
     def bert_vits2_speakers_count(self):
-        return len(self.voice_speakers[TTSType.BERT_VITS2])
+        return len(self.voice_speakers[ModelType.BERT_VITS2])
 
     @property
     def gpt_sovits_speakers_count(self):
-        return len(self.voice_speakers[TTSType.GPT_SOVITS])
+        return len(self.voice_speakers[ModelType.GPT_SOVITS])
 
     # 添加观察者
     def attach(self, observer):
@@ -206,14 +206,14 @@ class ModelManager(Subject):
         return relative_paths
 
     def _load_model_from_path(self, tts_model):
-        if tts_model["tts_type"] == TTSType.GPT_SOVITS:
+        if tts_model["model_type"] == ModelType.GPT_SOVITS:
             hps = None
-            tts_type = TTSType.GPT_SOVITS
+            model_type = ModelType.GPT_SOVITS
             sovits_path = tts_model["sovits_path"]
             gpt_path = tts_model["gpt_path"]
 
             model_args = {
-                "tts_type": tts_type,
+                "model_type": model_type,
                 "sovits_path": sovits_path,
                 "gpt_path": gpt_path,
                 "config": hps,
@@ -222,46 +222,46 @@ class ModelManager(Subject):
 
         else:
             hps = utils.get_hparams_from_file(tts_model["config_path"])
-            tts_type = self.recognition_tts_type(hps)
+            model_type = self.recognition_model_type(hps)
             vits_path = tts_model["vits_path"]
             config_path = tts_model["config_path"]
 
             model_args = {
-                "tts_type": tts_type,
+                "model_type": model_type,
                 "vits_path": vits_path,
                 "config_path": config_path,
                 "config": hps,
                 "device": self.device
             }
 
-        model_class = self.model_class_map[tts_type]
+        model_class = self.model_class_map[model_type]
         model = model_class(**model_args)
 
-        if tts_type == TTSType.VITS:
+        if model_type == ModelType.VITS:
             bert_embedding = getattr(hps.data, 'bert_embedding', getattr(hps.model, 'bert_embedding', False))
             if bert_embedding and self.tts_front is None:
                 self.load_VITS_PinYin_model(
                     os.path.join(BASE_DIR, config.system.data_path, config.resource_paths_config.vits_chinese_bert))
             if not config.vits_config.dynamic_loading:
                 model.load_model()
-            self.available_tts_model.add(TTSType.VITS)
+            self.available_tts_model.add(ModelType.VITS)
 
-        elif tts_type == TTSType.W2V2_VITS:
+        elif model_type == ModelType.W2V2_VITS:
             if self.emotion_reference is None:
                 self.emotion_reference = self.load_npy(
                     os.path.join(BASE_DIR, config.system.data_path,
                                  config.resource_paths_config.dimensional_emotion_npy))
             model.load_model(emotion_reference=self.emotion_reference,
                              dimensional_emotion_model=self.dimensional_emotion_model)
-            self.available_tts_model.add(TTSType.W2V2_VITS)
+            self.available_tts_model.add(ModelType.W2V2_VITS)
 
-        elif tts_type == TTSType.HUBERT_VITS:
+        elif model_type == ModelType.HUBERT_VITS:
             if self.hubert is None:
                 self.hubert = self.load_hubert_model(
                     os.path.join(BASE_DIR, config.system.data_path, config.resource_paths_config.hubert_soft_0d54a1f4))
             model.load_model(hubert=self.hubert)
 
-        elif tts_type == TTSType.BERT_VITS2:
+        elif model_type == ModelType.BERT_VITS2:
             bert_model_names = model.bert_model_names
             for bert_model_name in bert_model_names.values():
                 if self.model_handler is None:
@@ -275,9 +275,9 @@ class ModelManager(Subject):
 
             model.load_model(self.model_handler)
 
-            self.available_tts_model.add(TTSType.BERT_VITS2)
+            self.available_tts_model.add(ModelType.BERT_VITS2)
 
-        elif tts_type == TTSType.GPT_SOVITS:
+        elif model_type == ModelType.GPT_SOVITS:
             if self.model_handler is None:
                 from manager.model_handler import ModelHandler
                 self.model_handler = ModelHandler(self.device)
@@ -285,12 +285,12 @@ class ModelManager(Subject):
             self.model_handler.load_bert("CHINESE_ROBERTA_WWM_EXT_LARGE")
             model.load_model(self.model_handler)
 
-            self.available_tts_model.add(TTSType.GPT_SOVITS)
+            self.available_tts_model.add(ModelType.GPT_SOVITS)
 
         sid2model = []
         speakers = []
-        new_id = len(self.voice_speakers[tts_type])
-        model_id = max([-1] + list(self.tts_models[tts_type].keys())) + 1
+        new_id = len(self.voice_speakers[model_type])
+        model_id = max([-1] + list(self.tts_models[model_type].keys())) + 1
 
         for real_id, name in enumerate(model.speakers):
             sid2model.append({"real_id": real_id, "model": model, "model_id": model_id})
@@ -299,19 +299,19 @@ class ModelManager(Subject):
 
         model_data = {
             "model": model,
-            "tts_type": tts_type,
+            "model_type": model_type,
             "model_id": model_id,
             "sid2model": sid2model,
             "speakers": speakers
         }
         model_data.update(model_args)
 
-        if tts_type == TTSType.GPT_SOVITS:
+        if model_type == ModelType.GPT_SOVITS:
             logging.info(
-                f"tts_type:{tts_type} model_id:{model_id} sovits_path:{sovits_path} gpt_path:{gpt_path}")
+                f"model_type:{model_type} model_id:{model_id} sovits_path:{sovits_path} gpt_path:{gpt_path}")
         else:
             logging.info(
-                f"tts_type:{tts_type} model_id:{model_id} n_speakers:{len(speakers)} vits_path:{vits_path}")
+                f"model_type:{model_type} model_id:{model_id} n_speakers:{len(speakers)} vits_path:{vits_path}")
 
         return model_data
 
@@ -320,14 +320,14 @@ class ModelManager(Subject):
             model_data = self._load_model_from_path(tts_model)
             model_id = model_data["model_id"]
             sid2model = model_data["sid2model"]
-            tts_type = model_data["tts_type"]
+            model_type = model_data["model_type"]
 
-            self.tts_models[tts_type][model_id] = {
+            self.tts_models[model_type][model_id] = {
                 "tts_model": tts_model,
                 "model": model_data.get("model"),
                 "n_speakers": len(model_data["speakers"])}
-            self.sid2model[tts_type].extend(sid2model)
-            self.voice_speakers[tts_type].extend(model_data["speakers"])
+            self.sid2model[model_type].extend(sid2model)
+            self.voice_speakers[model_type].extend(model_data["speakers"])
 
             self.notify("model_loaded", model_manager=self)
             state = True
@@ -337,37 +337,37 @@ class ModelManager(Subject):
             state = False
         return state
 
-    def unload_model(self, tts_type: str, model_id: str):
+    def unload_model(self, model_type: str, model_id: str):
         state = False
         model_id = int(model_id)
         try:
-            if model_id in self.tts_models[tts_type].keys():
-                model_data = self.tts_models[tts_type][model_id]
+            if model_id in self.tts_models[model_type].keys():
+                model_data = self.tts_models[model_type][model_id]
                 model = model_data.get("model")
                 n_speakers = model_data.get("n_speakers")
                 start = 0
 
-                for key, value in self.tts_models[tts_type].items():
+                for key, value in self.tts_models[model_type].items():
                     if key == model_id:
                         break
                     start += value.get("n_speakers")
 
-                if tts_type == TTSType.BERT_VITS2:
+                if model_type == ModelType.BERT_VITS2:
                     for bert_model_name in model.bert_model_names.values():
                         self.model_handler.release_bert(bert_model_name)
                     if model.version == "2.1":
                         self.model_handler.release_emotion()
                     elif model.version in ["2.2", "extra", "2.4"]:
                         self.model_handler.release_clap()
-                elif tts_type == TTSType.GPT_SOVITS:
+                elif model_type == ModelType.GPT_SOVITS:
                     self.model_handler.release_bert("CHINESE_ROBERTA_WWM_EXT_LARGE")
                     self.model_handler.release_ssl_model()
 
-                del self.sid2model[tts_type][start:start + n_speakers]
-                del self.voice_speakers[tts_type][start:start + n_speakers]
-                del self.tts_models[tts_type][model_id]
+                del self.sid2model[model_type][start:start + n_speakers]
+                del self.voice_speakers[model_type][start:start + n_speakers]
+                del self.tts_models[model_type][model_id]
 
-                for new_id, speaker in enumerate(self.voice_speakers[tts_type]):
+                for new_id, speaker in enumerate(self.voice_speakers[model_type]):
                     speaker["id"] = new_id
 
                 gc.collect()
@@ -438,29 +438,29 @@ class ModelManager(Subject):
     def get_models_path_by_type(self):
         """按模型类型返回模型路径"""
         info = {
-            TTSType.VITS: [],
-            TTSType.HUBERT_VITS: [],
-            TTSType.W2V2_VITS: [],
-            TTSType.BERT_VITS2: [],
-            TTSType.GPT_SOVITS: [],
+            ModelType.VITS: [],
+            ModelType.HUBERT_VITS: [],
+            ModelType.W2V2_VITS: [],
+            ModelType.BERT_VITS2: [],
+            ModelType.GPT_SOVITS: [],
         }
-        for tts_type, models in self.tts_models.items():
+        for model_type, models in self.tts_models.items():
             for values in models.values():
-                info[tts_type].append(values[0])
+                info[model_type].append(values[0])
 
         return info
 
     def get_models_info(self):
         """按模型类型返回模型文件夹名以及模型文件名，speakers数量"""
         info = {
-            TTSType.VITS: [],
-            TTSType.HUBERT_VITS: [],
-            TTSType.W2V2_VITS: [],
-            TTSType.BERT_VITS2: [],
-            TTSType.GPT_SOVITS: [],
+            ModelType.VITS: [],
+            ModelType.HUBERT_VITS: [],
+            ModelType.W2V2_VITS: [],
+            ModelType.BERT_VITS2: [],
+            ModelType.GPT_SOVITS: [],
         }
-        for tts_type, model_data in self.tts_models.items():
-            if tts_type != TTSType.GPT_SOVITS:
+        for model_type, model_data in self.tts_models.items():
+            if model_type != ModelType.GPT_SOVITS:
                 for model_id, model in model_data.items():
                     tts_model = model["tts_model"]
 
@@ -470,9 +470,9 @@ class ModelManager(Subject):
                     vits_path = self.absolute_to_relative_path(vits_path)[0].replace("\\", "/")
                     config_path = self.absolute_to_relative_path(config_path)[0].replace("\\", "/")
 
-                    info[tts_type].append(
+                    info[model_type].append(
                         {
-                            "tts_type": tts_model["tts_type"],
+                            "model_type": tts_model["model_type"],
                             "model_id": model_id,
                             "vits_path": vits_path,
                             "config_path": config_path,
@@ -489,9 +489,9 @@ class ModelManager(Subject):
                     sovits_path = self.absolute_to_relative_path(sovits_path)[0].replace("\\", "/")
                     gpt_path = self.absolute_to_relative_path(gpt_path)[0].replace("\\", "/")
 
-                    info[tts_type].append(
+                    info[model_type].append(
                         {
-                            "tts_type": tts_model["tts_type"],
+                            "model_type": tts_model["model_type"],
                             "model_id": model_id,
                             "sovits_path": sovits_path,
                             "gpt_path": gpt_path,
@@ -501,10 +501,10 @@ class ModelManager(Subject):
 
         return info
 
-    def get_model_by_index(self, tts_type, model_id):
+    def get_model_by_index(self, model_type, model_id):
         """根据给定的索引返回模型"""
         if 0 <= model_id < len(self.tts_models):
-            _, model, _ = self.tts_models[tts_type][model_id]
+            _, model, _ = self.tts_models[model_type][model_id]
             return model
         return None
 
@@ -517,23 +517,23 @@ class ModelManager(Subject):
         """清除所有模型"""
         self.tts_models.clear()
 
-    def recognition_tts_type(self, hps: HParams) -> str:
+    def recognition_model_type(self, hps: HParams) -> str:
         # model_config = json.load(model_config_json)
         symbols = getattr(hps, "symbols", None)
         # symbols = model_config.get("symbols", None)
         emotion_embedding = getattr(hps.data, "emotion_embedding", False)
 
         if "use_spk_conditioned_encoder" in hps.model:
-            tts_type = TTSType.BERT_VITS2
-            return tts_type
+            model_type = ModelType.BERT_VITS2
+            return model_type
 
         if symbols != None:
             if not emotion_embedding:
-                mode_type = TTSType.VITS
+                mode_type = ModelType.VITS
             else:
-                mode_type = TTSType.W2V2_VITS
+                mode_type = ModelType.W2V2_VITS
         else:
-            mode_type = TTSType.HUBERT_VITS
+            mode_type = ModelType.HUBERT_VITS
 
         return mode_type
 
@@ -581,7 +581,7 @@ class ModelManager(Subject):
                 vits_path = pth_path
                 config_path = config_paths[0]
                 hps = utils.get_hparams_from_file(config_path)
-                tts_type = self.recognition_tts_type(hps)
+                model_type = self.recognition_model_type(hps)
                 info = {
                     "vits_path": vits_path,
                     "config_path": config_path,
@@ -589,7 +589,7 @@ class ModelManager(Subject):
             elif len(gpt_paths) > 0:
                 gpt_path = gpt_paths[0]
                 sovits_path = pth_path
-                tts_type = TTSType.GPT_SOVITS
+                model_type = ModelType.GPT_SOVITS
                 info = {
                     "sovits_path": sovits_path,
                     "gpt_path": gpt_path,
@@ -599,7 +599,7 @@ class ModelManager(Subject):
             info.update(
                 {
                     "model_id": id,
-                    "tts_type": tts_type,
+                    "model_type": model_type,
                 }
             )
 
@@ -613,8 +613,8 @@ class ModelManager(Subject):
         loaded_paths = self._get_loaded_paths()
 
         for info in all_paths:
-            tts_type = info["tts_type"]
-            if tts_type == TTSType.GPT_SOVITS:
+            model_type = info["model_type"]
+            if model_type == ModelType.GPT_SOVITS:
                 sovits_path, gpt_path = self._format_paths(
                     self.absolute_to_relative_path(
                         info["sovits_path"],
@@ -624,7 +624,7 @@ class ModelManager(Subject):
                 if not self.is_path_loaded((sovits_path, gpt_path), loaded_paths["GPT_SOVITS"]):
                     info.update(
                         {
-                            "tts_type": tts_type,
+                            "model_type": model_type,
                             "sovits_path": sovits_path,
                             "gpt_path": gpt_path
                         }
@@ -640,7 +640,7 @@ class ModelManager(Subject):
                 if not self.is_path_loaded(vits_path, loaded_paths["OTHER"]):
                     info.update(
                         {
-                            "tts_type": tts_type,
+                            "model_type": model_type,
                             "vits_path": vits_path,
                             "config_path": config_path
                         }
@@ -660,9 +660,9 @@ class ModelManager(Subject):
 
         for model in self.get_models_path():
             tts_model = model["tts_model"]
-            tts_type = tts_model["tts_type"]
+            model_type = tts_model["model_type"]
 
-            if tts_type == TTSType.GPT_SOVITS:
+            if model_type == ModelType.GPT_SOVITS:
                 sovits_path, gpt_path = self._format_paths(
                     self.absolute_to_relative_path(tts_model["sovits_path"], tts_model["gpt_path"])
                 )

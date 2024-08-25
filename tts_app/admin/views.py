@@ -6,7 +6,7 @@ from flask import Blueprint, request, render_template, make_response, jsonify
 from flask_login import login_required
 
 from config import config, BASE_DIR, save_config_to_yaml
-from contants import TTSType
+from contants import ModelType
 from tts_app.model_manager import model_manager
 
 admin = Blueprint('admin', __name__)
@@ -49,8 +49,8 @@ def get_models_info():
     loaded_models_info = model_manager.get_models_info()
     for models in loaded_models_info.values():
         for model in models:
-            if model.get("model_path") is not None:
-                model["model_path"] = extract_model_dir(model["model_path"])
+            if model.get("vits_path") is not None:
+                model["vits_path"] = extract_model_dir(model["vits_path"])
 
             if model.get("config_path") is not None:
                 model["config_path"] = extract_model_dir(model["config_path"])
@@ -76,12 +76,12 @@ def load_model():
         else:
             request_data = request.form
 
-    tts_type = request_data.get("tts_type")
+    model_type = request_data.get("model_type")
     tts_model = {
-        "tts_type": tts_type,
+        "model_type": model_type,
 
     }
-    if tts_type == TTSType.GPT_SOVITS:
+    if model_type == ModelType.GPT_SOVITS:
         sovits_path = request_data.get("sovits_path")
         gpt_path = request_data.get("gpt_path")
 

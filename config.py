@@ -10,7 +10,7 @@ import yaml
 from typing import List, Union, Optional, Dict, Type
 from pydantic import BaseModel, Field, ValidationError
 
-from contants import TTSType
+from contants import ModelType
 
 JSON_AS_ASCII = False
 MAX_CONTENT_LENGTH = 5242880
@@ -96,7 +96,7 @@ class GPTSoVitsConfig(BaseModel):
 
 
 class Reader(BaseModel):
-    tts_type: str = "VITS"
+    model_type: str = "VITS"
     id: int = 0
     preset: str = "default"
 
@@ -125,45 +125,48 @@ class ResourcePathsConfig(BaseModel):
 
 
 class BaseModelConfig(BaseModel):
-    tts_type: str
+    model_type: str
+
+    class Config:
+        protected_namespaces = ()
 
 
 class VITSModelConfig(BaseModelConfig):
-    tts_type: str = TTSType.VITS
+    model_type: str = ModelType.VITS
     vits_path: str = None
     config_path: str = None
 
 
 class W2V2VITSModelConfig(BaseModelConfig):
-    tts_type: str = TTSType.W2V2_VITS
+    model_type: str = ModelType.W2V2_VITS
     vits_path: str = None
     config_path: str = None
 
 
 class HuBertVITSModelConfig(BaseModelConfig):
-    tts_type: str = TTSType.HUBERT_VITS
+    model_type: str = ModelType.HUBERT_VITS
     vits_path: str = None
     config_path: str = None
 
 
 class BertVITS2ModelConfig(BaseModelConfig):
-    tts_type: str = TTSType.BERT_VITS2
+    model_type: str = ModelType.BERT_VITS2
     vits_path: str = None
     config_path: str = None
 
 
 class GPTSoVITSModelConfig(BaseModelConfig):
-    tts_type: str = TTSType.GPT_SOVITS
+    model_type: str = ModelType.GPT_SOVITS
     gpt_path: str = None
     sovits_path: str = None
 
 
 MODEL_TYPE_MAP: Dict[str, Type[BaseModelConfig]] = {
-    TTSType.VITS: VITSModelConfig,
-    TTSType.W2V2_VITS: W2V2VITSModelConfig,
-    TTSType.HUBERT_VITS: HuBertVITSModelConfig,
-    TTSType.BERT_VITS2: BertVITS2ModelConfig,
-    TTSType.GPT_SOVITS: GPTSoVITSModelConfig
+    ModelType.VITS: VITSModelConfig,
+    ModelType.W2V2_VITS: W2V2VITSModelConfig,
+    ModelType.HUBERT_VITS: HuBertVITSModelConfig,
+    ModelType.BERT_VITS2: BertVITS2ModelConfig,
+    ModelType.GPT_SOVITS: GPTSoVITSModelConfig
 }
 
 
@@ -182,9 +185,9 @@ class TTSModelConfig(BaseModel):
         if not isinstance(model_config, BaseModelConfig):
             raise TypeError("model_config must be an instance of BaseModelConfig")
 
-        model_class = MODEL_TYPE_MAP.get(model_config.tts_type)
+        model_class = MODEL_TYPE_MAP.get(model_config.model_type)
         if model_class is None:
-            raise ValueError(f"Unknown tts_type: {model_config.tts_type}")
+            raise ValueError(f"Unknown model_type: {model_config.model_type}")
 
         self.tts_models.append(model_class(**model_config.model_dump()))
 
@@ -192,8 +195,8 @@ class TTSModelConfig(BaseModel):
         self.tts_models = []
         for item in tts_models:
             tts_model = item["tts_model"]
-            tts_type = tts_model.get("tts_type")
-            model_class = MODEL_TYPE_MAP.get(tts_type)
+            model_type = tts_model.get("model_type")
+            model_class = MODEL_TYPE_MAP.get(model_type)
             if model_class is not None:
                 try:
                     model_instance = model_class.model_validate(tts_model)
@@ -201,7 +204,7 @@ class TTSModelConfig(BaseModel):
                 except ValidationError as e:
                     logging.error(f"Validation error for item {tts_model}: {e}")
             else:
-                logging.error(f"Unknown tts_type in data: {tts_type}")
+                logging.error(f"Unknown model_type in data: {model_type}")
 
 
 class HttpService(BaseModel):
