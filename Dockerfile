@@ -13,6 +13,7 @@ RUN apt-get update && \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
     rm -rf /var/lib/apt/lists/* 
 
+
 # Install jemalloc
 RUN wget https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 && \
     tar -xvf jemalloc-5.3.0.tar.bz2 && \
@@ -32,6 +33,10 @@ RUN pip install gunicorn --no-cache-dir && \
     rm -rf /root/.cache/pip/*
 
 COPY . /app
+COPY data /data_bak
+
+RUN chmod +x /app/entrypoint.sh
+ENTRYPOINT ["/app/entrypoint.sh"]
 
 EXPOSE 23456
 
