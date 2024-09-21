@@ -70,28 +70,26 @@ def update_default_params(state):
 
 
 def get_lang_list(lang, speaker_lang):
-    lang_list = re.split(r'[,，\s]+', lang)
-    new_lang_list = []
+    lang_list = [l.lower().strip() for l in re.split(r'[,，\s]+', lang) if l.strip()]
 
-    for idx in range(len(lang_list)):
-        if lang_list[idx].strip() == "":
-            continue
-        lang_list[idx] = lang_list[idx].lower()
-        lang = lang_list[idx]
-        if lang not in ["auto", "mix"] and len(speaker_lang) > 1 and lang not in speaker_lang:
-            logger.info(f"[{ModelType.BERT_VITS2}] lang \"{lang}\" is not in {speaker_lang}")
-            status = "error"
-            msg = f"lang '{lang}' is not in {speaker_lang}"
-            return new_lang_list, status, msg
-        new_lang_list.append(lang)
+    if len(speaker_lang) == 1:
+        return speaker_lang, "", ""
 
-    if "auto" in lang_list and len(lang_list) > 1:
-        status = "error"
-        msg = "Do not pass 'auto' along with other languages."
-        return new_lang_list, status, msg
+    special_langs = {"auto", "mix"}
 
-    status = ""
-    msg = ""
+    for special in special_langs:
+        if special in lang_list and len(lang_list) > 1:
+            return [special], "warning", f"Do not pass '{special}' along with other languages."
+
+    new_lang_list = [lang for lang in lang_list if lang in speaker_lang or lang in special_langs]
+    unsupported_language = [lang for lang in lang_list if lang not in speaker_lang and lang not in special_langs]
+
+    status = "warning" if unsupported_language else ""
+    msg = f"Unsupported languages: {unsupported_language}" if unsupported_language else ""
+
+    if not new_lang_list:
+        new_lang_list = ["auto"]
+
     return new_lang_list, status, msg
 
 
