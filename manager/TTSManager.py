@@ -271,8 +271,8 @@ class TTSManager(Observer):
             state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
         sampling_rate = model.sampling_rate
 
-        sentences_list = sentence_split_and_markup(state["text"], state["segment_size"], state["lang"],
-                                                   speaker_lang=model.lang)
+        sentences_list = sentence_split_and_markup(state["text"], state["lang"], state["segment_size"])
+
         # 停顿0.5s，避免语音分段合成再拼接后的连接突兀
         brk = np.zeros(int(0.5 * sampling_rate), dtype=np.int16)
 
@@ -299,8 +299,8 @@ class TTSManager(Observer):
             state["text"] = re.sub(r'\s+', ' ', state["text"]).strip()
         sampling_rate = model.sampling_rate
 
-        sentences_list = sentence_split_and_markup(state["text"], state["segment_size"], state["lang"],
-                                                   speaker_lang=model.lang)
+        sentences_list = sentence_split_and_markup(state["text"], state["lang"], state["segment_size"])
+
         # 停顿0.5s，避免语音分段合成再拼接后的连接突兀
         brk = np.zeros(int(0.5 * sampling_rate), dtype=np.int16)
 

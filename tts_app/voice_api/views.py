@@ -159,10 +159,9 @@ def voice_vits_api():
 
     # 校验模型是否支持输入的语言
     speaker_lang = model_manager.voice_speakers[ModelType.VITS.value][id].get('lang')
-    if lang not in ["auto", "mix"] and len(speaker_lang) > 1 and lang not in speaker_lang:
-        logger.info(f"[{ModelType.VITS.value}] lang \"{lang}\" is not in {speaker_lang}")
-        return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}),
-                             400)
+    lang_list, status, msg = get_lang_list(lang, speaker_lang)
+    if status == "error":
+        return make_response(jsonify({"status": status, "message": msg}), 400)
 
     # 如果配置文件中设置了LANGUAGE_AUTOMATIC_DETECT则强制将speaker_lang设置为LANGUAGE_AUTOMATIC_DETECT
     if (lang_detect := config.language_identification.language_automatic_detect) and isinstance(lang_detect, list):
@@ -181,7 +180,7 @@ def voice_vits_api():
              "noise": noise,
              "noisew": noisew,
              "segment_size": segment_size,
-             "lang": lang,
+             "lang": lang_list,
              "speaker_lang": speaker_lang}
 
     if use_streaming:
