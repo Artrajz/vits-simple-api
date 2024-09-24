@@ -24,6 +24,14 @@ CONFIG_PATH = os.path.join(BASE_DIR, "config.yaml")
 SECRET_KEY = secrets.token_hex(16)
 
 
+def update_nested_dict(original, updates):
+    for key, value in updates.items():
+        if isinstance(value, dict) and key in original:
+            update_nested_dict(original[key], value)
+        else:
+            original[key] = value
+
+
 class VitsConfig(BaseModel):
     id: int = 0
     format: str = "wav"
@@ -197,7 +205,9 @@ class TTSModelConfig(BaseModel):
         for item in tts_models:
             tts_model = item["tts_model"]
             model_type = tts_model.get("model_type")
-            model_class = MODEL_TYPE_MAP.get(model_type)
+            if model_type:
+                model_type = model_type.upper().replace("_", "-")
+            model_class = MODEL_TYPE_MAP.get(ModelType(model_type))
             if model_class is not None:
                 try:
                     model_instance = model_class.model_validate(tts_model)
@@ -324,7 +334,7 @@ class Config(BaseModel):
         try:
             new_config_data = self.model_dump()
 
-            new_config_data.update(update_data)
+            update_nested_dict(new_config_data, update_data)
 
             updated_config = Config(**new_config_data)
 
