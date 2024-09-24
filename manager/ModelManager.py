@@ -29,6 +29,7 @@ class ModelManager(Subject):
 
         self.tts_models = {model_type: {} for model_type in ModelType}
         self.sid2model = {model_type: [] for model_type in ModelType}
+        self.spk2model = {model_type: {} for model_type in ModelType}
         self.voice_speakers = {model_type: [] for model_type in ModelType}
 
         """
@@ -40,6 +41,14 @@ class ModelManager(Subject):
 
         self.sid2model: {
             ModelType: [{"real_id": real_id, "model": model, "model_id": model_id, "n_speakers": n_speakers}],
+            ...
+        }
+        
+        self.sid2model: {
+            ModelType: {
+                speaker: {"real_id": real_id, "model": model, "model_id": model_id},
+                ...
+            },
             ...
         }
 
@@ -130,6 +139,10 @@ class ModelManager(Subject):
     @property
     def w2v2_emotion_count(self):
         return len(self.emotion_reference) if self.emotion_reference is not None else 0
+
+    @property
+    def bert_vits2_spk2model(self):
+        return self.spk2model[ModelType.BERT_VITS2]
 
     @property
     def bert_vits2_speakers_count(self):
@@ -288,12 +301,14 @@ class ModelManager(Subject):
             self.available_tts_model.add(ModelType.GPT_SOVITS)
 
         sid2model = []
+        spk2model = {}
         speakers = []
         new_id = len(self.voice_speakers[model_type])
         model_id = max([-1] + list(self.tts_models[model_type].keys())) + 1
 
         for real_id, name in enumerate(model.speakers):
             sid2model.append({"real_id": real_id, "model": model, "model_id": model_id})
+            spk2model.update({name: {"real_id": real_id, "model": model, "model_id": model_id}})
             speakers.append({"id": new_id, "name": name, "lang": model.lang})
             new_id += 1
 
@@ -302,6 +317,7 @@ class ModelManager(Subject):
             "model_type": model_type,
             "model_id": model_id,
             "sid2model": sid2model,
+            "spk2model": spk2model,
             "speakers": speakers
         }
         model_data.update(model_args)
@@ -320,13 +336,17 @@ class ModelManager(Subject):
             model_data = self._load_model_from_path(tts_model)
             model_id = model_data["model_id"]
             sid2model = model_data["sid2model"]
+            spk2model = model_data["spk2model"]
             model_type = model_data["model_type"]
 
             self.tts_models[model_type][model_id] = {
                 "tts_model": tts_model,
                 "model": model_data.get("model"),
-                "n_speakers": len(model_data["speakers"])}
+                "n_speakers": len(model_data["speakers"]),
+                "speakers": model_data["speakers"],
+            }
             self.sid2model[model_type].extend(sid2model)
+            self.spk2model[model_type].update(spk2model)
             self.voice_speakers[model_type].extend(model_data["speakers"])
 
             self.notify("model_loaded", model_manager=self)
@@ -345,6 +365,8 @@ class ModelManager(Subject):
                 model_data = self.tts_models[model_type][model_id]
                 model = model_data.get("model")
                 n_speakers = model_data.get("n_speakers")
+                speakers = model_data.get("speakers")
+
                 start = 0
 
                 for key, value in self.tts_models[model_type].items():
@@ -366,6 +388,9 @@ class ModelManager(Subject):
                 del self.sid2model[model_type][start:start + n_speakers]
                 del self.voice_speakers[model_type][start:start + n_speakers]
                 del self.tts_models[model_type][model_id]
+                for speaker in speakers:
+                    if speaker in self.spk2model[model_type]:
+                        del self.spk2model[model_type][speaker["name"]]
 
                 for new_id, speaker in enumerate(self.voice_speakers[model_type]):
                     speaker["id"] = new_id

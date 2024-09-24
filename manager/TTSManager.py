@@ -40,6 +40,10 @@ class TTSManager(Observer):
         return self.model_manager.sid2model
 
     @property
+    def spk2model(self):
+        return self.model_manager.spk2model
+
+    @property
     def voice_speakers(self):
         return self.model_manager.voice_speakers
 
@@ -113,10 +117,14 @@ class TTSManager(Observer):
 
         return audio
 
-    def get_model(self, model_type, id):
+    def get_model(self, model_type, id, speaker=None):
+        if speaker is not None:
+            return self.spk2model[model_type][speaker]["model"]
         return self.sid2model[model_type][id]["model"]
 
-    def get_real_id(self, model_type, id):
+    def get_real_id(self, model_type, id, speaker=None):
+        if speaker is not None:
+            return self.spk2model[model_type][speaker]["real_id"]
         return self.sid2model[model_type][id]["real_id"]
 
     def get_model_id(self, model_type, id):
@@ -381,8 +389,8 @@ class TTSManager(Observer):
         return emotion_npy
 
     def bert_vits2_infer(self, state, encode=True):
-        model = self.get_model(model_type=ModelType.BERT_VITS2, id=state["id"])
-        state["id"] = self.get_real_id(model_type=ModelType.BERT_VITS2, id=state["id"])
+        model = self.get_model(model_type=ModelType.BERT_VITS2, id=state["id"], speaker=state["speaker"])
+        state["id"] = self.get_real_id(model_type=ModelType.BERT_VITS2, id=state["id"], speaker=state["speaker"])
 
         # 去除所有多余的空白字符
         if state["text"] is not None:

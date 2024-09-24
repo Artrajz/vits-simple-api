@@ -56,6 +56,7 @@ class HuBertVitsConfig(BaseModel):
 
 class BertVits2Config(BaseModel):
     id: int = 0
+    speaker: Optional[str] = None
     format: str = "wav"
     lang: str = "auto"
     length: float = 1.0
@@ -347,7 +348,6 @@ def save_config_to_yaml(config: Config):
 
     with open(CONFIG_PATH, 'w', encoding='utf-8') as file:
         file.write(data)
-
 
 
 config = Config.load_config(CONFIG_PATH)

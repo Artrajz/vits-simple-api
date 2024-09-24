@@ -467,6 +467,7 @@ def voice_bert_vits2_api():
 
         text = get_param(request_data, "text", "", str)
         id = get_param(request_data, "id", config.bert_vits2_config.id, int)
+        speaker = get_param(request_data, "speaker", config.bert_vits2_config.speaker, str)
         format = get_param(request_data, "format", config.bert_vits2_config.format, str)
         lang = get_param(request_data, "lang", config.bert_vits2_config.lang, str).lower()
         length = get_param(request_data, "length", config.bert_vits2_config.length, float)
@@ -490,9 +491,13 @@ def voice_bert_vits2_api():
     # logger.info(
     #     f"[{ModelType.BERT_VITS2}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size}"
     #     f" length_zh:{length_zh} length_ja:{length_ja} length_en:{length_en}")
-
     logger.info(
-        f"[{ModelType.BERT_VITS2}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size} streaming:{use_streaming}")
+        f"[{ModelType.BERT_VITS2}] "
+        f"{'speaker:' + speaker if speaker else 'id:' + str(id)} "
+        f"format:{format} lang:{lang} length:{length} noise:{noise} "
+        f"noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size} "
+        f"streaming:{use_streaming}"
+    )
     logger.info(f"[{ModelType.BERT_VITS2}] len:{len(text)} text：{text}")
     if reference_audio:
         logger.info(f"[{ModelType.BERT_VITS2}] reference_audio:{reference_audio.filename}")
@@ -514,6 +519,13 @@ def voice_bert_vits2_api():
     if id < 0 or id >= model_manager.bert_vits2_speakers_count:
         logger.info(f"[{ModelType.BERT_VITS2}] speaker id {id} does not exist")
         return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
+
+    if speaker is not None:
+        spk2model = model_manager.bert_vits2_spk2model
+        if speaker not in spk2model:
+            message = f"[{ModelType.BERT_VITS2}] speaker:{speaker} does not exist"
+            logger.info(message)
+            return make_response(jsonify({"status": "error", "message": message}), 400)
 
     if emotion and (emotion < 0 or emotion > 9):
         logger.info(f"[{ModelType.BERT_VITS2}] emotion {emotion} out of the range 0-9")
@@ -537,6 +549,7 @@ def voice_bert_vits2_api():
     file_type = f"audio/{format}"
     state = {"text": text,
              "id": id,
+             "speaker": speaker,
              "format": format,
              "length": length,
              # "length_zh": length_zh,
