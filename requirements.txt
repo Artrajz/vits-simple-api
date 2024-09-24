@@ -51,6 +51,7 @@ flask_login
 flask_wtf
 flask-cors
 ngrok
+requests_toolbelt
 
 # Compression and Decompression
 py7zr
