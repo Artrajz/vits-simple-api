@@ -37,6 +37,9 @@ def get_param(request_data, key, default, data_type=None):
     if value == "":
         value = default
 
+    if default is None and value in ["None", "null"]:
+        value = None
+
     return value
 
 
@@ -520,7 +523,7 @@ def voice_bert_vits2_api():
         logger.info(f"[{ModelType.BERT_VITS2}] speaker id {id} does not exist")
         return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
 
-    if speaker is not None:
+    if not check_is_none(speaker):
         spk2model = model_manager.bert_vits2_spk2model
         if speaker not in spk2model:
             message = f"[{ModelType.BERT_VITS2}] speaker:{speaker} does not exist"
