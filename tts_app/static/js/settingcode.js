@@ -33,9 +33,15 @@ $(document).ready(function () {
 
         // Remove API key
         $('#api-keys').on('click', '.btn-remove-key', function () {
-            var index = $(this).closest('.item').data('index');
+            var index = $(this).closest('.input-group').data('index');
             configData.system.api_keys.splice(index, 1);
-            renderApiKeys();
+
+            $(this).closest('.input-group').remove();
+
+            $('#api-keys .input-group').each(function (i) {
+                $(this).attr('data-index', i);
+                $(this).find('.input-group-text').text(`API Key ${i + 1}`);
+            });
         });
 
         // Toggle API Key Enabled status
