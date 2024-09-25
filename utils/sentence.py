@@ -162,7 +162,7 @@ def sentence_split_reading(text: str) -> list:
     return sentences_list
 
 
-def sentence_split_and_markup(text, target_language, segment_size=50):
+def sentence_split_and_markup(text, target_language, segment_size=50, speaker_lang=None):
     sentences_list = []
 
     if target_language[0].upper() == "MIX":
@@ -170,7 +170,7 @@ def sentence_split_and_markup(text, target_language, segment_size=50):
     else:
         for _text in sentence_split(text, segment_size):
             if target_language[0].upper() == "AUTO":
-                sentence = markup_language(_text, target_language)
+                sentence = markup_language(_text, speaker_lang)
             elif len(target_language) == 1:
                 sentence = f"[{target_language[0].upper()}]{_text}[{target_language[0].upper()}]"
             else:

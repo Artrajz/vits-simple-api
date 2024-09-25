@@ -160,6 +160,7 @@ def voice_vits_api():
     # 校验模型是否支持输入的语言
     speaker_lang = model_manager.voice_speakers[ModelType.VITS.value][id].get('lang')
     lang_list, status, msg = get_lang_list(lang, speaker_lang)
+
     if status == "error":
         return make_response(jsonify({"status": status, "message": msg}), 400)
 
@@ -173,15 +174,17 @@ def voice_vits_api():
 
     fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
-    state = {"text": text,
-             "id": id,
-             "format": format,
-             "length": length,
-             "noise": noise,
-             "noisew": noisew,
-             "segment_size": segment_size,
-             "lang": lang_list,
-             "speaker_lang": speaker_lang}
+    state = {
+        "text": text,
+        "id": id,
+        "format": format,
+        "length": length,
+        "noise": noise,
+        "noisew": noisew,
+        "segment_size": segment_size,
+        "lang": lang_list,
+        "speaker_lang": speaker_lang,
+    }
 
     if use_streaming:
         audio = tts_manager.stream_vits_infer(state)
