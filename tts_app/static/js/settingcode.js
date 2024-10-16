@@ -126,10 +126,11 @@ function show_config() {
     $.each(configData.bert_vits2_config, function (key, value) {
         var formattedKey = key.replace(/_/g, '-');
         var itemId = 'bert-vits2-config-' + formattedKey;
+        var inputValue = (value === null) ? '' : value;
         $('#bert-vits2-config').append(`
         <div class="input-group mb-3 item">
             <span class="input-group-text">${key}</span>
-            <input type="text" class="form-control" id="${itemId}" value="${value}">
+            <input type="text" class="form-control" id="${itemId}" value="${inputValue}">
         </div>
         `);
     })
@@ -215,12 +216,15 @@ function set_config() {
             } else {
                 // 如果不是复选框，获取输入框或选择框的值
                 itemValue = $(this).find('input, select').val();
-                if (itemId === "language_automatic_detect") {
-                    itemValue = itemValue.split(" ");
-                    if (itemValue.length === 1 && itemValue[0] === "") {
-                        itemValue = [];
-                    }
 
+                // 将空字符串转换为 null
+                if (itemValue === "") {
+                    itemValue = null;
+                }
+
+                // 特殊处理 language_automatic_detect 字段
+                if (itemId === "language_automatic_detect") {
+                    itemValue = itemValue ? itemValue.split(" ") : [];
                 }
             }
             nestedDict[itemId] = itemValue;
