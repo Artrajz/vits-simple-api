@@ -77,7 +77,7 @@ class BertVits2Config(BaseModel):
     style_text: Optional[str] = None
     style_weight: float = 0.7
     use_streaming: bool = False
-    torch_data_type: str = ""
+    torch_data_type: Optional[str] = None
 
 
 class GPTSoVitsPreset(BaseModel):
