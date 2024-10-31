@@ -253,7 +253,7 @@ class System(BaseModel):
 
 class LanguageIdentification(BaseModel):
     language_identification_library: str = "langid"
-    espeak_library: str = r"C:/Program Files/eSpeak NG/libespeak-ng.dll" if "win" in sys.platform else ""
+    espeak_library: Optional[str] = r"C:/Program Files/eSpeak NG/libespeak-ng.dll" if "win" in sys.platform else ""
     language_automatic_detect: List[str] = Field(default_factory=list)
     split_pattern: str = r'[\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\>\=\?\@\[\]\{\}\\\\\^\_\`' \
                          r'\！？。＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」' \
