@@ -125,7 +125,8 @@ class ModelHandler:
         self.device = device
         self.ssl_model = None
 
-        if config.bert_vits2_config.torch_data_type.lower() in ["float16", "fp16"]:
+        torch_data_type = config.bert_vits2_config.torch_data_type
+        if torch_data_type and torch_data_type.lower() in ["float16", "fp16"]:
             self.torch_dtype = torch.float16
         else:
             self.torch_dtype = None
