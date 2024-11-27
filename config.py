@@ -437,6 +437,8 @@ class Config(AsDictMixin):
     def asdict(self):
         data = {}
         for attr, value in vars(self).items():
+            if attr == "abs_path":
+                continue
             if isinstance(value, AsDictMixin):
                 data[attr] = value.asdict()
             else:
