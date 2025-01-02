@@ -246,6 +246,8 @@ class ModelManager(Subject):
                 "config": hps,
                 "device": self.device
             }
+            if model_type == ModelType.VITS:
+                model_args["dynamic_loading"] = tts_model["dynamic_loading"]
 
         model_class = self.model_class_map[model_type]
         model = model_class(**model_args)
@@ -255,7 +257,7 @@ class ModelManager(Subject):
             if bert_embedding and self.tts_front is None:
                 self.load_VITS_PinYin_model(
                     os.path.join(BASE_DIR, config.system.data_path, config.resource_paths_config.vits_chinese_bert))
-            if not config.vits_config.dynamic_loading:
+            if not model.dynamic_loading:
                 model.load_model()
             self.available_tts_model.add(ModelType.VITS)
 

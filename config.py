@@ -144,6 +144,7 @@ class BaseModelConfig(BaseModel):
 class VITSModelConfig(BaseModelConfig):
     vits_path: str = None
     config_path: str = None
+    dynamic_loading: Optional[bool] = False
 
 
 class W2V2VITSModelConfig(BaseModelConfig):
