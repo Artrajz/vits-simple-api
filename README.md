@@ -139,7 +139,7 @@ Starting from version 0.6.6, it is default behavior to automatically load all mo
 
 After the initial startup, a config.yaml configuration file will be generated. You need to change `tts_config.auto_load` to `false` in order to enable manual loading mode.
 
-You can modify the `tts_config.models` in the config.yaml or make modifications in the admin panel in the browser.
+You can modify the `tts_model_config.tts_modes` in the config.yaml or make modifications in the admin panel in the browser.
 
 **Note: After version 0.6.6, the model loading path has been modified. Please follow the steps below to configure the model path again!**
 
@@ -163,9 +163,9 @@ tts_config:
   auto_load: false
   models:
   - config_path: model1/config.json
-    model_path: model1/G_1000.pth
+    vits_path: model1/G_1000.pth
   - config_path: model2/config.json
-    model_path: model2/G_1000.pth
+    vits_path: model2/G_1000.pth
 	# GPT-SoVITS
   - sovits_path: gpt_sovits1/model1_e8_s11536.pth
     gpt_path: gpt_sovits1/model1-e15.ckpt
@@ -182,7 +182,7 @@ tts_config:
   auto_load: false
   models:
   - config_path: D://model3/config.json
-    model_path: D://model3/G_1000.pth
+    vits_path: D://model3/G_1000.pth
 ```
 
 - models_path: This is the models folder relative to the data directory, with the default value being "models". When auto_load is set to true, all models in the models_path directory will be loaded.
@@ -367,7 +367,7 @@ Please note that for the Chinese extra version, the version should be changed to
 
 ## API KEY
 
-Set `api_key_enabled: true` in `config.yaml` to enable API key authentication. The API key is `api_key: api-key`.
+Set `api_key_enabled: true` in `config.yaml` to enable API key authentication.
 After enabling it, you need to add the `api_key` parameter in GET requests and add the `X-API-KEY` parameter in the header for POST requests.
 
 # Parameter

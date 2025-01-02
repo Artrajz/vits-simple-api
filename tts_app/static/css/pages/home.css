@@ -70,6 +70,11 @@ model load
     margin-right: 5px;
 }
 
+.unload-model-type {
+    min-width: 100px;
+    margin-right: 10px;
+}
+
 .unload-model-folder {
     min-width: 200px;
     margin-right: 5px;

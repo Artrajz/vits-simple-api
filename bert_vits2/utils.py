@@ -3,7 +3,7 @@ import sys
 import logging
 import torch
 
-from contants import config
+from config import config
 
 MATPLOTLIB_FLAG = False
 

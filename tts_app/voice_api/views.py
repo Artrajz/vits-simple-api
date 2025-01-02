@@ -9,7 +9,7 @@ from flask import request, jsonify, make_response, send_file, Blueprint
 from werkzeug.utils import secure_filename
 
 from contants import ModelType
-from contants import config
+from config import config
 # from gpt_sovits.utils import load_audio
 from logger import logger
 from tts_app.model_manager import model_manager, tts_manager
@@ -36,6 +36,9 @@ def get_param(request_data, key, default, data_type=None):
 
     if value == "":
         value = default
+
+    if default is None and value in ["None", "null"]:
+        value = None
 
     return value
 
@@ -95,17 +98,18 @@ def get_lang_list(lang, speaker_lang):
 
 @voice_api.route('/default_parameter', methods=["GET", "POST"])
 def default_parameter():
-    gpt_sovits_config = copy.deepcopy(config.gpt_sovits_config.asdict())
+    gpt_sovits_config = config.gpt_sovits_config.model_dump()
     for preset_name, preset in gpt_sovits_config["presets"].items():
         if not check_is_none(preset["refer_wav_path"]):
             preset["refer_wav_path"] = extract_filename_and_directory(preset["refer_wav_path"])
 
-    data = {"vits_config": config.vits_config.asdict(),
-            "w2v2_vits_config": config.w2v2_vits_config.asdict(),
-            "hubert_vits_config": config.hubert_vits_config.asdict(),
-            "bert_vits2_config": config.bert_vits2_config.asdict(),
-            "gpt_sovits_config": gpt_sovits_config
-            }
+    data = {
+        "vits_config": config.vits_config.model_dump(),
+        "w2v2_vits_config": config.w2v2_vits_config.model_dump(),
+        "hubert_vits_config": config.hubert_vits_config.model_dump(),
+        "bert_vits2_config": config.bert_vits2_config.model_dump(),
+        "gpt_sovits_config": gpt_sovits_config,
+    }
     return jsonify(data)
 
 
@@ -138,31 +142,31 @@ def voice_vits_api():
         segment_size = get_param(request_data, "segment_size", config.vits_config.segment_size, int)
         use_streaming = get_param(request_data, 'streaming', config.vits_config.use_streaming, bool)
     except Exception as e:
-        logger.error(f"[{ModelType.VITS.value}] {e}")
+        logger.error(f"[{ModelType.VITS}] {e}")
         return make_response("parameter error", 400)
 
     logger.info(
-        f"[{ModelType.VITS.value}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} segment_size:{segment_size}")
-    logger.info(f"[{ModelType.VITS.value}] len:{len(text)} text：{text}")
+        f"[{ModelType.VITS}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} segment_size:{segment_size}")
+    logger.info(f"[{ModelType.VITS}] len:{len(text)} text：{text}")
 
     if check_is_none(text):
-        logger.info(f"[{ModelType.VITS.value}] text is empty")
+        logger.info(f"[{ModelType.VITS}] text is empty")
         return make_response(jsonify({"status": "error", "message": "text is empty"}), 400)
 
     if check_is_none(id):
-        logger.info(f"[{ModelType.VITS.value}] speaker id is empty")
+        logger.info(f"[{ModelType.VITS}] speaker id is empty")
         return make_response(jsonify({"status": "error", "message": "speaker id is empty"}), 400)
 
     if id < 0 or id >= model_manager.vits_speakers_count:
-        logger.info(f"[{ModelType.VITS.value}] speaker id {id} does not exist")
+        logger.info(f"[{ModelType.VITS}] speaker id {id} does not exist")
         return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
 
     # 校验模型是否支持输入的语言
-    speaker_lang = model_manager.voice_speakers[ModelType.VITS.value][id].get('lang')
-    lang_list, status, msg = get_lang_list(lang, speaker_lang)
-
-    if status == "error":
-        return make_response(jsonify({"status": status, "message": msg}), 400)
+    speaker_lang = model_manager.voice_speakers[ModelType.VITS][id].get('lang')
+    if lang not in ["auto", "mix"] and len(speaker_lang) > 1 and lang not in speaker_lang:
+        logger.info(f"[{ModelType.VITS}] lang \"{lang}\" is not in {speaker_lang}")
+        return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}),
+                             400)
 
     # 如果配置文件中设置了LANGUAGE_AUTOMATIC_DETECT则强制将speaker_lang设置为LANGUAGE_AUTOMATIC_DETECT
     if (lang_detect := config.language_identification.language_automatic_detect) and isinstance(lang_detect, list):
@@ -196,10 +200,10 @@ def voice_vits_api():
         t1 = time.time()
         audio = tts_manager.vits_infer(state)
         t2 = time.time()
-        logger.info(f"[{ModelType.VITS.value}] finish in {(t2 - t1):.2f}s")
+        logger.info(f"[{ModelType.VITS}] finish in {(t2 - t1):.2f}s")
 
         if config.system.cache_audio:
-            logger.debug(f"[{ModelType.VITS.value}] {fname}")
+            logger.debug(f"[{ModelType.VITS}] {fname}")
             path = os.path.join(config.system.cache_path, fname)
             save_audio(audio.getvalue(), path)
 
@@ -219,21 +223,21 @@ def voice_hubert_api():
             noisew = get_param(request.form, "noisew", config.hubert_vits_config.noisew, float)
             use_streaming = get_param(request.form, 'streaming', False, bool)
         except Exception as e:
-            logger.error(f"[{ModelType.HUBERT_VITS.value}] {e}")
+            logger.error(f"[{ModelType.HUBERT_VITS}] {e}")
             return make_response("parameter error", 400)
 
     logger.info(
-        f"[{ModelType.HUBERT_VITS.value}] id:{id} format:{format} length:{length} noise:{noise} noisew:{noisew}")
+        f"[{ModelType.HUBERT_VITS}] id:{id} format:{format} length:{length} noise:{noise} noisew:{noisew}")
 
     fname = secure_filename(str(uuid.uuid1()) + "." + voice.filename.split(".")[1])
     voice.save(os.path.join(config.system.upload_folder, fname))
 
     if check_is_none(id):
-        logger.info(f"[{ModelType.HUBERT_VITS.value}] speaker id is empty")
+        logger.info(f"[{ModelType.HUBERT_VITS}] speaker id is empty")
         return make_response(jsonify({"status": "error", "message": "speaker id is empty"}), 400)
 
     if id < 0 or id >= model_manager.hubert_speakers_count:
-        logger.info(f"[{ModelType.HUBERT_VITS.value}] speaker id {id} does not exist")
+        logger.info(f"[{ModelType.HUBERT_VITS}] speaker id {id} does not exist")
         return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
 
     file_type = f"audio/{format}"
@@ -247,10 +251,10 @@ def voice_hubert_api():
     t1 = time.time()
     audio = tts_manager.hubert_vits_infer(task)
     t2 = time.time()
-    logger.info(f"[{ModelType.HUBERT_VITS.value}] finish in {(t2 - t1):.2f}s")
+    logger.info(f"[{ModelType.HUBERT_VITS}] finish in {(t2 - t1):.2f}s")
 
     if config.system.cache_audio:
-        logger.debug(f"[{ModelType.HUBERT_VITS.value}] {fname}")
+        logger.debug(f"[{ModelType.HUBERT_VITS}] {fname}")
         path = os.path.join(config.system.cache_path, fname)
         save_audio(audio.getvalue(), path)
 
@@ -289,29 +293,29 @@ def voice_w2v2_api():
         emotion_reference = get_param(request_data, "emotion_reference", None, str)
         use_streaming = get_param(request_data, 'streaming', False, bool)
     except Exception as e:
-        logger.error(f"[{ModelType.W2V2_VITS.value}] {e}")
+        logger.error(f"[{ModelType.W2V2_VITS}] {e}")
         return make_response(f"parameter error", 400)
 
-    logger.info(f"[{ModelType.W2V2_VITS.value}] id:{id} format:{format} lang:{lang} "
+    logger.info(f"[{ModelType.W2V2_VITS}] id:{id} format:{format} lang:{lang} "
                 f"length:{length} noise:{noise} noisew:{noisew} emotion:{emotion} segment_size:{segment_size}")
-    logger.info(f"[{ModelType.W2V2_VITS.value}] len:{len(text)} text：{text}")
+    logger.info(f"[{ModelType.W2V2_VITS}] len:{len(text)} text：{text}")
 
     if check_is_none(text):
-        logger.info(f"[{ModelType.W2V2_VITS.value}] text is empty")
+        logger.info(f"[{ModelType.W2V2_VITS}] text is empty")
         return make_response(jsonify({"status": "error", "message": "text is empty"}), 400)
 
     if check_is_none(id):
-        logger.info(f"[{ModelType.W2V2_VITS.value}] speaker id is empty")
+        logger.info(f"[{ModelType.W2V2_VITS}] speaker id is empty")
         return make_response(jsonify({"status": "error", "message": "speaker id is empty"}), 400)
 
     if id < 0 or id >= model_manager.w2v2_speakers_count:
-        logger.info(f"[{ModelType.W2V2_VITS.value}] speaker id {id} does not exist")
+        logger.info(f"[{ModelType.W2V2_VITS}] speaker id {id} does not exist")
         return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
 
     # 校验模型是否支持输入的语言
-    speaker_lang = model_manager.voice_speakers[ModelType.W2V2_VITS.value][id].get('lang')
+    speaker_lang = model_manager.voice_speakers[ModelType.W2V2_VITS][id].get('lang')
     if lang not in ["auto", "mix"] and len(speaker_lang) > 1 and lang not in speaker_lang:
-        logger.info(f"[{ModelType.W2V2_VITS.value}] lang \"{lang}\" is not in {speaker_lang}")
+        logger.info(f"[{ModelType.W2V2_VITS}] lang \"{lang}\" is not in {speaker_lang}")
         return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}),
                              400)
 
@@ -340,10 +344,10 @@ def voice_w2v2_api():
     t1 = time.time()
     audio = tts_manager.w2v2_vits_infer(task)
     t2 = time.time()
-    logger.info(f"[{ModelType.W2V2_VITS.value}] finish in {(t2 - t1):.2f}s")
+    logger.info(f"[{ModelType.W2V2_VITS}] finish in {(t2 - t1):.2f}s")
 
     if config.system.cache_audio:
-        logger.debug(f"[{ModelType.W2V2_VITS.value}] {fname}")
+        logger.debug(f"[{ModelType.W2V2_VITS}] {fname}")
         path = os.path.join(config.system.cache_path, fname)
         save_audio(audio.getvalue(), path)
 
@@ -468,6 +472,7 @@ def voice_bert_vits2_api():
 
         text = get_param(request_data, "text", "", str)
         id = get_param(request_data, "id", config.bert_vits2_config.id, int)
+        speaker = get_param(request_data, "speaker", config.bert_vits2_config.speaker, str)
         format = get_param(request_data, "format", config.bert_vits2_config.format, str)
         lang = get_param(request_data, "lang", config.bert_vits2_config.lang, str).lower()
         length = get_param(request_data, "length", config.bert_vits2_config.length, float)
@@ -485,43 +490,54 @@ def voice_bert_vits2_api():
         style_text = get_param(request_data, 'style_text', config.bert_vits2_config.style_text, str)
         style_weight = get_param(request_data, 'style_weight', config.bert_vits2_config.style_weight, float)
     except Exception as e:
-        logger.error(f"[{ModelType.BERT_VITS2.value}] {e}")
+        logger.error(f"[{ModelType.BERT_VITS2}] {e}")
         return make_response("parameter error", 400)
 
     # logger.info(
-    #     f"[{ModelType.BERT_VITS2.value}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size}"
+    #     f"[{ModelType.BERT_VITS2}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size}"
     #     f" length_zh:{length_zh} length_ja:{length_ja} length_en:{length_en}")
-
     logger.info(
-        f"[{ModelType.BERT_VITS2.value}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size} streaming:{use_streaming}")
-    logger.info(f"[{ModelType.BERT_VITS2.value}] len:{len(text)} text：{text}")
+        f"[{ModelType.BERT_VITS2}] "
+        f"{'speaker:' + speaker if speaker else 'id:' + str(id)} "
+        f"format:{format} lang:{lang} length:{length} noise:{noise} "
+        f"noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size} "
+        f"streaming:{use_streaming}"
+    )
+    logger.info(f"[{ModelType.BERT_VITS2}] len:{len(text)} text：{text}")
     if reference_audio:
-        logger.info(f"[{ModelType.BERT_VITS2.value}] reference_audio:{reference_audio.filename}")
+        logger.info(f"[{ModelType.BERT_VITS2}] reference_audio:{reference_audio.filename}")
     elif emotion:
-        logger.info(f"[{ModelType.BERT_VITS2.value}] emotion:{emotion}")
+        logger.info(f"[{ModelType.BERT_VITS2}] emotion:{emotion}")
     elif text_prompt:
-        logger.info(f"[{ModelType.BERT_VITS2.value}] text_prompt:{text_prompt}")
+        logger.info(f"[{ModelType.BERT_VITS2}] text_prompt:{text_prompt}")
     elif style_text:
-        logger.info(f"[{ModelType.BERT_VITS2.value}] style_text:{style_text} style_weight:{style_weight}")
+        logger.info(f"[{ModelType.BERT_VITS2}] style_text:{style_text} style_weight:{style_weight}")
 
     if check_is_none(text):
-        logger.info(f"[{ModelType.BERT_VITS2.value}] text is empty")
+        logger.info(f"[{ModelType.BERT_VITS2}] text is empty")
         return make_response(jsonify({"status": "error", "message": "text is empty"}), 400)
 
     if check_is_none(id):
-        logger.info(f"[{ModelType.BERT_VITS2.value}] speaker id is empty")
+        logger.info(f"[{ModelType.BERT_VITS2}] speaker id is empty")
         return make_response(jsonify({"status": "error", "message": "speaker id is empty"}), 400)
 
     if id < 0 or id >= model_manager.bert_vits2_speakers_count:
-        logger.info(f"[{ModelType.BERT_VITS2.value}] speaker id {id} does not exist")
+        logger.info(f"[{ModelType.BERT_VITS2}] speaker id {id} does not exist")
         return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
 
+    if not check_is_none(speaker):
+        spk2model = model_manager.bert_vits2_spk2model
+        if speaker not in spk2model:
+            message = f"[{ModelType.BERT_VITS2}] speaker:{speaker} does not exist"
+            logger.info(message)
+            return make_response(jsonify({"status": "error", "message": message}), 400)
+
     if emotion and (emotion < 0 or emotion > 9):
-        logger.info(f"[{ModelType.BERT_VITS2.value}] emotion {emotion} out of the range 0-9")
+        logger.info(f"[{ModelType.BERT_VITS2}] emotion {emotion} out of the range 0-9")
         return make_response(jsonify({"status": "error", "message": f"emotion {emotion} out of the range 0-9"}), 400)
 
     # 校验模型是否支持输入的语言
-    speaker_lang = model_manager.voice_speakers[ModelType.BERT_VITS2.value][id].get('lang')
+    speaker_lang = model_manager.voice_speakers[ModelType.BERT_VITS2][id].get('lang')
     lang_list, status, msg = get_lang_list(lang, speaker_lang)
     if status == "error":
         return make_response(jsonify({"status": status, "message": msg}), 400)
@@ -538,6 +554,7 @@ def voice_bert_vits2_api():
     file_type = f"audio/{format}"
     state = {"text": text,
              "id": id,
+             "speaker": speaker,
              "format": format,
              "length": length,
              # "length_zh": length_zh,
@@ -568,10 +585,170 @@ def voice_bert_vits2_api():
         # audio = tts_manager.bert_vits2_infer(state)
         audio = tts_manager.bert_vits2_infer(state)
         t2 = time.time()
-        logger.info(f"[{ModelType.BERT_VITS2.value}] finish in {(t2 - t1):.2f}s")
+        logger.info(f"[{ModelType.BERT_VITS2}] finish in {(t2 - t1):.2f}s")
 
     if config.system.cache_audio:
-        logger.debug(f"[{ModelType.BERT_VITS2.value}] {fname}")
+        logger.debug(f"[{ModelType.BERT_VITS2}] {fname}")
+        path = os.path.join(config.system.cache_path, fname)
+        save_audio(audio.getvalue(), path)
+
+    return send_file(path_or_file=audio, mimetype=file_type, download_name=fname)
+
+
+@voice_api.route('/bert-vits2_n', methods=["GET", "POST"])
+@require_api_key
+def voice_bert_vits2_api_n():
+    try:
+        if request.method == "GET":
+            request_data = request.args
+        elif request.method == "POST":
+            content_type = request.headers.get('Content-Type')
+            if content_type == 'application/json':
+                request_data = request.get_json()
+            else:
+                request_data = request.form
+
+        text = get_param(request_data, "text", "", str)
+        # id = get_param(request_data, "id", config.bert_vits2_config.id, int)
+        speaker = get_param(request_data, "speaker", "", str)
+        format = get_param(request_data, "format", config.bert_vits2_config.format, str)
+        lang = get_param(request_data, "lang", config.bert_vits2_config.lang, str).lower()
+        length = get_param(request_data, "length", config.bert_vits2_config.length, float)
+        # length_zh = get_param(request_data, "length_zh", config.bert_vits2_config.length_zh, float)
+        # length_ja = get_param(request_data, "length_ja", config.bert_vits2_config.length_ja, float)
+        # length_en = get_param(request_data, "length_en", config.bert_vits2_config.length_en, float)
+        noise = get_param(request_data, "noise", config.bert_vits2_config.noise, float)
+        noisew = get_param(request_data, "noisew", config.bert_vits2_config.noisew, float)
+        sdp_ratio = get_param(request_data, "sdp_ratio", config.bert_vits2_config.sdp_ratio, float)
+        segment_size = get_param(request_data, "segment_size", config.bert_vits2_config.segment_size, int)
+        use_streaming = get_param(request_data, 'streaming', config.bert_vits2_config.use_streaming, bool)
+        emotion = get_param(request_data, 'emotion', config.bert_vits2_config.emotion, int)
+        reference_audio = request.files.get("reference_audio", None)
+        text_prompt = get_param(request_data, 'text_prompt', config.bert_vits2_config.text_prompt, str)
+        style_text = get_param(request_data, 'style_text', config.bert_vits2_config.style_text, str)
+        style_weight = get_param(request_data, 'style_weight', config.bert_vits2_config.style_weight, float)
+    except Exception as e:
+        logger.error(f"[{ModelType.BERT_VITS2}] {e}")
+        return make_response("parameter error", 400)
+
+    # logger.info(
+    #     f"[{ModelType.BERT_VITS2}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size}"
+    #     f" length_zh:{length_zh} length_ja:{length_ja} length_en:{length_en}")
+
+    id = 0
+    try:
+        data_ = model_manager.voice_speakers
+        for data_2 in data_["BERT-VITS2"]:
+            name_ = data_2["name"]
+            # logger.error(f"name_:{name_} speak_name:{speaker}")
+            if name_ == speaker:
+                id = data_2["id"]
+                break
+    except Exception as e:
+        logger.error(f"[err:{Exception}")
+
+    # 判断是否含有字母，只有在含有字母的时候才使用auto
+    contains_letters = bool(re.search(r'[a-zA-Z]', text))
+    if ~contains_letters:
+        lang = "zh"
+    # 修改 text 的字符
+    text_temp = ""
+    # 定义替换规则
+    replacements = {
+        "=": "等于",
+        ">": "大于",
+        "<": "小于",
+    }
+    for char in text:
+        if char in replacements:
+            # 替换指定的符号为对应的中文字符
+            text_temp += replacements[char]
+        elif char.isalnum() or char.isspace():
+            # 保留字母数字字符和空格
+            text_temp += char
+    text = text_temp
+
+    logger.info(
+        f"[{ModelType.BERT_VITS2}] id:{id} format:{format} lang:{lang} length:{length} noise:{noise} noisew:{noisew} sdp_ratio:{sdp_ratio} segment_size:{segment_size}")
+    if reference_audio:
+        logger.info(f"[{ModelType.BERT_VITS2}] reference_audio:{reference_audio.filename}")
+    elif emotion:
+        logger.info(f"[{ModelType.BERT_VITS2}] emotion:{emotion}")
+    elif text_prompt:
+        logger.info(f"[{ModelType.BERT_VITS2}] text_prompt:{text_prompt}")
+    elif style_text:
+        logger.info(f"[{ModelType.BERT_VITS2}] style_text:{style_text} style_weight:{style_weight}")
+    logger.info(f"[{ModelType.BERT_VITS2}] len:{len(text)} text：{text}")
+
+    if check_is_none(text):
+        logger.info(f"[{ModelType.BERT_VITS2}] text is empty")
+        return make_response(jsonify({"status": "error", "message": "text is empty"}), 400)
+
+    if check_is_none(id):
+        logger.info(f"[{ModelType.BERT_VITS2}] speaker id is empty")
+        return make_response(jsonify({"status": "error", "message": "speaker id is empty"}), 400)
+
+    if id < 0 or id >= model_manager.bert_vits2_speakers_count:
+        logger.info(f"[{ModelType.BERT_VITS2}] speaker id {id} does not exist")
+        return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
+
+    if emotion and (emotion < 0 or emotion > 9):
+        logger.info(f"[{ModelType.BERT_VITS2}] emotion {emotion} out of the range 0-9")
+        return make_response(jsonify({"status": "error", "message": f"emotion {emotion} out of the range 0-9"}), 400)
+
+    # 校验模型是否支持输入的语言
+    speaker_lang = model_manager.voice_speakers[ModelType.BERT_VITS2][id].get('lang')
+    if lang not in ["auto", "mix"] and len(speaker_lang) != 1 and lang not in speaker_lang:
+        logger.info(f"[{ModelType.BERT_VITS2}] lang \"{lang}\" is not in {speaker_lang}")
+        return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}),
+                             400)
+
+    # 如果配置文件中设置了LANGUAGE_AUTOMATIC_DETECT则强制将speaker_lang设置为LANGUAGE_AUTOMATIC_DETECT
+    if (lang_detect := config.language_identification.language_automatic_detect) and isinstance(lang_detect, list):
+        speaker_lang = lang_detect
+
+    if use_streaming and format.upper() != "MP3":
+        format = "mp3"
+        logger.warning("Streaming response only supports MP3 format.")
+
+    fname = f"{str(uuid.uuid1())}.{format}"
+    file_type = f"audio/{format}"
+    state = {"text": text,
+             "id": id,
+             "format": format,
+             "length": length,
+             # "length_zh": length_zh,
+             # "length_ja": length_ja,
+             # "length_en": length_en,
+             "noise": noise,
+             "noisew": noisew,
+             "sdp_ratio": sdp_ratio,
+             "segment_size": segment_size,
+             "lang": lang,
+             "speaker_lang": speaker_lang,
+             "emotion": emotion,
+             "reference_audio": reference_audio,
+             "text_prompt": text_prompt,
+             "style_text": style_text,
+             "style_weight": style_weight,
+             }
+
+    if use_streaming:
+        # audio = tts_manager.stream_bert_vits2_infer(state)
+        audio = tts_manager.stream_bert_vits2_infer(state)
+        response = make_response(audio)
+        response.headers['Content-Disposition'] = f'attachment; filename={fname}'
+        response.headers['Content-Type'] = file_type
+        return response
+    else:
+        t1 = time.time()
+        # audio = tts_manager.bert_vits2_infer(state)
+        audio = tts_manager.bert_vits2_infer(state)
+        t2 = time.time()
+        logger.info(f"[{ModelType.BERT_VITS2}] finish in {(t2 - t1):.2f}s")
+
+    if config.system.cache_audio:
+        logger.debug(f"[{ModelType.BERT_VITS2}] {fname}")
         path = os.path.join(config.system.cache_path, fname)
         save_audio(audio.getvalue(), path)
 
@@ -610,29 +787,29 @@ def voice_gpt_sovits_api():
         speed_factor = get_param(request_data, 'speed', config.gpt_sovits_config.speed, float)
         seed = get_param(request_data, 'seed', config.gpt_sovits_config.seed, int)
     except Exception as e:
-        logger.error(f"[{ModelType.GPT_SOVITS.value}] {e}")
+        logger.error(f"[{ModelType.GPT_SOVITS}] {e}")
         return make_response("parameter error", 400)
 
     logger.info(
-        f"[{ModelType.GPT_SOVITS.value}] id:{id} format:{format} lang:{lang} segment_size:{segment_size} top_k:{top_k} top_p:{top_p} temperature:{temperature} streaming:{use_streaming}")
+        f"[{ModelType.GPT_SOVITS}] id:{id} format:{format} lang:{lang} segment_size:{segment_size} top_k:{top_k} top_p:{top_p} temperature:{temperature} streaming:{use_streaming}")
     logger.info(
-        f"[{ModelType.GPT_SOVITS.value}] batch_size:{batch_size} speed_factor:{speed_factor}")
-    logger.info(f"[{ModelType.GPT_SOVITS.value}] len:{len(text)} text：{text}")
+        f"[{ModelType.GPT_SOVITS}] batch_size:{batch_size} speed_factor:{speed_factor}")
+    logger.info(f"[{ModelType.GPT_SOVITS}] len:{len(text)} text：{text}")
 
     if check_is_none(text):
-        logger.info(f"[{ModelType.GPT_SOVITS.value}] text is empty")
+        logger.info(f"[{ModelType.GPT_SOVITS}] text is empty")
         return make_response(jsonify({"status": "error", "message": "text is empty"}), 400)
 
     if check_is_none(id):
-        logger.info(f"[{ModelType.GPT_SOVITS.value}] speaker id is empty")
+        logger.info(f"[{ModelType.GPT_SOVITS}] speaker id is empty")
         return make_response(jsonify({"status": "error", "message": "speaker id is empty"}), 400)
 
     if id < 0 or id >= model_manager.gpt_sovits_speakers_count:
-        logger.info(f"[{ModelType.GPT_SOVITS.value}] speaker id {id} does not exist")
+        logger.info(f"[{ModelType.GPT_SOVITS}] speaker id {id} does not exist")
         return make_response(jsonify({"status": "error", "message": f"id {id} does not exist"}), 400)
 
     # 校验模型是否支持输入的语言
-    speaker_lang = model_manager.voice_speakers[ModelType.GPT_SOVITS.value][id].get('lang')
+    speaker_lang = model_manager.voice_speakers[ModelType.GPT_SOVITS][id].get('lang')
     lang_list, status, msg = get_lang_list(lang, speaker_lang)
     if status == "error":
         return make_response(jsonify({"status": status, "message": msg}), 400)
@@ -642,7 +819,7 @@ def voice_gpt_sovits_api():
         speaker_lang = lang_detect
 
     logger.info(
-        f"[{ModelType.GPT_SOVITS.value}] prompt_text:{prompt_text} prompt_lang:{prompt_lang} ")
+        f"[{ModelType.GPT_SOVITS}] prompt_text:{prompt_text} prompt_lang:{prompt_lang} ")
 
     if use_streaming and format.upper() != "MP3":
         format = "mp3"
@@ -679,10 +856,10 @@ def voice_gpt_sovits_api():
         t1 = time.time()
         audio = tts_manager.gpt_sovits_infer(state)
         t2 = time.time()
-        logger.info(f"[{ModelType.GPT_SOVITS.value}] finish in {(t2 - t1):.2f}s")
+        logger.info(f"[{ModelType.GPT_SOVITS}] finish in {(t2 - t1):.2f}s")
 
     if config.system.cache_audio:
-        logger.debug(f"[{ModelType.GPT_SOVITS.value}] {fname}")
+        logger.debug(f"[{ModelType.GPT_SOVITS}] {fname}")
         path = os.path.join(config.system.cache_path, fname)
         save_audio(audio.getvalue(), path)
 
@@ -742,6 +919,7 @@ def voice_reading_api():
 
 
 @voice_api.route('/check', methods=["GET", "POST"])
+@require_api_key
 def check():
     try:
         if request.method == "GET":
@@ -774,7 +952,7 @@ def check():
         return make_response(jsonify({"status": "error", "message": "speaker id is empty"}), 400)
 
     model_type = ModelType(model_type_str)
-    speaker_list = model_manager.voice_speakers[model_type.value]
+    speaker_list = model_manager.voice_speakers[model_type]
 
     if len(speaker_list) == 0:
         logger.info(f"[check] {model_type_str} not loaded")

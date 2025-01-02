@@ -1,6 +1,6 @@
 import torch
 
-from contants import config
+from config import config
 from bert_vits2.text.japanese import text2sep_kata
 
 LOCAL_PATH = "./bert/deberta-v2-large-japanese-char-wwm"

@@ -4,7 +4,7 @@ import sys
 import logging
 import logzero
 import warnings
-from contants import config
+from config import config, BASE_DIR
 from logging.handlers import TimedRotatingFileHandler
 
 
@@ -57,10 +57,10 @@ else:
     formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s [in %(module)s.%(funcName)s:%(lineno)d]',
                                   datefmt='%Y-%m-%d %H:%M:%S')
 
-logs_path = os.path.join(config.abs_path, config.log_config.logs_path)
+logs_path = os.path.join(BASE_DIR, config.log_config.logs_path)
 os.makedirs(logs_path, exist_ok=True)
 log_file = os.path.join(logs_path, 'latest.log')
-backup_count = getattr(config, "LOGS_BACKUPCOUNT", 30)
+backup_count = config.log_config.logs_backup_count
 handler = TimedRotatingFileHandler(log_file, when="midnight", interval=1, backupCount=backup_count, encoding='utf-8')
 handler.suffix = "%Y-%m-%d.log"
 handler.setFormatter(formatter)

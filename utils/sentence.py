@@ -2,7 +2,7 @@ import logging
 
 import regex as re
 
-from contants import config
+from config import config
 from utils.data_utils import check_is_none
 from utils.classify_language import classify_language, split_alpha_nonalpha
 

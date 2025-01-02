@@ -1,9 +1,7 @@
 from enum import Enum
-from config import Config
 
-config = Config.load_config()
 
-class ModelType(Enum):
+class ModelType(str, Enum):
     VITS = "VITS"
     HUBERT_VITS = "HUBERT-VITS"
     W2V2_VITS = "W2V2-VITS"

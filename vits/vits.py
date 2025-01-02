@@ -9,7 +9,7 @@ from vits.models import SynthesizerTrn
 
 
 class VITS:
-    def __init__(self, model_path, config, device="cpu", **kwargs):
+    def __init__(self, vits_path, config, device="cpu", **kwargs):
         self.hps_ms = get_hparams_from_file(config) if isinstance(config, str) else config
         self.n_speakers = getattr(self.hps_ms.data, 'n_speakers', 0)
         self.n_symbols = len(getattr(self.hps_ms, 'symbols', []))
@@ -21,8 +21,8 @@ class VITS:
         self.hps_ms.model.bert_embedding = self.bert_embedding
         self.text_cleaners = getattr(self.hps_ms.data, 'text_cleaners', [None])[0]
         self.sampling_rate = self.hps_ms.data.sampling_rate
-        self.device = device
-        self.model_path = model_path
+        self.device = torch.device(device)
+        self.vits_path = vits_path
 
         # load checkpoint
         # self.load_model()
@@ -37,7 +37,7 @@ class VITS:
             n_speakers=self.n_speakers,
             **self.hps_ms.model)
         _ = self.net_g_ms.eval()
-        utils.load_checkpoint(self.model_path, self.net_g_ms)
+        utils.load_checkpoint(self.vits_path, self.net_g_ms)
         self.net_g_ms.to(self.device)
     
     def release_model(self):

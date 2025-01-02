@@ -46,8 +46,8 @@
             </div>
 
             <div class="config-wrapper">
-                <label for="" class="form-label title">model_config</label>
-                <div class="" id="model-config"></div>
+                <label for="" class="form-label title">tts_model_config</label>
+                <div class="" id="tts-model-config"></div>
             </div>
 
             <div class="config-wrapper">
@@ -65,7 +65,7 @@
                         <input type="text" class="form-control" id="espeak-library">
                     </div>
                     <div class="input-group mb-3 item">
-                        <span class="input-group-text">language_automatic_detect (e.g., ['zh','ja','en'])</span>
+                        <span class="input-group-text">language_automatic_detect (e.g., zh ja en)</span>
                         <input type="text" class="form-control" id="language-automatic-detect">
                     </div>
                 </div>
@@ -82,10 +82,12 @@
                         <input class="form-check-input" type="checkbox" role="switch" id="api-key-enabled">
                         <label class="form-check-label" for="flexSwitchCheckDefault">api_key_enabled</label>
                     </div>
-                    <div class="input-group mb-3 item">
-                        <span class="input-group-text">api_key</span>
-                        <input type="text" class="form-control" type="text" id="api-key">
+                    <div id="api-keys">
+                    <!-- API keys will be dynamically inserted here -->
                     </div>
+
+                    <button class="btn btn-primary mt-3" id="add-api-key">Add API Key</button>
+
                     <div class="form-check form-switch item">
                         <input class="form-check-input" type="checkbox" role="switch" id="cache-audio">
                         <label class="form-check-label" for="flexSwitchCheckDefault">cache_audio</label>
@@ -131,7 +133,7 @@
                     </div>
                     <div class="input-group mb-3 item">
                         <span class="input-group-text">port</span>
-                        <input class="form-control" type="password" id="port">
+                        <input class="form-control" type="text" id="port">
                     </div>
                     <div class="input-group mb-3 item">
                         <span class="input-group-text">allow origins</span>

@@ -142,7 +142,7 @@ v0.6.6版本之后默认会**自动加载**`data/models`文件夹下的所有模
 
 首次启动之后会生成一个config.yaml配置文件，需要将`tts_config.auto_load`改为`false`以启用手动加载模式。
 
-可以修改配置文件中的`tts_config.models`或者在浏览器中进入管理员后台进行修改。
+可以修改配置文件中的`tts_model_config.tts_modes`或者在浏览器中进入管理员后台进行修改。
 
 **注意：v0.6.6版本之后已修改模型读取路径，请重新按照以下步骤配置模型路径！**
 
@@ -166,9 +166,9 @@ tts_config:
   auto_load: false
   models:
   - config_path: model1/config.json
-    model_path: model1/G_1000.pth
+    vits_path: model1/G_1000.pth
   - config_path: model2/config.json
-    model_path: model2/G_1000.pth
+    vits_path: model2/G_1000.pth
 	# GPT-SoVITS则为
   - sovits_path: gpt_sovits1/model1_e8_s11536.pth
     gpt_path: gpt_sovits1/model1-e15.ckpt
@@ -186,7 +186,7 @@ tts_config:
   auto_load: false
   models:
   - config_path: D://model3/config.json
-    model_path: D://model3/G_1000.pth
+    vits_path: D://model3/G_1000.pth
 ```
 
 - models_path:是相对于data目录下的模型文件夹，默认为models，auto_load为true时将会加载models_path目录下的所有模型。
@@ -379,7 +379,7 @@ url中的IP可在API启动后找到，一般使用192.168开头的局域网IP。
 
 ## API KEY
 
-在config.yaml中设置`api_key_enabled: true`以启用，api key填写：`api_key: api-key`。
+在config.yaml中设置`api_key_enabled: true`以启用。
 
 启用后，GET请求中使用需要增加参数api_key，POST请求中使用需要在header中添加参数`X-API-KEY`。
 

@@ -1,7 +1,7 @@
 import regex as re
 
 try:
-    from contants import config
+    from config import config
 
     module = config.language_identification.language_identification_library.lower()
 except:

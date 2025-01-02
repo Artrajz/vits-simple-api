@@ -4,7 +4,7 @@ from phonemizer import phonemize
 from phonemizer.backend.espeak.wrapper import EspeakWrapper
 
 
-from contants import config
+from config import config
 espeak_library = config.language_identification.espeak_library
 
 if espeak_library != "":

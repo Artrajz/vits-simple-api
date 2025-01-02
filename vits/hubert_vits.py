@@ -10,7 +10,7 @@ from vits.models import SynthesizerTrn
 
 
 class HuBert_VITS:
-    def __init__(self, model_path, config, device=torch.device("cpu"), **kwargs):
+    def __init__(self, vits_path, config, device="cpu", **kwargs):
         self.hps_ms = get_hparams_from_file(config) if isinstance(config, str) else config
         self.n_speakers = getattr(self.hps_ms.data, 'n_speakers', 0)
         self.n_symbols = len(getattr(self.hps_ms, 'symbols', []))
@@ -18,8 +18,8 @@ class HuBert_VITS:
         if not isinstance(self.speakers, list):
             self.speakers = [item[0] for item in sorted(list(self.speakers.items()), key=lambda x: x[1])]
         self.use_f0 = getattr(self.hps_ms.data, 'use_f0', False)
-        self.model_path = model_path
-        self.device = device
+        self.vits_path = vits_path
+        self.device = torch.device(device)
 
         key = getattr(self.hps_ms.data, "text_cleaners", ["none"])[0]
         self.lang = lang_dict.get(key, ["unknown"])
@@ -34,7 +34,7 @@ class HuBert_VITS:
             n_speakers=self.n_speakers,
             **self.hps_ms.model)
         _ = self.net_g_ms.eval()
-        utils.load_checkpoint(self.model_path, self.net_g_ms)
+        utils.load_checkpoint(self.vits_path, self.net_g_ms)
         self.net_g_ms.to(self.device)
         
     def get_cleaned_text(self, text, hps, cleaned=False):

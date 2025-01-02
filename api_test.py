@@ -349,11 +349,12 @@ def vits_json(text, id=0, format="wav", lang="auto", length=1, noise=0.667, nois
 
 
 # Bert_vits2
-def voice_bert_vits2(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, segment_size=50,
-                     sdp_ratio=0.2, save_audio=True, save_path=None):
+def voice_bert_vits2(text, id=0, speaker=None, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8,
+                     segment_size=50, sdp_ratio=0.2, save_audio=True, save_path=None):
     fields = {
         "text": text,
         "id": str(id),
+        "speaker": str(speaker),
         "format": format,
         "lang": lang,
         "length": str(length),
@@ -568,8 +569,9 @@ if __name__ == '__main__':
 
     # os.system(path)
 
-    # text = "你好“你的修炼速度有些出乎我的意料”"
+    # text = "你好“这是独处的妙处，我且受用这无边的荷香月色好了。”"
     # path = voice_reading_json(text=text, in_model_type="GPT-SOVITS", preset="wz", in_id=2, nr_model_type="BERT-VITS2",
     #                           nr_id=0)
 
+    # path = voice_bert_vits2("这是独处的妙处，我且受用这无边的荷香月色好了。", id=0, lang="zh", save_path=cache_path)
     # os.system(path)

@@ -1,6 +1,6 @@
 import torch
 
-from contants import config
+from config import config
 from bert_vits2.text.japanese_v200 import text2sep_kata
 
 

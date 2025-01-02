@@ -1,16 +1,18 @@
 import logging
 import os
+import traceback
 
 from flask import Blueprint, request, render_template, make_response, jsonify
 from flask_login import login_required
 
-from contants import config
+from config import config, BASE_DIR, save_config_to_yaml
+from contants import ModelType
 from tts_app.model_manager import model_manager
 
 admin = Blueprint('admin', __name__)
 
 
-def extract_filename_and_directory(path):
+def extract_model_dir(path):
     filename = os.path.basename(path)
     directory = os.path.dirname(path)
     directory_name = os.path.basename(directory)
@@ -18,6 +20,15 @@ def extract_filename_and_directory(path):
         return filename
     else:
         return directory_name + "/" + filename
+
+
+def redirect_model_dir(path):
+    return os.path.join(
+        BASE_DIR,
+        config.system.data_path,
+        config.tts_model_config.models_dir,
+        path,
+    )
 
 
 @admin.route('/')
@@ -38,17 +49,17 @@ def get_models_info():
     loaded_models_info = model_manager.get_models_info()
     for models in loaded_models_info.values():
         for model in models:
-            if model.get("model_path") is not None:
-                model["model_path"] = extract_filename_and_directory(model["model_path"])
+            if model.get("vits_path") is not None:
+                model["vits_path"] = extract_model_dir(model["vits_path"])
 
             if model.get("config_path") is not None:
-                model["config_path"] = extract_filename_and_directory(model["config_path"])
+                model["config_path"] = extract_model_dir(model["config_path"])
 
             if model.get("sovits_path") is not None:
-                model["sovits_path"] = extract_filename_and_directory(model["sovits_path"])
+                model["sovits_path"] = extract_model_dir(model["sovits_path"])
 
             if model.get("gpt_path") is not None:
-                model["gpt_path"] = extract_filename_and_directory(model["gpt_path"])
+                model["gpt_path"] = extract_model_dir(model["gpt_path"])
 
     return loaded_models_info
 
@@ -65,20 +76,41 @@ def load_model():
         else:
             request_data = request.form
 
-    model_path = request_data.get("model_path")
-    config_path = request_data.get("config_path")
-    sovits_path = request_data.get("sovits_path")
-    gpt_path = request_data.get("gpt_path")
+    model_type = request_data.get("model_type")
+    tts_model = {
+        "model_type": model_type,
 
-    if model_path is not None and config_path is not None:
-        logging.info(f"Loading model model_path: {model_path} config_path: {config_path}")
-    else:
+    }
+    if model_type == ModelType.GPT_SOVITS:
+        sovits_path = request_data.get("sovits_path")
+        gpt_path = request_data.get("gpt_path")
+
+        sovits_path = redirect_model_dir(sovits_path)
+        gpt_path = redirect_model_dir(gpt_path)
+
+        tts_model.update(
+            {
+                "sovits_path": sovits_path,
+                "gpt_path": gpt_path,
+            }
+        )
         logging.info(f"Loading model sovits_path: {sovits_path} gpt_path: {gpt_path}")
+    else:
+        vits_path = request_data.get("vits_path")
+        config_path = request_data.get("config_path")
 
-    state = model_manager.load_model(model_path=model_path,
-                                     config_path=config_path,
-                                     sovits_path=sovits_path,
-                                     gpt_path=gpt_path)
+        vits_path = redirect_model_dir(vits_path)
+        config_path = redirect_model_dir(config_path)
+
+        tts_model.update(
+            {
+                "vits_path": vits_path,
+                "config_path": config_path,
+            }
+        )
+        logging.info(f"Loading model model_path: {vits_path} config_path: {config_path}")
+
+    state = model_manager.load_model(tts_model)
     if state:
         status = "success"
         response_code = 200
@@ -125,7 +157,8 @@ def get_path():
 @admin.route('/get_config', methods=["GET", "POST"])
 @login_required
 def get_config():
-    return jsonify(config.asdict())
+
+    return jsonify(config.model_dump())
 
 
 @admin.route('/set_config', methods=["GET", "POST"])
@@ -136,20 +169,12 @@ def set_config():
         if content_type == 'application/json':
             request_data = request.get_json()
         else:
-            request_data = request.form
+            request_data = request.form.to_dict()
+    else:
+        return jsonify({"error": "Unsupported request method"}), 400
 
-    # try:
-    #     new_config = dict(request_data)
-    #     config.update_config(new_config)
-    #     status = "success"
-    #     code = 200
-    # except Exception as e:
-    #     status = "failed"
-    #     code = 500
-    #     logging.error(e)
-    new_config = dict(request_data)
-    config.update_config(new_config)
-    config.save_config(config)
+    config.update_config(request_data)
+
     status = "success"
     code = 200
     return make_response(jsonify({"status": status}), code)
@@ -159,17 +184,16 @@ def set_config():
 @login_required
 def save_current_model():
     try:
-        models_path = model_manager.get_models_path()
-        models = {"models": models_path}
+        tts_models = model_manager.get_models_path()
 
-        config.update_config({"tts_config": models})
-        config.save_config(config)
+        config.tts_model_config.update_tts_models(tts_models)
+        save_config_to_yaml(config)
 
         status = "success"
         response_code = 200
     except Exception as e:
         status = "failed"
         response_code = 500
-        logging.info(e)
+        logging.error(traceback.format_exc())
 
     return make_response(jsonify({"status": status}), response_code)

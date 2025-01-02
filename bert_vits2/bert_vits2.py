@@ -13,14 +13,14 @@ from bert_vits2.models_ja_extra import SynthesizerTrn as SynthesizerTrn_ja_extra
 from bert_vits2.text import *
 from bert_vits2.text.cleaner import clean_text
 from bert_vits2.utils import process_legacy_versions
-from contants import config
+from config import config
 from utils import get_hparams_from_file
 from utils.sentence import split_languages
 
 
 class Bert_VITS2:
-    def __init__(self, model_path, config, device=torch.device("cpu"), **kwargs):
-        self.model_path = model_path
+    def __init__(self, vits_path, config, device=torch.device("cpu"), **kwargs):
+        self.vits_path = vits_path
         self.hps_ms = get_hparams_from_file(config) if isinstance(config, str) else config
         self.n_speakers = getattr(self.hps_ms.data, 'n_speakers', 0)
         self.speakers = [item[0] for item in
@@ -220,7 +220,7 @@ class Bert_VITS2:
             zh_bert_extra=self.zh_bert_extra,
             **self.hps_ms.model).to(self.device)
         _ = self.net_g.eval()
-        bert_vits2_utils.load_checkpoint(self.model_path, self.net_g, None, skip_optimizer=True, version=self.version)
+        bert_vits2_utils.load_checkpoint(self.vits_path, self.net_g, None, skip_optimizer=True, version=self.version)
 
     def get_speakers(self):
         return self.speakers

@@ -12,7 +12,7 @@ from graiax import silkcoder
 from scipy.signal import resample_poly
 
 from contants import ModelType
-from contants import config
+from config import config, BASE_DIR
 from logger import logger
 from manager.observer import Observer
 from utils.data_utils import check_is_none
@@ -38,6 +38,10 @@ class TTSManager(Observer):
     @property
     def sid2model(self):
         return self.model_manager.sid2model
+
+    @property
+    def spk2model(self):
+        return self.model_manager.spk2model
 
     @property
     def voice_speakers(self):
@@ -113,10 +117,14 @@ class TTSManager(Observer):
 
         return audio
 
-    def get_model(self, model_type, id):
+    def get_model(self, model_type, id, speaker=None):
+        if speaker is not None:
+            return self.spk2model[model_type][speaker]["model"]
         return self.sid2model[model_type][id]["model"]
 
-    def get_real_id(self, model_type, id):
+    def get_real_id(self, model_type, id, speaker=None):
+        if speaker is not None:
+            return self.spk2model[model_type][speaker]["real_id"]
         return self.sid2model[model_type][id]["real_id"]
 
     def get_model_id(self, model_type, id):
@@ -141,11 +149,11 @@ class TTSManager(Observer):
         brk_count = 0
         strength_dict = {"x-weak": 0.25, "weak": 0.5, "Medium": 0.75, "Strong": 1, "x-strong": 1.25}
 
-        params = {ModelType.VITS.value: config.vits_config.asdict(),
-                  ModelType.W2V2_VITS.value: config.w2v2_vits_config.asdict(),
-                  ModelType.HUBERT_VITS.value: config.hubert_vits_config.asdict(),
-                  ModelType.BERT_VITS2.value: config.bert_vits2_config.asdict(),
-                  ModelType.GPT_SOVITS.value: config.gpt_sovits_config.asdict(),
+        params = {ModelType.VITS: config.vits_config.asdict(),
+                  ModelType.W2V2_VITS: config.w2v2_vits_config.asdict(),
+                  ModelType.HUBERT_VITS: config.hubert_vits_config.asdict(),
+                  ModelType.BERT_VITS2: config.bert_vits2_config.asdict(),
+                  ModelType.GPT_SOVITS: config.gpt_sovits_config.asdict(),
                   }
 
         for element in root.iter():
@@ -242,8 +250,8 @@ class TTSManager(Observer):
                 sampling_rates.append(last_sampling_rate)
             else:
                 model_type_str = task.get("model_type").upper()
-                if model_type_str not in [ModelType.VITS.value, ModelType.W2V2_VITS.value, ModelType.BERT_VITS2.value,
-                                          ModelType.GPT_SOVITS.value]:
+                if model_type_str not in [ModelType.VITS, ModelType.W2V2_VITS, ModelType.BERT_VITS2,
+                                          ModelType.GPT_SOVITS]:
                     raise ValueError(f"Unsupported model type: {task.get('model_type')}")
                 model_type = ModelType(model_type_str)
                 model = self.get_model(model_type, task.get("id"))
@@ -386,8 +394,8 @@ class TTSManager(Observer):
         return emotion_npy
 
     def bert_vits2_infer(self, state, encode=True):
-        model = self.get_model(model_type=ModelType.BERT_VITS2, id=state["id"])
-        state["id"] = self.get_real_id(model_type=ModelType.BERT_VITS2, id=state["id"])
+        model = self.get_model(model_type=ModelType.BERT_VITS2, id=state["id"], speaker=state["speaker"])
+        state["id"] = self.get_real_id(model_type=ModelType.BERT_VITS2, id=state["id"], speaker=state["speaker"])
 
         # 去除所有多余的空白字符
         if state["text"] is not None:
@@ -455,7 +463,7 @@ class TTSManager(Observer):
             refer_wav_path = refer_preset.refer_wav_path
             if check_is_none(refer_wav_path):
                 raise ValueError(f"The refer_wav_path:{refer_wav_path} in preset:{state.get('preset')} is None!")
-            refer_wav_path = os.path.join(config.abs_path, config.system.data_path, refer_wav_path)
+            refer_wav_path = os.path.join(BASE_DIR, config.system.data_path, refer_wav_path)
             state["prompt_text"], state["prompt_lang"] = refer_preset.prompt_text, refer_preset.prompt_lang
 
             # 将reference_audio换成指定预设里的参考音频
