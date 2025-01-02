@@ -178,15 +178,17 @@ def voice_vits_api():
 
     fname = f"{str(uuid.uuid1())}.{format}"
     file_type = f"audio/{format}"
-    state = {"text": text,
-             "id": id,
-             "format": format,
-             "length": length,
-             "noise": noise,
-             "noisew": noisew,
-             "segment_size": segment_size,
-             "lang": lang,
-             "speaker_lang": speaker_lang}
+    state = {
+        "text": text,
+        "id": id,
+        "format": format,
+        "length": length,
+        "noise": noise,
+        "noisew": noisew,
+        "segment_size": segment_size,
+        "lang": lang_list,
+        "speaker_lang": speaker_lang,
+    }
 
     if use_streaming:
         audio = tts_manager.stream_vits_infer(state)

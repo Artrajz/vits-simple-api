@@ -19,7 +19,7 @@ def _expand_hyphens(text):
 
 
 def markup_language(text: str, target_languages: list = None) -> str:
-    pattern = config.LanguageIdentification.split_pattern
+    pattern = config.language_identification.split_pattern
     sentences = re.split(pattern, text)
 
     pre_lang = ""
@@ -103,10 +103,15 @@ def split_languages(text: str, target_languages: list = None, segment_size: int 
 
 
 def sentence_split(text: str, segment_size: int) -> list:
-    # Split text into paragraphs
+    """
+    Split text into paragraphs
+    """
     paragraphs = re.split(r'\r\n|\n', text)
     pattern = r'[!(),—+\-.:;?？。，、；：]+'
     sentences_list = []
+
+    if segment_size <= 0:
+        return [text]
 
     for paragraph in paragraphs:
         sentences = re.split(pattern, paragraph)
@@ -157,28 +162,20 @@ def sentence_split_reading(text: str) -> list:
     return sentences_list
 
 
-def sentence_split_and_markup(text, segment_size=50, lang="auto", speaker_lang=None):
-    # 如果该speaker只支持一种语言
-    if speaker_lang is not None and len(speaker_lang) == 1:
-        if lang.upper() not in ["AUTO", "MIX"] and lang.lower() != speaker_lang[0]:
-            logging.debug(
-                f"lang \"{lang}\" is not in speaker_lang {speaker_lang},automatically set lang={speaker_lang[0]}")
-        lang = speaker_lang[0]
-
+def sentence_split_and_markup(text, target_language, segment_size=50, speaker_lang=None):
     sentences_list = []
-    if lang.upper() != "MIX":
-        if segment_size <= 0:
-            sentences_list.append(
-                markup_language(text,
-                                speaker_lang) if lang.upper() == "AUTO" else f"[{lang.upper()}]{text}[{lang.upper()}]")
-        else:
-            for i in sentence_split(text, segment_size):
-                if check_is_none(i): continue
-                sentences_list.append(
-                    markup_language(i,
-                                    speaker_lang) if lang.upper() == "AUTO" else f"[{lang.upper()}]{i}[{lang.upper()}]")
-    else:
+
+    if target_language[0].upper() == "MIX":
         sentences_list.append(text)
+    else:
+        for _text in sentence_split(text, segment_size):
+            if target_language[0].upper() == "AUTO":
+                sentence = markup_language(_text, speaker_lang)
+            elif len(target_language) == 1:
+                sentence = f"[{target_language[0].upper()}]{_text}[{target_language[0].upper()}]"
+            else:
+                sentence = markup_language(_text, target_language)
+            sentences_list.append(sentence)
 
     for i in sentences_list:
         logging.debug(i)

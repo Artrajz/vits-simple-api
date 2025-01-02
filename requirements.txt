@@ -10,7 +10,7 @@ graiax-silkcoder[libsndfile]
 
 # Natural Language Processing and Text Conversion
 unidecode
-pyopenjtalk
+pyopenjtalk-prebuilt
 jamo
 pypinyin
 pypinyin-dict
@@ -22,7 +22,7 @@ ko_pron
 indic_transliteration
 num_thai
 opencc
-fasttext
+fasttext-wheel
 fastlid
 langid
 phonemizer==3.2.1

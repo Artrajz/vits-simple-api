@@ -5,6 +5,7 @@ WORKDIR /app
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+
 RUN apt-get update && \
     apt-get install -yq build-essential espeak-ng cmake wget ca-certificates tzdata&& \
     update-ca-certificates && \
@@ -32,6 +33,10 @@ RUN pip install gunicorn --no-cache-dir && \
     rm -rf /root/.cache/pip/*
 
 COPY . /app
+COPY data /data_bak
+
+RUN chmod +x /app/entrypoint.sh
+ENTRYPOINT ["/app/entrypoint.sh"]
 
 EXPOSE 23456
 

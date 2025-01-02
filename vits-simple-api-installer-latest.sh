@@ -5,11 +5,19 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 PLAIN='\033[0m'
 
+DOCKER_COMPOSE_URL=https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-`uname -s`-`uname -m`
+
 declare -A EN_MESSAGES
 declare -A ZH_MESSAGES
 declare -A JA_MESSAGES
 
 EN_MESSAGES=(
+  ["ERROR_NO_CURL"]="Error: curl not detected. Please install this program first."
+  ["WARNING_NO_DOCKER"]="Warning: Docker not detected."
+  ["WARNING_NO_DOCKER_COMPOSE"]="Warning: Docker Compose not detected."
+  ["WARNING_NO_NVIDIA_TOOLKIT"]="Warning: nvidia-container-toolkit not installed."
+  ["INSTALL_PROMPT"]="Do you want to install it automatically? Enter 1 for yes or 2 for no:"
+  ["ENTER_Y_OR_N"]="Please enter y or n."
   ["ATTEMPT_DOWNLOAD"]="Attempting to download"
   ["FROM"]="from"
   ["DOWNLOAD_FAIL"]="Failed to download"
@@ -28,14 +36,6 @@ EN_MESSAGES=(
   ["PULL_IMAGE"]="Do you want to start pulling the image? Enter 1 for yes or 2 for no"
   ["DOWNLOAD_DICT"]="Do you want to download the pyopenjtalk dictionary file? Enter 1 for yes or 2 for no"
   ["MUST_DOWNLOAD_JP"]="Japanese model must be downloaded."
-  ["DOWNLOAD_VITS_CHINESE"]="Do you want to download the bert model for vits_chinese? Enter 1 for yes, 2 for no."
-  ["MUST_DOWNLOAD_VITS_CHINESE"]="Using vits_chinese requires downloading these models, which will take up about 410MB."
-  ["DOWNLOAD_BERT_VITS2_1"]="Do you want to download chinese-roberta-wwm-ext-large? This model is a Chinese BERT model used for the full version. It will occupy approximately 1.21GB. Enter 1 for yes, and 2 for no."
-  ["DOWNLOAD_BERT_VITS2_2"]="Do you want to download bert-base-japanese-v3? This model is a Japanese BERT model used before version 2.0. It will occupy approximately 426MB. Enter 1 for yes, and 2 for no."
-  ["DOWNLOAD_BERT_VITS2_3"]="Do you want to download bert-large-japanese-v2? Enter 1 for yes, and 2 for no."
-  ["DOWNLOAD_BERT_VITS2_4"]="Do you want to download deberta-v2-large-japanese? This model is a Japanese BERT model used after version 2.0. It will occupy approximately 1.38GB. Enter 1 for yes, and 2 for no."
-  ["DOWNLOAD_BERT_VITS2_5"]="Do you want to download deberta-v3-large? This model is an English BERT model used after version 2.0. It will occupy approximately 835MB. Enter 1 for yes, and 2 for no."
-  ["MUST_DOWNLOAD_BERT_VITS2"]="To use Bert-VITS2, you must download these models, which will take up about 1.63GB."
   ["DOWNLOADED"]="File is downloaded correctly."
   ["CORRUPTED"]="The file may not have been downloaded, or the download might be incomplete, and it could also be corrupted."
   ["INSTALL_COMPLETE"]="The upgrade or installation has been completed."
@@ -44,10 +44,17 @@ EN_MESSAGES=(
   ["RESTART_NOTICE"]="After modifying the configuration file, restart the docker container for the modification to take effect."
   ["ISSUE_NOTICE"]="If you have any questions, please put them in the issues."
   ["GITHUB_LINK"]="https://github.com/Artrajz/vits-simple-api"
+  ["START_CONTAINERS_PROMPT"]="Do you want to start the containers? Enter 1 for yes, 2 for no."
   ["CONTAINERS_STARTING"]="Container is starting"
 )
 
 ZH_MESSAGES=(
+  ["ERROR_NO_CURL"]="错误：未检测到 curl，请先安装此程序。"
+  ["WARNING_NO_DOCKER"]="警告：未检测到 Docker。"
+  ["WARNING_NO_DOCKER_COMPOSE"]="警告：未检测到 Docker Compose。"
+  ["WARNING_NO_NVIDIA_TOOLKIT"]="警告：nvidia-container-toolkit 未安装。"
+  ["INSTALL_PROMPT"]="是否自动为你安装？输入1表示是，2表示否："
+  ["ENTER_Y_OR_N"]="请输入 y 或 n。"
   ["ATTEMPT_DOWNLOAD"]="正在尝试下载"
   ["FROM"]="从"
   ["DOWNLOAD_FAIL"]="都下载失败"
@@ -66,14 +73,6 @@ ZH_MESSAGES=(
   ["PULL_IMAGE"]="是否要开始拉取镜像？输入1表示是，2表示否。"
   ["DOWNLOAD_DICT"]="是否要下载pyopenjtalk的词典文件？输入1表示是，2表示否。"
   ["MUST_DOWNLOAD_JP"]="使用日语模型必须下载该词典文件，将占用大约102MB。"
-  ["DOWNLOAD_VITS_CHINESE"]="是否要下载vits_chinese的bert模型？输入1表示是，2表示否。"
-  ["MUST_DOWNLOAD_VITS_CHINESE"]="使用vits_chinese必须下载这些模型，将占用大约410MB。"
-  ["DOWNLOAD_BERT_VITS2_1"]="是否要下载chinese-roberta-wwm-ext-large？该模型为全版本使用的中文bert模型。将占用大约1.21GB。输入1表示是，2表示否。"
-  ["DOWNLOAD_BERT_VITS2_2"]="是否要下载bert-base-japanese-v3？该模型为2.0之前使用的日文bert模型。将占用大约426MB。输入1表示是，2表示否。"
-  ["DOWNLOAD_BERT_VITS2_3"]="是否要下载bert-large-japanese-v2？输入1表示是，2表示否。"
-  ["DOWNLOAD_BERT_VITS2_4"]="是否要下载deberta-v2-large-japanese？该模型为2.0以后使用的的日文bert模型。将占用大约1.38GB。输入1表示是，2表示否。"
-  ["DOWNLOAD_BERT_VITS2_5"]="是否要下载deberta-v3-large？该模型为2.0以后使用的的英文文bert模型。将占用大约835MB。输入1表示是，2表示否。"
-  ["MUST_DOWNLOAD_BERT_VITS2"]="使用Bert-VITS2必须下载这些模型，将占用大约1.63GB。"
   ["DOWNLOADED"]="文件已正确下载。"
   ["CORRUPTED"]="文件可能未下载，或下载不完整，也有可能已损坏。"
   ["INSTALL_COMPLETE"]="更新或安装已完成。"
@@ -82,10 +81,17 @@ ZH_MESSAGES=(
   ["RESTART_NOTICE"]="修改配置文件后，请重启docker容器以使修改生效。"
   ["ISSUE_NOTICE"]="如果你有任何问题，请在issues中提出，或者加入q群提问。"
   ["GITHUB_LINK"]="https://github.com/Artrajz/vits-simple-api"
+  ["START_CONTAINERS_PROMPT"]="是否要启动容器？输入1表示是，2表示否。"
   ["CONTAINERS_STARTING"]="容器正在启动"
 )
 
 JA_MESSAGES=(
+  ["ERROR_NO_CURL"]="エラー：curlが検出されませんでした。最初にこのプログラムをインストールしてください。"
+  ["WARNING_NO_DOCKER"]="警告：Dockerが検出されませんでした。"
+  ["WARNING_NO_DOCKER_COMPOSE"]="警告：Docker Compose が検出されませんでした。"
+  ["WARNING_NO_NVIDIA_TOOLKIT"]="警告：nvidia-container-toolkit がインストールされていません。"
+  ["INSTALL_PROMPT"]="自動でインストールしますか？はいの場合は1を、いいえの場合は2を入力してください:"
+  ["ENTER_Y_OR_N"]="y または n を入力してください。"
   ["ATTEMPT_DOWNLOAD"]="ダウンロードを試みています"
   ["FROM"]="から"
   ["DOWNLOAD_FAIL"]="ダウンロードに失敗しました"
@@ -104,14 +110,6 @@ JA_MESSAGES=(
   ["PULL_IMAGE"]="イメージのプルを開始しますか？はいの場合は1を、いいえの場合は2を入力してください"
   ["DOWNLOAD_DICT"]="pyopenjtalk辞書ファイルをダウンロードしますか？はいの場合は1を、いいえの場合は2を入力してください"
   ["MUST_DOWNLOAD_JP"]="日本語モデルをダウンロードする必要があります。"
-  ["DOWNLOAD_VITS_CHINESE"]="vits_chinese用のbertモデルをダウンロードしますか？はいの場合は1を、いいえの場合は2を入力してください。"
-  ["MUST_DOWNLOAD_VITS_CHINESE"]="vits_chineseを使用するには、これらのモデルをダウンロードする必要があり、約410MBの容量が必要です。"
-  ["DOWNLOAD_BERT_VITS2_1"]="chinese-roberta-wwm-ext-largeをダウンロードしますか？このモデルはフルバージョン用の中国語BERTモデルで、約1.21GBの容量を占めます。はいの場合は1を、いいえの場合は2を入力してください。"
-  ["DOWNLOAD_BERT_VITS2_2"]="bert-base-japanese-v3をダウンロードしますか？このモデルはバージョン2.0以前に使用される日本語BERTモデルで、約426MBの容量を占めます。はいの場合は1を、いいえの場合は2を入力してください。"
-  ["DOWNLOAD_BERT_VITS2_3"]="bert-large-japanese-v2をダウンロードしますか？はいの場合は1を、いいえの場合は2を入力してください。"
-  ["DOWNLOAD_BERT_VITS2_4"]="deberta-v2-large-japaneseをダウンロードしますか？このモデルはバージョン2.0以降に使用される日本語BERTモデルで、約1.38GBの容量を占めます。はいの場合は1を、いいえの場合は2を入力してください。"
-  ["DOWNLOAD_BERT_VITS2_5"]="deberta-v3-largeをダウンロードしますか？このモデルはバージョン2.0以降に使用される英語BERTモデルで、約835MBの容量を占めます。はいの場合は1を、いいえの場合は2を入力してください。"
-  ["MUST_DOWNLOAD_BERT_VITS2"]="Bert-VITS2を使用するには、これらのモデルをダウンロードする必要があり、約1.63GBの容量が必要です。"
   ["DOWNLOADED"]="ファイルが正しくダウンロードされました。"
   ["CORRUPTED"]="ファイルがダウンロードされていないか、ダウンロードが不完全である可能性があります。また、ファイルが破損している可能性もあります。"
   ["INSTALL_COMPLETE"]="アップグレードまたはインストールが完了しました。"
@@ -120,6 +118,7 @@ JA_MESSAGES=(
   ["RESTART_NOTICE"]="設定ファイルを変更した後、変更を反映させるためにdockerコンテナを再起動してください。"
   ["ISSUE_NOTICE"]="何か質問がある場合は、イシューに投稿してください。"
   ["GITHUB_LINK"]="https://github.com/Artrajz/vits-simple-api"
+  ["START_CONTAINERS_PROMPT"]="コンテナを起動しますか？はいの場合は1を、いいえの場合は2を入力してください。"
   ["CONTAINERS_STARTING"]="コンテナが起動中です"
 )
 
@@ -144,6 +143,32 @@ else
   done
 fi
 
+if ! [ -x "$(command -v curl)" ]; then
+  echo -e "${MESSAGES["ERROR_NO_CURL"]}"
+fi
+
+if ! [ -x "$(command -v docker)" ]; then
+  echo -e "${MESSAGES["WARNING_NO_DOCKER"]}"
+  while true; do
+    read -p "${MESSAGES["INSTALL_PROMPT"]}" choice_install_docker
+    case $choice_install_docker in
+        1 ) curl -fsSL https://get.docker.com -o get-docker.sh; sudo -E sh get-docker.sh; rm get-docker.sh; break;;
+        2 ) exit 1;;
+    esac
+  done
+fi
+
+if ! [ -x "$(command -v docker-compose)" ]; then
+  echo -e "${MESSAGES["WARNING_NO_DOCKER_COMPOSE"]}"
+  while true; do
+    read -p "${MESSAGES["INSTALL_PROMPT"]}" choice_install_docker_compose
+    case $choice_install_docker_compose in
+        1 ) sudo -E curl -L "${DOCKER_COMPOSE_URL}" -o /usr/local/bin/docker-compose; sudo -E chmod +x /usr/local/bin/docker-compose; break;;
+        2 ) exit 1;;
+    esac
+  done
+fi
+
 mkdir -p $INSTALL_DIR
 cd $INSTALL_DIR
 
@@ -155,7 +180,7 @@ download_with_fallback() {
   local url
   for url in "$@"; do
     echo -e "${YELLOW}${MESSAGES["ATTEMPT_DOWNLOAD"]} $filename ${MESSAGES["FROM"]} $url\n${PLAIN}"
-    if wget -O "$INSTALL_DIR/$filename" "$url"; then
+    if wget --connect-timeout=10 -O "$INSTALL_DIR/$filename" "$url"; then
       success=1
       break
     fi
@@ -206,6 +231,17 @@ while true; do
     download_with_fallback docker-compose.yaml \
       "https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/docker-compose-gpu.yaml" \
       "https://ghproxy.com/https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/docker-compose-gpu.yaml"
+
+    if ! [ -x "$(command -v nvidia-container-toolkit)" ]; then
+      echo -e "${MESSAGES["WARNING_NO_NVIDIA_TOOLKIT"]}"
+      while true; do
+        read -p "${MESSAGES["INSTALL_PROMPT"]}" choice_install_nvdia_toolkit
+        case $choice_install_nvdia_toolkit in
+            1 ) sudo apt-get update; sudo apt-get install -y nvidia-container-toolkit; break;;
+            2 ) exit 1;;
+        esac
+      done
+    fi
     break
     ;;
   3)
@@ -272,130 +308,6 @@ if [ "$choice_download_pyopenjtalk" -eq 1 ]; then
   rm open_jtalk_dic_utf_8-1.11.tar.gz
 fi
 
-echo -e "${GREEN}${MESSAGES["DOWNLOAD_VITS_CHINESE"]}${PLAIN}"
-echo -e "${GREEN}${MESSAGES["MUST_DOWNLOAD_VITS_CHINESE"]}${PLAIN}"
-read -p "${MESSAGES["ENTER_CHOICE"]}" choice_download_vits_chinese
-
-if [ "$choice_download_vits_chinese" -eq 1 ]; then
-  mkdir -p data/bert/prosody_model
-
-  EXPECTED_MD5="dea78034433141adc8002404aa1b3184"
-  FILE_PATH="data/bert/prosody_model/prosody_model.pt"
-  echo -e "${MESSAGES["VERIFYING"]}$FILE_PATH"
-  ACTUAL_MD5=$(md5sum $FILE_PATH | awk '{print $1}')
-
-  if [ "$EXPECTED_MD5" == "$ACTUAL_MD5" ]; then
-    echo "${MESSAGES["DOWNLOADED"]}"
-  else
-    echo "${MESSAGES["CORRUPTED"]}"
-    download_with_fallback data/bert/prosody_model/prosody_model.pt \
-      "https://huggingface.co/spaces/maxmax20160403/vits_chinese/resolve/main/bert/prosody_model.pt" \
-      "https://hf-mirror.com/spaces/maxmax20160403/vits_chinese/resolve/main/bert/prosody_model.pt"
-  fi
-
-fi
-
-echo -e "${GREEN}${MESSAGES["DOWNLOAD_BERT_VITS2_1"]}${PLAIN}"
-read -p "${MESSAGES["ENTER_CHOICE"]}" choice_download_bert_vits2_1
-
-if [ "$choice_download_bert_vits2_1" -eq 1 ]; then
-  mkdir -p data/bert/chinese-roberta-wwm-ext-large
-
-  EXPECTED_MD5="15d7435868fef1bd4222ff7820149a2a"
-  FILE_PATH="data/bert/chinese-roberta-wwm-ext-large/pytorch_model.bin"
-  echo -e "${MESSAGES["VERIFYING"]}$FILE_PATH"
-  ACTUAL_MD5=$(md5sum $FILE_PATH | awk '{print $1}')
-
-  if [ "$EXPECTED_MD5" == "$ACTUAL_MD5" ]; then
-    echo "${MESSAGES["DOWNLOADED"]}"
-  else
-    echo ${MESSAGES["CORRUPTED"]}
-    download_with_fallback data/bert/chinese-roberta-wwm-ext-large/pytorch_model.bin \
-      "https://huggingface.co/hfl/chinese-roberta-wwm-ext-large/resolve/main/pytorch_model.bin" \
-      "https://hf-mirror.com/hfl/chinese-roberta-wwm-ext-large/resolve/main/pytorch_model.bin"
-  fi
-fi
-
-echo -e "${GREEN}${MESSAGES["DOWNLOAD_BERT_VITS2_2"]}${PLAIN}"
-read -p "${MESSAGES["ENTER_CHOICE"]}" choice_download_bert_vits2_2
-
-if [ "$choice_download_bert_vits2_2" -eq 1 ]; then
-  mkdir -p data/bert/bert-base-japanese-v3
-
-  EXPECTED_MD5="6d0f8f3503dae04df0711b6175ef0c8e"
-  FILE_PATH="data/bert/bert-base-japanese-v3/pytorch_model.bin"
-  echo -e "${MESSAGES["VERIFYING"]}$FILE_PATH"
-  ACTUAL_MD5=$(md5sum $FILE_PATH | awk '{print $1}')
-
-  if [ "$EXPECTED_MD5" == "$ACTUAL_MD5" ]; then
-    echo "${MESSAGES["DOWNLOADED"]}"
-  else
-    echo ${MESSAGES["CORRUPTED"]}
-    download_with_fallback data/bert/bert-base-japanese-v3/pytorch_model.bin \
-      "https://huggingface.co/cl-tohoku/bert-base-japanese-v3/resolve/main/pytorch_model.bin" \
-      "https://hf-mirror.com/cl-tohoku/bert-base-japanese-v3/resolve/main/pytorch_model.bin"
-  fi
-
-fi
-
-echo -e "${GREEN}${MESSAGES["DOWNLOAD_BERT_VITS2_4"]}${PLAIN}"
-read -p "${MESSAGES["ENTER_CHOICE"]}" choice_download_bert_vits2_4
-
-if [ "$choice_download_bert_vits2_4" -eq 1 ]; then
-  mkdir -p data/bert/deberta-v2-large-japanese
-
-  EXPECTED_MD5="1AAB4BC5DA8B5354315378439AC5BFA7"
-  FILE_PATH="data/bert/deberta-v2-large-japanese/pytorch_model.bin"
-  echo -e "${MESSAGES["VERIFYING"]}$FILE_PATH"
-  ACTUAL_MD5=$(md5sum $FILE_PATH | awk '{print $1}')
-
-  if [ "$EXPECTED_MD5" == "$ACTUAL_MD5" ]; then
-    echo "${MESSAGES["DOWNLOADED"]}"
-  else
-    echo ${MESSAGES["CORRUPTED"]}
-    download_with_fallback data/bert/deberta-v2-large-japanese/pytorch_model.bin \
-      "https://huggingface.co/ku-nlp/deberta-v2-large-japanese/resolve/main/pytorch_model.bin" \
-      "https://hf-mirror.com/ku-nlp/deberta-v2-large-japanese/resolve/main/pytorch_model.bin"
-  fi
-
-fi
-
-echo -e "${GREEN}${MESSAGES["DOWNLOAD_BERT_VITS2_5"]}${PLAIN}"
-read -p "${MESSAGES["ENTER_CHOICE"]}" choice_download_bert_vits2_5
-
-if [ "$choice_download_bert_vits2_5" -eq 1 ]; then
-  mkdir -p data/bert/deberta-v3-large
-
-  EXPECTED_MD5="917265658911F15661869FC4C06BB23C"
-  FILE_PATH="data/bert/deberta-v3-large/pytorch_model.bin"
-  echo -e "${MESSAGES["VERIFYING"]}$FILE_PATH"
-  ACTUAL_MD5=$(md5sum $FILE_PATH | awk '{print $1}')
-
-  if [ "$EXPECTED_MD5" == "$ACTUAL_MD5" ]; then
-    echo "${MESSAGES["DOWNLOADED"]}"
-  else
-    echo ${MESSAGES["CORRUPTED"]}
-    download_with_fallback data/bert/deberta-v3-large/pytorch_model.bin \
-      "https://huggingface.co/microsoft/deberta-v3-large/resolve/main/pytorch_model.bin" \
-      "https://hf-mirror.com/microsoft/deberta-v3-large/resolve/main/pytorch_model.bin"
-  fi
-
-  EXPECTED_MD5="1613FCBF3B82999C187B09C9DB79B568"
-  FILE_PATH="data/bert/deberta-v3-large/spm.model"
-  echo -e "${MESSAGES["VERIFYING"]}$FILE_PATH"
-  ACTUAL_MD5=$(md5sum $FILE_PATH | awk '{print $1}')
-
-  if [ "$EXPECTED_MD5" == "$ACTUAL_MD5" ]; then
-    echo "${MESSAGES["DOWNLOADED"]}"
-  else
-    echo ${MESSAGES["CORRUPTED"]}
-    download_with_fallback data/bert/deberta-v3-large/spm.model \
-      "https://huggingface.co/microsoft/deberta-v3-large/resolve/main/spm.model" \
-      "https://hf-mirror.com/microsoft/deberta-v3-large/resolve/main/spm.model"
-  fi
-
-fi
-
 if [ "$choice_gpu" -eq 2 ]; then
   if ! docker run --gpus all artrajz/vits-simple-api:latest-gpu nvidia-smi &>/dev/null; then
     echo -e "${RED}Your Docker does not seem to support GPU or NVIDIA Docker is not installed properly.${PLAIN}"
@@ -403,8 +315,9 @@ if [ "$choice_gpu" -eq 2 ]; then
   fi
 fi
 
-if [ "$choice_pull" -eq 1 ]; then
-  echo ${MESSAGES["CONTAINERS_STARTING"]}
+read -p "${MESSAGES["START_CONTAINERS_PROMPT"]}" choice_start
+if [ "$choice_start" -eq 1 ]; then
+  echo -e "${MESSAGES["CONTAINERS_STARTING"]}"
   docker compose up -d
 fi
 
