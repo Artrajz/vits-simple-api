@@ -11,6 +11,7 @@ from flask_cors import CORS
 
 from utils.data_utils import clean_folder, check_is_none
 from utils.phrases_dict import phrases_dict_init
+from module import polyphonic
 from tts_app.frontend.views import frontend
 from tts_app.voice_api.views import voice_api
 from tts_app.auth.views import auth
@@ -25,6 +26,7 @@ app.config.from_pyfile("config.py")
 # app.config.update(config)
 
 phrases_dict_init()
+polyphonic.load_polyphonic()
 
 csrf = CSRFProtect(app)
 # 禁用tts api请求的CSRF防护

@@ -6,6 +6,7 @@ import cn2an
 from pypinyin import lazy_pinyin, Style
 from pypinyin.contrib.tone_convert import to_normal, to_finals_tone3, to_initials, to_finals
 
+from module import polyphonic
 from .symbols import punctuation
 from .tone_sandhi import ToneSandhi
 from .zh_normalization.text_normlization import TextNormalizer
@@ -173,7 +174,7 @@ def _g2p(segments, pinyin_g2pw=None):
                 word_pinyins = pinyins[pre_word_length:now_word_length]
 
                 # 多音字消歧
-                # word_pinyins = correct_pronunciation(word, word_pinyins)
+                word_pinyins = polyphonic.correct_pronunciation(word, word_pinyins, style=3)
 
                 for pinyin in word_pinyins:
                     if pinyin[0].isalpha():

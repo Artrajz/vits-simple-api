@@ -16,12 +16,12 @@ JSON_AS_ASCII = False
 MAX_CONTENT_LENGTH = 5242880
 
 # Absolute path of vits-simple-api (current program root path)
-BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+BASE_DIR: str = os.path.dirname(os.path.realpath(__file__))
 # Configuration file path
-CONFIG_PATH = os.path.join(BASE_DIR, "config.yaml")
+CONFIG_PATH: str = os.path.join(BASE_DIR, "config.yaml")
 
 # WTForms CSRF
-SECRET_KEY = secrets.token_hex(16)
+SECRET_KEY: str = secrets.token_hex(16)
 
 
 def update_nested_dict(original, updates):
@@ -260,6 +260,10 @@ class LanguageIdentification(BaseModel):
                          r'『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘\'\‛\“\”\„\‟…‧﹏.]+'
 
 
+class Polyphonic(BaseModel):
+    dict_path: str = "polyphonic.yaml"
+
+
 class User(BaseModel):
     id: int = 0
     username: str = Field(
@@ -293,6 +297,7 @@ class Config(BaseModel):
     system: System = System()
     log_config: LogConfig = LogConfig()
     language_identification: LanguageIdentification = LanguageIdentification()
+    polyphonic: Polyphonic = Polyphonic()
     reading_config: ReadingConfig = ReadingConfig()
     vits_config: VitsConfig = VitsConfig()
     w2v2_vits_config: W2V2VitsConfig = W2V2VitsConfig()
