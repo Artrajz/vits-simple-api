@@ -33,7 +33,7 @@ class Bert_VITS2:
         self.ja_bert_extra = False
         self.ja_bert_dim = 1024
         self.num_tones = num_tones
-        self.pinyinPlus = None
+        self.pinyin_g2pw = None
 
         # Compatible with legacy versions
         self.version = process_legacy_versions(self.hps_ms).lower().replace("-", "_")
@@ -208,7 +208,7 @@ class Bert_VITS2:
             Synthesizer = SynthesizerTrn
 
         if self.version == "2.4":
-            self.pinyinPlus = self.model_handler.get_pinyinPlus()
+            self.pinyin_g2pw = self.model_handler.get_pinyin_g2pw()
         self.net_g = Synthesizer(
             len(self.symbols),
             self.hps_ms.data.filter_length // 2 + 1,
@@ -231,7 +231,7 @@ class Bert_VITS2:
 
         tokenizer, _ = self.model_handler.get_bert_model(self.bert_model_names[language_str])
 
-        norm_text, phone, tone, word2ph = clean_text(text, clean_text_lang_str, tokenizer, self.pinyinPlus)
+        norm_text, phone, tone, word2ph = clean_text(text, clean_text_lang_str, tokenizer, self.pinyin_g2pw)
 
         phone, tone, language = cleaned_text_to_sequence(phone, tone, language_str, self._symbol_to_id)
 

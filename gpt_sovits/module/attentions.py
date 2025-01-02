@@ -269,8 +269,8 @@ class MultiHeadAttention(nn.Module):
                 ), "Local attention is only available for self-attention."
                 block_mask = (
                     torch.ones_like(scores)
-                        .triu(-self.block_length)
-                        .tril(self.block_length)
+                    .triu(-self.block_length)
+                    .tril(self.block_length)
                 )
                 scores = scores.masked_fill(block_mask == 0, -1e4)
         p_attn = F.softmax(scores, dim=-1)  # [b, n_h, t_t, t_s]

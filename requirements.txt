@@ -33,6 +33,9 @@ unidic-lite
 g2p_en
 sentencepiece==0.1.99
 jaconv
+wordsegment
+pyjyutping
+g2pk2
 
 # Machine Learning and Deep Learning
 torch>=2.2.1

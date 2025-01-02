@@ -1,4 +1,5 @@
-# modified from https://github.com/feng-yufei/shared_debugging_code/blob/main/model/utils.py\
+# modified from https://github.com/yangdongchao/SoundStorm/blob/master/soundstorm/s1/AR/models/utils.py
+# reference: https://github.com/lifeiteng/vall-e
 import torch
 import torch.nn.functional as F
 from typing import Tuple
@@ -143,7 +144,7 @@ def logits_to_probs(
 
     if top_k is not None:
         v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
-        pivot = v[: , -1].unsqueeze(-1)
+        pivot = v[:, -1].unsqueeze(-1)
         logits = torch.where(logits < pivot, -float("Inf"), logits)
 
     probs = torch.nn.functional.softmax(logits, dim=-1)

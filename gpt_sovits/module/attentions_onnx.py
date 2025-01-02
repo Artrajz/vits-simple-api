@@ -4,7 +4,8 @@ from torch import nn
 from torch.nn import functional as F
 
 from gpt_sovits.module import commons
-from gpt_sovits.module.modules import LayerNorm
+
+from typing import Optional
 
 
 class LayerNorm(nn.Module):
@@ -34,16 +35,16 @@ def fused_add_tanh_sigmoid_multiply(input_a, input_b, n_channels):
 
 class Encoder(nn.Module):
     def __init__(
-        self,
-        hidden_channels,
-        filter_channels,
-        n_heads,
-        n_layers,
-        kernel_size=1,
-        p_dropout=0.0,
-        window_size=4,
-        isflow=True,
-        **kwargs
+            self,
+            hidden_channels,
+            filter_channels,
+            n_heads,
+            n_layers,
+            kernel_size=1,
+            p_dropout=0.0,
+            window_size=4,
+            isflow=True,
+            **kwargs
     ):
         super().__init__()
         self.hidden_channels = hidden_channels
@@ -59,6 +60,7 @@ class Encoder(nn.Module):
         #  self.cond_layer = weight_norm(cond_layer, name='weight')
         #  self.gin_channels = 256
         self.cond_layer_idx = self.n_layers
+        self.spk_emb_linear = nn.Linear(256, self.hidden_channels)
         if "gin_channels" in kwargs:
             self.gin_channels = kwargs["gin_channels"]
             if self.gin_channels != 0:
@@ -67,9 +69,9 @@ class Encoder(nn.Module):
                 self.cond_layer_idx = (
                     kwargs["cond_layer_idx"] if "cond_layer_idx" in kwargs else 2
                 )
-                logging.debug(self.gin_channels, self.cond_layer_idx)
+                # logging.debug(self.gin_channels, self.cond_layer_idx)
                 assert (
-                    self.cond_layer_idx < self.n_layers
+                        self.cond_layer_idx < self.n_layers
                 ), "cond_layer_idx should be less than n_layers"
         self.drop = nn.Dropout(p_dropout)
         self.attn_layers = nn.ModuleList()
@@ -98,38 +100,34 @@ class Encoder(nn.Module):
             )
             self.norm_layers_2.append(LayerNorm(hidden_channels))
 
-    def forward(self, x, x_mask, g=None):
+    def forward(self, x, x_mask):
         attn_mask = x_mask.unsqueeze(2) * x_mask.unsqueeze(-1)
         x = x * x_mask
-        for i in range(self.n_layers):
-            if i == self.cond_layer_idx and g is not None:
-                g = self.spk_emb_linear(g.transpose(1, 2))
-                g = g.transpose(1, 2)
-                x = x + g
-                x = x * x_mask
-            y = self.attn_layers[i](x, x, attn_mask)
+        for attn_layers, norm_layers_1, ffn_layers, norm_layers_2 in zip(self.attn_layers, self.norm_layers_1,
+                                                                         self.ffn_layers, self.norm_layers_2):
+            y = attn_layers(x, x, attn_mask)
             y = self.drop(y)
-            x = self.norm_layers_1[i](x + y)
+            x = norm_layers_1(x + y)
 
-            y = self.ffn_layers[i](x, x_mask)
+            y = ffn_layers(x, x_mask)
             y = self.drop(y)
-            x = self.norm_layers_2[i](x + y)
+            x = norm_layers_2(x + y)
         x = x * x_mask
         return x
 
 
 class MultiHeadAttention(nn.Module):
     def __init__(
-        self,
-        channels,
-        out_channels,
-        n_heads,
-        p_dropout=0.0,
-        window_size=None,
-        heads_share=True,
-        block_length=None,
-        proximal_bias=False,
-        proximal_init=False,
+            self,
+            channels,
+            out_channels,
+            n_heads,
+            p_dropout=0.0,
+            window_size=None,
+            heads_share=True,
+            block_length=None,
+            proximal_bias=False,
+            proximal_init=False,
     ):
         super().__init__()
         assert channels % n_heads == 0
@@ -154,7 +152,7 @@ class MultiHeadAttention(nn.Module):
 
         if window_size is not None:
             n_heads_rel = 1 if heads_share else n_heads
-            rel_stddev = self.k_channels**-0.5
+            rel_stddev = self.k_channels ** -0.5
             self.emb_rel_k = nn.Parameter(
                 torch.randn(n_heads_rel, window_size * 2 + 1, self.k_channels)
                 * rel_stddev
@@ -172,54 +170,43 @@ class MultiHeadAttention(nn.Module):
                 self.conv_k.weight.copy_(self.conv_q.weight)
                 self.conv_k.bias.copy_(self.conv_q.bias)
 
-    def forward(self, x, c, attn_mask=None):
+    def forward(self, x, c, attn_mask: Optional[torch.Tensor] = None):
         q = self.conv_q(x)
         k = self.conv_k(c)
         v = self.conv_v(c)
 
-        x, self.attn = self.attention(q, k, v, mask=attn_mask)
+        x, _ = self.attention(q, k, v, mask=attn_mask)
 
         x = self.conv_o(x)
         return x
 
-    def attention(self, query, key, value, mask=None):
+    def attention(self, query, key, value, mask: Optional[torch.Tensor] = None):
         # reshape [b, d, t] -> [b, n_h, t, d_k]
         b, d, t_s, _ = (*key.size(), query.size(2))
         query = query.view(b, self.n_heads, self.k_channels, -1).transpose(2, 3)
         key = key.view(b, self.n_heads, self.k_channels, -1).transpose(2, 3)
         value = value.view(b, self.n_heads, self.k_channels, -1).transpose(2, 3)
-
         scores = torch.matmul(query / math.sqrt(self.k_channels), key.transpose(-2, -1))
+
         if self.window_size is not None:
             key_relative_embeddings = self._get_relative_embeddings(self.emb_rel_k, t_s)
-            rel_logits = self._matmul_with_relative_keys(
-                query / math.sqrt(self.k_channels), key_relative_embeddings
-            )
+            rel_logits = self._matmul_with_relative_keys(query / math.sqrt(self.k_channels), key_relative_embeddings)
             scores_local = self._relative_position_to_absolute_position(rel_logits)
             scores = scores + scores_local
+
         if mask is not None:
             scores = scores.masked_fill(mask == 0, -1e4)
-            if self.block_length is not None:
-                block_mask = (
-                    torch.ones_like(scores)
-                    .triu(-self.block_length)
-                    .tril(self.block_length)
-                )
-                scores = scores.masked_fill(block_mask == 0, -1e4)
+
         p_attn = F.softmax(scores, dim=-1)
         p_attn = self.drop(p_attn)
         output = torch.matmul(p_attn, value)
+
         if self.window_size is not None:
             relative_weights = self._absolute_position_to_relative_position(p_attn)
-            value_relative_embeddings = self._get_relative_embeddings(
-                self.emb_rel_v, t_s
-            )
-            output = output + self._matmul_with_relative_values(
-                relative_weights, value_relative_embeddings
-            )
-        output = (
-            output.transpose(2, 3).contiguous().view(b, d, -1)
-        )
+            value_relative_embeddings = self._get_relative_embeddings(self.emb_rel_v, t_s)
+            output = output + self._matmul_with_relative_values(relative_weights, value_relative_embeddings)
+
+        output = (output.transpose(2, 3).contiguous().view(b, d, -1))
         return output, p_attn
 
     def _matmul_with_relative_values(self, x, y):
@@ -243,19 +230,19 @@ class MultiHeadAttention(nn.Module):
     def _get_relative_embeddings(self, relative_embeddings, length):
         max_relative_position = 2 * self.window_size + 1
         # Pad first before slice to avoid using cond ops.
-        pad_length = max(length - (self.window_size + 1), 0)
-        slice_start_position = max((self.window_size + 1) - length, 0)
+        pad_l = torch.zeros((1), dtype=torch.int64) + length - (self.window_size + 1)
+        pad_s = torch.zeros((1), dtype=torch.int64) + (self.window_size + 1) - length
+        pad_length = torch.max(pad_l, other=torch.zeros((1), dtype=torch.int64))
+        slice_start_position = torch.max(pad_s, other=torch.zeros((1), dtype=torch.int64))
+
         slice_end_position = slice_start_position + 2 * length - 1
-        if pad_length > 0:
-            padded_relative_embeddings = F.pad(
-                relative_embeddings,
-                commons.convert_pad_shape([[0, 0], [pad_length, pad_length], [0, 0]]),
-            )
-        else:
-            padded_relative_embeddings = relative_embeddings
+        padded_relative_embeddings = F.pad(
+            relative_embeddings,
+            commons.convert_pad_shape([[0, 0], [pad_length, pad_length], [0, 0]]),
+        )
         used_relative_embeddings = padded_relative_embeddings[
-            :, slice_start_position:slice_end_position
-        ]
+                                   :, slice_start_position:slice_end_position
+                                   ]
         return used_relative_embeddings
 
     def _relative_position_to_absolute_position(self, x):
@@ -275,8 +262,8 @@ class MultiHeadAttention(nn.Module):
 
         # Reshape and slice out the padded elements.
         x_final = x_flat.view([batch, heads, length + 1, 2 * length - 1])[
-            :, :, :length, length - 1 :
-        ]
+                  :, :, :length, length - 1:
+                  ]
         return x_final
 
     def _absolute_position_to_relative_position(self, x):
@@ -289,7 +276,7 @@ class MultiHeadAttention(nn.Module):
         x = F.pad(
             x, commons.convert_pad_shape([[0, 0], [0, 0], [0, 0], [0, length - 1]])
         )
-        x_flat = x.view([batch, heads, length**2 + length * (length - 1)])
+        x_flat = x.view([batch, heads, length ** 2 + length * (length - 1)])
         # add 0's in the beginning that will skew the elements after reshape
         x_flat = F.pad(x_flat, commons.convert_pad_shape([[0, 0], [0, 0], [length, 0]]))
         x_final = x_flat.view([batch, heads, length, 2 * length])[:, :, :, 1:]
@@ -309,14 +296,14 @@ class MultiHeadAttention(nn.Module):
 
 class FFN(nn.Module):
     def __init__(
-        self,
-        in_channels,
-        out_channels,
-        filter_channels,
-        kernel_size,
-        p_dropout=0.0,
-        activation=None,
-        causal=False,
+            self,
+            in_channels,
+            out_channels,
+            filter_channels,
+            kernel_size,
+            p_dropout=0.0,
+            activation="",
+            causal=False,
     ):
         super().__init__()
         self.in_channels = in_channels
@@ -326,11 +313,6 @@ class FFN(nn.Module):
         self.p_dropout = p_dropout
         self.activation = activation
         self.causal = causal
-
-        if causal:
-            self.padding = self._causal_padding
-        else:
-            self.padding = self._same_padding
 
         self.conv_1 = nn.Conv1d(in_channels, filter_channels, kernel_size)
         self.conv_2 = nn.Conv1d(filter_channels, out_channels, kernel_size)
@@ -345,6 +327,9 @@ class FFN(nn.Module):
         x = self.drop(x)
         x = self.conv_2(self.padding(x * x_mask))
         return x * x_mask
+
+    def padding(self, x):
+        return self._same_padding(x)
 
     def _causal_padding(self, x):
         if self.kernel_size == 1:
@@ -362,4 +347,36 @@ class FFN(nn.Module):
         pad_r = self.kernel_size // 2
         padding = [[0, 0], [0, 0], [pad_l, pad_r]]
         x = F.pad(x, commons.convert_pad_shape(padding))
+        return x
+
+
+class MRTE(nn.Module):
+    def __init__(
+            self,
+            content_enc_channels=192,
+            hidden_size=512,
+            out_channels=192,
+            kernel_size=5,
+            n_heads=4,
+            ge_layer=2,
+    ):
+        super(MRTE, self).__init__()
+        self.cross_attention = MultiHeadAttention(hidden_size, hidden_size, n_heads)
+        self.c_pre = nn.Conv1d(content_enc_channels, hidden_size, 1)
+        self.text_pre = nn.Conv1d(content_enc_channels, hidden_size, 1)
+        self.c_post = nn.Conv1d(hidden_size, out_channels, 1)
+
+    def forward(self, ssl_enc, ssl_mask, text, text_mask, ge):
+        attn_mask = text_mask.unsqueeze(2) * ssl_mask.unsqueeze(-1)
+
+        ssl_enc = self.c_pre(ssl_enc * ssl_mask)
+        text_enc = self.text_pre(text * text_mask)
+        x = (
+                self.cross_attention(
+                    ssl_enc * ssl_mask, text_enc * text_mask, attn_mask
+                )
+                + ssl_enc
+                + ge
+        )
+        x = self.c_post(x * ssl_mask)
         return x

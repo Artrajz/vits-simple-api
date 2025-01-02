@@ -1,4 +1,5 @@
-# modified from https://github.com/feng-yufei/shared_debugging_code/blob/main/model/t2s_lightning_module.py
+# modified from https://github.com/yangdongchao/SoundStorm/blob/master/soundstorm/s1/AR/models/t2s_lightning_module.py
+# reference: https://github.com/lifeiteng/vall-e
 import os, sys
 
 now_dir = os.getcwd()
@@ -13,11 +14,11 @@ from gpt_sovits.AR.modules.optim import ScaledAdam
 
 
 class Text2SemanticLightningModule(LightningModule):
-    def __init__(self, config, output_dir, is_train=True, flash_attn_enabled: bool = False):
+    def __init__(self, config, output_dir, is_train=True):
         super().__init__()
         self.config = config
         self.top_k = 3
-        self.model = Text2SemanticDecoder(config=config, top_k=self.top_k, flash_attn_enabled=flash_attn_enabled)
+        self.model = Text2SemanticDecoder(config=config, top_k=self.top_k)
         pretrained_s1 = config.get("pretrained_s1")
         if pretrained_s1 and is_train:
             # print(self.load_state_dict(torch.load(pretrained_s1,map_location="cpu")["state_dict"]))
@@ -35,7 +36,8 @@ class Text2SemanticLightningModule(LightningModule):
     def training_step(self, batch: Dict, batch_idx: int):
         opt = self.optimizers()
         scheduler = self.lr_schedulers()
-        loss, acc = self.model.forward(
+        forward = self.model.forward if self.config["train"].get("if_dpo", False) == True else self.model.forward_old
+        loss, acc = forward(
             batch["phoneme_ids"],
             batch["phoneme_ids_len"],
             batch["semantic_ids"],

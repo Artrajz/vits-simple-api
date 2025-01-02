@@ -15,18 +15,17 @@ from gpt_sovits.module.mel_processing import spectrogram_torch
 from gpt_sovits.module.models import SynthesizerTrn
 from gpt_sovits.text import cleaned_text_to_sequence
 from gpt_sovits.text.cleaner import clean_text
-from gpt_sovits.utils import DictToAttrRecursive
 from utils.classify_language import classify_language
-from utils.data_utils import check_is_none
+from utils.data_utils import check_is_none, HParams
 from utils.sentence import split_languages, sentence_split
 
 splits = {"，", "。", "？", "！", ",", ".", "?", "!", "~", ":", "：", "—", "…", }
 
 
 class GPT_SoVITS:
-    def __init__(self, sovits_path, gpt_path, device, **kwargs):
-        self.sovits_path = sovits_path
-        self.gpt_path = gpt_path
+    def __init__(self, vits_path, t2s_path, device, **kwargs):
+        self.vits_path = vits_path
+        self.t2s_path = t2s_path  # Text2Semantic
         self.hz = config.gpt_sovits_config.hz
         self.sampling_rate = None
         self.device = device
@@ -47,78 +46,80 @@ class GPT_SoVITS:
             "bert_features": None,
             "norm_text": None,
         }
+        self.vits_config = None
+        self.version = None
+        self.pinyin_g2pw = None
 
     def load_model(self, model_handler):
         self.model_handler = model_handler
 
-        self.load_sovits(self.sovits_path)
-        self.load_gpt(self.gpt_path)
+        self.load_vits_weights(self.vits_path)
+        self.load_t2s_weight(self.t2s_path)
 
         self.tokenizer, self.bert_model = self.model_handler.get_bert_model("CHINESE_ROBERTA_WWM_EXT_LARGE")
 
         self.ssl_model = self.model_handler.get_ssl_model()
 
-    def load_weight(self, saved_state_dict, model):
-        if hasattr(model, 'module'):
-            state_dict = model.module.state_dict()
+        if self.version == 'v2':
+            self.pinyin_g2pw = self.model_handler.get_pinyin_g2pw(model_source="CHINESE_ROBERTA_WWM_EXT_LARGE")
+            self.lang = ["zh", "ja", "en", 'yue', 'ko']
+
+    def load_vits_weights(self, weight_path):
+        logging.info(f"Loaded checkpoint '{weight_path}'")
+        dict_s2 = torch.load(weight_path, map_location=self.device)
+        self.vits_config = dict_s2["config"]
+        if type(self.vits_config) == dict:
+            self.vits_config = HParams(**self.vits_config)
+
+        self.vits_config.model.semantic_frame_rate = "25hz"
+
+        self.speakers = [os.path.basename(os.path.dirname(self.vits_path))]  # 用模型文件夹作为名字
+        self.sampling_rate = self.vits_config.data.sampling_rate
+
+        if dict_s2['weight']['enc_p.text_embedding.weight'].shape[0] == 322:
+            self.version = "v1"
         else:
-            state_dict = model.state_dict()
-        new_state_dict = {}
-        for k, v in state_dict.items():
-            try:
-                new_state_dict[k] = saved_state_dict[k]
-            except:
-                # logging.info(f"{k} is not in the checkpoint")
-                new_state_dict[k] = v
-        if hasattr(model, 'module'):
-            model.module.load_state_dict(new_state_dict)
-        else:
-            model.load_state_dict(new_state_dict)
+            self.version = "v2"
 
-    def load_sovits(self, sovits_path):
-        # self.n_semantic = 1024
-        logging.info(f"Loaded checkpoint '{sovits_path}'")
-        dict_s2 = torch.load(sovits_path, map_location=self.device)
-        self.hps = dict_s2["config"]
-        self.hps = DictToAttrRecursive(self.hps)
-        self.hps.model.semantic_frame_rate = "25hz"
-        # self.speakers = [self.hps.get("name")] # 从模型配置中获取名字
-        self.speakers = [os.path.basename(os.path.dirname(self.sovits_path))]  # 用模型文件夹作为名字
+        self.vits_model = SynthesizerTrn(
+            self.vits_config.data.filter_length // 2 + 1,
+            self.vits_config.train.segment_size // self.vits_config.data.hop_length,
+            n_speakers=self.vits_config.data.n_speakers,
+            version=self.version,
+            **self.vits_config.model
+        ).to(self.device)
 
-        self.vq_model = SynthesizerTrn(
-            self.hps.data.filter_length // 2 + 1,
-            self.hps.train.segment_size // self.hps.data.hop_length,
-            n_speakers=self.hps.data.n_speakers,
-            **self.hps.model).to(self.device)
+        if hasattr(self.vits_model, "enc_q"):
+            del self.vits_model.enc_q
 
-        if config.gpt_sovits_config.is_half:
-            self.vq_model = self.vq_model.half()
+        if self.is_half:
+            self.vits_model = self.vits_model.half()
 
-        self.vq_model.eval()
-        self.sampling_rate = self.hps.data.sampling_rate
+        self.vits_model.eval()
 
-        self.load_weight(dict_s2['weight'], self.vq_model)
+        self.vits_model.load_state_dict(dict_s2["weight"], strict=False)
 
-    def load_gpt(self, gpt_path):
-        logging.info(f"Loaded checkpoint '{gpt_path}'")
-        dict_s1 = torch.load(gpt_path, map_location=self.device)
+    def load_t2s_weight(self, weight_path):
+        logging.info(f"Loaded checkpoint '{weight_path}'")
+        dict_s1 = torch.load(weight_path, map_location=self.device)
 
-        self.gpt_config = dict_s1["config"]
-        self.max_sec = self.gpt_config.get("data").get("max_sec")
+        t2s_config = dict_s1["config"]
+        self.max_sec = t2s_config.get("data").get("max_sec")
 
-        self.t2s_model = Text2SemanticLightningModule(self.gpt_config, "****", is_train=False,
-                                                      flash_attn_enabled=self.flash_attn_enabled).to(
-            self.device)
+        self.t2s_model = Text2SemanticLightningModule(
+            t2s_config,
+            "****",
+            is_train=False,
+        ).to(self.device)
 
-        self.load_weight(dict_s1['weight'], self.t2s_model)
+        self.t2s_model.load_state_dict(dict_s1["weight"])
 
-        if config.gpt_sovits_config.is_half:
+        if self.is_half:
             self.t2s_model = self.t2s_model.half()
 
         self.t2s_model.eval()
 
-        total = sum([param.nelement() for param in self.t2s_model.parameters()])
-        logging.info(f"Number of parameter: {total / 1e6:.2f}M")
+        self.t2s_model.model.infer_panel = self.t2s_model.model.infer_panel_batch_infer  # 并行推理
 
     def set_seed(self, seed: int):
         seed = int(seed)
@@ -143,7 +144,12 @@ class GPT_SoVITS:
         return self.speakers
 
     def get_cleaned_text(self, text, language):
-        phones, word2ph, norm_text = clean_text(text, language.replace("all_", ""))
+        phones, word2ph, norm_text = clean_text(
+            text=text,
+            language=language,
+            version=self.version,
+            pinyin_g2pw=self.pinyin_g2pw,
+        )
         phones = cleaned_text_to_sequence(phones)
         return phones, word2ph, norm_text
 
@@ -186,12 +192,26 @@ class GPT_SoVITS:
         if len(lang_list) == 1 and lang_list[0] == "auto":
             target_languages = self.lang
 
-        sentences = split_languages(text, expand_abbreviations=True, expand_hyphens=True,
-                                    target_languages=target_languages)
+        # 对粤语yue的文本语种识别作特殊处理
+        _target_languages = target_languages.copy()
+        if "yue" in _target_languages:
+            _target_languages.remove("yue")
+            _target_languages.append("zh")
+
+        sentences = split_languages(
+            text,
+            expand_abbreviations=True,
+            expand_hyphens=True,
+            target_languages=_target_languages,
+        )
+        del _target_languages
 
         phones_list, word2ph_list, norm_text_list, bert_list = [], [], [], []
 
         for sentence, lang in sentences:
+            # 粤语yue处理
+            if lang == "zh" and "yue" in target_languages and "zh" not in target_languages:
+                lang = "yue"
             phones, word2ph, _norm_text = self.get_cleaned_text(sentence, lang)
             bert = self.get_bert_feature(sentence, phones, word2ph, _norm_text)
             phones_list.extend(phones)
@@ -207,16 +227,16 @@ class GPT_SoVITS:
 
     def get_spepc(self, audio, orig_sr):
         """audio的sampling_rate与模型相同"""
-        audio = librosa.resample(audio, orig_sr=orig_sr, target_sr=int(self.hps.data.sampling_rate))
+        audio = librosa.resample(audio, orig_sr=orig_sr, target_sr=int(self.sampling_rate))
         audio = torch.FloatTensor(audio)
         audio_norm = audio
         audio_norm = audio_norm.unsqueeze(0)
         spec = spectrogram_torch(
             audio_norm,
-            self.hps.data.filter_length,
-            self.hps.data.sampling_rate,
-            self.hps.data.hop_length,
-            self.hps.data.win_length,
+            self.vits_config.data.filter_length,
+            self.vits_config.data.sampling_rate,
+            self.vits_config.data.hop_length,
+            self.vits_config.data.win_length,
             center=False,
         )
         return spec
@@ -247,7 +267,7 @@ class GPT_SoVITS:
             ].transpose(
                 1, 2
             )  # .float()
-            codes = self.vq_model.extract_latent(ssl_content)
+            codes = self.vits_model.extract_latent(ssl_content)
             prompt_semantic = codes[0, 0].to(self.device)
             # prompt_semantic = prompt_semantic.unsqueeze(0).to(self.device)
             self.prompt_cache["prompt_semantic"] = prompt_semantic
@@ -320,9 +340,13 @@ class GPT_SoVITS:
         batch = torch.stack(padded_sequences)
         return batch
 
-    def to_batch(self, data: list, prompt_data: dict = None, batch_size: int = 5, threshold: float = 0.75,
-                 split_bucket: bool = True):
-
+    def to_batch(self, data: list,
+                 prompt_data: dict = None,
+                 batch_size: int = 5,
+                 threshold: float = 0.75,
+                 split_bucket: bool = True,
+                 precision: torch.dtype = torch.float32,
+                 ):
         _data: list = []
         index_and_len_list = []
         for idx, item in enumerate(data):
@@ -341,7 +365,7 @@ class GPT_SoVITS:
                 pos_end = min(pos + batch_size, index_and_len_list.shape[0])
                 while pos < pos_end:
                     batch = index_and_len_list[pos:pos_end, 1].astype(np.float32)
-                    score = batch[(pos_end - pos) // 2] / batch.mean()
+                    score = batch[(pos_end - pos) // 2] / (batch.mean() + 1e-8)
                     if (score >= threshold) or (pos_end - pos == 1):
                         batch_index = index_and_len_list[pos:pos_end, 0].tolist()
                         batch_index_list_len += len(batch_index)
@@ -367,22 +391,24 @@ class GPT_SoVITS:
             all_phones_len_list = []
             all_bert_features_list = []
             norm_text_batch = []
-            bert_max_len = 0
-            phones_max_len = 0
+            all_bert_max_len = 0
+            all_phones_max_len = 0
             for item in item_list:
                 if prompt_data is not None:
-                    all_bert_features = torch.cat([prompt_data["bert_features"], item["bert_features"]], 1)
-                    all_phones = torch.LongTensor(prompt_data["phones"] + item["phones"])
-                    phones = torch.LongTensor(item["phones"])
+                    all_bert_features = torch.cat([prompt_data["bert_features"], item["bert_features"]], 1) \
+                        .to(dtype=precision, device=self.device)
+                    all_phones = torch.LongTensor(prompt_data["phones"] + item["phones"]).to(self.device)
+                    phones = torch.LongTensor(item["phones"]).to(self.device)
                     # norm_text = prompt_data["norm_text"]+item["norm_text"]
                 else:
-                    all_bert_features = item["bert_features"]
-                    phones = torch.LongTensor(item["phones"])
+                    all_bert_features = item["bert_features"] \
+                        .to(dtype=precision, device=self.device)
+                    phones = torch.LongTensor(item["phones"]).to(self.device)
                     all_phones = phones
                     # norm_text = item["norm_text"]
 
-                bert_max_len = max(bert_max_len, all_bert_features.shape[-1])
-                phones_max_len = max(phones_max_len, phones.shape[-1])
+                all_bert_max_len = max(all_bert_max_len, all_bert_features.shape[-1])
+                all_phones_max_len = max(all_phones_max_len, all_phones.shape[-1])
 
                 phones_list.append(phones)
                 phones_len_list.append(phones.shape[-1])
@@ -392,23 +418,35 @@ class GPT_SoVITS:
                 norm_text_batch.append(item["norm_text"])
 
             phones_batch = phones_list
-            max_len = max(bert_max_len, phones_max_len)
-            # phones_batch = self.batch_sequences(phones_list, axis=0, pad_value=0, max_length=max_len)
-            all_phones_batch = self.batch_sequences(all_phones_list, axis=0, pad_value=0, max_length=max_len)
-            all_bert_features_batch = torch.FloatTensor(len(item_list), 1024, max_len)
-            all_bert_features_batch.zero_()
+            all_phones_batch = all_phones_list
+            all_bert_features_batch = all_bert_features_list
 
-            for idx, item in enumerate(all_bert_features_list):
-                if item != None:
-                    all_bert_features_batch[idx, :, : item.shape[-1]] = item
+            max_len = max(all_bert_max_len, all_phones_max_len)
+            # phones_batch = self.batch_sequences(phones_list, axis=0, pad_value=0, max_length=max_len)
+            #### 直接对phones和bert_features进行pad。（padding策略会影响T2S模型生成的结果，但不直接影响复读概率。影响复读概率的主要因素是mask的策略）
+            # all_phones_batch = self.batch_sequences(all_phones_list, axis=0, pad_value=0, max_length=max_len)
+            # all_bert_features_batch = all_bert_features_list
+            # all_bert_features_batch = torch.zeros((len(all_bert_features_list), 1024, max_len), dtype=precision, device=device)
+            # for idx, item in enumerate(all_bert_features_list):
+            #     all_bert_features_batch[idx, :, : item.shape[-1]] = item
+
+            # #### 先对phones进行embedding、对bert_features进行project，再pad到相同长度，（padding策略会影响T2S模型生成的结果，但不直接影响复读概率。影响复读概率的主要因素是mask的策略）
+            # all_phones_list = [self.t2s_model.model.ar_text_embedding(item.to(self.t2s_model.device)) for item in all_phones_list]
+            # all_phones_list = [F.pad(item,(0,0,0,max_len-item.shape[0]),value=0) for item in all_phones_list]
+            # all_phones_batch = torch.stack(all_phones_list, dim=0)
+
+            # all_bert_features_list = [self.t2s_model.model.bert_proj(item.to(self.t2s_model.device).transpose(0, 1)) for item in all_bert_features_list]
+            # all_bert_features_list = [F.pad(item,(0,0,0,max_len-item.shape[0]), value=0) for item in all_bert_features_list]
+            # all_bert_features_batch = torch.stack(all_bert_features_list, dim=0)
 
             batch = {
                 "phones": phones_batch,
-                "phones_len": torch.LongTensor(phones_len_list),
+                "phones_len": torch.LongTensor(phones_len_list).to(self.device),
                 "all_phones": all_phones_batch,
-                "all_phones_len": torch.LongTensor(all_phones_len_list),
+                "all_phones_len": torch.LongTensor(all_phones_len_list).to(self.device),
                 "all_bert_features": all_bert_features_batch,
-                "norm_text": norm_text_batch
+                "norm_text": norm_text_batch,
+                "max_len": max_len,
             }
             _data.append(batch)
 
@@ -464,10 +502,27 @@ class GPT_SoVITS:
 
         return audio
 
-    def infer(self, text, lang, reference_audio, reference_audio_sr, prompt_text, prompt_lang, top_k, top_p,
-              temperature, batch_size: int = 5, batch_threshold: float = 0.75, split_bucket: bool = True,
-              return_fragment: bool = False, speed_factor: float = 1.0, seed: int = -1,
-              segment_size: int = config.gpt_sovits_config.segment_size, **kwargs):
+    def infer(
+            self,
+            text,
+            lang,
+            reference_audio,
+            reference_audio_sr,
+            prompt_text,
+            prompt_lang,
+            top_k,
+            top_p,
+            temperature,
+            batch_size: int = 5,
+            batch_threshold: float = 0.75,
+            split_bucket: bool = True,
+            return_fragment: bool = False,
+            speed_factor: float = 1.0,
+            seed: int = -1,
+            segment_size: int = config.gpt_sovits_config.segment_size,
+            repetition_penalty: float = 1.35,
+            **kwargs
+    ):
 
         self.set_seed(seed)
 
@@ -482,12 +537,13 @@ class GPT_SoVITS:
         else:
             self.preprocess_prompt(reference_audio, reference_audio_sr, prompt_text, prompt_lang)
 
-        data, batch_index_list = self.to_batch(data,
-                                               prompt_data=self.prompt_cache if not no_prompt_text else None,
-                                               batch_size=batch_size,
-                                               threshold=batch_threshold,
-                                               split_bucket=split_bucket
-                                               )
+        data, batch_index_list = self.to_batch(
+            data,
+            prompt_data=self.prompt_cache if not no_prompt_text else None,
+            batch_size=batch_size,
+            threshold=batch_threshold,
+            split_bucket=split_bucket
+        )
 
         audio = []
         for item in data:
@@ -497,21 +553,21 @@ class GPT_SoVITS:
             all_phoneme_lens = item["all_phones_len"]
             all_bert_features = item["all_bert_features"]
             norm_text = item["norm_text"]
+            max_len = item["max_len"]
 
             # batch_phones = batch_phones.to(self.device)
             batch_phones_len = batch_phones_len.to(self.device)
-            all_phoneme_ids = all_phoneme_ids.to(self.device)
+            # all_phoneme_ids = all_phoneme_ids.to(self.device)
             all_phoneme_lens = all_phoneme_lens.to(self.device)
-            all_bert_features = all_bert_features.to(self.device)
-            if self.is_half:
-                all_bert_features = all_bert_features.half()
+            # all_bert_features = all_bert_features.to(self.device)
+            # if self.is_half:
+            #     all_bert_features = all_bert_features.half()
 
             logging.debug(f"Infer text:{norm_text}")
             if no_prompt_text:
                 prompt = None
             else:
-                prompt = self.prompt_cache["prompt_semantic"].expand(all_phoneme_ids.shape[0], -1).to(
-                    self.device)
+                prompt = self.prompt_cache["prompt_semantic"].expand(len(all_phoneme_ids), -1).to(self.device)
 
             with torch.no_grad():
                 pred_semantic_list, idx_list = self.t2s_model.model.infer_panel(
@@ -524,6 +580,8 @@ class GPT_SoVITS:
                     top_p=top_p,
                     temperature=temperature,
                     early_stop_num=self.hz * self.max_sec,
+                    max_len=max_len,
+                    repetition_penalty=repetition_penalty,
                 )
 
             refer_audio_spepc: torch.Tensor = self.prompt_cache["refer_spepc"].to(self.device)
@@ -531,13 +589,13 @@ class GPT_SoVITS:
                 refer_audio_spepc = refer_audio_spepc.half()
 
             pred_semantic_list = [item[-idx:] for item, idx in zip(pred_semantic_list, idx_list)]
-            upsample_rate = math.prod(self.vq_model.upsample_rates)
+            upsample_rate = math.prod(self.vits_model.upsample_rates)
             audio_frag_idx = [pred_semantic_list[i].shape[0] * 2 * upsample_rate for i in
                               range(0, len(pred_semantic_list))]
             audio_frag_end_idx = [sum(audio_frag_idx[:i + 1]) for i in range(0, len(audio_frag_idx))]
             all_pred_semantic = torch.cat(pred_semantic_list).unsqueeze(0).unsqueeze(0).to(self.device)
             _batch_phones = torch.cat(batch_phones).unsqueeze(0).to(self.device)
-            _batch_audio_fragment = (self.vq_model.decode(
+            _batch_audio_fragment = (self.vits_model.decode(
                 all_pred_semantic, _batch_phones, refer_audio_spepc
             ).detach()[0, 0, :])
             audio_frag_end_idx.insert(0, 0)

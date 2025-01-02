@@ -1,11 +1,44 @@
 # modified from https://github.com/CjangCjengh/vits/blob/main/text/japanese.py
 import re
-import sys
+import os
+import hashlib
 
-import pyopenjtalk
+try:
+    import pyopenjtalk
+
+    current_file_path = os.path.dirname(__file__)
 
 
-from gpt_sovits.text import symbols
+    def get_hash(fp: str) -> str:
+        hash_md5 = hashlib.md5()
+        with open(fp, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash_md5.update(chunk)
+        return hash_md5.hexdigest()
+
+
+    USERDIC_CSV_PATH = os.path.join(current_file_path, "ja_userdic", "userdict.csv")
+    USERDIC_BIN_PATH = os.path.join(current_file_path, "ja_userdic", "user.dict")
+    USERDIC_HASH_PATH = os.path.join(current_file_path, "ja_userdic", "userdict.md5")
+    # 如果没有用户词典，就生成一个；如果有，就检查md5，如果不一样，就重新生成
+    if os.path.exists(USERDIC_CSV_PATH):
+        if not os.path.exists(USERDIC_BIN_PATH) or get_hash(USERDIC_CSV_PATH) != open(USERDIC_HASH_PATH, "r",
+                                                                                      encoding='utf-8').read():
+            pyopenjtalk.mecab_dict_index(USERDIC_CSV_PATH, USERDIC_BIN_PATH)
+            with open(USERDIC_HASH_PATH, "w", encoding='utf-8') as f:
+                f.write(get_hash(USERDIC_CSV_PATH))
+
+    if os.path.exists(USERDIC_BIN_PATH):
+        pyopenjtalk.update_global_jtalk_with_user_dict(USERDIC_BIN_PATH)
+except Exception as e:
+    # print(e)
+    import pyopenjtalk
+
+    # failed to load user dictionary, ignore.
+    pass
+
+from .symbols import punctuation
+
 # Regular expression matching Japanese without punctuation marks:
 _japanese_characters = re.compile(
     r"[A-Za-z\d\u3005\u3040-\u30ff\u4e00-\u9fff\uff11-\uff19\uff21-\uff3a\uff41-\uff5a\uff66-\uff9d]"
@@ -18,7 +51,6 @@ _japanese_marks = re.compile(
 
 # List of (symbol, Japanese) pairs for marks:
 _symbols_to_japanese = [(re.compile("%s" % x[0]), x[1]) for x in [("％", "パーセント")]]
-
 
 # List of (consonant, sokuon) pairs:
 _real_sokuon = [
@@ -56,13 +88,17 @@ def post_replace_ph(ph):
         "、": ",",
         "...": "…",
     }
+
     if ph in rep_map.keys():
         ph = rep_map[ph]
-    if ph in symbols:
-        return ph
-    if ph not in symbols:
-        ph = "UNK"
     return ph
+
+
+def replace_consecutive_punctuation(text):
+    punctuations = ''.join(re.escape(p) for p in punctuation)
+    pattern = f'([{punctuations}])([{punctuations}])+'
+    result = re.sub(pattern, r'\1', text)
+    return result
 
 
 def symbols_to_japanese(text):
@@ -74,6 +110,8 @@ def symbols_to_japanese(text):
 def preprocess_jap(text, with_prosody=False):
     """Reference https://r9y9.github.io/ttslearn/latest/notebooks/ch10_Recipe-Tacotron.html"""
     text = symbols_to_japanese(text)
+    # English words to lower case, should have no influence on japanese words.
+    text = text.lower()
     sentences = re.split(_japanese_marks, text)
     marks = re.findall(_japanese_marks, text)
     text = []
@@ -86,7 +124,7 @@ def preprocess_jap(text, with_prosody=False):
                 text += p.split(" ")
 
         if i < len(marks):
-            if marks[i] == " ":# 防止意外的UNK
+            if marks[i] == " ":  # 防止意外的UNK
                 continue
             text += [marks[i].replace(" ", "")]
     return text
@@ -94,7 +132,11 @@ def preprocess_jap(text, with_prosody=False):
 
 def text_normalize(text):
     # todo: jap text normalize
+
+    # 避免重复标点引起的参考泄露
+    text = replace_consecutive_punctuation(text)
     return text
+
 
 # Copied from espnet https://github.com/espnet/espnet/blob/master/espnet2/text/phoneme_tokenizer.py
 def pyopenjtalk_g2p_prosody(text, drop_unvoiced_vowels=True):
@@ -172,6 +214,7 @@ def pyopenjtalk_g2p_prosody(text, drop_unvoiced_vowels=True):
 
     return phones
 
+
 # Copied from espnet https://github.com/espnet/espnet/blob/master/espnet2/text/phoneme_tokenizer.py
 def _numeric_feature_by_regex(regex, s):
     match = re.search(regex, s)
@@ -179,7 +222,8 @@ def _numeric_feature_by_regex(regex, s):
         return -50
     return int(match.group(1))
 
-def g2p(norm_text, with_prosody=False):
+
+def g2p(norm_text, with_prosody=True):
     phones = preprocess_jap(norm_text, with_prosody)
     phones = [post_replace_ph(i) for i in phones]
     # todo: implement tones and word2ph
@@ -187,5 +231,5 @@ def g2p(norm_text, with_prosody=False):
 
 
 if __name__ == "__main__":
-    phones = g2p("こんにちは, hello, AKITOです,よろしくお願いしますね！")
+    phones = g2p("Hello.こんにちは！今日もNiCe天気ですね！tokyotowerに行きましょう！")
     print(phones)

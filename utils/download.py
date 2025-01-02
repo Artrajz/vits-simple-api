@@ -8,7 +8,7 @@ from pathlib import Path
 import requests
 from py7zr import SevenZipFile
 from tqdm import tqdm
-from config import ABS_PATH
+from config import BASE_DIR
 
 
 def _download_file(url, dest_path, max_retry=1):
@@ -44,7 +44,7 @@ def _download_file(url, dest_path, max_retry=1):
 
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
 
-    relative_path = os.path.relpath(dest_path, ABS_PATH)
+    relative_path = os.path.relpath(dest_path, BASE_DIR)
     chunk_size = 1024 * 1024  # 1MB
 
     try:
