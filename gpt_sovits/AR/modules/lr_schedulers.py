@@ -1,8 +1,9 @@
-# modified from https://github.com/feng-yufei/shared_debugging_code/blob/main/model/lr_schedulers.py
+# modified from https://github.com/yangdongchao/SoundStorm/blob/master/soundstorm/s1/AR/modules/lr_schedulers.py
+# reference: https://github.com/lifeiteng/vall-e
 import math
 
 import torch
-# from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
 from torch import nn
 from torch.optim import Adam
 
@@ -13,14 +14,14 @@ class WarmupCosineLRSchedule(torch.optim.lr_scheduler._LRScheduler):
     """
 
     def __init__(
-        self,
-        optimizer,
-        init_lr,
-        peak_lr,
-        end_lr,
-        warmup_steps=10000,
-        total_steps=400000,
-        current_step=0,
+            self,
+            optimizer,
+            init_lr,
+            peak_lr,
+            end_lr,
+            warmup_steps=10000,
+            total_steps=400000,
+            current_step=0,
     ):
         self.init_lr = init_lr
         self.peak_lr = peak_lr
@@ -49,7 +50,7 @@ class WarmupCosineLRSchedule(torch.optim.lr_scheduler._LRScheduler):
 
         else:
             decay_ratio = (self._current_step - self.warmup_steps) / (
-                self.total_steps - self.warmup_steps
+                    self.total_steps - self.warmup_steps
             )
             if decay_ratio < 0.0 or decay_ratio > 1.0:
                 raise RuntimeError(
@@ -77,6 +78,6 @@ if __name__ == "__main__":
         lrs.append(s.lr)
         print(s.lr)
 
-    # plt.plot(lrs)
-    # plt.plot(range(0, 25000), lrs)
-    # plt.show()
+    plt.plot(lrs)
+    plt.plot(range(0, 25000), lrs)
+    plt.show()

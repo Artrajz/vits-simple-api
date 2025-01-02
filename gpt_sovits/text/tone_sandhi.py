@@ -496,10 +496,10 @@ class ToneSandhi:
         # reduplication words for n. and v. e.g. 奶奶, 试试, 旺旺
         for j, item in enumerate(word):
             if (
-                j - 1 >= 0
-                and item == word[j - 1]
-                and pos[0] in {"n", "v", "a"}
-                and word not in self.must_not_neural_tone_words
+                    j - 1 >= 0
+                    and item == word[j - 1]
+                    and pos[0] in {"n", "v", "a"}
+                    and word not in self.must_not_neural_tone_words
             ):
                 finals[j] = finals[j][:-1] + "5"
         ge_idx = word.find("个")
@@ -511,10 +511,10 @@ class ToneSandhi:
         elif len(word) == 1 and word in "了着过" and pos in {"ul", "uz", "ug"}:
             finals[-1] = finals[-1][:-1] + "5"
         elif (
-            len(word) > 1
-            and word[-1] in "们子"
-            and pos in {"r", "n"}
-            and word not in self.must_not_neural_tone_words
+                len(word) > 1
+                and word[-1] in "们子"
+                and pos in {"r", "n"}
+                and word not in self.must_not_neural_tone_words
         ):
             finals[-1] = finals[-1][:-1] + "5"
         # e.g. 桌上, 地下, 家里
@@ -525,24 +525,24 @@ class ToneSandhi:
             finals[-1] = finals[-1][:-1] + "5"
         # 个做量词
         elif (
-            ge_idx >= 1
-            and (word[ge_idx - 1].isnumeric() or word[ge_idx - 1] in "几有两半多各整每做是")
+                ge_idx >= 1
+                and (word[ge_idx - 1].isnumeric() or word[ge_idx - 1] in "几有两半多各整每做是")
         ) or word == "个":
             finals[ge_idx] = finals[ge_idx][:-1] + "5"
         else:
             if (
-                word in self.must_neural_tone_words
-                or word[-2:] in self.must_neural_tone_words
+                    word in self.must_neural_tone_words
+                    or word[-2:] in self.must_neural_tone_words
             ):
                 finals[-1] = finals[-1][:-1] + "5"
 
         word_list = self._split_word(word)
-        finals_list = [finals[: len(word_list[0])], finals[len(word_list[0]) :]]
+        finals_list = [finals[: len(word_list[0])], finals[len(word_list[0]):]]
         for i, word in enumerate(word_list):
             # conventional neural in Chinese
             if (
-                word in self.must_neural_tone_words
-                or word[-2:] in self.must_neural_tone_words
+                    word in self.must_neural_tone_words
+                    or word[-2:] in self.must_neural_tone_words
             ):
                 finals_list[i][-1] = finals_list[i][-1][:-1] + "5"
         finals = sum(finals_list, [])
@@ -562,7 +562,7 @@ class ToneSandhi:
     def _yi_sandhi(self, word: str, finals: List[str]) -> List[str]:
         # "一" in number sequences, e.g. 一零零, 二一零
         if word.find("一") != -1 and all(
-            [item.isnumeric() for item in word if item != "一"]
+                [item.isnumeric() for item in word if item != "一"]
         ):
             return finals
         # "一" between reduplication words shold be yi5, e.g. 看一看
@@ -590,7 +590,7 @@ class ToneSandhi:
         first_subword = word_list[0]
         first_begin_idx = word.find(first_subword)
         if first_begin_idx == 0:
-            second_subword = word[len(first_subword) :]
+            second_subword = word[len(first_subword):]
             new_word_list = [first_subword, second_subword]
         else:
             second_subword = word[: -len(first_subword)]
@@ -611,7 +611,7 @@ class ToneSandhi:
                 elif len(word_list[0]) == 1:
                     finals[1] = finals[1][:-1] + "2"
             else:
-                finals_list = [finals[: len(word_list[0])], finals[len(word_list[0]) :]]
+                finals_list = [finals[: len(word_list[0])], finals[len(word_list[0]):]]
                 if len(finals_list) == 2:
                     for i, sub in enumerate(finals_list):
                         # e.g. 所有/人
@@ -619,10 +619,10 @@ class ToneSandhi:
                             finals_list[i][0] = finals_list[i][0][:-1] + "2"
                         # e.g. 好/喜欢
                         elif (
-                            i == 1
-                            and not self._all_tone_three(sub)
-                            and finals_list[i][0][-1] == "3"
-                            and finals_list[0][-1][-1] == "3"
+                                i == 1
+                                and not self._all_tone_three(sub)
+                                and finals_list[i][0][-1] == "3"
+                                and finals_list[0][-1][-1] == "3"
                         ):
                             finals_list[0][-1] = finals_list[0][-1][:-1] + "2"
                         finals = sum(finals_list, [])
@@ -667,20 +667,21 @@ class ToneSandhi:
         # function 1
         for i, (word, pos) in enumerate(seg):
             if (
-                i - 1 >= 0
-                and word == "一"
-                and i + 1 < len(seg)
-                and seg[i - 1][0] == seg[i + 1][0]
-                and seg[i - 1][1] == "v"
-                and seg[i + 1][1] == "v"
+                    i - 1 >= 0
+                    and word == "一"
+                    and i + 1 < len(seg)
+                    and seg[i - 1][0] == seg[i + 1][0]
+                    and seg[i - 1][1] == "v"
+                    and seg[i + 1][1] == "v"
             ):
                 new_seg[i - 1][0] = new_seg[i - 1][0] + "一" + new_seg[i - 1][0]
             else:
                 if (
-                    i - 2 >= 0
-                    and seg[i - 1][0] == "一"
-                    and seg[i - 2][0] == word
-                    and pos == "v"
+                        i - 2 >= 0
+                        and seg[i - 1][0] == "一"
+                        and seg[i - 2][0] == word
+                        and pos == "v"
+                        and seg[i - 2][1] == "v"
                 ):
                     continue
                 else:
@@ -697,7 +698,7 @@ class ToneSandhi:
 
     # the first and the second words are all_tone_three
     def _merge_continuous_three_tones(
-        self, seg: List[Tuple[str, str]]
+            self, seg: List[Tuple[str, str]]
     ) -> List[Tuple[str, str]]:
         new_seg = []
         sub_finals_list = [
@@ -708,15 +709,15 @@ class ToneSandhi:
         merge_last = [False] * len(seg)
         for i, (word, pos) in enumerate(seg):
             if (
-                i - 1 >= 0
-                and self._all_tone_three(sub_finals_list[i - 1])
-                and self._all_tone_three(sub_finals_list[i])
-                and not merge_last[i - 1]
+                    i - 1 >= 0
+                    and self._all_tone_three(sub_finals_list[i - 1])
+                    and self._all_tone_three(sub_finals_list[i])
+                    and not merge_last[i - 1]
             ):
                 # if the last word is reduplication, not merge, because reduplication need to be _neural_sandhi
                 if (
-                    not self._is_reduplication(seg[i - 1][0])
-                    and len(seg[i - 1][0]) + len(seg[i][0]) <= 3
+                        not self._is_reduplication(seg[i - 1][0])
+                        and len(seg[i - 1][0]) + len(seg[i][0]) <= 3
                 ):
                     new_seg[-1][0] = new_seg[-1][0] + seg[i][0]
                     merge_last[i] = True
@@ -732,7 +733,7 @@ class ToneSandhi:
 
     # the last char of first word and the first char of second word is tone_three
     def _merge_continuous_three_tones_2(
-        self, seg: List[Tuple[str, str]]
+            self, seg: List[Tuple[str, str]]
     ) -> List[Tuple[str, str]]:
         new_seg = []
         sub_finals_list = [
@@ -743,15 +744,15 @@ class ToneSandhi:
         merge_last = [False] * len(seg)
         for i, (word, pos) in enumerate(seg):
             if (
-                i - 1 >= 0
-                and sub_finals_list[i - 1][-1][-1] == "3"
-                and sub_finals_list[i][0][-1] == "3"
-                and not merge_last[i - 1]
+                    i - 1 >= 0
+                    and sub_finals_list[i - 1][-1][-1] == "3"
+                    and sub_finals_list[i][0][-1] == "3"
+                    and not merge_last[i - 1]
             ):
                 # if the last word is reduplication, not merge, because reduplication need to be _neural_sandhi
                 if (
-                    not self._is_reduplication(seg[i - 1][0])
-                    and len(seg[i - 1][0]) + len(seg[i][0]) <= 3
+                        not self._is_reduplication(seg[i - 1][0])
+                        and len(seg[i - 1][0]) + len(seg[i][0]) <= 3
                 ):
                     new_seg[-1][0] = new_seg[-1][0] + seg[i][0]
                     merge_last[i] = True

@@ -222,13 +222,13 @@ class ModelManager(Subject):
         if tts_model["model_type"] == ModelType.GPT_SOVITS:
             hps = None
             model_type = ModelType.GPT_SOVITS
-            sovits_path = tts_model["sovits_path"]
-            gpt_path = tts_model["gpt_path"]
+            vits_path = tts_model["vits_path"]
+            t2s_path = tts_model["t2s_path"]
 
             model_args = {
                 "model_type": model_type,
-                "sovits_path": sovits_path,
-                "gpt_path": gpt_path,
+                "vits_path": vits_path,
+                "t2s_path": t2s_path,
                 "config": hps,
                 "device": self.device
             }
@@ -324,7 +324,7 @@ class ModelManager(Subject):
 
         if model_type == ModelType.GPT_SOVITS:
             logging.info(
-                f"model_type:{model_type} model_id:{model_id} sovits_path:{sovits_path} gpt_path:{gpt_path}")
+                f"model_type:{model_type} model_id:{model_id} vits_path:{vits_path} t2s_path:{t2s_path}")
         else:
             logging.info(
                 f"model_type:{model_type} model_id:{model_id} n_speakers:{len(speakers)} vits_path:{vits_path}")
@@ -508,18 +508,18 @@ class ModelManager(Subject):
                 for model_id, model in model_data.items():
                     tts_model = model["tts_model"]
 
-                    sovits_path = tts_model["sovits_path"]
-                    gpt_path = tts_model["gpt_path"]
+                    vits_path = tts_model["vits_path"]
+                    t2s_path = tts_model["t2s_path"]
 
-                    sovits_path = self.absolute_to_relative_path(sovits_path)[0].replace("\\", "/")
-                    gpt_path = self.absolute_to_relative_path(gpt_path)[0].replace("\\", "/")
+                    vits_path = self.absolute_to_relative_path(vits_path)[0].replace("\\", "/")
+                    t2s_path = self.absolute_to_relative_path(t2s_path)[0].replace("\\", "/")
 
                     info[model_type].append(
                         {
                             "model_type": tts_model["model_type"],
                             "model_id": model_id,
-                            "sovits_path": sovits_path,
-                            "gpt_path": gpt_path,
+                            "vits_path": vits_path,
+                            "t2s_path": t2s_path,
                             "n_speakers": model["n_speakers"],
                         }
                     )
@@ -600,7 +600,7 @@ class ModelManager(Subject):
                 continue
             dir_name = os.path.dirname(pth_path)
             config_paths = glob.glob(dir_name + "/*.json", recursive=True)
-            gpt_paths = glob.glob(dir_name + "/*.ckpt", recursive=True)
+            t2s_paths = glob.glob(dir_name + "/*.ckpt", recursive=True)
 
             if len(config_paths) > 0:
                 vits_path = pth_path
@@ -611,13 +611,13 @@ class ModelManager(Subject):
                     "vits_path": vits_path,
                     "config_path": config_path,
                 }
-            elif len(gpt_paths) > 0:
-                gpt_path = gpt_paths[0]
-                sovits_path = pth_path
+            elif len(t2s_paths) > 0:
+                t2s_path = t2s_paths[0]
+                vits_path = pth_path
                 model_type = ModelType.GPT_SOVITS
                 info = {
-                    "sovits_path": sovits_path,
-                    "gpt_path": gpt_path,
+                    "vits_path": vits_path,
+                    "t2s_path": t2s_path,
                 }
             else:
                 continue
@@ -640,18 +640,18 @@ class ModelManager(Subject):
         for info in all_paths:
             model_type = info["model_type"]
             if model_type == ModelType.GPT_SOVITS:
-                sovits_path, gpt_path = self._format_paths(
+                vits_path, t2s_path = self._format_paths(
                     self.absolute_to_relative_path(
-                        info["sovits_path"],
-                        info["gpt_path"]
+                        info["vits_path"],
+                        info["t2s_path"]
                     )
                 )
-                if not self.is_path_loaded((sovits_path, gpt_path), loaded_paths["GPT_SOVITS"]):
+                if not self.is_path_loaded((vits_path, t2s_path), loaded_paths["GPT_SOVITS"]):
                     info.update(
                         {
                             "model_type": model_type,
-                            "sovits_path": sovits_path,
-                            "gpt_path": gpt_path
+                            "vits_path": vits_path,
+                            "t2s_path": t2s_path
                         }
                     )
                     unload_paths.append(info)
@@ -688,10 +688,10 @@ class ModelManager(Subject):
             model_type = tts_model["model_type"]
 
             if model_type == ModelType.GPT_SOVITS:
-                sovits_path, gpt_path = self._format_paths(
-                    self.absolute_to_relative_path(tts_model["sovits_path"], tts_model["gpt_path"])
+                vits_path, t2s_path = self._format_paths(
+                    self.absolute_to_relative_path(tts_model["vits_path"], tts_model["t2s_path"])
                 )
-                loaded_paths["GPT_SOVITS"].append((sovits_path, gpt_path))
+                loaded_paths["GPT_SOVITS"].append((vits_path, t2s_path))
             else:
                 vits_path = self._format_paths(self.absolute_to_relative_path(tts_model["vits_path"])[0])
                 loaded_paths["OTHER"].append(vits_path)

@@ -121,7 +121,7 @@ class ModelHandler:
         self.bert_models = {}  # Value: (tokenizer, model, reference_count)
         self.emotion = None
         self.clap = None
-        self.pinyinPlus = None
+        self.pinyin_g2pw = None
         self.device = torch.device(device)
         self.ssl_model = None
 
@@ -276,20 +276,20 @@ class ModelHandler:
                                                          style_text=style_text, style_weight=style_weight)
         return bert_feature
 
-    def get_pinyinPlus(self):
-        if self.pinyinPlus is None:
-            from bert_vits2.g2pW.pypinyin_G2pW_bv2 import G2PWPinyin
+    def get_pinyin_g2pw(self,model_source="Erlangshen_MegatronBert_1.3B_Chinese"):
+        if self.pinyin_g2pw is None:
+            from module.g2pW.g2pw import G2PWPinyin
 
             logging.info(f"Loading G2PWModel: {self.model_path['G2PWModel']}")
-            self.pinyinPlus = G2PWPinyin(
+            self.pinyin_g2pw = G2PWPinyin(
                 model_dir=self.model_path["G2PWModel"],
-                model_source=self.model_path["Erlangshen_MegatronBert_1.3B_Chinese"],
+                model_source=self.model_path[model_source],
                 v_to_u=False,
                 neutral_tone_with_five=True,
             )
             logging.info("Success loading G2PWModel")
 
-        return self.pinyinPlus
+        return self.pinyin_g2pw
 
     def release_bert(self, bert_model_name):
         if bert_model_name in self.bert_models:

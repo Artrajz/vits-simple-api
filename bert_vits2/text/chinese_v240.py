@@ -7,6 +7,8 @@ from bert_vits2.text.tone_sandhi import ToneSandhi
 
 import cn2an
 
+from module import polyphonic
+
 normalizer = lambda x: cn2an.transform(x, "an2cn")
 
 current_file_path = os.path.dirname(__file__)
@@ -114,12 +116,14 @@ def _g2p(segments, pinyinPlus, **kwargs):
         currentIndex = 0
         for word, pos in seg_cut:
             curr_orig_initials = orig_initials[currentIndex: currentIndex + len(word)]
-            curr_orig_finalss = orig_finals[currentIndex: currentIndex + len(word)]
+            curr_orig_finals = orig_finals[currentIndex: currentIndex + len(word)]
+            curr_orig_initials, curr_orig_finals = polyphonic.correct_pronunciation(word, (curr_orig_initials,
+                                                                                           curr_orig_finals), style=2)
             currentIndex = currentIndex + len(word)
             if pos == "eng":
                 continue
             sub_initials, sub_finals = _get_initials_finalsV2(
-                word, curr_orig_initials, curr_orig_finalss
+                word, curr_orig_initials, curr_orig_finals
             )
             sub_finals = tone_modifier.modified_tone(word, pos, sub_finals)
             initials.append(sub_initials)

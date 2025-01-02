@@ -17,3 +17,4 @@ phrases_dict.txt
 /data/emotional/dimensional_emotion_npy/
 /data/models/
 /vits/text/chinese_dialect_lexicons
+/data/polyphonic.yaml
