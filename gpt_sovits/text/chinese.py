@@ -73,7 +73,7 @@ def replace_consecutive_punctuation(text):
     return result
 
 
-def g2p(text):
+def g2p(text, **kwargs):
     pattern = r"(?<=[{0}])\s*".format("".join(punctuation))
     sentences = [i for i in re.split(pattern, text) if i.strip() != ""]
     phones, word2ph = _g2p(sentences)
