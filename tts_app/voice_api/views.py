@@ -163,17 +163,14 @@ def voice_vits_api():
 
     # 校验模型是否支持输入的语言
     speaker_lang = model_manager.voice_speakers[ModelType.VITS][id].get('lang')
-    if lang not in ["auto", "mix"] and len(speaker_lang) > 1 and lang not in speaker_lang:
-        logger.info(f"[{ModelType.VITS}] lang \"{lang}\" is not in {speaker_lang}")
-        return make_response(jsonify({"status": "error", "message": f"lang '{lang}' is not in {speaker_lang}"}),
-                             400)
+    lang_list, status, msg = get_lang_list(lang, speaker_lang)
+    if status == "error":
+        return make_response(jsonify({"status": status, "message": msg}), 400)
 
-    # 如果配置文件中设置了LANGUAGE_AUTOMATIC_DETECT则强制将speaker_lang设置为LANGUAGE_AUTOMATIC_DETECT
+    # 如果配置文件中设置了LANGUAGE_AUTOMATIC_DETECT则强制将speaker_lang设置为LANGUAGE_AUTOMATIC_DETECT里的语言
     if (lang_detect := config.language_identification.language_automatic_detect) and isinstance(lang_detect, list):
         speaker_lang = lang_detect
 
-    lang_list = get_lang_list(lang, speaker_lang)
-    
     if use_streaming and format.upper() != "MP3":
         format = "mp3"
         logger.warning("Streaming response only supports MP3 format.")
@@ -188,7 +185,7 @@ def voice_vits_api():
         "noise": noise,
         "noisew": noisew,
         "segment_size": segment_size,
-        "lang": lang_list[0],
+        "lang": lang_list,
         "speaker_lang": speaker_lang,
     }
 
