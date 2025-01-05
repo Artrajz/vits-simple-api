@@ -188,7 +188,7 @@ def voice_vits_api():
         "noise": noise,
         "noisew": noisew,
         "segment_size": segment_size,
-        "lang": lang_list,
+        "lang": lang_list[0],
         "speaker_lang": speaker_lang,
     }
 
