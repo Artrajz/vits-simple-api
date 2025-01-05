@@ -247,7 +247,7 @@ class ModelManager(Subject):
                 "device": self.device
             }
             if model_type == ModelType.VITS:
-                model_args["dynamic_loading"] = tts_model["dynamic_loading"]
+                model_args["dynamic_loading"] = tts_model.get("dynamic_loading", False)
 
         model_class = self.model_class_map[model_type]
         model = model_class(**model_args)

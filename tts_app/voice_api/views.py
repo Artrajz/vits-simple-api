@@ -172,6 +172,8 @@ def voice_vits_api():
     if (lang_detect := config.language_identification.language_automatic_detect) and isinstance(lang_detect, list):
         speaker_lang = lang_detect
 
+    lang_list = get_lang_list(lang, speaker_lang)
+    
     if use_streaming and format.upper() != "MP3":
         format = "mp3"
         logger.warning("Streaming response only supports MP3 format.")
@@ -186,7 +188,7 @@ def voice_vits_api():
         "noise": noise,
         "noisew": noisew,
         "segment_size": segment_size,
-        "lang": lang_list,
+        "lang": lang_list[0],
         "speaker_lang": speaker_lang,
     }
 
