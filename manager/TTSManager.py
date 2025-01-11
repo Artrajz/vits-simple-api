@@ -425,8 +425,8 @@ class TTSManager(Observer):
         return self.encode(sampling_rate, audio, state["format"]) if encode else audio
 
     def stream_bert_vits2_infer(self, state, encode=True):
-        model = self.get_model(ModelType.BERT_VITS2, state["id"])
-        state["id"] = self.get_real_id(ModelType.BERT_VITS2, state["id"])
+        model = self.get_model(model_type=ModelType.BERT_VITS2, id=state["id"], speaker=state["speaker"])
+        state["id"] = self.get_real_id(model_type=ModelType.BERT_VITS2, id=state["id"], speaker=state["speaker"])
 
         # 去除所有多余的空白字符
         if state["text"] is not None:
