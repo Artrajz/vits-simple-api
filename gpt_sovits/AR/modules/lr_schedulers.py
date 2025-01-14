@@ -3,9 +3,6 @@
 import math
 
 import torch
-from matplotlib import pyplot as plt
-from torch import nn
-from torch.optim import Adam
 
 
 class WarmupCosineLRSchedule(torch.optim.lr_scheduler._LRScheduler):
@@ -64,20 +61,3 @@ class WarmupCosineLRSchedule(torch.optim.lr_scheduler._LRScheduler):
         self.lr = lr
         self._current_step += 1
         return self.lr
-
-
-if __name__ == "__main__":
-    m = nn.Linear(10, 10)
-    opt = Adam(m.parameters(), lr=1e-4)
-    s = WarmupCosineLRSchedule(
-        opt, 1e-6, 2e-4, 1e-6, warmup_steps=2000, total_steps=20000, current_step=0
-    )
-    lrs = []
-    for i in range(25000):
-        s.step()
-        lrs.append(s.lr)
-        print(s.lr)
-
-    plt.plot(lrs)
-    plt.plot(range(0, 25000), lrs)
-    plt.show()
