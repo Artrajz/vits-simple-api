@@ -23,7 +23,7 @@ language_module_map = {
     },
     'v2': {
         'zh': chinese_v2,
-        'ha': japanese,
+        'ja': japanese,
         'en': english,
         'yue': cantonese,
         'ko': korean,
