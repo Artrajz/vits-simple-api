@@ -36,6 +36,8 @@ jaconv
 wordsegment
 pyjyutping
 g2pk2
+eunjeon; sys_platform == 'win32' # pip install eunjeon  -i https://pypi.artrajz.cn/simple/
+python_mecab_ko; sys_platform != 'win32'
 
 # Machine Learning and Deep Learning
 torch>=2.2.1
