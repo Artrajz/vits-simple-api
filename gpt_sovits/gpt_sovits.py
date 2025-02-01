@@ -81,11 +81,12 @@ class GPT_SoVITS:
         else:
             self.version = "v2"
 
+        self.vits_config.model.version = self.version
+
         self.vits_model = SynthesizerTrn(
             self.vits_config.data.filter_length // 2 + 1,
             self.vits_config.train.segment_size // self.vits_config.data.hop_length,
             n_speakers=self.vits_config.data.n_speakers,
-            version=self.version,
             **self.vits_config.model
         ).to(self.device)
 

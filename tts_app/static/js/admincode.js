@@ -56,8 +56,7 @@ function renderModelCard(model_data, model_type) {
     var id = String(model_data["model_id"]);
     var vits_path = String(model_data["vits_path"]);
     var n_speakers = String(model_data["n_speakers"]);
-    var sovits_path = String(model_data["sovits_path"]);
-    var gpt_path = String(model_data["gpt_path"]);
+    var t2s_path = String(model_data["t2s_path"]);
 
     var card = $('<div></div>').addClass("card model-card " + model_type).attr({
         "data-model-type": model_type,
@@ -68,8 +67,8 @@ function renderModelCard(model_data, model_type) {
 
     // $('<div></div>').text("id: " + id).appendTo(wrap);
     if (model_type == "GPT-SOVITS") {
-        $('<div></div>').text(sovits_path).addClass("model-card-info1").appendTo(wrap);
-        $('<div></div>').text(gpt_path).addClass("model-card-info3").appendTo(wrap);
+        $('<div></div>').text(vits_path).addClass("model-card-info1").appendTo(wrap);
+        $('<div></div>').text(t2s_path).addClass("model-card-info3").appendTo(wrap);
         $('<div></div>').text("x").addClass("unload-model").appendTo(wrap);
     } else {
         $('<div></div>').text(vits_path).addClass("model-card-info1").appendTo(wrap);
@@ -106,43 +105,34 @@ function renderModelLoadCards(data) {
         var model_type = model.model_type;
         var vits_path = model.vits_path;
         var config_path = model.config_path;
-        var sovits_path = model.sovits_path;
-        var gpt_path = model.gpt_path;
+        var t2s_path = model.t2s_path;
 
         var folder = null;
-        var model_name = null;
+        var vits_name = null;
         var config_name = null;
-        var sovits_name = null;
-        var gpt_name = null;
+        var t2s_name = null;
 
         $('<div></div>').text(model_id.toString()).addClass("unload-model-id").appendTo(card);
         $('<div></div>').text(model_type).addClass("unload-model-type").appendTo(card);
 
         if (vits_path != null && config_path != null) {
             folder = vits_path.split("/")[0];
-            model_name = vits_path.split("/")[1];
+            vits_name = vits_path.split("/")[1];
             config_name = config_path.split("/")[1];
 
             $('<div></div>').text(folder).addClass("unload-model-folder").appendTo(card);
-            $('<div></div>').text(model_name).addClass("unload-model-path model1").appendTo(card);
-            $('<div></div>').text(config_name).addClass("unload-model-config model2").appendTo(card);
+            $('<div></div>').text(vits_name).addClass("unload-vits-path model1").appendTo(card);
+            $('<div></div>').text(config_name).addClass("unload-vits-config model2").appendTo(card);
         } else {
-            folder = sovits_path.split("/")[0];
-            sovits_name = sovits_path.split("/")[1];
-            gpt_name = gpt_path.split("/")[1];
+            folder = vits_path.split("/")[0];
+            vits_name = vits_path.split("/")[1];
+            t2s_name = t2s_path.split("/")[1];
 
             $('<div></div>').text(folder).addClass("unload-model-folder").appendTo(card);
-            $('<div></div>').text(sovits_name).addClass("unload-sovits-path model1").appendTo(card);
-            $('<div></div>').text(gpt_name).addClass("unload-gpt-config model2").appendTo(card);
+            $('<div></div>').text(vits_name).addClass("unload-vits-path model1").appendTo(card);
+            $('<div></div>').text(t2s_name).addClass("unload-t2s-config model2").appendTo(card);
         }
 
-
-        // $('<div></div>').text(model_type).addClass("model-type").appendTo(card);
-
-
-        // var formattedString = folder + " | " + filename + " | " + config_path;
-        // $('<div></div>').text(formattedString).addClass("unload-model-path").appendTo(card);
-        // card.text(formattedString);
         card.on('click', function () {
             if (!isRequestInProgress) {
                 isRequestInProgress = true;
@@ -150,8 +140,8 @@ function renderModelLoadCards(data) {
                 if (model_type == "GPT-SOVITS") {
                     tts_model = {
                         model_type: model_type,
-                        gpt_path: gpt_path,
-                        sovits_path: sovits_path
+                        t2s_path: t2s_path,
+                        vits_path: vits_path
                     }
                 } else {
                     tts_model = {

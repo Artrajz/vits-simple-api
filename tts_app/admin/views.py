@@ -55,11 +55,11 @@ def get_models_info():
             if model.get("config_path") is not None:
                 model["config_path"] = extract_model_dir(model["config_path"])
 
-            if model.get("sovits_path") is not None:
-                model["sovits_path"] = extract_model_dir(model["sovits_path"])
+            if model.get("vits_path") is not None:
+                model["vits_path"] = extract_model_dir(model["vits_path"])
 
-            if model.get("gpt_path") is not None:
-                model["gpt_path"] = extract_model_dir(model["gpt_path"])
+            if model.get("t2s_path") is not None:
+                model["t2s_path"] = extract_model_dir(model["t2s_path"])
 
     return loaded_models_info
 
@@ -82,19 +82,19 @@ def load_model():
 
     }
     if model_type == ModelType.GPT_SOVITS:
-        sovits_path = request_data.get("sovits_path")
-        gpt_path = request_data.get("gpt_path")
+        vits_path = request_data.get("vits_path")
+        t2s_path = request_data.get("t2s_path")
 
-        sovits_path = redirect_model_dir(sovits_path)
-        gpt_path = redirect_model_dir(gpt_path)
+        vits_path = redirect_model_dir(vits_path)
+        t2s_path = redirect_model_dir(t2s_path)
 
         tts_model.update(
             {
-                "sovits_path": sovits_path,
-                "gpt_path": gpt_path,
+                "vits_path": vits_path,
+                "t2s_path": t2s_path,
             }
         )
-        logging.info(f"Loading model sovits_path: {sovits_path} gpt_path: {gpt_path}")
+        logging.info(f"Loading model vits_path: {vits_path} t2s_path: {t2s_path}")
     else:
         vits_path = request_data.get("vits_path")
         config_path = request_data.get("config_path")
