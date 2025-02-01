@@ -390,9 +390,9 @@ class ModelManager(Subject):
                 del self.sid2model[model_type][start:start + n_speakers]
                 del self.voice_speakers[model_type][start:start + n_speakers]
                 del self.tts_models[model_type][model_id]
-                for speaker in speakers:
-                    if speaker in self.spk2model[model_type]:
-                        del self.spk2model[model_type][speaker["name"]]
+
+                for item in speakers:
+                    self.spk2model[model_type].pop(item["name"], None)
 
                 for new_id, speaker in enumerate(self.voice_speakers[model_type]):
                     speaker["id"] = new_id
