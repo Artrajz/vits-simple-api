@@ -122,6 +122,10 @@ python app.py
 
 进入[releases页面](https://github.com/Artrajz/vits-simple-api/releases)下载并解压最新的部署包
 
+出于压缩体积考虑（以及Github release限制单个文件2GB大小），有部分可选的依赖模型没有被内置于部署包中，这些模型通常会在加载对应声音模型时被程序**自动下载**（如果载入的模型需要的话）
+
+假如程序没有自动下载成功需要手动下载对应依赖模型，或者您发现成功载入的声音模型为空，请阅读下面的**故障排除——成功载入的模型为空**部分
+
 ### 步骤2：启动
 
 运行start.bat启动程序
@@ -136,7 +140,7 @@ python app.py
 
 #### 自动加载模型
 
-v0.6.6版本之后默认会**自动加载**`data/models`文件夹下的所有模型，方便新手使用。
+v0.6.6版本之后默认会**自动加载**`data/models`文件夹下的所有模型，方便新手使用（如果您是第一次使用并且没有任何额外的特殊需要，您可以不用了解如何手动加载模型）。
 
 #### 手动加载模型
 
@@ -342,6 +346,25 @@ url中的IP可在API启动后找到，一般使用192.168开头的局域网IP。
 ```
 
 需要注意的是，中文特化版的版本号应改为`extra`或`zh-clap`，特化修复版的版本号为`2.4`或`extra-fix`。
+
+## 故障排除——成功载入的模型为空
+首先，请检查您的程序目录是否为**纯英文路径**（不能含有任何的中文或者特殊字符），否则将会碰到程序不报错也无法载入模型的情况
+
+其次，请核对您的模型位置是否放置正确(可参考**手动加载模型**部分)
+
+您的模型不应该直接放置在`data/models`，而是应该放置在models目录下面的文件夹中（这个文件夹可以是没有特殊字符的任意名称），每个声音模型对应一个目录
+
+最后，请检查log中是否有类似下载失败的信息，您可以参考下文手动放置依赖模型
+
+### 手动放置依赖模型
+
+下载 https://hf-mirror.com/TencentGameMate/chinese-hubert-base/resolve/main/pytorch_model.bin 放置于 'data\hubert\chinese_hubert_base'
+
+下载 https://hf-mirror.com/hfl/chinese-roberta-wwm-ext-large/resolve/main/pytorch_model.bin 放置于 'data\bert\chinese-roberta-wwm-ext-large'
+
+下载 https://openi.pcl.ac.cn/Stardust_minus/Bert-VITS2/modelmanage/model_filelist_tmpl?name=G2PWModel-v2-onnx 放置于 'data\G2PWModel'
+
+若您不想从启智平台下载（大文件无法直接浏览器上获取），则可以从这里 https://huggingface.co/restsun2028/B2ZHTH/blob/b0a8cc2c69c6d1962c679ea2887080a0a86e6bbf/g2pW/g2pW.onnx 获取到 'g2pW.onnx'
 
 # API
 
