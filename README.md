@@ -120,6 +120,10 @@ python app.py
 
 Go to the [releases page](https://github.com/Artrajz/vits-simple-api/releases) and download the latest deployment package. Extract the downloaded files.
 
+For compression reasons (and the Github release limiting the size of a single file to 2GB), there are some optional dependency models that are not included in the deployment package, and these are usually downloaded **automatically** by the program when loading the corresponding sound model (if the loaded model requires it). 
+
+In case the program doesn't download the dependency model manually, or if you find that If the program does not download the sound model automatically and you need to download the dependency model manually, or if you find that the successfully loaded sound model is empty, please read the **Troubleshooting - Successfully loaded model is empty** section below.
+
 ### Step 2: Start
 
 Run `start.bat` to launch the program.
@@ -134,6 +138,8 @@ Download the VITS model files and place them in the `data/models` folder.
 #### Automatic Model Loading
 
 Starting from version 0.6.6, it is default behavior to automatically load all models in the `data/models` folder, making it easier for beginners to use.
+
+(If this is your first time and you don't have any additional special needs, you don't need to know how to load the model manually)
 
 #### Manual Model Loading
 
@@ -332,6 +338,25 @@ To ensure compatibility with the Bert-VITS2 model, modify the config.json file b
 ```
 
 Please note that for the Chinese extra version, the version should be changed to `extra` or `zh-clap`, and for the extra fix version, the version should be `2.4` or `extra-fix`.
+
+## Troubleshooting - Successfully loaded models are empty 
+First of all, please check if your program directory is a **plain English path** (can't contain any Chinese or special characters), or else you will encounter the situation that the program can't load models even if it doesn't report an error. 
+
+Secondly, please check if your models are correctly placed (refer to the section of **Manual Model Loading**). 
+
+Your models should not be placed directly in `data/models`, but in a folder under the models directory (this folder can be any name without special characters), one directory for each sound model. 
+
+Lastly, check the log for any messages like download failure, you can refer to the following section on **manually placing dependent models**
+
+### Manually placing dependency models 
+
+download https://hf-mirror.com/TencentGameMate/chinese-hubert-base/resolve/main/pytorch_model.bin place in 'data\hubert\chinese_hubert_base' 
+
+download https://hf-mirror.com/hfl/chinese-roberta-wwm-ext-large/resolve/main/pytorch_model.bin place 'data\bert\chinese-roberta-wwm-ext-large' 
+
+download https://openi.pcl.ac.cn/Stardust_minus/Bert-VITS2/modelmanage/model_filelist_tmpl?name=G2PWModel-v2-onnx place 'data\G2PWModel' 
+
+If you don't want to download it from the openi.pcl.ac.cn platform (large files are not available directly from your browser), you can download it here https://huggingface.co/restsun2028/B2ZHTH/blob/b0a8cc2c69c6d1962c679ea2887080a0a86e6bbf/g2pW/g2pW.onnx Get to 'g2pW.onnx'
 
 # API
 
