@@ -165,9 +165,10 @@ For example, if the `data/models` folder has the following files:
 Fill in the configuration like this in the YAML file:
 
 ```yaml
-tts_config:
+tts_model_config:
+  models_dir: models
   auto_load: false
-  models:
+  tts_models:
   - config_path: model1/config.json
     vits_path: model1/G_1000.pth
   - config_path: model2/config.json
@@ -184,9 +185,10 @@ Loading models through the admin panel is convenient, but if you want to load mo
 Absolute path example:
 
 ```yaml
-tts_config:
+tts_model_config:
+  models_dir: models
   auto_load: false
-  models:
+  tts_models:
   - config_path: D://model3/config.json
     vits_path: D://model3/G_1000.pth
 ```

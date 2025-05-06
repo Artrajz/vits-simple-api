@@ -166,9 +166,10 @@ v0.6.6版本之后默认会**自动加载**`data/models`文件夹下的所有模
 填写
 
 ```yaml
-tts_config:
+tts_model_config:
+  models_dir: models
   auto_load: false
-  models:
+  tts_models:
   - config_path: model1/config.json
     vits_path: model1/G_1000.pth
   - config_path: model2/config.json
@@ -186,9 +187,10 @@ tts_config:
 绝对路径填写：
 
 ```yaml
-tts_config:
+tts_model_config:
+  models_dir: models
   auto_load: false
-  models:
+  tts_models:
   - config_path: D://model3/config.json
     vits_path: D://model3/G_1000.pth
 ```
