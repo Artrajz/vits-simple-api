@@ -66,7 +66,7 @@ class GPT_SoVITS:
 
     def load_vits_weights(self, weight_path):
         logging.info(f"Loaded checkpoint '{weight_path}'")
-        dict_s2 = torch.load(weight_path, map_location=self.device)
+        dict_s2 = torch.load(weight_path, map_location=self.device, weights_only=False)
         self.vits_config = dict_s2["config"]
         if type(self.vits_config) == dict:
             self.vits_config = HParams(**self.vits_config)
@@ -102,7 +102,7 @@ class GPT_SoVITS:
 
     def load_t2s_weight(self, weight_path):
         logging.info(f"Loaded checkpoint '{weight_path}'")
-        dict_s1 = torch.load(weight_path, map_location=self.device)
+        dict_s1 = torch.load(weight_path, map_location=self.device, weights_only=False)
 
         t2s_config = dict_s1["config"]
         self.max_sec = t2s_config.get("data").get("max_sec")
