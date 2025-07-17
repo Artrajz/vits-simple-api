@@ -195,11 +195,15 @@ tts_model_config:
     vits_path: D://model3/G_1000.pth
 ```
 
-- models_path:是相对于data目录下的模型文件夹，默认为models，auto_load为true时将会加载models_path目录下的所有模型。
+- `models_dir`是相对于data目录下的模型文件夹，默认为models，`auto_load`为true时将会加载`models_dir`目录下的所有模型。
 
 #### 其他模型
 
 bert模型以及情感模型下载之后放在`data/bert`文件夹和`data/emotional`文件夹中，找到对应名字放入即可。
+
+## 云端镜像一键部署
+
+已在优云智算平台部署此项目镜像，无需配置，开箱即用，注册免费体验5小时4090或10小时3080TI [点击跳转](https://www.compshare.cn/images/jZtOlBLHJi5K?referral_code=JqaheomBz8wCDWeUkpDSDF&ytag=GPU_yy_gh_vits)
 
 # GPU 加速
 
