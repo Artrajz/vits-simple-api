@@ -130,6 +130,10 @@ python app.py
 
 运行start.bat启动程序
 
+## 云端镜像一键部署
+
+已在优云智算平台部署此项目镜像，无需配置，开箱即用，注册免费体验5小时4090或10小时3080TI [点击跳转](https://www.compshare.cn/images/jZtOlBLHJi5K?referral_code=JqaheomBz8wCDWeUkpDSDF&ytag=GPU_yy_gh_vits)
+
 ## 模型加载
 
 ### 步骤1: 下载 VITS 模型
@@ -200,10 +204,6 @@ tts_model_config:
 #### 其他模型
 
 bert模型以及情感模型下载之后放在`data/bert`文件夹和`data/emotional`文件夹中，找到对应名字放入即可。
-
-## 云端镜像一键部署
-
-已在优云智算平台部署此项目镜像，无需配置，开箱即用，注册免费体验5小时4090或10小时3080TI [点击跳转](https://www.compshare.cn/images/jZtOlBLHJi5K?referral_code=JqaheomBz8wCDWeUkpDSDF&ytag=GPU_yy_gh_vits)
 
 # GPU 加速
 

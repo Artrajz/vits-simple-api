@@ -128,6 +128,10 @@ In case the program doesn't download the dependency model manually, or if you fi
 
 Run `start.bat` to launch the program.
 
+## One-Click Cloud Deployment
+
+This project image has been deployed on the Compshare. No configuration is required—ready to use out of the box. Register for free and enjoy 5 hours of RTX 4090 or 10 hours of RTX 3080 Ti experience. [Click to access](https://www.compshare.cn/images/jZtOlBLHJi5K?referral_code=JqaheomBz8wCDWeUkpDSDF&ytag=GPU_yy_gh_vits)
+
 ## Model Loading
 
 ### Step 1: Download VITS Models
@@ -198,10 +202,6 @@ tts_model_config:
 #### Other Models
 
 After downloading the BERT model and emotion model, place them in the `data/bert` and `data/emotional` folders respectively. Find the corresponding names and insert them accordingly.
-
-## One-Click Cloud Deployment
-
-This project image has been deployed on the Compshare. No configuration is required—ready to use out of the box. Register for free and enjoy 5 hours of RTX 4090 or 10 hours of RTX 3080 Ti experience. [Click to access](https://www.compshare.cn/images/jZtOlBLHJi5K?referral_code=JqaheomBz8wCDWeUkpDSDF&ytag=GPU_yy_gh_vits)
 
 # GPU accelerated
 
