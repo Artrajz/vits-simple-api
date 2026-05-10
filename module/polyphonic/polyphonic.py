@@ -53,7 +53,7 @@ class Polyphonic:
         self.polyphonic_words = self.polyphonic_dict["polyphonic"]
 
         for word in self.polyphonic_words.keys():
-            jieba.add_word(word)
+            jieba.add_word(word, freq=100000)
 
         pypinyin.load_phrases_dict(self.polyphonic_dict)
 
@@ -76,7 +76,7 @@ class Polyphonic:
         self.polyphonic_words = self.polyphonic_dict["polyphonic"]
 
         for word in self.polyphonic_words.keys():
-            jieba.add_word(word)
+            jieba.add_word(word, freq=100000)
 
         pypinyin.load_phrases_dict(self.polyphonic_dict)
 
